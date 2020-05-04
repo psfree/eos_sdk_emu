@@ -7,7 +7,7 @@ using CallbackFunc = void(*)(void*);
 struct CallbackMessage_t
 {
     int m_iCallback;
-    void* data;
+    uint8_t* data;
     CallbackFunc cb_func;
 };
 
@@ -19,10 +19,10 @@ struct FrameResult
     bool network; // Used in the callback functions, not used by callback_manager
     bool remove_on_timeout; // Remove the result if the api didn't read it fast enought
     CallbackMessage_t res;
-    bool local_memory;
 
     FrameResult() :
         created_time(std::chrono::steady_clock::now()),
+        ok_timeout(std::chrono::milliseconds(0)),
         done(false),
         network(false),
         remove_on_timeout(true),
@@ -47,7 +47,7 @@ struct FrameResult
         delete[] res.data;
         res.m_iCallback = T::k_iCallback;
         res.cb_func = func;
-        res.data = reinterpret_cast<void*>(cb);
+        res.data = reinterpret_cast<uint8_t*>(cb);
     }
 
     template<typename T>
@@ -59,6 +59,7 @@ struct FrameResult
     template<typename T>
     inline T& CreateCallback(CallbackFunc func, std::chrono::milliseconds ok_timeout = std::chrono::milliseconds(0))
     {
+        this->ok_timeout = ok_timeout;
         T* cb = reinterpret_cast<T*>(new uint8_t[sizeof(T)]);
         SetCallback(func, cb);
         return *reinterpret_cast<T*>(res.data);

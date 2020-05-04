@@ -3,8 +3,6 @@
 
 #include "eos_common.h"
 
-#pragma pack(push, 8)
-
 #define EOS_UserInfo_QueryUserInfoOptions EOS_UserInfo_QueryUserInfoOptions001
 #define EOS_UserInfo_QueryUserInfoByDisplayNameOptions EOS_UserInfo_QueryUserInfoByDisplayNameOptions001
 #define EOS_UserInfo EOS_UserInfo002
