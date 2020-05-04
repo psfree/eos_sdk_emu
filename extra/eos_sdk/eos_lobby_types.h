@@ -3,6 +3,8 @@
 
 #include "eos_common.h"
 
+enum { k_iLobbyCallbackBase = 6000 };
+
 #define EOS_LobbyDetails_Info                               EOS_LobbyDetails_Info001
 #define EOS_Lobby_CreateLobbyOptions                        EOS_Lobby_CreateLobbyOptions001
 #define EOS_Lobby_DestroyLobbyOptions                       EOS_Lobby_DestroyLobbyOptions001

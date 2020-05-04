@@ -153,6 +153,7 @@ EOS_DECLARE_FUNC(void) EOS_Achievements_Definition_Release(EOS_Achievements_Defi
  * Data containing the result information for a query definitions request.
  */
 EOS_STRUCT(EOS_Achievements_OnQueryDefinitionsCompleteCallbackInfo, (
+	enum { k_iCallback = k_iAchievementsCallbacks + 1 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Achievements_QueryDefinitions. */
@@ -262,6 +263,7 @@ EOS_DECLARE_FUNC(void) EOS_Achievements_PlayerAchievement_Release(EOS_Achievemen
  * Data containing the result information for querying a player's achievements request.
  */
 EOS_STRUCT(EOS_Achievements_OnQueryPlayerAchievementsCompleteCallbackInfo, (
+	enum { k_iCallback = k_iAchievementsCallbacks + 2 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Achievements_QueryPlayerAchievements. */
@@ -301,6 +303,7 @@ EOS_STRUCT(EOS_Achievements_UnlockAchievementsOptions001, (
  * Data containing the result information for unlocking achievements request.
  */
 EOS_STRUCT(EOS_Achievements_OnUnlockAchievementsCompleteCallbackInfo, (
+	enum { k_iCallback = k_iAchievementsCallbacks + 3 };
 	/** Result code for the operation. EOS_Success is returned for a successful request, other codes indicate an error. */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Achievements_UnlockAchievements. */
@@ -387,6 +390,7 @@ EOS_STRUCT(EOS_Achievements_AddNotifyAchievementsUnlockedOptions001, (
  * Output parameters for the EOS_Achievements_OnAchievementsUnlockedCallback Function.
  */
 EOS_STRUCT(EOS_Achievements_OnAchievementsUnlockedCallbackInfo, (
+	enum { k_iCallback = k_iAchievementsCallbacks + 4 };
 	/** Context that was passed into EOS_Achievements_AddNotifyAchievementsUnlocked */
 	void* ClientData;
 	/** Account ID for user that received the unlocked achievements notification */

@@ -30,6 +30,7 @@ EOS_STRUCT(EOS_Friends_QueryFriendsOptions001, (
  * Output parameters for the EOS_Friends_QueryFriends Function. These parameters are received through the callback provided to EOS_Friends_QueryFriends
  */
 EOS_STRUCT(EOS_Friends_QueryFriendsCallbackInfo, (
+	enum { k_iCallback = k_iFriendsCallbackBase + 1 };
 	/** Result code for the operation. EOS_Success is returned for a successful query, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Friends_QueryFriends */
@@ -70,6 +71,7 @@ EOS_STRUCT(EOS_Friends_SendInviteOptions001, (
  * Output parameters for the EOS_Friends_SendInvite API.
  */
 EOS_STRUCT(EOS_Friends_SendInviteCallbackInfo, (
+	enum { k_iCallback = k_iFriendsCallbackBase + 2 };
 	/** Result code for the operation. EOS_Success is returned if the invitation was sent, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Friends_SendInvite */
@@ -112,6 +114,7 @@ EOS_STRUCT(EOS_Friends_AcceptInviteOptions001, (
  * Output parameters for the EOS_Friends_AcceptInvite Function.
  */
 EOS_STRUCT(EOS_Friends_AcceptInviteCallbackInfo, (
+	enum { k_iCallback = k_iFriendsCallbackBase + 3 };
 	/** Result code for the operation. EOS_Success is returned if an invite was accepted, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into to EOS_Friends_AcceptInvite */
@@ -154,6 +157,7 @@ EOS_STRUCT(EOS_Friends_RejectInviteOptions001, (
  * Output parameters for the EOS_Friends_RejectInvite Function.
  */
 EOS_STRUCT(EOS_Friends_RejectInviteCallbackInfo, (
+	enum { k_iCallback = k_iFriendsCallbackBase + 4 };
 	/** Result code for the operation. EOS_Success is returned if an invite was accepted, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into to EOS_Friends_RejectInvite */
@@ -196,6 +200,7 @@ EOS_STRUCT(EOS_Friends_DeleteFriendOptions001, (
  * Output parameters for the EOS_Friends_DeleteFriend Function.
  */
 EOS_STRUCT(EOS_Friends_DeleteFriendCallbackInfo, (
+	enum { k_iCallback = k_iFriendsCallbackBase + 5 };
 	/** Result code for the operation. EOS_Success is returned if an invite was accepted, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into to EOS_Friends_DeleteFriend */
@@ -310,6 +315,7 @@ EOS_STRUCT(EOS_Friends_AddNotifyFriendsUpdateOptions001, (
  * Structure containing information about a friend status update.
  */
 EOS_STRUCT(EOS_Friends_OnFriendsUpdateInfo, (
+	enum { k_iCallback = k_iFriendsCallbackBase + 6 };
 	/** Client-specified data passed into EOS_Friends_AddNotifyFriendsUpdate */
 	void* ClientData;
 	/** The local user who is being notified of the friends update. */

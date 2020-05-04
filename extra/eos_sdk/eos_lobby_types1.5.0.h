@@ -120,6 +120,7 @@ EOS_STRUCT(EOS_Lobby_CreateLobbyOptions001, (
  * Output parameters for the EOS_Lobby_CreateLobby function.
  */
 EOS_STRUCT(EOS_Lobby_CreateLobbyCallbackInfo, (
+	enum { k_iCallback = k_iLobbyCallbackBase + 1 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Lobby_CreateLobby */
@@ -153,6 +154,7 @@ EOS_STRUCT(EOS_Lobby_DestroyLobbyOptions001, (
  * Output parameters for the EOS_Lobby_DestroyLobby function.
  */
 EOS_STRUCT(EOS_Lobby_DestroyLobbyCallbackInfo, (
+	enum { k_iCallback = k_iLobbyCallbackBase + 2 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Lobby_DestroyLobby */
@@ -187,6 +189,7 @@ EOS_STRUCT(EOS_Lobby_JoinLobbyOptions001, (
  * Output parameters for the EOS_Lobby_JoinLobby function.
  */
 EOS_STRUCT(EOS_Lobby_JoinLobbyCallbackInfo, (
+	enum { k_iCallback = k_iLobbyCallbackBase + 3 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Lobby_JoinLobby */
@@ -220,6 +223,7 @@ EOS_STRUCT(EOS_Lobby_LeaveLobbyOptions001, (
  * Output parameters for the EOS_Lobby_LeaveLobby function.
  */
 EOS_STRUCT(EOS_Lobby_LeaveLobbyCallbackInfo, (
+	enum { k_iCallback = k_iLobbyCallbackBase + 4 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Lobby_LeaveLobby */
@@ -266,6 +270,7 @@ EOS_STRUCT(EOS_Lobby_UpdateLobbyOptions001, (
  * Output parameters for the EOS_Lobby_UpdateLobby function.
  */
 EOS_STRUCT(EOS_Lobby_UpdateLobbyCallbackInfo, (
+	enum { k_iCallback = k_iLobbyCallbackBase + 5 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Lobby_UpdateLobby */
@@ -301,6 +306,7 @@ EOS_STRUCT(EOS_Lobby_PromoteMemberOptions001, (
  * Output parameters for the EOS_Lobby_PromoteMember function.
  */
 EOS_STRUCT(EOS_Lobby_PromoteMemberCallbackInfo, (
+	enum { k_iCallback = k_iLobbyCallbackBase + 6 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Lobby_PromoteMember */
@@ -337,6 +343,7 @@ EOS_STRUCT(EOS_Lobby_KickMemberOptions001, (
  * Output parameters for the EOS_Lobby_KickMember function.
  */
 EOS_STRUCT(EOS_Lobby_KickMemberCallbackInfo, (
+	enum { k_iCallback = k_iLobbyCallbackBase + 7 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Lobby_KickMember */
@@ -363,6 +370,7 @@ EOS_STRUCT(EOS_Lobby_AddNotifyLobbyUpdateReceivedOptions001, (
  * Output parameters for the EOS_Lobby_OnLobbyUpdateReceivedCallback Function.
  */
 EOS_STRUCT(EOS_Lobby_LobbyUpdateReceivedCallbackInfo, (
+	enum { k_iCallback = k_iLobbyCallbackBase + 8 };
 	/** Context that was passed into EOS_Lobby_AddNotifyLobbyUpdateReceived */
 	void* ClientData;
 	/** The id of the lobby affected */
@@ -388,6 +396,7 @@ EOS_STRUCT(EOS_Lobby_AddNotifyLobbyMemberUpdateReceivedOptions001, (
  * Output parameters for the EOS_Lobby_OnLobbyMemberUpdateReceivedCallback Function.
  */
 EOS_STRUCT(EOS_Lobby_LobbyMemberUpdateReceivedCallbackInfo, (
+	enum { k_iCallback = k_iLobbyCallbackBase + 9 };
 	/** Context that was passed into EOS_Lobby_AddNotifyLobbyMemberUpdateReceived */
 	void* ClientData;
 	/** The id of the lobby affected */
@@ -418,6 +427,7 @@ EOS_STRUCT(EOS_Lobby_AddNotifyLobbyMemberStatusReceivedOptions001, (
  * Output parameters for the EOS_Lobby_AddNotifyLobbyMemberStatusReceived function.
  */
 EOS_STRUCT(EOS_Lobby_LobbyMemberStatusReceivedCallbackInfo, (
+	enum { k_iCallback = k_iLobbyCallbackBase + 10 };
 	/** Context that was passed into EOS_Lobby_AddNotifyLobbyMemberStatusReceived */
 	void* ClientData;
 	/** The id of the lobby affected */
@@ -449,6 +459,7 @@ EOS_STRUCT(EOS_Lobby_AddNotifyLobbyInviteReceivedOptions001, (
  * Output parameters for the EOS_Lobby_OnLobbyInviteReceivedCallback Function.
  */
 EOS_STRUCT(EOS_Lobby_LobbyInviteReceivedCallbackInfo, (
+	enum { k_iCallback = k_iLobbyCallbackBase + 11 };
 	/** Context that was passed into EOS_Lobby_AddNotifyLobbyInviteReceived */
 	void* ClientData;
 	/** The invite id */
@@ -513,6 +524,7 @@ EOS_STRUCT(EOS_Lobby_SendInviteOptions001, (
  * Output parameters for the EOS_Lobby_SendInvite function.
  */
 EOS_STRUCT(EOS_Lobby_SendInviteCallbackInfo, (
+	enum { k_iCallback = k_iLobbyCallbackBase + 12 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Lobby_SendInvite */
@@ -546,6 +558,7 @@ EOS_STRUCT(EOS_Lobby_RejectInviteOptions001, (
  * Output parameters for the EOS_Lobby_RejectInvite function.
  */
 EOS_STRUCT(EOS_Lobby_RejectInviteCallbackInfo, (
+	enum { k_iCallback = k_iLobbyCallbackBase + 13 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Lobby_RejectInvite */
@@ -577,6 +590,7 @@ EOS_STRUCT(EOS_Lobby_QueryInvitesOptions001, (
  * Output parameters for the EOS_Lobby_QueryInvites function.
  */
 EOS_STRUCT(EOS_Lobby_QueryInvitesCallbackInfo, (
+	enum { k_iCallback = k_iLobbyCallbackBase + 14 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Lobby_QueryInvites */
@@ -913,6 +927,7 @@ EOS_STRUCT(EOS_LobbySearch_FindOptions001, (
  * Output parameters for the EOS_LobbySearch_Find function.
  */
 EOS_STRUCT(EOS_LobbySearch_FindCallbackInfo, (
+	enum { k_iCallback = k_iLobbyCallbackBase + 15 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_LobbySearch_Find */

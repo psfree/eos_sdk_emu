@@ -369,6 +369,7 @@ EOS_STRUCT(EOS_Ecom_QueryOwnershipOptions002, (
  * Output parameters for the EOS_Ecom_QueryOwnership Function.
  */
 EOS_STRUCT(EOS_Ecom_QueryOwnershipCallbackInfo, (
+	enum { k_iCallback = k_iEcomCallbackBase + 1 };
 	/** Result code for the operation. EOS_Success is returned for a successful query, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Ecom_QueryOwnership */
@@ -415,6 +416,7 @@ EOS_STRUCT(EOS_Ecom_QueryOwnershipTokenOptions002, (
  * Output parameters for the EOS_Ecom_QueryOwnershipToken Function.
  */
 EOS_STRUCT(EOS_Ecom_QueryOwnershipTokenCallbackInfo, (
+	enum { k_iCallback = k_iEcomCallbackBase + 2 };
 	/** Result code for the operation. EOS_Success is returned for a successful query, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Ecom_QueryOwnershipToken */
@@ -459,6 +461,7 @@ EOS_STRUCT(EOS_Ecom_QueryEntitlementsOptions002, (
  * Output parameters for the EOS_Ecom_QueryEntitlements Function.
  */
 EOS_STRUCT(EOS_Ecom_QueryEntitlementsCallbackInfo, (
+	enum { k_iCallback = k_iEcomCallbackBase + 3 };
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Ecom_QueryEntitlements */
 	void* ClientData;
@@ -492,6 +495,7 @@ EOS_STRUCT(EOS_Ecom_QueryOffersOptions001, (
  * Output parameters for the EOS_Ecom_QueryOffers Function.
  */
 EOS_STRUCT(EOS_Ecom_QueryOffersCallbackInfo, (
+	enum { k_iCallback = k_iEcomCallbackBase + 4 };
 	/** Result code for the operation. EOS_Success is returned for a successful query, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Ecom_QueryOffers */
@@ -535,6 +539,7 @@ EOS_STRUCT(EOS_Ecom_CheckoutOptions001, (
  * Output parameters for the EOS_Ecom_Checkout Function.
  */
 EOS_STRUCT(EOS_Ecom_CheckoutCallbackInfo, (
+	enum { k_iCallback = k_iEcomCallbackBase + 5 };
 	/** Result code for the operation. EOS_Success is returned for a successful request, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Ecom_Checkout */
@@ -578,6 +583,7 @@ EOS_STRUCT(EOS_Ecom_RedeemEntitlementsOptions001, (
  * Output parameters for the EOS_Ecom_RedeemEntitlements Function.
  */
 EOS_STRUCT(EOS_Ecom_RedeemEntitlementsCallbackInfo, (
+	enum { k_iCallback = k_iEcomCallbackBase + 6 };
 	/** Result code for the operation. EOS_Success is returned for a successful request, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Ecom_RedeemEntitlements */

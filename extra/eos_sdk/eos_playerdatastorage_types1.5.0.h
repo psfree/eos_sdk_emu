@@ -50,6 +50,7 @@ EOS_STRUCT(EOS_PlayerDataStorage_QueryFileOptions001, (
  * Data containing information about a query file request
  */
 EOS_STRUCT(EOS_PlayerDataStorage_QueryFileCallbackInfo, (
+	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 1 };
 	/** Result code for the operation. EOS_Success is returned for a successful request, other codes indicate an error */
 	EOS_EResult ResultCode;
 	/** Client-specified data passed into the file query request */
@@ -78,6 +79,7 @@ EOS_STRUCT(EOS_PlayerDataStorage_QueryFileListOptions001, (
  * Data containing information about a query file list request
  */
 EOS_STRUCT(EOS_PlayerDataStorage_QueryFileListCallbackInfo, (
+	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 2 };
 	/** Result code for the operation. EOS_Success is returned for a successful request, other codes indicate an error */
 	EOS_EResult ResultCode;
 	/** Client-specified data passed into the file query request */
@@ -152,6 +154,7 @@ EOS_STRUCT(EOS_PlayerDataStorage_DuplicateFileOptions001, (
  * Data containing the result information for a duplicate file request
  */
 EOS_STRUCT(EOS_PlayerDataStorage_DuplicateFileCallbackInfo, (
+	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 3 };
 	/** Result code for the operation. EOS_Success is returned for a successful request, other codes indicate an error */
 	EOS_EResult ResultCode;
 	/** Client-specified data passed into the file duplicate request */
@@ -183,6 +186,7 @@ EOS_STRUCT(EOS_PlayerDataStorage_DeleteFileOptions001, (
  * Data containing the result information for a delete file request
  */
 EOS_STRUCT(EOS_PlayerDataStorage_DeleteFileCallbackInfo, (
+	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 4 };
 	/** Result code for the operation. EOS_Success is returned for a successful request, other codes indicate an error */
 	EOS_EResult ResultCode;
 	/** Client-specified data passed into the file deletion request */
@@ -211,6 +215,7 @@ EOS_DECLARE_FUNC(void) EOS_PlayerDataStorageFileTransferRequest_Release(EOS_HPla
  * Data containing the information about a file transfer in progress (or one that has completed)
  */
 EOS_STRUCT(EOS_PlayerDataStorage_FileTransferProgressCallbackInfo, (
+	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 5 };
 	/** Client-specified data passed into the file request */
 	void* ClientData;
 	/** The Account ID of the local user who initiated this request */
@@ -245,6 +250,7 @@ EOS_ENUM(EOS_PlayerDataStorage_EReadResult,
  * Data containing data for a chunk of a file being read
  */
 EOS_STRUCT(EOS_PlayerDataStorage_ReadFileDataCallbackInfo, (
+	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 6 };
 	/** Client-specified data passed into the file request */
 	void* ClientData;
 	/** The Account ID of the local user who initiated this request */
@@ -293,6 +299,7 @@ EOS_STRUCT(EOS_PlayerDataStorage_ReadFileOptions001, (
  * Data containing the result of a read file request
  */
 EOS_STRUCT(EOS_PlayerDataStorage_ReadFileCallbackInfo, (
+	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 7 };
 	/** Result code for the operation. EOS_Success is returned for a successful request, other codes indicate an error */
 	EOS_EResult ResultCode;
 	/** Client-specified data passed into the file read request */
@@ -327,6 +334,7 @@ EOS_ENUM(EOS_PlayerDataStorage_EWriteResult,
  * Data containing data for a chunk of a file being written
  */
 EOS_STRUCT(EOS_PlayerDataStorage_WriteFileDataCallbackInfo, (
+	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 8 };
 	/** Client-specified data passed into the file write request */
 	void* ClientData;
 	/** The Account ID of the local user who initiated this request */
@@ -370,6 +378,7 @@ EOS_STRUCT(EOS_PlayerDataStorage_WriteFileOptions001, (
  * The result information for a request to write data to a file
  */
 EOS_STRUCT(EOS_PlayerDataStorage_WriteFileCallbackInfo, (
+	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 9 };
 	/** Result code for the operation. EOS_Success is returned for a successful request, other codes indicate an error */
 	EOS_EResult ResultCode;
 	/** Client-specified data passed into the file write request */

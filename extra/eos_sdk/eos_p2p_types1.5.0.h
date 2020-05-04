@@ -121,7 +121,8 @@ EOS_STRUCT(EOS_P2P_AddNotifyPeerConnectionRequestOptions001, (
 /**
  * Structure containing information about an incoming connection request.
  */
-EOS_STRUCT(EOS_P2P_OnIncomingConnectionRequestInfo001, (
+EOS_STRUCT(EOS_P2P_OnIncomingConnectionRequestInfo, (
+	enum { k_iCallback = k_iP2PCallbackBase + 1 };
 	/** Client-specified data passed into EOS_Presence_AddNotifyOnPresenceChanged */
 	void* ClientData;
 	/** The local user who is being requested to open a P2P session with RemoteUserId */
@@ -182,7 +183,8 @@ EOS_ENUM(EOS_EConnectionClosedReason,
 /**
  * Structure containing information about an connection request that is being closed.
  */
-EOS_STRUCT(EOS_P2P_OnRemoteConnectionClosedInfo001, (
+EOS_STRUCT(EOS_P2P_OnRemoteConnectionClosedInfo, (
+	enum { k_iCallback = k_iP2PCallbackBase + 2 };
 	/** Client-specified data passed into EOS_Presence_AddNotifyOnPresenceChanged */
 	void* ClientData;
 	/** The local user who is being notified of a connection being closed */
@@ -259,7 +261,8 @@ EOS_STRUCT(EOS_P2P_QueryNATTypeOptions001, (
 /**
  * Structure containing information about the local network NAT type
  */
-EOS_STRUCT(EOS_P2P_OnQueryNATTypeCompleteInfo001, (
+EOS_STRUCT(EOS_P2P_OnQueryNATTypeCompleteInfo, (
+	enum { k_iCallback = k_iP2PCallbackBase + 3 };
 	/** Result code for the operation. EOS_Success is returned for a successful query, other codes indicate an error */
 	EOS_EResult ResultCode;
 	/** Client-specified data passed into EOS_P2P_QueryNATType */

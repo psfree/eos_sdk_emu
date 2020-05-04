@@ -2,6 +2,10 @@
 
 #pragma once
 
+#include "eos_common.h"
+
+enum { k_iStatsCallbackBase = 12000 };
+
 #define EOS_Stats_IngestData             EOS_Stats_IngestData001
 #define EOS_Stats_IngestStatOptions      EOS_Stats_IngestStatOptions001
 #define EOS_Stats_QueryStatsOptions      EOS_Stats_QueryStatsOptions001

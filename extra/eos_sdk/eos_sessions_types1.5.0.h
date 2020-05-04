@@ -163,6 +163,7 @@ EOS_STRUCT(EOS_Sessions_SendInviteOptions001, (
  * Output parameters for the EOS_Sessions_SendInvite function.
  */
 EOS_STRUCT(EOS_Sessions_SendInviteCallbackInfo, (
+	enum { k_iCallback = k_iSessionsCallbackBase + 1};
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_SendInvite */
@@ -194,6 +195,7 @@ EOS_STRUCT(EOS_Sessions_RejectInviteOptions001, (
  * Output parameters for the EOS_Sessions_RejectInvite function.
  */
 EOS_STRUCT(EOS_Sessions_RejectInviteCallbackInfo, (
+	enum { k_iCallback = k_iSessionsCallbackBase + 2 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_RejectInvite */
@@ -223,6 +225,7 @@ EOS_STRUCT(EOS_Sessions_QueryInvitesOptions001, (
  * Output parameters for the EOS_Sessions_QueryInvites function.
  */
 EOS_STRUCT(EOS_Sessions_QueryInvitesCallbackInfo, (
+	enum { k_iCallback = k_iSessionsCallbackBase + 3 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_QueryInvites */
@@ -291,6 +294,7 @@ EOS_STRUCT(EOS_Sessions_UpdateSessionOptions001, (
  * Output parameters for the EOS_Sessions_UpdateSession function.
  */
 EOS_STRUCT(EOS_Sessions_UpdateSessionCallbackInfo, (
+	enum { k_iCallback = k_iSessionsCallbackBase + 4 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_UpdateSession */
@@ -324,6 +328,7 @@ EOS_STRUCT(EOS_Sessions_DestroySessionOptions001, (
  * Output parameters for the EOS_Sessions_DestroySession function.
  */
 EOS_STRUCT(EOS_Sessions_DestroySessionCallbackInfo, (
+	enum { k_iCallback = k_iSessionsCallbackBase + 5 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_DestroySession */
@@ -362,6 +367,7 @@ EOS_STRUCT(EOS_Sessions_JoinSessionOptions002, (
  * Output parameters for the EOS_Sessions_JoinSession function.
  */
 EOS_STRUCT(EOS_Sessions_JoinSessionCallbackInfo, (
+	enum { k_iCallback = k_iSessionsCallbackBase + 6 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_JoinSession */
@@ -388,6 +394,7 @@ EOS_STRUCT(EOS_Sessions_StartSessionOptions001, (
 ));
 
 EOS_STRUCT(EOS_Sessions_StartSessionCallbackInfo, (
+	enum { k_iCallback = k_iSessionsCallbackBase + 7 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_StartSession */
@@ -414,6 +421,7 @@ EOS_STRUCT(EOS_Sessions_EndSessionOptions001, (
 ));
 
 EOS_STRUCT(EOS_Sessions_EndSessionCallbackInfo, (
+	enum { k_iCallback = k_iSessionsCallbackBase + 8 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_EndSession */
@@ -444,6 +452,7 @@ EOS_STRUCT(EOS_Sessions_RegisterPlayersOptions001, (
 ));
 
 EOS_STRUCT(EOS_Sessions_RegisterPlayersCallbackInfo, (
+	enum { k_iCallback = k_iSessionsCallbackBase + 9 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_RegisterPlayers */
@@ -474,6 +483,7 @@ EOS_STRUCT(EOS_Sessions_UnregisterPlayersOptions001, (
 ));
 
 EOS_STRUCT(EOS_Sessions_UnregisterPlayersCallbackInfo, (
+	enum { k_iCallback = k_iSessionsCallbackBase + 10 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_UnregisterPlayers */
@@ -728,6 +738,7 @@ EOS_STRUCT(EOS_SessionSearch_FindOptions001, (
 ));
 
 EOS_STRUCT(EOS_SessionSearch_FindCallbackInfo, (
+	enum { k_iCallback = k_iSessionsCallbackBase + 11 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_SessionSearch_Find */
@@ -973,6 +984,7 @@ EOS_STRUCT(EOS_Sessions_AddNotifySessionInviteReceivedOptions001, (
  * Output parameters for the EOS_Sessions_OnSessionInviteReceivedCallback Function.
  */
 EOS_STRUCT(EOS_Sessions_SessionInviteReceivedCallbackInfo, (
+	enum { k_iCallback = k_iSessionsCallbackBase + 12 };
 	/** Context that was passed into EOS_Sessions_AddNotifySessionInviteReceived */
 	void* ClientData;
 	/** User that received the invite */
@@ -1001,6 +1013,7 @@ EOS_STRUCT(EOS_Sessions_AddNotifySessionInviteAcceptedOptions001, (
  * Output parameters for the EOS_Sessions_OnSessionInviteAcceptedCallback Function.
  */
 EOS_STRUCT(EOS_Sessions_SessionInviteAcceptedCallbackInfo, (
+	enum { k_iCallback = k_iSessionsCallbackBase + 13 };
 	/** Context that was passed into EOS_Sessions_AddNotifySessionInviteAccepted */
 	void* ClientData;
 	/** Session Id that should be used for joining */

@@ -4,6 +4,8 @@
 
 #include "eos_common.h"
 
+enum { k_iPlayerDataStorageCallbackBase = 9000 };
+
 #define EOS_PlayerDataStorage_FileMetadata                      EOS_PlayerDataStorage_FileMetadata001
 #define EOS_PlayerDataStorage_QueryFileOptions                  EOS_PlayerDataStorage_QueryFileOptions001
 #define EOS_PlayerDataStorage_QueryFileListOptions              EOS_PlayerDataStorage_QueryFileListOptions001

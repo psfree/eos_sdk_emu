@@ -4,6 +4,8 @@
 
 #include "eos_common.h"
 
+enum { k_iMetricsCallbackBase = 7000 };
+
 #define EOS_Metrics_BeginPlayerSessionOptions EOS_Metrics_BeginPlayerSessionOptions001
 #define EOS_Metrics_EndPlayerSessionOptions   EOS_Metrics_EndPlayerSessionOptions001
 

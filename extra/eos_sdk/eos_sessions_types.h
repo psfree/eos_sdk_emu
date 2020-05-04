@@ -4,6 +4,8 @@
 
 #include "eos_common.h"
 
+enum { k_iSessionsCallbackBase = 11000 };
+
 #define EOS_Sessions_CreateSessionModificationOptions           EOS_Sessions_CreateSessionModificationOptions002
 #define EOS_Sessions_UpdateSessionModificationOptions           EOS_Sessions_UpdateSessionModificationOptions001
 #define EOS_Sessions_SendInviteOptions                          EOS_Sessions_SendInviteOptions001

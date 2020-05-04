@@ -29,6 +29,7 @@ EOS_STRUCT(EOS_UserInfo_QueryUserInfoOptions001, (
  * Output parameters for the EOS_UserInfo_QueryUserInfo Function.
  */
 EOS_STRUCT(EOS_UserInfo_QueryUserInfoCallbackInfo, (
+	enum { k_iCallback = k_iUserInfoCallbackBase + 1 };
 	/** Result code for the operation. EOS_Success is returned for a successful query, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_UserInfo_QueryUserInfo */
@@ -70,6 +71,7 @@ EOS_STRUCT(EOS_UserInfo_QueryUserInfoByDisplayNameOptions001, (
  * Output parameters for the EOS_UserInfo_QueryUserInfoByDisplayName Function.
  */
 EOS_STRUCT(EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo, (
+	enum { k_iCallback = k_iUserInfoCallbackBase + 2 };
 	/** Result code for the operation. EOS_Success is returned for a successful query, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_UserInfo_QueryUserInfoByDisplayName */

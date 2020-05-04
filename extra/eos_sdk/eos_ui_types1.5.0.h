@@ -24,6 +24,7 @@ EOS_STRUCT(EOS_UI_ShowFriendsOptions001, (
  * Output parameters for the EOS_UI_ShowFriends function.
  */
 EOS_STRUCT(EOS_UI_ShowFriendsCallbackInfo, (
+	enum { k_iCallback = k_iUICallbackBase + 1 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_UI_ShowFriends */
@@ -55,6 +56,7 @@ EOS_STRUCT(EOS_UI_HideFriendsOptions001, (
  * Output parameters for the EOS_UI_HideFriends function.
  */
 EOS_STRUCT(EOS_UI_HideFriendsCallbackInfo, (
+	enum { k_iCallback = k_iUICallbackBase + 2 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_UI_HideFriends */

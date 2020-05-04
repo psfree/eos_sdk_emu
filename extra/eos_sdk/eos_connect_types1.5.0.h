@@ -187,6 +187,7 @@ EOS_STRUCT(EOS_Connect_LoginOptions002, (
  * Output parameters for the EOS_Connect_Login Function.
  */
 EOS_STRUCT(EOS_Connect_LoginCallbackInfo, (
+	enum { k_iCallback = k_iConnectCallbackBase + 1 };
 	/** Result code for the operation. EOS_Success is returned for a successful query, otherwise one of the error codes is returned. See eos_result.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Connect_Login */
@@ -224,6 +225,7 @@ EOS_STRUCT(EOS_Connect_CreateUserOptions001, (
  * Output parameters for the EOS_Connect_CreateUser Function.
  */
 EOS_STRUCT(EOS_Connect_CreateUserCallbackInfo, (
+	enum { k_iCallback = k_iConnectCallbackBase + 2 };
 	/** Result code for the operation. EOS_Success is returned for a successful query, otherwise one of the error codes is returned. See eos_result.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Connect_CreateUser */
@@ -253,6 +255,7 @@ EOS_STRUCT(EOS_Connect_LinkAccountOptions001, (
  * Output parameters for the EOS_Connect_LinkAccount Function.
  */
 EOS_STRUCT(EOS_Connect_LinkAccountCallbackInfo, (
+	enum { k_iCallback = k_iConnectCallbackBase + 3 };
 	/** Result code for the operation. EOS_Success is returned for a successful query, otherwise one of the error codes is returned. See eos_result.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Connect_LinkAccount */
@@ -297,6 +300,7 @@ EOS_STRUCT(EOS_Connect_CreateDeviceIdOptions001, (
  * Output parameters for the EOS_Connect_CreateDeviceId Function.
  */
 EOS_STRUCT(EOS_Connect_CreateDeviceIdCallbackInfo, (
+	enum { k_iCallback = k_iConnectCallbackBase + 4 };
 	/** Result code for the operation. EOS_Success is returned for a successful query, otherwise one of the error codes is returned. See eos_result.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Connect_CreateDeviceId */
@@ -320,6 +324,7 @@ EOS_STRUCT(EOS_Connect_DeleteDeviceIdOptions001, (
  * Output parameters for the EOS_Connect_DeleteDeviceId Function.
  */
 EOS_STRUCT(EOS_Connect_DeleteDeviceIdCallbackInfo, (
+	enum { k_iCallback = k_iConnectCallbackBase + 5 };
 	/** Result code for the operation. EOS_Success is returned for a successful query, otherwise one of the error codes is returned. See eos_result.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Connect_DeleteDeviceId */
@@ -354,6 +359,7 @@ EOS_STRUCT(EOS_Connect_QueryExternalAccountMappingsOptions001, (
  * Output parameters for the EOS_Connect_QueryExternalAccountMappings Function.
  */
 EOS_STRUCT(EOS_Connect_QueryExternalAccountMappingsCallbackInfo, (
+	enum { k_iCallback = k_iConnectCallbackBase + 6 };
 	/** Result code for the operation. EOS_Success is returned for a successful query, otherwise one of the error codes is returned. See eos_result.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Connect_QueryExternalAccountMappings */
@@ -411,6 +417,7 @@ EOS_STRUCT(EOS_Connect_QueryProductUserIdMappingsOptions001, (
  * Output parameters for the EOS_Connect_QueryProductUserIdMappings Function.
  */
 EOS_STRUCT(EOS_Connect_QueryProductUserIdMappingsCallbackInfo, (
+	enum { k_iCallback = k_iConnectCallbackBase + 7 };
 	/** Result code for the operation. EOS_Success is returned for a successful query, otherwise one of the error codes is returned. See eos_result.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Connect_QueryProductUserIdMappings */
@@ -459,6 +466,7 @@ EOS_STRUCT(EOS_Connect_AddNotifyAuthExpirationOptions001, (
  * Output parameters for the EOS_Connect_OnAuthExpirationCallback Function.
  */
 EOS_STRUCT(EOS_Connect_AuthExpirationCallbackInfo, (
+	enum { k_iCallback = k_iConnectCallbackBase + 8 };
 	/** Context that was passed into EOS_Connect_AddNotifyAuthExpiration */
 	void* ClientData;
 	/** Account ID of the local player whose status has changed */
@@ -487,6 +495,7 @@ EOS_STRUCT(EOS_Connect_AddNotifyLoginStatusChangedOptions001, (
  * Output parameters for the EOS_Connect_OnLoginStatusChangedCallback Function.
  */
 EOS_STRUCT(EOS_Connect_LoginStatusChangedCallbackInfo, (
+	enum { k_iCallback = k_iConnectCallbackBase + 9 };
 	/** Context that was passed into EOS_Connect_AddNotifyLoginStatusChanged */
 	void* ClientData;
 	/** Account ID of the local player whose status has changed */

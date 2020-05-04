@@ -3,6 +3,8 @@
 
 #include "eos_common.h"
 
+enum { k_iConnectCallbackBase = 2000 };
+
 #define EOS_Connect_Credentials                         EOS_Connect_Credentials001
 #define EOS_Connect_UserLoginInfo                       EOS_Connect_UserLoginInfo001
 #define EOS_Connect_LoginOptions                        EOS_Connect_LoginOptions002

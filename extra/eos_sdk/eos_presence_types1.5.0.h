@@ -91,6 +91,7 @@ EOS_STRUCT(EOS_Presence_QueryPresenceOptions001, (
  * The result meta-data for a presence query.
  */
 EOS_STRUCT(EOS_Presence_QueryPresenceCallbackInfo, (
+	enum { k_iCallback = k_iPresenceCallbackBase + 1 };
 	/** Result code for the operation. EOS_Success is returned for a successful query, other codes indicate an error */
 	EOS_EResult ResultCode;
 	/** Client-specified data passed into EOS_Presence_QueryPresence */
@@ -184,6 +185,7 @@ EOS_STRUCT(EOS_Presence_SetPresenceOptions001, (
  * The result meta-data from setting a user's presence.
  */
 EOS_STRUCT(EOS_Presence_SetPresenceCallbackInfo, (
+	enum { k_iCallback = k_iPresenceCallbackBase + 2 };
 	/** Result code for the operation. EOS_Success is returned if presence was successfully set, other codes indicate an error */
 	EOS_EResult ResultCode;
 	/** Client-specified data passed into EOS_Presence_SetPresence */
@@ -211,6 +213,7 @@ EOS_STRUCT(EOS_Presence_AddNotifyOnPresenceChangedOptions001, (
  * Data containing which users presence has changed
  */
 EOS_STRUCT(EOS_Presence_PresenceChangedCallbackInfo, (
+	enum { k_iCallback = k_iPresenceCallbackBase + 3 };
 	/** Client-specified data passed into EOS_Presence_AddNotifyOnPresenceChanged */
 	void* ClientData;
 	/** The local user who is being informed for PresenceUserId's presence change */
@@ -230,6 +233,7 @@ EOS_STRUCT(EOS_Presence_AddNotifyJoinGameAcceptedOptions001, (
  * Output parameters for the EOS_Presence_OnJoinGameAcceptedCallback Function.
  */
 EOS_STRUCT(EOS_Presence_JoinGameAcceptedCallbackInfo, (
+	enum { k_iCallback = k_iPresenceCallbackBase + 4 };
 	/** Context that was passed into EOS_Presence_AddNotifyJoinGameAccepted */
 	void* ClientData;
 	/** 

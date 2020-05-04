@@ -4,6 +4,8 @@
 
 #include "eos_common.h"
 
+enum { k_iPresenceCallbackBase = 10000 };
+
 #define EOS_Presence_DataRecord                        EOS_Presence_DataRecord001
 #define EOS_Presence_Info                              EOS_Presence_Info002
 #define EOS_Presence_QueryPresenceOptions              EOS_Presence_QueryPresenceOptions001

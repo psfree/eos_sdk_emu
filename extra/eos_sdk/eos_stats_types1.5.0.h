@@ -45,6 +45,7 @@ EOS_STRUCT(EOS_Stats_IngestStatOptions001, (
  * Data containing the result information for an ingest stat request.
  */
 EOS_STRUCT(EOS_Stats_IngestStatCompleteCallbackInfo, (
+	enum { k_iCallback = k_iStatsCallbackBase + 1 };
 	/** Result code for the operation. EOS_Success is returned for a successful request, other codes indicate an error. */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Stats_IngestStat. */
@@ -164,6 +165,7 @@ EOS_DECLARE_FUNC(void) EOS_Stats_Stat_Release(EOS_Stats_Stat* Stat);
  * Data containing the result information for querying a player's stats request.
  */
 EOS_STRUCT(EOS_Stats_OnQueryStatsCompleteCallbackInfo, (
+	enum { k_iCallback = k_iStatsCallbackBase + 2 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Stats_QueryStats. */

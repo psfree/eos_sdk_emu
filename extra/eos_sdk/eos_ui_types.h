@@ -4,6 +4,8 @@
 
 #include "eos_common.h"
 
+enum { k_iUICallbackBase = 13000 };
+
 #define EOS_UI_ShowFriendsOptions          EOS_UI_ShowFriendsOptions001
 #define EOS_UI_HideFriendsOptions          EOS_UI_HideFriendsOptions001
 #define EOS_UI_GetFriendsVisibleOptions    EOS_UI_GetFriendsVisibleOptions001

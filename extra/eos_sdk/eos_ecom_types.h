@@ -4,6 +4,8 @@
 
 #include "eos_common.h"
 
+enum { k_iEcomCallbackBase = 3000 };
+
 #define EOS_Ecom_Entitlement                               EOS_Ecom_Entitlement002
 #define EOS_Ecom_ItemOwnership                             EOS_Ecom_ItemOwnership001
 #define EOS_Ecom_CatalogItem                               EOS_Ecom_CatalogItem001

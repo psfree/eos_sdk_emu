@@ -117,12 +117,102 @@ LOCAL_API std::string get_callback_name(int iCallback)
     switch (iCallback)
     {
 #define I_CALLBACK(TYPE) case TYPE::k_iCallback: return #TYPE
+        // Auth
         I_CALLBACK(EOS_Auth_LoginCallbackInfo);
         I_CALLBACK(EOS_Auth_LogoutCallbackInfo);
         I_CALLBACK(EOS_Auth_VerifyUserAuthCallbackInfo);
         I_CALLBACK(EOS_Auth_DeletePersistentAuthCallbackInfo);
         I_CALLBACK(EOS_Auth_LoginStatusChangedCallbackInfo);
-
+        // Achievements
+        I_CALLBACK(EOS_Achievements_OnQueryDefinitionsCompleteCallbackInfo);
+        I_CALLBACK(EOS_Achievements_OnQueryPlayerAchievementsCompleteCallbackInfo);
+        // Connect
+        I_CALLBACK(EOS_Connect_LoginCallbackInfo);
+        I_CALLBACK(EOS_Connect_CreateUserCallbackInfo);
+        I_CALLBACK(EOS_Connect_LinkAccountCallbackInfo);
+        I_CALLBACK(EOS_Connect_CreateDeviceIdCallbackInfo);
+        I_CALLBACK(EOS_Connect_DeleteDeviceIdCallbackInfo);
+        I_CALLBACK(EOS_Connect_QueryExternalAccountMappingsCallbackInfo);
+        I_CALLBACK(EOS_Connect_QueryProductUserIdMappingsCallbackInfo);
+        I_CALLBACK(EOS_Connect_AuthExpirationCallbackInfo);
+        I_CALLBACK(EOS_Connect_LoginStatusChangedCallbackInfo);
+        // Ecom
+        I_CALLBACK(EOS_Ecom_QueryOwnershipCallbackInfo);
+        I_CALLBACK(EOS_Ecom_QueryOwnershipTokenCallbackInfo);
+        I_CALLBACK(EOS_Ecom_QueryEntitlementsCallbackInfo);
+        I_CALLBACK(EOS_Ecom_QueryOffersCallbackInfo);
+        I_CALLBACK(EOS_Ecom_CheckoutCallbackInfo);
+        I_CALLBACK(EOS_Ecom_RedeemEntitlementsCallbackInfo);
+        // Friends
+        I_CALLBACK(EOS_Friends_QueryFriendsCallbackInfo);
+        I_CALLBACK(EOS_Friends_SendInviteCallbackInfo);
+        I_CALLBACK(EOS_Friends_AcceptInviteCallbackInfo);
+        I_CALLBACK(EOS_Friends_RejectInviteCallbackInfo);
+        I_CALLBACK(EOS_Friends_DeleteFriendCallbackInfo);
+        I_CALLBACK(EOS_Friends_OnFriendsUpdateInfo);
+        // Leaderboards
+        I_CALLBACK(EOS_Leaderboards_OnQueryLeaderboardDefinitionsCompleteCallbackInfo);
+        I_CALLBACK(EOS_Leaderboards_OnQueryLeaderboardUserScoresCompleteCallbackInfo);
+        I_CALLBACK(EOS_Leaderboards_OnQueryLeaderboardRanksCompleteCallbackInfo);
+        // Lobby
+        I_CALLBACK(EOS_Lobby_CreateLobbyCallbackInfo);
+        I_CALLBACK(EOS_Lobby_DestroyLobbyCallbackInfo);
+        I_CALLBACK(EOS_Lobby_JoinLobbyCallbackInfo);
+        I_CALLBACK(EOS_Lobby_LeaveLobbyCallbackInfo);
+        I_CALLBACK(EOS_Lobby_UpdateLobbyCallbackInfo);
+        I_CALLBACK(EOS_Lobby_PromoteMemberCallbackInfo);
+        I_CALLBACK(EOS_Lobby_KickMemberCallbackInfo);
+        I_CALLBACK(EOS_Lobby_LobbyUpdateReceivedCallbackInfo);
+        I_CALLBACK(EOS_Lobby_LobbyMemberUpdateReceivedCallbackInfo);
+        I_CALLBACK(EOS_Lobby_LobbyMemberStatusReceivedCallbackInfo);
+        I_CALLBACK(EOS_Lobby_LobbyInviteReceivedCallbackInfo);
+        I_CALLBACK(EOS_Lobby_SendInviteCallbackInfo);
+        I_CALLBACK(EOS_Lobby_RejectInviteCallbackInfo);
+        I_CALLBACK(EOS_Lobby_QueryInvitesCallbackInfo);
+        I_CALLBACK(EOS_LobbySearch_FindCallbackInfo);
+        // Metrics
+        // P2P
+        I_CALLBACK(EOS_P2P_OnIncomingConnectionRequestInfo);
+        I_CALLBACK(EOS_P2P_OnRemoteConnectionClosedInfo);
+        I_CALLBACK(EOS_P2P_OnQueryNATTypeCompleteInfo);
+        // PlayerDataStorage
+        I_CALLBACK(EOS_PlayerDataStorage_QueryFileCallbackInfo);
+        I_CALLBACK(EOS_PlayerDataStorage_QueryFileListCallbackInfo);
+        I_CALLBACK(EOS_PlayerDataStorage_DuplicateFileCallbackInfo);
+        I_CALLBACK(EOS_PlayerDataStorage_DeleteFileCallbackInfo);
+        I_CALLBACK(EOS_PlayerDataStorage_FileTransferProgressCallbackInfo);
+        I_CALLBACK(EOS_PlayerDataStorage_ReadFileDataCallbackInfo);
+        I_CALLBACK(EOS_PlayerDataStorage_ReadFileCallbackInfo);
+        I_CALLBACK(EOS_PlayerDataStorage_WriteFileDataCallbackInfo);
+        I_CALLBACK(EOS_PlayerDataStorage_WriteFileCallbackInfo);
+        // Presence
+        I_CALLBACK(EOS_Presence_QueryPresenceCallbackInfo);
+        I_CALLBACK(EOS_Presence_SetPresenceCallbackInfo);
+        I_CALLBACK(EOS_Presence_PresenceChangedCallbackInfo);
+        I_CALLBACK(EOS_Presence_JoinGameAcceptedCallbackInfo);
+        // Sessions
+        I_CALLBACK(EOS_Sessions_SendInviteCallbackInfo);
+        I_CALLBACK(EOS_Sessions_RejectInviteCallbackInfo);
+        I_CALLBACK(EOS_Sessions_QueryInvitesCallbackInfo);
+        I_CALLBACK(EOS_Sessions_UpdateSessionCallbackInfo);
+        I_CALLBACK(EOS_Sessions_DestroySessionCallbackInfo);
+        I_CALLBACK(EOS_Sessions_JoinSessionCallbackInfo);
+        I_CALLBACK(EOS_Sessions_StartSessionCallbackInfo);
+        I_CALLBACK(EOS_Sessions_EndSessionCallbackInfo);
+        I_CALLBACK(EOS_Sessions_RegisterPlayersCallbackInfo);
+        I_CALLBACK(EOS_Sessions_UnregisterPlayersCallbackInfo);
+        I_CALLBACK(EOS_SessionSearch_FindCallbackInfo);
+        I_CALLBACK(EOS_Sessions_SessionInviteReceivedCallbackInfo);
+        I_CALLBACK(EOS_Sessions_SessionInviteAcceptedCallbackInfo);
+        // Stats
+        I_CALLBACK(EOS_Stats_IngestStatCompleteCallbackInfo);
+        I_CALLBACK(EOS_Stats_OnQueryStatsCompleteCallbackInfo);
+        // UI
+        I_CALLBACK(EOS_UI_ShowFriendsCallbackInfo);
+        I_CALLBACK(EOS_UI_HideFriendsCallbackInfo);
+        // UserInfo
+        I_CALLBACK(EOS_UserInfo_QueryUserInfoCallbackInfo);
+        I_CALLBACK(EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo);
 #undef I_CALLBACK
     }
 

@@ -116,6 +116,7 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_LeaderboardDefinition_Release(EOS_Leader
  * Data containing the result information for a query leaderboard definitions request.
  */
 EOS_STRUCT(EOS_Leaderboards_OnQueryLeaderboardDefinitionsCompleteCallbackInfo, (
+	enum { k_iCallback = k_iLeaderboardsCallbackBase + 1 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Leaderboards_QueryLeaderboardDefinitions. */
@@ -241,6 +242,7 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_LeaderboardUserScore_Release(EOS_Leaderb
  * Data containing the result information for a query leaderboard user scores request.
  */
 EOS_STRUCT(EOS_Leaderboards_OnQueryLeaderboardUserScoresCompleteCallbackInfo, (
+	enum { k_iCallback = k_iLeaderboardsCallbackBase + 2 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Leaderboards_QueryLeaderboardUserScores. */
@@ -339,6 +341,7 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_LeaderboardRecord_Release(EOS_Leaderboar
  * Data containing the result information for a query leaderboard ranks request.
  */
 EOS_STRUCT(EOS_Leaderboards_OnQueryLeaderboardRanksCompleteCallbackInfo, (
+	enum { k_iCallback = k_iLeaderboardsCallbackBase + 3 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Leaderboards_QueryLeaderboardRanks. */
