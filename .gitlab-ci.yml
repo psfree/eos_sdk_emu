@@ -260,9 +260,9 @@ sign:
     - PASSW=azerty
     - openssl req -x509 -"$ALGO" -passin "pass:$PASSW" -passout "pass:$PASSW" -newkey rsa:"$BITS" -subj "$SUBJECT" -keyout "$KEY" -out "$CERT" -days "$DAYS"
     - osslsigncode sign -certs "$CERT" -h "$ALGO" -key "$KEY" -pass "$PASSW" -in release/win32/EOSSDK-Win32-Shipping.dll -out EOSSDK-Win32-Shipping.dll
-    - mv steamclient.dll release/win32/
+    - mv EOSSDK-Win32-Shipping.dll release/win32/
     - osslsigncode sign -certs "$CERT" -h "$ALGO" -key "$KEY" -pass "$PASSW" -in release/win64/EOSSDK-Win64-Shipping.dll -out EOSSDK-Win64-Shipping.dll
-    - mv steamclient64.dll release/win64/
+    - mv EOSSDK-Win64-Shipping.dll release/win64/
 
   artifacts:
     paths:
