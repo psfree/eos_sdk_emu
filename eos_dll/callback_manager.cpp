@@ -141,7 +141,7 @@ void Callback_Manager::run_callbacks()
             pFrameResult_t& res = *result_it;
             if (res->done || frame->RunCallbacks(res))
             {
-                LOG(Log::LogLevel::DEBUG, "Callback ready: %s", get_callback_name(res->res.m_iCallback));
+                LOG(Log::LogLevel::DEBUG, "Callback ready: %s", get_callback_name(res->res.m_iCallback).c_str());
                 res->res.cb_func(res->res.data);
                 result_it = results.erase(result_it);
             }
