@@ -41,6 +41,15 @@ if(WIN32) # Setup some variables for Windows build
     message(FATAL_ERROR "Arch unknown")
   endif()
 
+  file(
+    GLOB
+    overlay_pf_sources
+	overlay/Base_Hook.cpp
+    #overlay/windows/*
+    #extra/ImGui/impls/*.cpp
+    #extra/ImGui/impls/windows/*
+  )
+
 elseif(APPLE)
   message(STATUS "CMake for APPLE is experimental")
   if(X64)
@@ -61,6 +70,12 @@ elseif(APPLE)
 
   set(EPIC_API libEOSSDK-Mac-Shipping)
 
+  #file(
+  #  GLOB
+  #  overlay_pf_sources
+  #  overlay/macosx/*
+  #)
+
 elseif(UNIX)
   if(X64)
     # Global flags for building steamapi (64bits)
@@ -76,6 +91,13 @@ elseif(UNIX)
     message(FATAL_ERROR "Arch unknown")
   endif()
   set(EPIC_API libEOSSDK-Linux-Shipping)
+
+  #file(
+  #  GLOB
+  #  overlay_pf_sources
+  #  overlay/linux/*
+  #  extra/ImGui/impls/linux/*
+  #)
 
 else()
   message(FATAL_ERROR "No CMake for other platforms")
@@ -227,7 +249,7 @@ file(
 #)
 
 ########################################
-## steamclient[64].dll
+## 
 
 add_library(
   ${EPIC_API}
@@ -266,9 +288,9 @@ target_link_libraries(
   $<$<BOOL:${WIN32}>:iphlpapi>
   # For library play .wav
   #$<$<BOOL:${WIN32}>:winmm>
-  #$<$<BOOL:${WIN32}>:comdlg32>
-  #$<$<BOOL:${WIN32}>:shell32>
-  #$<$<BOOL:${WIN32}>:user32>
+  $<$<BOOL:${WIN32}>:comdlg32>
+  $<$<BOOL:${WIN32}>:shell32>
+  $<$<BOOL:${WIN32}>:user32>
 
   # For library multithread
   $<$<BOOL:${UNIX}>:pthread>
