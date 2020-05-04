@@ -215,22 +215,22 @@ build:macosx:
       - debug/
     expire_in: 1 day
 
-build:launcher:
-  stage: build
-  image: mono:latest
-
-  script:
-    - cd NemirtingasEmuLauncher
-    - nuget restore -PackagesDirectory packages
-    - msbuild -p:Configuration=Release
-    - mkdir ../release
-    - mv bin/Release/NemirtingasEmuLauncher.exe bin/Release/*.dll ../release/
-    - exit 0
-
-  artifacts:
-    paths:
-      - release
-    expire_in: 1 day
+#build:launcher:
+#  stage: build
+#  image: mono:latest
+#
+#  script:
+#    - cd NemirtingasEmuLauncher
+#    - nuget restore -PackagesDirectory packages
+#    - msbuild -p:Configuration=Release
+#    - mkdir ../release
+#    - mv bin/Release/NemirtingasEmuLauncher.exe bin/Release/*.dll ../release/
+#    - exit 0
+#
+#  artifacts:
+#    paths:
+#      - release
+#    expire_in: 1 day
 
 sign:
   image: alpine:3.4
@@ -239,7 +239,7 @@ sign:
     - build:windows
     - build:linux
     - build:macosx
-    - build:launcher
+#    - build:launcher
     
   script:
     - apk update && apk add libcurl curl-dev openssl-dev autoconf build-base automake libtool git openssl
