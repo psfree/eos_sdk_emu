@@ -259,9 +259,9 @@ sign:
     - BITS="2048"
     - PASSW=azerty
     - openssl req -x509 -"$ALGO" -passin "pass:$PASSW" -passout "pass:$PASSW" -newkey rsa:"$BITS" -subj "$SUBJECT" -keyout "$KEY" -out "$CERT" -days "$DAYS"
-    - osslsigncode sign -certs "$CERT" -h "$ALGO" -key "$KEY" -pass "$PASSW" -in release/win32/EOSSDK-Win32-Shipping.dll -out EPIC_API EOSSDK-Win32-Shipping.dll
+    - osslsigncode sign -certs "$CERT" -h "$ALGO" -key "$KEY" -pass "$PASSW" -in release/win32/EOSSDK-Win32-Shipping.dll -out EOSSDK-Win32-Shipping.dll
     - mv steamclient.dll release/win32/
-    - osslsigncode sign -certs "$CERT" -h "$ALGO" -key "$KEY" -pass "$PASSW" -in release/win64/EOSSDK-Win64-Shipping.dll -out EPIC_API EOSSDK-Win64-Shipping.dll
+    - osslsigncode sign -certs "$CERT" -h "$ALGO" -key "$KEY" -pass "$PASSW" -in release/win64/EOSSDK-Win64-Shipping.dll -out EOSSDK-Win64-Shipping.dll
     - mv steamclient64.dll release/win64/
 
   artifacts:
