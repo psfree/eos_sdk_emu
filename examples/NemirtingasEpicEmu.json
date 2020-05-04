@@ -1,0 +1,10 @@
+{
+  "enable_overlay": true,
+  "epicid": "0x0123456789abcdef0123456789abcdef",
+  "gamename": "Unreal",
+  "language": "english",
+  "languages": "english",
+  "savepath": "appdata",
+  "unlock_dlcs": true,
+  "username": "DefaultName"
+}

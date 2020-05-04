@@ -1,0 +1,8 @@
+[submodule "utils"]
+	path = extra/utils
+	url = https://gitlab.com/Nemirtingas/utils.git
+
+[submodule "Socket"]
+	path = extra/Socket
+	url = https://gitlab.com/Nemirtingas/Socket.git
+

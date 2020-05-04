@@ -1,0 +1,305 @@
+stages:
+  - dependencies
+  - build
+  - sign
+  - deploy
+  - pages
+
+variables:
+  DOCKER_DRIVER: overlay2
+  GIT_SUBMODULE_STRATEGY: recursive
+
+protobuf:static:linux:
+  stage: dependencies
+  image: ubuntu:18.04
+
+  before_script:
+    - dpkg --add-architecture i386
+
+  script:
+    # don't rebuild every time
+    - build_x86_protobuf=1
+    - build_x64_protobuf=1
+    - build_x86_curl=0
+    - build_x64_curl=0
+    - build_x86_glew=0
+    - build_x64_glew=0
+    - test -e extra/protobuf/linux32/bin/protoc && test -e extra/protobuf/linux32/lib/libprotobuf.a && build_x86_protobuf=0
+    - test -e extra/protobuf/linux64/bin/protoc && test -e extra/protobuf/linux64/lib/libprotobuf.a && build_x64_protobuf=0
+    - test -e extra/curl/linux32/lib/libcurl.a && build_x86_curl=0
+    - test -e extra/curl/linux64/lib/libcurl.a && build_x64_curl=0
+    - test -e extra/glew/linux32/lib/libGLEW.a && build_x86_glew=0
+    - test -e extra/glew/linux64/lib/libGLEW.a && build_x64_glew=0
+    - test $build_x86_protobuf -eq 0 && test $build_x64_protobuf -eq 0 && test $build_x86_curl -eq 0 && test $build_x64_curl -eq 0 && test $build_x86_glew -eq 0 && test $build_x64_glew -eq 0 && exit 0
+    - apt update
+    - apt -y install gcc g++ gcc-multilib g++-multilib build-essential cmake python git wget curl libcurl4-openssl-dev zlib1g zlib1g-dev libssl-dev libssl-dev:i386 libgl1-mesa-dev libgl1-mesa-dev:i386
+    - export JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
+    - test -z "${JOBS}" && JOBS=2
+    - echo "Building protobuf with ${JOBS} jobs"
+    - test $build_x86_protobuf -eq 1 && { ./build_protobuf.sh "Release" "linux32" || exit 1; }
+    - test $build_x64_protobuf -eq 1 && { ./build_protobuf.sh "Release" "linux64" || exit 1; }
+    - test $build_x86_curl     -eq 1 && { ./build_curl.sh     "Release" "linux32" || exit 1; }
+    - test $build_x64_curl     -eq 1 && { ./build_curl.sh     "Release" "linux64" || exit 1; }
+    - test $build_x86_glew     -eq 1 && { ./build_glew.sh     "Release" "linux32" || exit 1; }
+    - test $build_x64_glew     -eq 1 && { ./build_glew.sh     "Release" "linux64" || exit 1; }
+    - exit 0
+
+  cache:
+    key: protobuf-static-linux-cache
+    paths:
+      - extra/protobuf/
+      - extra/curl/
+      - extra/glew/
+  artifacts:
+    paths:
+      - extra/protobuf/
+      - extra/curl/
+      - extra/glew/
+    expire_in: 1 day
+
+protobuf:static:windows:
+  stage: dependencies
+  image: nemirtingas/windowscross:msvc2019
+
+  before_script:
+    - dpkg --add-architecture i386
+
+  script:
+    # don't rebuild every time
+    - build_x86_protobuf=1
+    - build_x64_protobuf=1
+    - build_x86_curl=0
+    - build_x64_curl=0
+    - build_x86_glew=0
+    - build_x64_glew=0
+    - test -e extra/protobuf/win32/bin/protoc.exe && test -e extra/protobuf/win32/lib/libprotobuf.lib && build_x86_protobuf=0
+    - test -e extra/protobuf/win64/bin/protoc.exe && test -e extra/protobuf/win64/lib/libprotobuf.lib && build_x64_protobuf=0
+    - test -e extra/curl/win32/lib/libcurl.lib && build_x86_curl=0
+    - test -e extra/curl/win64/lib/libcurl.lib && build_x64_curl=0
+    - test -e extra/glew/win32/lib/glew32.lib && build_x86_glew=0
+    - test -e extra/glew/win64/lib/glew32.lib && build_x64_glew=0
+    - test $build_x86_protobuf -eq 0 && test $build_x64_protobuf -eq 0 && test $build_x86_curl -eq 0 && test $build_x64_curl -eq 0 && test $build_x86_glew -eq 0 && test $build_x64_glew -eq 0 && exit 0
+    - export JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
+    - test -z "${JOBS}" && JOBS=2
+    - echo "Building protobuf with ${JOBS} jobs"
+    - export HOST_ARCH="x86"
+    - test $build_x86_protobuf -eq 1 && { ./build_protobuf.sh "Release" "win32" || exit 1; }
+    - test $build_x86_curl     -eq 1 && { ./build_curl.sh "Release" "win32" || exit 1; }
+    - test $build_x86_glew     -eq 1 && { ./build_glew.sh "Release" "win32" || exit 1; }
+    - export HOST_ARCH="x64"
+    - test $build_x64_protobuf -eq 1 && { ./build_protobuf.sh "Release" "win64" || exit 1; }
+    - test $build_x64_curl     -eq 1 && { ./build_curl.sh "Release" "win64" || exit 1; }
+    - test $build_x64_glew     -eq 1 && { ./build_glew.sh "Release" "win64" || exit 1; }
+    - exit 0
+
+  cache:
+    key: protobuf-static-windows-cache
+    paths:
+      - extra/protobuf/
+      - extra/curl/
+      - extra/glew/
+  artifacts:
+    paths:
+      - extra/protobuf/
+      - extra/curl/
+      - extra/glew/
+    expire_in: 1 day
+
+protobuf:static:macosx:
+  stage: dependencies
+  image: nemirtingas/osxcross:SDK10.13
+
+  script:
+    # don't rebuild every time
+    - build_x86_protobuf=1
+    - build_x64_protobuf=1
+    - test -e extra/protobuf/macosx32/bin/protoc && test -e extra/protobuf/macosx32/lib/libprotobuf.a && build_x86_protobuf=0
+    - test -e extra/protobuf/macosx64/bin/protoc && test -e extra/protobuf/macosx64/lib/libprotobuf.a && build_x64_protobuf=0
+    - test $build_x86_protobuf -eq 0 && test $build_x64_protobuf -eq 0 && exit 0
+    - export JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
+    - test -z "${JOBS}" && JOBS=2
+    - echo "Building protobuf with ${JOBS} jobs"
+    - export OSXCROSS_HOST="i386-apple-${OSXCROSS_TARGET}"
+    - test $build_x86_protobuf -eq 1 && { ./build_protobuf.sh "Release" "macosx32" || exit 1; }
+    - export OSXCROSS_HOST="x86_64-apple-${OSXCROSS_TARGET}"
+    - test $build_x64_protobuf -eq 1 && { ./build_protobuf.sh "Release" "macosx64" || exit 1; }
+    - exit 0
+
+  cache:
+    key: protobuf-static-macosx-cache
+    paths:
+      - extra/protobuf/
+  artifacts:
+    paths:
+      - extra/protobuf/
+    expire_in: 1 day
+
+build:linux:
+  stage: build
+  image: ubuntu:18.04
+  dependencies:
+    - protobuf:static:linux
+
+  before_script:
+    - dpkg --add-architecture i386
+    - apt update
+    - apt -y install gcc g++ gcc-multilib g++-multilib build-essential cmake git wget curl libcurl4-openssl-dev libssl-dev libssl-dev:i386 zlib1g zlib1g-dev libudev-dev libudev-dev:i386 libgl1-mesa-dev libgl1-mesa-dev:i386
+
+  script:
+    - pushd cmake && make install && popd
+    - JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
+    - test -z "${JOBS}" && JOBS=2
+    - echo "Building epic api with ${JOBS} jobs"
+    - ./build_epicapi.sh "Release" "linux32" || exit 1
+    - ./build_epicapi.sh "Debug" "linux32" || exit 1
+    - ./build_epicapi.sh "Release" "linux64" || exit 1
+    - ./build_epicapi.sh "Debug" "linux64" || exit 1
+    - exit 0
+
+  artifacts:
+    paths:
+      - release/
+      - debug/
+    expire_in: 1 day
+
+build:windows:
+  stage: build
+  image: nemirtingas/windowscross:msvc2019
+  dependencies:
+# protobuf:static:linux is needed for protoc (linux) protoc for windows is unused or you would need wine.
+    - protobuf:static:linux
+    - protobuf:static:windows
+
+  script:
+    - JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
+    - test -z "${JOBS}" && JOBS=2
+    - echo "Building steamapi with ${JOBS} jobs"
+    - export HOST_ARCH="x86"
+    - ./build_epicapi.sh "Release" "win32" || exit 1
+#    - ./build_epicapi.sh "Debug" "win32" || exit 1
+    - export HOST_ARCH="x64"
+    - ./build_epicapi.sh "Release" "win64" || exit 1
+#    - ./build_epicapi.sh "Debug" "win64" || exit 1
+  artifacts:
+    paths:
+      - release/
+      - debug/
+    expire_in: 1 day
+
+build:macosx:
+  stage: build
+  image: nemirtingas/osxcross:SDK10.13
+  dependencies:
+# protobuf:static:linux is needed for protoc (linux) protoc for macosx is unused
+    - protobuf:static:linux
+    - protobuf:static:macosx
+
+  script:
+    - JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
+    - test -z "${JOBS}" && JOBS=2
+    - echo "Building steamapi with ${JOBS} jobs"
+    - export OSXCROSS_HOST="i386-apple-${OSXCROSS_TARGET}"
+    - ./build_epicapi.sh "Release" "macosx32" || exit 1
+    - ./build_epicapi.sh "Debug" "macosx32" || exit 1
+    - export OSXCROSS_HOST="x86_64-apple-${OSXCROSS_TARGET}"
+    - ./build_epicapi.sh "Release" "macosx64" || exit 1
+    - ./build_epicapi.sh "Debug" "macosx64" || exit 1
+    - mkdir release/macosx
+    - mkdir debug/macosx
+    - x86_64-apple-${OSXCROSS_TARGET}-lipo -create release/macosx*/libEOSSDK-Mac-Shipping.dylib -output release/macosx/libEOSSDK-Mac-Shipping.dylib
+    - x86_64-apple-${OSXCROSS_TARGET}-lipo -create debug/macosx*/libEOSSDK-Mac-Shipping.dylib -output debug/macosx/libEOSSDK-Mac-Shipping.dylib
+
+  artifacts:
+    paths:
+      - release/
+      - debug/
+    expire_in: 1 day
+
+build:launcher:
+  stage: build
+  image: mono:latest
+
+  script:
+    - cd NemirtingasEmuLauncher
+    - nuget restore -PackagesDirectory packages
+    - msbuild -p:Configuration=Release
+    - mkdir ../release
+    - mv bin/Release/NemirtingasEmuLauncher.exe bin/Release/*.dll ../release/
+    - exit 0
+
+  artifacts:
+    paths:
+      - release
+    expire_in: 1 day
+
+sign:
+  image: alpine:3.4
+  stage: sign
+  dependencies:
+    - build:windows
+    - build:linux
+    - build:macosx
+    - build:launcher
+    
+  script:
+    - apk update && apk add libcurl curl-dev openssl-dev autoconf build-base automake libtool git openssl
+    - git clone https://github.com/dmcgowan/osslsigncode
+    - cd osslsigncode
+    - ./autogen.sh && ./configure && make && make install && make clean || exit 1
+    - cd ..
+    - C="US"
+    - O="Epic Games Inc."
+    - L="Bellevue"
+    - ST="WA"
+    - SUBJECT="/C=$C/O=$O/L=$L/ST=$ST"
+    - KEY="cert.key"
+    - CERT="cert.pem"
+    - DAYS="365"
+    - ALGO="sha256"
+    - BITS="2048"
+    - PASSW=azerty
+    - openssl req -x509 -"$ALGO" -passin "pass:$PASSW" -passout "pass:$PASSW" -newkey rsa:"$BITS" -subj "$SUBJECT" -keyout "$KEY" -out "$CERT" -days "$DAYS"
+    - osslsigncode sign -certs "$CERT" -h "$ALGO" -key "$KEY" -pass "$PASSW" -in release/win32/EOSSDK-Win32-Shipping.dll -out EPIC_API EOSSDK-Win32-Shipping.dll
+    - mv steamclient.dll release/win32/
+    - osslsigncode sign -certs "$CERT" -h "$ALGO" -key "$KEY" -pass "$PASSW" -in release/win64/EOSSDK-Win64-Shipping.dll -out EPIC_API EOSSDK-Win64-Shipping.dll
+    - mv steamclient64.dll release/win64/
+
+  artifacts:
+    paths:
+      - release/
+      - debug/
+  only:
+    - master
+
+deploy:
+  image: alpine
+  stage: deploy
+  dependencies:
+    - sign
+  script:
+    - echo $CI_JOB_ID > job_id
+    
+  artifacts:
+    paths:
+      - release/
+      - debug/
+      - job_id
+  only:
+    - master
+
+pages:
+  image: alpine
+  stage: pages
+  dependencies:
+    - deploy
+  script:
+    - DEPLOY_ALL_JOBID=$(cat job_id)
+    - sed -i "s|X_LATEST_BUILD_URL_X|https://gitlab.com/Nemirtingas/nemirtingas_epic_emu/-/jobs/$DEPLOY_ALL_JOBID/artifacts/download|g" public/index.html
+    - sed -i "s|X_LATEST_BUILD_COMMIT_HASH_X|$CI_COMMIT_SHA|g" public/index.html
+
+  artifacts:
+    paths:
+      - public/
+  only:
+    - master
+
