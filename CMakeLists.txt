@@ -114,6 +114,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(Protobuf_SRC_ROOT_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/protobuf-src/" CACHE PATH "Protobuf root folder")
 
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Debug or Release")
+
 #option(GLEW_USE_STATIC_LIBS "Use GLEW static libs" ON)
 #set(Glew_INCLUDE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/glew/glew-src/include/" CACHE PATH "GLEW include folder")
 
