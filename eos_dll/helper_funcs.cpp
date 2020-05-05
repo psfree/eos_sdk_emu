@@ -38,7 +38,7 @@ LOCAL_API std::recursive_mutex& global_mutex()
     return global_mutex;
 }
 
-LOCAL_API static void randombytes(char* buf, size_t len)
+LOCAL_API static void randombytes(uint8_t* buf, size_t len)
 {
     // uniform integer distribution
     std::uniform_int_distribution<int64_t> dis;

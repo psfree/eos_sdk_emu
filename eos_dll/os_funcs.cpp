@@ -224,15 +224,56 @@ LOCAL_API std::chrono::system_clock::time_point get_boottime()
     return boottime;
 }
 
+LOCAL_API std::string process_path(std::string const& path)
+{
+    std::string canonicalized_path(path);
+    size_t pos;
+    size_t size;
+
+    std::replace(canonicalized_path.begin(), canonicalized_path.end(), '/', '\\');
+
+    while ((pos = canonicalized_path.find("\\\\")) != std::string::npos)
+        canonicalized_path.replace(pos, 2, "\\");
+
+    while ((pos = canonicalized_path.find("\\.\\")) != std::string::npos)
+        canonicalized_path.replace(pos, 3, "\\");
+
+    while ((pos = canonicalized_path.find("\\..")) != std::string::npos)
+    {
+        if (pos == 0)
+            size = 3;
+        else
+        {
+            size_t parent_pos = canonicalized_path.rfind("\\", pos - 1);
+            if (parent_pos == std::string::npos)
+            {
+                size = pos + 3;
+                pos = 0;
+            }
+            else
+            {
+                size = 3 + pos - parent_pos;
+                pos = parent_pos;
+            }
+        }
+
+        canonicalized_path.replace(pos, size, "");
+    }
+
+    while ((pos = canonicalized_path.find("\\.")) != std::string::npos)
+        canonicalized_path.replace(pos, 2, "");
+
+    return canonicalized_path;
+}
+
 LOCAL_API std::string canonical_path(std::string const& path)
 {
     WCHAR pathout[4096];
 
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    std::wstring wide = converter.from_bytes(path);
+    std::wstring wide = string_to_wstring(path);
 
     if (GetFullPathNameW(wide.c_str(), sizeof(pathout) / sizeof(*pathout), pathout, nullptr) > 0)
-        return converter.to_bytes(pathout);
+        return wstring_to_string(pathout);
 
     throw std::exception("Failed retrieve canonincal path\n");
 }
@@ -241,15 +282,14 @@ LOCAL_API std::string get_env_var(std::string const& var)
 {
     WCHAR env_variable[1024];
 
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    std::wstring wide = converter.from_bytes(var);
+    std::wstring wide = string_to_wstring(var);
 
-    DWORD ret = GetEnvironmentVariableW(wide.c_str(), env_variable, sizeof(env_variable) / sizeof(*env_variable));
+    DWORD ret = GetEnvironmentVariableW(wide.c_str(), env_variable, sizeof(env_variable)/sizeof(*env_variable));
     if (ret <= 0)
         return std::string();
 
     env_variable[ret] = 0;
-    return converter.to_bytes(env_variable);
+    return wstring_to_string(env_variable);
 }
 
 LOCAL_API std::string get_userdata_path()
@@ -282,9 +322,9 @@ LOCAL_API std::string get_module_path()
 {
     std::string program_path;
     char DllPath[MAX_PATH] = { 0 };
-    GetModuleFileNameA((HINSTANCE)hmodule, DllPath, MAX_PATH - 1);
+    GetModuleFileNameA((HINSTANCE)hmodule, DllPath, MAX_PATH-1);
     program_path = DllPath;
-    program_path = program_path.substr(0, program_path.rfind(PATH_SEPARATOR) + 1);
+    program_path = program_path.substr(0, program_path.rfind(PATH_SEPARATOR)+1);
     return program_path;
 }
 
@@ -347,9 +387,8 @@ LOCAL_API bool create_folder(std::string const& _folder)
     size_t pos = 0;
     struct _stat sb;
 
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
     std::wstring sub_dir;
-    std::wstring folder = converter.from_bytes(_folder);
+    std::wstring folder = string_to_wstring(_folder);
     if (folder.empty())
         return true;
 
@@ -360,15 +399,15 @@ LOCAL_API bool create_folder(std::string const& _folder)
     {
         pos = folder.find_first_of(L"\\/", pos + 1);
         sub_dir = std::move(folder.substr(0, pos));
-        if (_wstat(sub_dir.c_str(), &sb) == 0)
+        if(_wstat(sub_dir.c_str(), &sb) == 0)
         {
-            if (!(sb.st_mode & _S_IFDIR))
+            if(!(sb.st_mode & _S_IFDIR))
             {// A subpath in the target is not a folder
                 return false;
             }
             // Folder exists
         }
-        else if (CreateDirectoryW(folder.substr(0, pos).c_str(), NULL))
+        else if(CreateDirectoryW(folder.substr(0, pos).c_str(), NULL) )
         {// Failed to create folder (no permission?)
         }
     } while (pos != std::string::npos);
@@ -378,56 +417,67 @@ LOCAL_API bool create_folder(std::string const& _folder)
 
 LOCAL_API bool delete_file(std::string const& _path)
 {
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    std::wstring path = converter.from_bytes(_path);
+    std::wstring path = string_to_wstring(_path);
     return DeleteFileW(path.c_str()) == TRUE;
 }
 
-LOCAL_API std::vector<std::string> list_files(std::string const& path, bool recursive)
+static std::vector<std::wstring> list_files(std::wstring const& path, bool recursive)
 {
-    std::vector<std::string> files;
-
-    WIN32_FIND_DATAA hfind_data;
+    std::vector<std::wstring> files;
+    WIN32_FIND_DATAW hfind_data;
     HANDLE hfind = INVALID_HANDLE_VALUE;
 
-    std::string search_path = path;
+    std::wstring search_path = path;
 
-    if (*path.rbegin() != PATH_SEPARATOR)
-        search_path += PATH_SEPARATOR;
+    if (*path.rbegin() != L'\\')
+        search_path += L'\\';
 
-    search_path += '*';
+    search_path += L'*';
 
     // Start iterating over the files in the path directory.
-    hfind = FindFirstFileA(search_path.c_str(), &hfind_data);
+    hfind = FindFirstFileW(search_path.c_str(), &hfind_data);
     if (hfind != INVALID_HANDLE_VALUE)
     {
         search_path.pop_back();
         do // Managed to locate and create an handle to that folder.
         {
-            if (strcmp(".", hfind_data.cFileName) == 0
-                || strcmp("..", hfind_data.cFileName) == 0)
+            if (wcscmp(L".", hfind_data.cFileName) == 0
+                || wcscmp(L"..", hfind_data.cFileName) == 0)
                 continue;
 
             if (hfind_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             {
                 if (recursive)
                 {
-                    std::string dir_name = hfind_data.cFileName;
+                    std::wstring dir_name = hfind_data.cFileName;
 
-                    std::vector<std::string> sub_files = std::move(list_files(search_path + dir_name, true));
-                    std::transform(sub_files.begin(), sub_files.end(), std::back_inserter(files), [&dir_name](std::string& file_name)
-                        {
-                            return dir_name + PATH_SEPARATOR + file_name;
-                        });
+                    std::vector<std::wstring> sub_files = std::move(list_files(search_path + dir_name, true));
+                    std::transform(sub_files.begin(), sub_files.end(), std::back_inserter(files), [&dir_name](std::wstring& file_name)
+                    {
+                        return dir_name + L'\\' + file_name;
+                    });
                 }
             }
             else
             {
                 files.emplace_back(hfind_data.cFileName);
             }
-        } while (FindNextFileA(hfind, &hfind_data) == TRUE);
+        } while (FindNextFileW(hfind, &hfind_data) == TRUE);
         FindClose(hfind);
     }
+
+    return files;
+}
+
+LOCAL_API std::vector<std::string> list_files(std::string const& path, bool recursive)
+{
+    std::vector<std::string> files;
+    std::vector<std::wstring> wfiles = std::move(list_files(string_to_wstring(path), recursive));
+    
+    std::transform(wfiles.begin(), wfiles.end(), std::back_inserter(files), [](std::wstring const& file_name)
+    {
+        return wstring_to_string(file_name);
+    });
 
     return files;
 }
@@ -473,7 +523,7 @@ LOCAL_API std::string get_executable_path()
     std::string exec_path("./");
 
     void* hexecutable = dlopen(nullptr, RTLD_NOW);
-    if (hexecutable == nullptr)
+    if(hexecutable == nullptr)
         return exec_path;
 
 
@@ -482,7 +532,7 @@ LOCAL_API std::string get_executable_path()
     struct dirent* ep;
 
     dir = opendir(self.c_str());
-    if (dir == nullptr)
+    if(dir == nullptr)
     {
         dlclose(hexecutable);
         return exec_path;
@@ -490,8 +540,8 @@ LOCAL_API std::string get_executable_path()
 
     while ((ep = readdir(dir)))
     {
-        if (strcmp(ep->d_name, ".") == 0
-            || strcmp(ep->d_name, "..") == 0)
+        if (strcmp(ep->d_name, ".")  == 0
+         || strcmp(ep->d_name, "..") == 0)
             continue;
 
         std::string bounds(ep->d_name);
@@ -501,11 +551,11 @@ LOCAL_API std::string get_executable_path()
             continue;
 
         bounds[pos] = ' ';
-        void* start, * end;
+        void *start, *end;
 
         sstr >> start >> end;
 
-        if (start <= hexecutable && hexecutable <= end)
+        if( start <= hexecutable && hexecutable <= end )
         {
             std::string path = self + PATH_SEPARATOR + ep->d_name;
             char link[1024] = {};
@@ -519,7 +569,7 @@ LOCAL_API std::string get_executable_path()
 
     closedir(dir);
     dlclose(hexecutable);
-
+    
     exec_path = exec_path.substr(0, exec_path.rfind(PATH_SEPARATOR) + 1);
     LOG(Log::LogLevel::INFO, "%s", exec_path.c_str());
     return exec_path;
@@ -556,7 +606,7 @@ LOCAL_API std::chrono::system_clock::time_point get_boottime()
         struct timeval boottime_tv;
         size_t len = sizeof(boottime_tv);
         int mib[2] = { CTL_KERN, KERN_BOOTTIME };
-        if (sysctl(mib, sizeof(mib) / sizeof(*mib), &boottime_tv, &len, nullptr, 0) < 0)
+        if (sysctl(mib, sizeof(mib)/sizeof(*mib), &boottime_tv, &len, nullptr, 0) < 0)
             return boottime;
 
         boottime = std::chrono::system_clock::time_point(
@@ -580,7 +630,7 @@ LOCAL_API std::string get_executable_path()
 
     if (task_info(t, TASK_DYLD_INFO, reinterpret_cast<task_info_t>(&dyld_info), &count) == KERN_SUCCESS)
     {
-        dyld_all_image_infos* dyld_img_infos = reinterpret_cast<dyld_all_image_infos*>(dyld_info.all_image_info_addr);
+        dyld_all_image_infos *dyld_img_infos = reinterpret_cast<dyld_all_image_infos*>(dyld_info.all_image_info_addr);
         for (int i = 0; i < dyld_img_infos->infoArrayCount; ++i)
         {// For now I don't know how to be sure to get the executable path
          // but looks like the 1st entry is the executable path
@@ -616,7 +666,7 @@ void shared_library_unload(void* hmodule)
 
 }
 
-LOCAL_API std::string canonical_path(std::string const& path)
+LOCAL_API std::string process_path(std::string const& path)
 {
     std::string canonicalized_path(path);
     size_t pos;
@@ -656,6 +706,11 @@ LOCAL_API std::string canonical_path(std::string const& path)
     return canonicalized_path;
 }
 
+LOCAL_API std::string canonical_path(std::string const& path)
+{
+    return process_path(path);
+}
+
 LOCAL_API std::string get_env_var(std::string const& name)
 {
     char* env = getenv(name.c_str());
@@ -665,7 +720,7 @@ LOCAL_API std::string get_env_var(std::string const& name)
 LOCAL_API std::string get_module_path()
 {
     std::string library_path = "./";
-
+    
     Dl_info infos;
     dladdr(hmodule, &infos);
     library_path = infos.dli_fname;
@@ -788,29 +843,29 @@ LOCAL_API std::vector<std::string> list_files(std::string const& path, bool recu
 
     while ((entry = readdir(dir)) != nullptr)
     {
-        if (strcmp(entry->d_name, ".") == 0
-            || strcmp(entry->d_name, "..") == 0)
+        if (strcmp(entry->d_name, ".")  == 0
+         || strcmp(entry->d_name, "..") == 0)
             continue;
 
-        if (entry->d_type == DT_DIR)
+        if(entry->d_type == DT_DIR)
         {
             if (recursive)
             {
                 std::string dir_name = entry->d_name;
                 std::vector<std::string> sub_files = std::move(list_files(search_path + dir_name, true));
                 std::transform(sub_files.begin(), sub_files.end(), std::back_inserter(files), [&dir_name](std::string& file_name)
-                    {
-                        return dir_name + PATH_SEPARATOR + file_name;
-                    });
+                {
+                    return dir_name + PATH_SEPARATOR + file_name;
+                });
             }
         }
-        else if (entry->d_type == DT_REG)
+        else if(entry->d_type == DT_REG)
         {
             files.emplace_back(entry->d_name);
         }
     }
 
-    closedir(dir);
+    closedir(dir);   
 
     return files;
 }

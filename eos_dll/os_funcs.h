@@ -64,6 +64,7 @@ LOCAL_API std::string get_module_path();
 LOCAL_API std::vector<PortableAPI::ipv4_addr> get_broadcasts();
 
 // Filesystem related functions
+LOCAL_API std::string process_path(std::string const& path);
 LOCAL_API std::string canonical_path(std::string const& path);
 LOCAL_API bool create_folder(std::string const& folder);
 LOCAL_API std::string get_path_folder(std::string const& path);

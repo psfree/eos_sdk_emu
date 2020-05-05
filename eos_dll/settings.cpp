@@ -96,8 +96,8 @@ void Settings::load_settings()
         while (clean_savepath)
         {
             clean_savepath = false;
-            std::string tmp = savepath;
-            if (tmp != trim(savepath))
+            std::string tmp = trim(savepath);
+            if (tmp != savepath)
             {
                 clean_savepath = true;
                 save_settings = true;
