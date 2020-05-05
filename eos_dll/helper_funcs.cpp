@@ -90,7 +90,7 @@ LOCAL_API std::string generate_account_id()
     return epicid.to_string();
 }
 
-LOCAL_API std::string generate_account_idd_from_name(std::string const& username)
+LOCAL_API std::string generate_account_id_from_name(std::string const& username)
 {
     epicid_t epicid = {};
     epicid_t base = {};
@@ -102,12 +102,15 @@ LOCAL_API std::string generate_account_idd_from_name(std::string const& username
         if ((base.part1 + 0x0000001201030307ULL) < base.part1)
             base.part2 += static_cast<uint64_t>(static_cast<double>(std::numeric_limits<uint64_t>::max()) - base.part1 + static_cast<double>(0x0000001201030307));
 
+        base.part1 += 0x0000001201030307ULL;
+
         i = 0;
         std::for_each(username.begin(), username.end(), [&epicid, &i](const char& c)
         {
             uint8_t b = static_cast<uint8_t>(c);
-            reinterpret_cast<uint8_t*>(&epicid)[i++ % sizeof(epicid)] ^= (b + i * 27);
-            reinterpret_cast<uint8_t*>(&epicid)[i   % sizeof(epicid)] ^= (b - i * 8);
+            epicid.id[i   % sizeof(epicid.id)] ^= (b + i * 27);
+            epicid.id[(sizeof(epicid.id)-1) - i % sizeof(epicid.id)] ^= (b - i * 8);
+            ++i;
         });
     }
 
@@ -116,20 +119,12 @@ LOCAL_API std::string generate_account_idd_from_name(std::string const& username
 
 LOCAL_API EOS_EpicAccountIdDetails generate_epic_id_user()
 {
-    epicid_t epicid = {};
-    while(epicid.part1 == 0 && epicid.part2 == 0)
-        generate_account_id();
-
-    return epicid.to_string();
+    return generate_account_id();
 }
 
 LOCAL_API EOS_EpicAccountIdDetails generate_epic_id_user_from_name(std::string const& username)
 {
-    epicid_t epicid = {};
-    while (epicid.part1 == 0 && epicid.part2 == 0)
-        generate_account_idd_from_name(username);
-
-    return epicid.to_string();
+    return generate_account_id_from_name(username);
 }
 
 LOCAL_API void fatal_throw(const char* msg)
