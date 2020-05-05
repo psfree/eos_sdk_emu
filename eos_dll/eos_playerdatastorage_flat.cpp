@@ -17,7 +17,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "eos_playerdatastorage.h"
+#include "eossdk_playerdatastorage.h"
 
 using namespace sdk;
 

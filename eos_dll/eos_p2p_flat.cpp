@@ -17,7 +17,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "eos_p2p.h"
+#include "eossdk_p2p.h"
 
 using namespace sdk;
 

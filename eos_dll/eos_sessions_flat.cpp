@@ -17,7 +17,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "eos_sessions.h"
+#include "eossdk_sessions.h"
 
 using namespace sdk;
 

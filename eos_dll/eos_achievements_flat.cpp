@@ -17,7 +17,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "eos_achievements.h"
+#include "eossdk_achievements.h"
 
 using namespace sdk;
 

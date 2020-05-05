@@ -19,7 +19,7 @@
 
 #include "callback_manager.h"
 #include "network.h"
-#include "eos_platform.h"
+#include "eossdk_platform.h"
 
 constexpr static std::chrono::seconds cleanup_timeout(60);
 

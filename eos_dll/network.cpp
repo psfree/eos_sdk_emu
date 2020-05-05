@@ -18,7 +18,7 @@
  */
 
 #include "network.h"
-#include "eos_platform.h"
+#include "eossdk_platform.h"
 
 using namespace PortableAPI;
 

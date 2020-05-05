@@ -17,7 +17,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "eos_friends.h"
+#include "eossdk_friends.h"
 
 using namespace sdk;
 
@@ -42,7 +42,7 @@ EOS_DECLARE_FUNC(void) EOS_Friends_QueryFriends(EOS_HFriends Handle, const EOS_F
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Friends*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Friends*>(Handle);
 }
 
 /**
@@ -57,7 +57,7 @@ EOS_DECLARE_FUNC(void) EOS_Friends_SendInvite(EOS_HFriends Handle, const EOS_Fri
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Friends*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Friends*>(Handle);
 }
 
 /**
@@ -71,7 +71,7 @@ EOS_DECLARE_FUNC(void) EOS_Friends_AcceptInvite(EOS_HFriends Handle, const EOS_F
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Friends*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Friends*>(Handle);
 }
 
 /**
@@ -85,7 +85,7 @@ EOS_DECLARE_FUNC(void) EOS_Friends_RejectInvite(EOS_HFriends Handle, const EOS_F
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Friends*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Friends*>(Handle);
 }
 
 /**
@@ -100,7 +100,7 @@ EOS_DECLARE_FUNC(int32_t) EOS_Friends_GetFriendsCount(EOS_HFriends Handle, const
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Friends*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Friends*>(Handle);
     return 0;
 }
 
@@ -119,7 +119,7 @@ EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_Friends_GetFriendAtIndex(EOS_HFriends Ha
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Friends*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Friends*>(Handle);
     return nullptr;
 }
 
@@ -139,7 +139,7 @@ EOS_DECLARE_FUNC(EOS_EFriendsStatus) EOS_Friends_GetStatus(EOS_HFriends Handle, 
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Friends*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Friends*>(Handle);
     return EOS_EFriendsStatus::EOS_FS_Friends;
 }
 
@@ -155,7 +155,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Friends_AddNotifyFriendsUpdate(EOS_HFri
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Friends*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Friends*>(Handle);
     return 0;
 }
 
@@ -168,5 +168,5 @@ EOS_DECLARE_FUNC(void) EOS_Friends_RemoveNotifyFriendsUpdate(EOS_HFriends Handle
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Friends*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Friends*>(Handle);
 }

@@ -17,7 +17,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "eos_stats.h"
+#include "eossdk_stats.h"
 
 using namespace sdk;
 

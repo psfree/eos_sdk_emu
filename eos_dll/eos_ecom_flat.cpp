@@ -17,7 +17,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "eos_ecom.h"
+#include "eossdk_ecom.h"
 
 using namespace sdk;
 
@@ -43,7 +43,7 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_QueryOwnership(EOS_HEcom Handle, const EOS_Ecom_
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
 }
 
 /**
@@ -58,7 +58,7 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_QueryOwnershipToken(EOS_HEcom Handle, const EOS_
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
 }
 
 /**
@@ -76,7 +76,7 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_QueryEntitlements(EOS_HEcom Handle, const EOS_Ec
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
 }
 
 /**
@@ -91,7 +91,7 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_QueryOffers(EOS_HEcom Handle, const EOS_Ecom_Que
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
 }
 
 /**
@@ -110,7 +110,7 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_Checkout(EOS_HEcom Handle, const EOS_Ecom_Checko
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
 }
 
 /**
@@ -125,7 +125,7 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_RedeemEntitlements(EOS_HEcom Handle, const EOS_E
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
 }
 
 /**
@@ -141,7 +141,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetEntitlementsCount(EOS_HEcom Handle, const
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return 0;
 }
 
@@ -158,7 +158,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetEntitlementsByNameCount(EOS_HEcom Handle,
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return 0;
 }
 
@@ -179,7 +179,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementByIndex(EOS_HEcom Handle, 
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -202,7 +202,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementByNameAndIndex(EOS_HEcom H
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -224,7 +224,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementById(EOS_HEcom Handle, con
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -241,7 +241,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetOfferCount(EOS_HEcom Handle, const EOS_Ec
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return 0;
 }
 
@@ -264,7 +264,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyOfferByIndex(EOS_HEcom Handle, const 
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -287,7 +287,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyOfferById(EOS_HEcom Handle, const EOS
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -300,7 +300,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetOfferItemCount(EOS_HEcom Handle, const EO
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return 0;
 }
 
@@ -323,7 +323,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyOfferItemByIndex(EOS_HEcom Handle, co
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -346,7 +346,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyItemById(EOS_HEcom Handle, const EOS_
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -359,7 +359,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetOfferImageInfoCount(EOS_HEcom Handle, con
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return 0;
 }
 
@@ -380,7 +380,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyOfferImageInfoByIndex(EOS_HEcom Handl
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -393,7 +393,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetItemImageInfoCount(EOS_HEcom Handle, cons
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return 0;
 }
 
@@ -414,7 +414,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyItemImageInfoByIndex(EOS_HEcom Handle
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -427,7 +427,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetItemReleaseCount(EOS_HEcom Handle, const 
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return 0;
 }
 
@@ -448,7 +448,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyItemReleaseByIndex(EOS_HEcom Handle, 
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -464,7 +464,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetTransactionCount(EOS_HEcom Handle, const 
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return 0;
 }
 
@@ -484,7 +484,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyTransactionByIndex(EOS_HEcom Handle, 
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -504,7 +504,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyTransactionById(EOS_HEcom Handle, con
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -525,7 +525,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_Transaction_GetTransactionId(EOS_Ecom_HTr
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -542,7 +542,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_Transaction_GetEntitlementsCount(EOS_Ecom_HT
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return 0;
 }
 
@@ -563,7 +563,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_Transaction_CopyEntitlementByIndex(EOS_Ec
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Ecom*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 

@@ -17,7 +17,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "eos_presence.h"
+#include "eossdk_presence.h"
 
 using namespace sdk;
 

@@ -17,7 +17,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "eos_auth.h"
+#include "eossdk_auth.h"
 
 using namespace sdk;
 

@@ -17,7 +17,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "eos_connect.h"
+#include "eossdk_connect.h"
 
 using namespace sdk;
 

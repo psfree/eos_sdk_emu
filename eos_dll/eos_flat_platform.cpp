@@ -17,7 +17,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "eos_platform.h"
+#include "eossdk_platform.h"
 
 using namespace sdk;
 

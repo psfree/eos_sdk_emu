@@ -19,7 +19,7 @@
 
 #include "common_includes.h"
 
-#include "eos_platform.h"
+#include "eossdk_platform.h"
 #include "settings.h"
 
 /**
