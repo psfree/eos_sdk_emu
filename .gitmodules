@@ -5,4 +5,3 @@
 [submodule "Socket"]
 	path = extra/Socket
 	url = https://gitlab.com/Nemirtingas/Socket.git
-
