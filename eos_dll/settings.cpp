@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Nemirtingas
+ * Copyright (C) 2020 Nemirtingas
  * This file is part of the Nemirtingas's Epic Emulator
  *
  * The Nemirtingas's Epic Emulator is free software; you can redistribute it
@@ -65,8 +65,14 @@ void Settings::load_settings()
 
     bool save_settings = false;
 
-    userid._id     = get_setting(settings, "epicid"        , save_settings, std::string("0123456789ABCDEF0123456789ABCDEF"));
     username       = get_setting(settings, "username"      , save_settings, std::string(u8"DefaultName"));
+    if (username.empty() || !utf8::is_valid(username.begin(), username.end()))
+        username = u8"DefaultName";
+
+    userid = get_setting(settings, "epicid", save_settings, std::string("0x0123456789ABCDEF0123456789ABCDEF"));
+    while (!userid.IsValid())
+        userid = generate_epic_id_user_from_name(username);
+
     language       = get_setting(settings, "language"      , save_settings, std::string("english"));
     languages      = get_setting(settings, "languages"     , save_settings, std::string("english"));
     gamename       = get_setting(settings, "gamename"      , save_settings, std::string("Unreal"));
@@ -135,7 +141,7 @@ void Settings::load_settings()
     savepath += PATH_SEPARATOR;
     savepath += emu_savepath;
     savepath += PATH_SEPARATOR;
-    savepath += userid._id;
+    savepath += userid.to_string();
     savepath += PATH_SEPARATOR;
     savepath += gamename;
 

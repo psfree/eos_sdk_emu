@@ -17,8 +17,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __INCLUDED_COMMON_INCLUDES_H__
-#define __INCLUDED_COMMON_INCLUDES_H__
+#pragma once
 
 #include <utils.h>
 #include <network_proto.pb.h>
@@ -84,6 +83,8 @@
 #include <nlohmann/json.hpp>
 #include <nlohmann/fifo_map.hpp>
 
+#include <utfcpp/utf8.h>
+
 #include <thread>
 #include <mutex>
 #include <limits>
@@ -114,5 +115,3 @@
 #include "callback_manager.h"
 
 static constexpr char emu_savepath[] = "NemirtingasEpicEmu";
-
-#endif

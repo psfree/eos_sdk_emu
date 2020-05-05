@@ -43,7 +43,7 @@ EOS_DECLARE_FUNC(void) EOS_Presence_QueryPresence(EOS_HPresence Handle, const EO
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Presence*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
 }
 
 /**
@@ -56,7 +56,7 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_Presence_HasPresence(EOS_HPresence Handle, const 
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Presence*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     return EOS_TRUE;
 }
 
@@ -73,7 +73,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Presence_CopyPresence(EOS_HPresence Handle, co
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Presence*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -96,7 +96,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Presence_CreatePresenceModification(EOS_HPrese
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Presence*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -114,7 +114,7 @@ EOS_DECLARE_FUNC(void) EOS_Presence_SetPresence(EOS_HPresence Handle, const EOS_
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Presence*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
 }
 
 /**
@@ -132,7 +132,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Presence_AddNotifyOnPresenceChanged(EOS
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Presence*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     return 0;
 }
 
@@ -145,7 +145,7 @@ EOS_DECLARE_FUNC(void) EOS_Presence_RemoveNotifyOnPresenceChanged(EOS_HPresence 
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Presence*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
 }
 
 /**
@@ -162,7 +162,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Presence_AddNotifyJoinGameAccepted(EOS_
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Presence*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     return 0;
 }
 
@@ -175,7 +175,7 @@ EOS_DECLARE_FUNC(void) EOS_Presence_RemoveNotifyJoinGameAccepted(EOS_HPresence H
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Presence*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
 }
 
 /**
@@ -202,7 +202,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Presence_GetJoinInfo(EOS_HPresence Handle, con
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Presence*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -222,7 +222,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetStatus(EOS_HPresenceMo
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Presence*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -239,7 +239,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetRawRichText(EOS_HPrese
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Presence*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -258,7 +258,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetData(EOS_HPresenceModi
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Presence*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -277,7 +277,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_DeleteData(EOS_HPresenceM
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Presence*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -294,7 +294,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetJoinInfo(EOS_HPresence
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Presence*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 

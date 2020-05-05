@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Nemirtingas
+ * Copyright (C) 2020 Nemirtingas
  * This file is part of the Nemirtingas's Epic Emulator
  *
  * The Nemirtingas's Epic Emulator is free software; you can redistribute it
@@ -270,10 +270,16 @@ LOCAL_API std::string canonical_path(std::string const& path)
 {
     WCHAR pathout[4096];
 
-    std::wstring wide = string_to_wstring(path);
+    std::wstring wide;
+    utf8::utf8to16(path.begin(), path.end(), std::back_inserter(wide));
 
-    if (GetFullPathNameW(wide.c_str(), sizeof(pathout) / sizeof(*pathout), pathout, nullptr) > 0)
-        return wstring_to_string(pathout);
+    DWORD ret = GetFullPathNameW(wide.c_str(), sizeof(pathout) / sizeof(*pathout), pathout, nullptr);
+    if (ret > 0)
+    {
+        std::string res;
+        utf8::utf16to8(pathout, pathout + ret, std::back_inserter(res));
+        return res;
+    }
 
     throw std::exception("Failed retrieve canonincal path\n");
 }
@@ -282,14 +288,17 @@ LOCAL_API std::string get_env_var(std::string const& var)
 {
     WCHAR env_variable[1024];
 
-    std::wstring wide = string_to_wstring(var);
+    std::wstring wide;
+    utf8::utf8to16(var.begin(), var.end(), std::back_inserter(wide));
 
     DWORD ret = GetEnvironmentVariableW(wide.c_str(), env_variable, sizeof(env_variable)/sizeof(*env_variable));
     if (ret <= 0)
         return std::string();
 
     env_variable[ret] = 0;
-    return wstring_to_string(env_variable);
+    std::string res;
+    utf8::utf16to8(env_variable, env_variable+ret, std::back_inserter(res));
+    return res;
 }
 
 LOCAL_API std::string get_userdata_path()
@@ -388,7 +397,8 @@ LOCAL_API bool create_folder(std::string const& _folder)
     struct _stat sb;
 
     std::wstring sub_dir;
-    std::wstring folder = string_to_wstring(_folder);
+    std::wstring folder;
+    utf8::utf8to16(_folder.begin(), _folder.end(), std::back_inserter(folder));
     if (folder.empty())
         return true;
 
@@ -417,7 +427,8 @@ LOCAL_API bool create_folder(std::string const& _folder)
 
 LOCAL_API bool delete_file(std::string const& _path)
 {
-    std::wstring path = string_to_wstring(_path);
+    std::wstring path;
+    utf8::utf8to16(_path.begin(), _path.end(), std::back_inserter(path));
     return DeleteFileW(path.c_str()) == TRUE;
 }
 
@@ -472,11 +483,15 @@ static std::vector<std::wstring> list_files(std::wstring const& path, bool recur
 LOCAL_API std::vector<std::string> list_files(std::string const& path, bool recursive)
 {
     std::vector<std::string> files;
-    std::vector<std::wstring> wfiles = std::move(list_files(string_to_wstring(path), recursive));
+    std::wstring wpath;
+    utf8::utf8to16(path.begin(), path.end(), std::back_inserter(wpath));
+    std::vector<std::wstring> wfiles = std::move(list_files(wpath, recursive));
     
-    std::transform(wfiles.begin(), wfiles.end(), std::back_inserter(files), [](std::wstring const& file_name)
+    std::transform(wfiles.begin(), wfiles.end(), std::back_inserter(files), [](std::wstring const& wfile_name)
     {
-        return wstring_to_string(file_name);
+        std::string file_name;
+        utf8::utf16to8(wfile_name.begin(), wfile_name.end(), std::back_inserter(file_name));
+        return file_name;
     });
 
     return files;

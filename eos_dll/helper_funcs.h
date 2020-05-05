@@ -31,8 +31,10 @@ using local_lock_t = std::lock_guard<std::recursive_mutex>;
 LOCAL_API std::random_device& get_rd();
 LOCAL_API std::mt19937_64& get_gen();
 
-//LOCAL_API uint64_t generate_account_id();
-//LOCAL_API CSteamID generate_steam_id_user();
+LOCAL_API std::string generate_account_id();
+LOCAL_API std::string generate_account_id_from_name(std::string const& username);
+LOCAL_API EOS_EpicAccountIdDetails generate_epic_id_user();
+LOCAL_API EOS_EpicAccountIdDetails generate_epic_id_user_from_name(std::string const& username);
 //LOCAL_API CSteamID generate_steam_anon_user();
 //LOCAL_API CSteamID generate_steam_id_server();
 //LOCAL_API CSteamID generate_steam_id_anonserver();

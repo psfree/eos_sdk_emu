@@ -42,7 +42,7 @@ EOS_DECLARE_FUNC(void) EOS_Achievements_QueryDefinitions(EOS_HAchievements Handl
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Achievements*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
 }
 
 /**
@@ -58,7 +58,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Achievements_GetAchievementDefinitionCount(EOS_HA
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Achievements*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return 0;
 }
 
@@ -78,7 +78,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByIndex(
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Achievements*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -98,7 +98,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByAchiev
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Achievements*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -116,7 +116,7 @@ EOS_DECLARE_FUNC(void) EOS_Achievements_QueryPlayerAchievements(EOS_HAchievement
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Achievements*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
 }
 
 /**
@@ -132,7 +132,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Achievements_GetPlayerAchievementCount(EOS_HAchie
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Achievements*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return 0;
 }
 
@@ -152,7 +152,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyPlayerAchievementByIndex(EOS_
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Achievements*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -172,7 +172,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyPlayerAchievementByAchievemen
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Achievements*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -190,7 +190,7 @@ EOS_DECLARE_FUNC(void) EOS_Achievements_UnlockAchievements(EOS_HAchievements Han
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Achievements*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
 }
 
 /**
@@ -206,7 +206,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Achievements_GetUnlockedAchievementCount(EOS_HAch
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Achievements*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return 0;
 }
 
@@ -226,7 +226,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyUnlockedAchievementByIndex(EO
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Achievements*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -246,7 +246,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyUnlockedAchievementByAchievem
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Achievements*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -266,7 +266,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Achievements_AddNotifyAchievementsUnloc
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Achievements*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return 0;
 }
 
@@ -281,7 +281,7 @@ EOS_DECLARE_FUNC(void) EOS_Achievements_RemoveNotifyAchievementsUnlocked(EOS_HAc
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Achievements*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
 }
 
 /**

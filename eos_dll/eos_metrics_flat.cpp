@@ -17,7 +17,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "eos_metrics.h"
+#include "eossdk_metrics.h"
 
 using namespace sdk;
 
@@ -35,7 +35,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Metrics_BeginPlayerSession(EOS_HMetrics Handle
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Metrics*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Metrics*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -53,6 +53,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Metrics_EndPlayerSession(EOS_HMetrics Handle, 
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Metrics*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Metrics*>(Handle);
     return EOS_EResult::EOS_Success;
 }

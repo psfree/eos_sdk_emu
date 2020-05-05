@@ -37,7 +37,7 @@ EOS_DECLARE_FUNC(void) EOS_Stats_IngestStat(EOS_HStats Handle, const EOS_Stats_I
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Stats*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Stats*>(Handle);
 }
 
 /**
@@ -54,7 +54,7 @@ EOS_DECLARE_FUNC(void) EOS_Stats_QueryStats(EOS_HStats Handle, const EOS_Stats_Q
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Stats*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Stats*>(Handle);
 }
 
 /**
@@ -70,7 +70,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Stats_GetStatsCount(EOS_HStats Handle, const EOS_
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Stats*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Stats*>(Handle);
     return 0;
 }
 
@@ -90,7 +90,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Stats_CopyStatByIndex(EOS_HStats Handle, const
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Stats*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Stats*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -110,7 +110,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Stats_CopyStatByName(EOS_HStats Handle, const 
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Stats*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Stats*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 

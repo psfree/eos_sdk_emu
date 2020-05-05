@@ -17,20 +17,34 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __INCLUDED_EPICACCOUNTIDDETAILS_H__
-#define __INCLUDED_EPICACCOUNTIDDETAILS_H__
+#pragma once
 
 #include "common_includes.h"
 
 struct EOS_EpicAccountIdDetails
 {
+private:
     std::recursive_mutex local_mutex;
+    std::string _idstr;
+    bool _valid;
 
-    std::string _id;
+public:
+    EOS_EpicAccountIdDetails();
+    EOS_EpicAccountIdDetails(std::string const& id);
+    EOS_EpicAccountIdDetails(EOS_EpicAccountIdDetails const&);
+    EOS_EpicAccountIdDetails(EOS_EpicAccountIdDetails &&) noexcept;
+    ~EOS_EpicAccountIdDetails();
+
+    EOS_EpicAccountIdDetails& operator=(std::string const&);
+    EOS_EpicAccountIdDetails& operator=(EOS_EpicAccountIdDetails const&);
+    EOS_EpicAccountIdDetails& operator=(EOS_EpicAccountIdDetails &&) noexcept;
 
     EOS_Bool IsValid();
     EOS_EResult ToString(char* outBuffer, int32_t* outBufferSize);
     void FromString(const char* accountIdStr);
-};
 
-#endif
+    std::string to_string() const;
+
+    inline bool operator ==(EOS_EpicAccountIdDetails const& other) { return (_idstr == other._idstr); }
+    inline bool operator !=(EOS_EpicAccountIdDetails const& other) { return !(*this == other); }
+};

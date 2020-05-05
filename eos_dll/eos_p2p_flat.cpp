@@ -40,7 +40,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_P2P_SendPacket(EOS_HP2P Handle, const EOS_P2P_
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_P2P*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -58,7 +58,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_P2P_GetNextReceivedPacketSize(EOS_HP2P Handle,
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_P2P*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -79,7 +79,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_P2P_ReceivePacket(EOS_HP2P Handle, const EOS_P
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_P2P*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -96,7 +96,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_P2P_AddNotifyPeerConnectionRequest(EOS_
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_P2P*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
     return 0;
 }
 
@@ -109,7 +109,7 @@ EOS_DECLARE_FUNC(void) EOS_P2P_RemoveNotifyPeerConnectionRequest(EOS_HP2P Handle
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_P2P*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
 }
 
 /**
@@ -124,7 +124,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_P2P_AddNotifyPeerConnectionClosed(EOS_H
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_P2P*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
     return 0;
 }
 
@@ -137,7 +137,7 @@ EOS_DECLARE_FUNC(void) EOS_P2P_RemoveNotifyPeerConnectionClosed(EOS_HP2P Handle,
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_P2P*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
 }
 
 /**
@@ -151,7 +151,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_P2P_AcceptConnection(EOS_HP2P Handle, const EO
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_P2P*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -166,7 +166,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_P2P_CloseConnection(EOS_HP2P Handle, const EOS
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_P2P*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -181,7 +181,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_P2P_CloseConnections(EOS_HP2P Handle, const EO
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_P2P*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -195,7 +195,7 @@ EOS_DECLARE_FUNC(void) EOS_P2P_QueryNATType(EOS_HP2P Handle, const EOS_P2P_Query
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_P2P*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
 }
 
 /**
@@ -211,6 +211,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_P2P_GetNATType(EOS_HP2P Handle, const EOS_P2P_
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_P2P*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
     return EOS_EResult::EOS_Success;
 }

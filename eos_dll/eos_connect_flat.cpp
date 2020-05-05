@@ -43,7 +43,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_Login(EOS_HConnect Handle, const EOS_Connect_
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Connect*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
 }
 
 /**
@@ -57,7 +57,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_CreateUser(EOS_HConnect Handle, const EOS_Con
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Connect*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
 }
 
 /**
@@ -71,7 +71,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_LinkAccount(EOS_HConnect Handle, const EOS_Co
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Connect*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
 }
 
 /**
@@ -105,7 +105,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_CreateDeviceId(EOS_HConnect Handle, const EOS
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Connect*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
 }
 
 /**
@@ -122,7 +122,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_DeleteDeviceId(EOS_HConnect Handle, const EOS
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Connect*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
 }
 
 /**
@@ -136,7 +136,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_QueryExternalAccountMappings(EOS_HConnect Han
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Connect*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
 }
 
 /**
@@ -150,7 +150,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_QueryProductUserIdMappings(EOS_HConnect Handl
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Connect*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
 }
 
 /**
@@ -164,7 +164,7 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_Connect_GetExternalAccountMapping(EOS_HC
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Connect*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
     return nullptr;
 }
 
@@ -187,7 +187,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_GetProductUserIdMapping(EOS_HConnect H
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Connect*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -200,7 +200,7 @@ EOS_DECLARE_FUNC(int32_t) EOS_Connect_GetLoggedInUsersCount(EOS_HConnect Handle)
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Connect*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
     return 0;
 }
 
@@ -215,7 +215,7 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_Connect_GetLoggedInUserByIndex(EOS_HConn
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Connect*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
     return nullptr;
 }
 
@@ -230,7 +230,7 @@ EOS_DECLARE_FUNC(EOS_ELoginStatus) EOS_Connect_GetLoginStatus(EOS_HConnect Handl
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Connect*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
     return EOS_ELoginStatus::EOS_LS_LoggedIn;
 }
 
@@ -251,7 +251,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Connect_AddNotifyAuthExpiration(EOS_HCo
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Connect*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
     return 0;
 }
 
@@ -264,7 +264,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_RemoveNotifyAuthExpiration(EOS_HConnect Handl
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Connect*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
 }
 
 /**
@@ -281,7 +281,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Connect_AddNotifyLoginStatusChanged(EOS
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Connect*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
     return 0;
 }
 
@@ -294,5 +294,5 @@ EOS_DECLARE_FUNC(void) EOS_Connect_RemoveNotifyLoginStatusChanged(EOS_HConnect H
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Connect*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
 }

@@ -17,7 +17,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "eos_userinfo.h"
+#include "eossdk_userinfo.h"
 
 /**
  * The UserInfo Interface is used to receive user information for Epic account IDs from the backend services and to retrieve that information once it is cached.
@@ -46,7 +46,7 @@ EOS_DECLARE_FUNC(void) EOS_UserInfo_QueryUserInfo(EOS_HUserInfo Handle, const EO
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<sdk::EOS_UserInfo*>(Handle);
+    auto pInst = reinterpret_cast<sdk::EOSSDK_UserInfo*>(Handle);
 }
 
 /**
@@ -66,7 +66,7 @@ EOS_DECLARE_FUNC(void) EOS_UserInfo_QueryUserInfoByDisplayName(EOS_HUserInfo Han
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<sdk::EOS_UserInfo*>(Handle);
+    auto pInst = reinterpret_cast<sdk::EOSSDK_UserInfo*>(Handle);
 }
 
 /**
@@ -89,7 +89,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyUserInfo(EOS_HUserInfo Handle, co
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<sdk::EOS_UserInfo*>(Handle);
+    auto pInst = reinterpret_cast<sdk::EOSSDK_UserInfo*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 

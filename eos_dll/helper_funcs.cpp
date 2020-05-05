@@ -19,6 +19,26 @@
 
 #include "helper_funcs.h"
 
+union epicid_t {
+    struct {
+        uint64_t part1;
+        uint64_t part2;
+    };
+    uint8_t id[16];
+
+    inline std::string to_string() const
+    {
+        std::stringstream sstr;
+
+        sstr << "0x" << std::hex;
+        if (part2 != 0)
+            sstr << part2;
+
+        sstr << part1;
+        return sstr.str();
+    }
+};
+
 LOCAL_API std::random_device& get_rd()
 {
     // Random device generator
@@ -59,6 +79,57 @@ LOCAL_API static void randombytes(uint8_t* buf, size_t len)
 
     // Don't forget to free it
     delete[]rand_buf;
+}
+
+LOCAL_API std::string generate_account_id()
+{
+    epicid_t epicid;
+    
+    randombytes(epicid.id, sizeof(epicid));
+
+    return epicid.to_string();
+}
+
+LOCAL_API std::string generate_account_idd_from_name(std::string const& username)
+{
+    epicid_t epicid = {};
+    epicid_t base = {};
+    uint16_t i;
+
+    while (epicid.part1 == 0 && epicid.part2 == 0)
+    {
+        epicid = base;
+        if ((base.part1 + 0x0000001201030307ULL) < base.part1)
+            base.part2 += static_cast<uint64_t>(static_cast<double>(std::numeric_limits<uint64_t>::max()) - base.part1 + static_cast<double>(0x0000001201030307));
+
+        i = 0;
+        std::for_each(username.begin(), username.end(), [&epicid, &i](const char& c)
+        {
+            uint8_t b = static_cast<uint8_t>(c);
+            reinterpret_cast<uint8_t*>(&epicid)[i++ % sizeof(epicid)] ^= (b + i * 27);
+            reinterpret_cast<uint8_t*>(&epicid)[i   % sizeof(epicid)] ^= (b - i * 8);
+        });
+    }
+
+    return epicid.to_string();
+}
+
+LOCAL_API EOS_EpicAccountIdDetails generate_epic_id_user()
+{
+    epicid_t epicid = {};
+    while(epicid.part1 == 0 && epicid.part2 == 0)
+        generate_account_id();
+
+    return epicid.to_string();
+}
+
+LOCAL_API EOS_EpicAccountIdDetails generate_epic_id_user_from_name(std::string const& username)
+{
+    epicid_t epicid = {};
+    while (epicid.part1 == 0 && epicid.part2 == 0)
+        generate_account_idd_from_name(username);
+
+    return epicid.to_string();
 }
 
 LOCAL_API void fatal_throw(const char* msg)

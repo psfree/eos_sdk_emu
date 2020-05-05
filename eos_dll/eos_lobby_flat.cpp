@@ -17,7 +17,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "eos_lobby.h"
+#include "eossdk_lobby.h"
 
 using namespace sdk;
 
@@ -47,7 +47,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_CreateLobby(EOS_HLobby Handle, const EOS_Lobby_
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
 /**
@@ -66,7 +66,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_DestroyLobby(EOS_HLobby Handle, const EOS_Lobby
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
 /**
@@ -83,7 +83,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_JoinLobby(EOS_HLobby Handle, const EOS_Lobby_Jo
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
 /**
@@ -102,7 +102,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_LeaveLobby(EOS_HLobby Handle, const EOS_Lobby_L
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
 /**
@@ -122,7 +122,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_UpdateLobbyModification(EOS_HLobby Handl
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -142,7 +142,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_UpdateLobby(EOS_HLobby Handle, const EOS_Lobby_
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
 /**
@@ -161,7 +161,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_PromoteMember(EOS_HLobby Handle, const EOS_Lobb
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
 /**
@@ -180,7 +180,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_KickMember(EOS_HLobby Handle, const EOS_Lobby_K
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
 /**
@@ -197,7 +197,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyUpdateReceived(EOS_
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return 0;
 }
 
@@ -210,7 +210,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifyLobbyUpdateReceived(EOS_HLobby Hand
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
 /**
@@ -227,7 +227,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyMemberUpdateReceive
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return 0;
 }
 
@@ -240,7 +240,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifyLobbyMemberUpdateReceived(EOS_HLobb
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
 /**
@@ -257,7 +257,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyMemberStatusReceive
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return 0;
 }
 
@@ -270,7 +270,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifyLobbyMemberStatusReceived(EOS_HLobb
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
 /**
@@ -288,7 +288,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_SendInvite(EOS_HLobby Handle, const EOS_Lobby_S
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
 /**
@@ -306,7 +306,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_RejectInvite(EOS_HLobby Handle, const EOS_Lobby
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
 /**
@@ -321,7 +321,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_QueryInvites(EOS_HLobby Handle, const EOS_Lobby
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
 /**
@@ -335,7 +335,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Lobby_GetInviteCount(EOS_HLobby Handle, const EOS
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return 0;
 }
 
@@ -355,7 +355,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_GetInviteIdByIndex(EOS_HLobby Handle, co
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -376,7 +376,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_CreateLobbySearch(EOS_HLobby Handle, con
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -394,7 +394,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyInviteReceived(EOS_
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return 0;
 }
 
@@ -407,7 +407,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifyLobbyInviteReceived(EOS_HLobby Hand
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
 /**
@@ -429,7 +429,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_CopyLobbyDetailsHandleByInviteId(EOS_HLo
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -449,7 +449,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_CopyLobbyDetailsHandle(EOS_HLobby Handle
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -472,7 +472,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_SetPermissionLevel(EOS_HLobb
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -489,7 +489,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_SetMaxMembers(EOS_HLobbyModi
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -508,7 +508,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_AddAttribute(EOS_HLobbyModif
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -525,7 +525,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_RemoveAttribute(EOS_HLobbyMo
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -543,7 +543,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_AddMemberAttribute(EOS_HLobb
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -560,7 +560,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_RemoveMemberAttribute(EOS_HL
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -580,7 +580,7 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_LobbyDetails_GetLobbyOwner(EOS_HLobbyDet
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return nullptr;
 }
 
@@ -603,7 +603,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyInfo(EOS_HLobbyDetails Handle
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -618,7 +618,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_LobbyDetails_GetAttributeCount(EOS_HLobbyDetails 
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return 0;
 }
 
@@ -641,7 +641,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyAttributeByIndex(EOS_HLobbyDe
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -664,7 +664,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyAttributeByKey(EOS_HLobbyDeta
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -679,7 +679,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_LobbyDetails_GetMemberCount(EOS_HLobbyDetails Han
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return 0;
 }
 
@@ -697,7 +697,7 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_LobbyDetails_GetMemberByIndex(EOS_HLobby
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return nullptr;
 }
 
@@ -715,7 +715,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_LobbyDetails_GetMemberAttributeCount(EOS_HLobbyDe
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return 0;
 }
 
@@ -738,7 +738,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyMemberAttributeByIndex(EOS_HL
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -761,7 +761,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyMemberAttributeByKey(EOS_HLob
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -786,7 +786,7 @@ EOS_DECLARE_FUNC(void) EOS_LobbySearch_Find(EOS_HLobbySearch Handle, const EOS_L
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
 /**
@@ -802,7 +802,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_SetLobbyId(EOS_HLobbySearch Handle
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -820,7 +820,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_SetTargetUserId(EOS_HLobbySearch H
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -829,7 +829,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_SetParameter(EOS_HLobbySearch Hand
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -838,7 +838,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_RemoveParameter(EOS_HLobbySearch H
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -855,7 +855,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_SetMaxResults(EOS_HLobbySearch Han
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -870,7 +870,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_LobbySearch_GetSearchResultCount(EOS_HLobbySearch
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return 0;
 }
 
@@ -892,7 +892,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_CopySearchResultByIndex(EOS_HLobby
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Lobby*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 

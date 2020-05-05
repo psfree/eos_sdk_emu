@@ -47,7 +47,7 @@ EOS_DECLARE_FUNC(void) EOS_UI_ShowFriends(EOS_HUI Handle, const EOS_UI_ShowFrien
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_UI*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
 }
 
 /**
@@ -66,7 +66,7 @@ EOS_DECLARE_FUNC(void) EOS_UI_HideFriends(EOS_HUI Handle, const EOS_UI_HideFrien
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_UI*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
 }
 
 /**
@@ -80,7 +80,7 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_UI_GetFriendsVisible(EOS_HUI Handle, const EOS_UI
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_UI*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_FALSE;
 }
 
@@ -101,7 +101,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_UI_SetToggleFriendsKey(EOS_HUI Handle, const E
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_UI*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -117,7 +117,7 @@ EOS_DECLARE_FUNC(EOS_UI_EKeyCombination) EOS_UI_GetToggleFriendsKey(EOS_HUI Hand
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_UI*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_UI_EKeyCombination::EOS_UIK_ModifierShift | EOS_UI_EKeyCombination::EOS_UIK_Tab;
 }
 
@@ -131,7 +131,7 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_UI_IsValidKeyCombination(EOS_HUI Handle, EOS_UI_E
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_UI*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_TRUE;
 }
 
@@ -148,7 +148,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_UI_SetDisplayPreference(EOS_HUI Handle, const 
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_UI*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -160,6 +160,6 @@ EOS_DECLARE_FUNC(EOS_UI_ENotificationLocation) EOS_UI_GetNotificationLocationPre
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_UI*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_UI_ENotificationLocation::EOS_UNL_BottomLeft;
 }

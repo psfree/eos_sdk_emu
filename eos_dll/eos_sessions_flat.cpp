@@ -47,7 +47,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CreateSessionModification(EOS_HSessio
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -67,7 +67,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_UpdateSessionModification(EOS_HSessio
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -87,7 +87,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_UpdateSession(EOS_HSessions Handle, const EO
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
 }
 
 /**
@@ -106,7 +106,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_DestroySession(EOS_HSessions Handle, const E
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
 }
 
 /**
@@ -124,7 +124,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_JoinSession(EOS_HSessions Handle, const EOS_
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
 }
 
 /**
@@ -143,7 +143,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_StartSession(EOS_HSessions Handle, const EOS
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
 }
 
 /**
@@ -162,7 +162,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_EndSession(EOS_HSessions Handle, const EOS_S
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
 }
 
 /**
@@ -182,7 +182,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_RegisterPlayers(EOS_HSessions Handle, const 
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
 }
 
 /**
@@ -202,7 +202,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_UnregisterPlayers(EOS_HSessions Handle, cons
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
 }
 
 /**
@@ -220,7 +220,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_SendInvite(EOS_HSessions Handle, const EOS_S
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
 }
 
 /**
@@ -238,7 +238,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_RejectInvite(EOS_HSessions Handle, const EOS
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
 }
 
 /**
@@ -253,7 +253,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_QueryInvites(EOS_HSessions Handle, const EOS
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
 }
 
 /**
@@ -267,7 +267,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Sessions_GetInviteCount(EOS_HSessions Handle, con
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return 0;
 }
 
@@ -287,7 +287,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_GetInviteIdByIndex(EOS_HSessions Hand
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -308,7 +308,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CreateSessionSearch(EOS_HSessions Han
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -327,7 +327,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CopyActiveSessionHandle(EOS_HSessions
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -345,7 +345,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Sessions_AddNotifySessionInviteReceived
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return 0;
 }
 
@@ -358,7 +358,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_RemoveNotifySessionInviteReceived(EOS_HSessi
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
 }
 
 /**
@@ -375,7 +375,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Sessions_AddNotifySessionInviteAccepted
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return 0;
 }
 
@@ -388,7 +388,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_RemoveNotifySessionInviteAccepted(EOS_HSessi
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
 }
 
 /**
@@ -410,7 +410,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CopySessionHandleByInviteId(EOS_HSess
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -433,7 +433,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CopySessionHandleForPresence(EOS_HSes
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -453,7 +453,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_IsUserInSession(EOS_HSessions Handle,
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -471,7 +471,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_DumpSessionState(EOS_HSessions Handle
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -496,7 +496,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetBucketId(EOS_HSessionMo
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -517,7 +517,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetHostAddress(EOS_HSessio
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -534,7 +534,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetPermissionLevel(EOS_HSe
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -551,7 +551,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetJoinInProgressAllowed(E
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -568,7 +568,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetMaxPlayers(EOS_HSession
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -585,7 +585,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetInvitesAllowed(EOS_HSes
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -604,7 +604,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_AddAttribute(EOS_HSessionM
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -621,7 +621,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_RemoveAttribute(EOS_HSessi
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -648,7 +648,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ActiveSession_CopyInfo(EOS_HActiveSession Hand
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -663,7 +663,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_ActiveSession_GetRegisteredPlayerCount(EOS_HActiv
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return 0;
 }
 
@@ -681,7 +681,7 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_ActiveSession_GetRegisteredPlayerByIndex
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return nullptr;
 }
 
@@ -710,7 +710,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionDetails_CopyInfo(EOS_HSessionDetails Ha
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -725,7 +725,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_SessionDetails_GetSessionAttributeCount(EOS_HSess
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return 0;
 }
 
@@ -748,7 +748,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionDetails_CopySessionAttributeByIndex(EOS
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -771,7 +771,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionDetails_CopySessionAttributeByKey(EOS_H
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -793,7 +793,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_SetSessionId(EOS_HSessionSearch 
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -811,7 +811,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_SetTargetUserId(EOS_HSessionSear
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -831,7 +831,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_SetParameter(EOS_HSessionSearch 
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -849,7 +849,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_RemoveParameter(EOS_HSessionSear
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -866,7 +866,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_SetMaxResults(EOS_HSessionSearch
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
@@ -886,7 +886,7 @@ EOS_DECLARE_FUNC(void) EOS_SessionSearch_Find(EOS_HSessionSearch Handle, const E
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
 }
 
 /**
@@ -900,7 +900,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_SessionSearch_GetSearchResultCount(EOS_HSessionSe
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return 0;
 }
 
@@ -922,7 +922,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_CopySearchResultByIndex(EOS_HSes
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOS_Sessions*>(Handle);
+    auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);
     return EOS_EResult::EOS_Success;
 }
 
