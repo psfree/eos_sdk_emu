@@ -69,7 +69,7 @@ void Settings::load_settings()
     if (username.empty() || !utf8::is_valid(username.begin(), username.end()))
         username = u8"DefaultName";
 
-    userid = get_setting(settings, "epicid", save_settings, std::string("0x0123456789ABCDEF0123456789ABCDEF"));
+    userid = get_setting(settings, "epicid", save_settings, std::string(""));
     while (!userid.IsValid())
         userid = generate_epic_id_user_from_name(username);
 
@@ -80,17 +80,20 @@ void Settings::load_settings()
     enable_overlay = get_setting(settings, "enable_overlay", save_settings, bool(true));
 
 #ifdef _DEBUG
+    Log::LogLevel llvl;
     switchstr(get_setting(settings, "debug_level", save_settings, std::string("OFF")))
     {
-        casestr("TRACE"): Log::set_loglevel(Log::LogLevel::TRACE); break;
-        casestr("DEBUG"): Log::set_loglevel(Log::LogLevel::DEBUG); break;
-        casestr("INFO") : Log::set_loglevel(Log::LogLevel::INFO) ; break;
-        casestr("WARN") : Log::set_loglevel(Log::LogLevel::WARN) ; break;
-        casestr("ERR")  : Log::set_loglevel(Log::LogLevel::ERR)  ; break;
-        casestr("FATAL"): Log::set_loglevel(Log::LogLevel::FATAL); break;
+        casestr("TRACE"): llvl = Log::LogLevel::TRACE; break;
+        casestr("DEBUG"): llvl = Log::LogLevel::DEBUG; break;
+        casestr("INFO") : llvl = Log::LogLevel::INFO ; break;
+        casestr("WARN") : llvl = Log::LogLevel::WARN ; break;
+        casestr("ERR")  : llvl = Log::LogLevel::ERR  ; break;
+        casestr("FATAL"): llvl = Log::LogLevel::FATAL; break;
         casestr("OFF")  :
-        default         : Log::set_loglevel(Log::LogLevel::OFF);
+        default         : llvl = Log::LogLevel::OFF;
     }
+    LOG(Log::LogLevel::INFO, "Setting log level to: %s", Log::loglevel_to_str(llvl));
+    Log::set_loglevel(llvl);
 #endif
 
 
