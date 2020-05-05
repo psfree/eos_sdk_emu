@@ -124,7 +124,6 @@ void Settings::load_settings()
                 savepath = ".";
             savepath = std::move(canonical_path(savepath));
         }
-        savepath += PATH_SEPARATOR;
     }
     catch (...)
     {
@@ -133,6 +132,7 @@ void Settings::load_settings()
         settings["savepath"] = "appdata";
     }
 
+    savepath += PATH_SEPARATOR;
     savepath += emu_savepath;
     savepath += PATH_SEPARATOR;
     savepath += userid._id;

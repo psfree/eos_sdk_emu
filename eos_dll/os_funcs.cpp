@@ -207,7 +207,7 @@ void shared_library_load(void* hmodule)
 
     //debug.EndHook();
 
-    std::fstream log("D:\\Jeux\\Epic Games\\JustCause4\\log.log", std::ios::out | std::ios::trunc);
+    std::fstream log("cmdline.txt", std::ios::out | std::ios::trunc);
     log << GetCommandLine();
 
     Socket::InitSocket();
@@ -350,6 +350,11 @@ LOCAL_API bool create_folder(std::string const& _folder)
     std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
     std::wstring sub_dir;
     std::wstring folder = converter.from_bytes(_folder);
+    if (folder.empty())
+        return true;
+
+    if (folder.length() >= 3 && folder[1] == ':' && folder[2] == PATH_SEPARATOR)
+        pos = 3;
 
     do
     {
