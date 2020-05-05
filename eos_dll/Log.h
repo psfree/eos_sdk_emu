@@ -65,6 +65,7 @@ public:
             case LogLevel::WARN : return "WARN";
             case LogLevel::ERR  : return "ERR";
             case LogLevel::FATAL: return "FATAL";
+            case LogLevel::OFF  : return "OFF";
             default             : return "UNKNOWN";
         }
     }
