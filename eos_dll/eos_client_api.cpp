@@ -22,6 +22,8 @@
 #include "eossdk_platform.h"
 #include "settings.h"
 
+static bool sdk_initialized = false;
+
 /**
  * Initialize the Epic Online Services SDK.
  *
@@ -39,8 +41,6 @@
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Options)
 {
     GLOBAL_LOCK();
-
-    static bool sdk_initialized = false;
 
     Settings::Inst();
     LOG(Log::LogLevel::TRACE, "");
@@ -101,6 +101,10 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Shutdown()
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
+    if (!sdk_initialized)
+        return EOS_EResult::EOS_NotConfigured;
+
+    sdk_initialized = false;
     return EOS_EResult::EOS_Success;
 }
 
