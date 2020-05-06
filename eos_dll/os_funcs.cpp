@@ -181,7 +181,7 @@ HINTERNET WINAPI MyWinHttpOpenRequest(
     IN DWORD     dwFlags
 ) {
     if (dwFlags & WINHTTP_FLAG_SECURE) {
-        dwFlags ^= WINHTTP_FLAG_SECURE;
+        dwFlags &= ~(WINHTTP_FLAG_SECURE);
     }
 
     return _WinHttpOpenRequest(hConnect, pwszVerb, pwszObjectName, pwszVersion, pwszReferrer, ppwszAcceptTypes, dwFlags);
