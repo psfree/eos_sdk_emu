@@ -73,6 +73,8 @@ void Settings::load_settings()
     while (!userid.IsValid())
         userid = generate_epic_id_user_from_name(username);
 
+    settings["epicid"] = userid.to_string();
+
     language       = get_setting(settings, "language"      , save_settings, std::string("english"));
     languages      = get_setting(settings, "languages"     , save_settings, std::string("english"));
     gamename       = get_setting(settings, "gamename"      , save_settings, std::string("Unreal"));
