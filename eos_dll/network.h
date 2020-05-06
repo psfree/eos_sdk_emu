@@ -20,33 +20,32 @@
 #pragma once
 
 #include "common_includes.h"
+#include "task.h"
 
 class LOCAL_API Network
 {
 public:
     using channel_t = int32_t;
+    using peer_t = std::string;
 
 private:
-    static constexpr uint16_t network_port = 56789;
+    static constexpr uint16_t network_port = 55789;
     static constexpr uint16_t max_network_port = (network_port + 10);
 
     PortableAPI::udp_socket _udp_socket;
-    PortableAPI::udp_socket _query_socket;
 
-    std::map<uint64_t, PortableAPI::ipv4_addr> _peers_addrs;
+    std::map<peer_t, PortableAPI::ipv4_addr> _peers_addrs;
 
     std::map<Network_Message_pb::MessagesCase, std::map<channel_t, std::vector<IRunFrame*>>> _network_listeners;
 
     std::recursive_mutex local_mutex;
     
-    std::atomic_bool _stop_thread;
-    std::thread _network_thread;
-
     void network_thread();
+    task _network_task;
 
     std::map<channel_t, std::list<Network_Message_pb>> _network_msgs;
 
-    std::map<uint64_t, channel_t> _default_channels;
+    std::map<peer_t, channel_t> _default_channels;
 
 public:
     std::atomic_bool _query_started;
@@ -56,7 +55,7 @@ public:
 
     //PortableAPI::ipv4_addr const& get_steamid_addr(uint64 steam_id);
 
-    void set_default_channel(uint64_t peerid, channel_t default_channel);
+    void set_default_channel(peer_t peerid, channel_t default_channel);
 
     void register_listener  (IRunFrame* listener, channel_t channel, Network_Message_pb::MessagesCase type);
     void unregister_listener(IRunFrame* listener, channel_t channel, Network_Message_pb::MessagesCase type);
@@ -64,6 +63,6 @@ public:
     bool CBRunFrame(channel_t channel, Network_Message_pb::MessagesCase MessageFilter = Network_Message_pb::MessagesCase::MESSAGES_NOT_SET);
 
     bool SendBroadcast(Network_Message_pb& msg);
-    std::set<uint64_t> SendToAllPeers(Network_Message_pb& msg);
+    std::set<peer_t> SendToAllPeers(Network_Message_pb& msg);
     bool SendTo(Network_Message_pb& msg);
 };

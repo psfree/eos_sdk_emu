@@ -23,16 +23,20 @@
 using namespace PortableAPI;
 
 Network::Network():
-    _udp_socket(),
-    _stop_thread(false),
-    _network_thread(&Network::network_thread, this)
+    _udp_socket()
 {
+    LOG(Log::LogLevel::DEBUG, "");
+    _network_task.run(&Network::network_thread, this);
 }
 
 Network::~Network()
 {
-    _stop_thread = true;
-    _network_thread.join();
+    LOG(Log::LogLevel::DEBUG, "");
+
+    _network_task.stop();
+    _network_task.join();
+
+    LOG(Log::LogLevel::DEBUG, "Network Thread Joined");
 }
 
 void Network::network_thread()
@@ -45,7 +49,7 @@ void Network::network_thread()
     Network_Message_pb msg;
 
     _udp_socket.setsockopt(Socket::level::sol_socket, Socket::option_name::so_broadcast, &broadcast, sizeof(broadcast));
-    _udp_socket.set_nonblocking();
+    //_udp_socket.set_nonblocking();
 
     // TODO: Use a random port when I'll have a steam server running up
     //std::uniform_int_distribution<int64_t> dis;
@@ -69,52 +73,61 @@ void Network::network_thread()
     if (i == max_network_port)
     {
         LOG(Log::LogLevel::ERR, "Failed to start network");
-        _stop_thread = true;
+        _network_task.stop();
     }
     else
     {
         LOG(Log::LogLevel::INFO, "Network socket started on port: %hu", i);
     }
 
-    while (!_stop_thread)
+    Poll p;
+    p.add_socket(&_udp_socket);
+
+    for (int i = 0; i < p.get_num_polls(); ++i)
+        p.set_events(i, Socket::poll_flags::in);
+
+    while (!_network_task.want_stop())
     {
+        if (p.poll(500) == 0)
+            continue;
+
         try
         {
             len = _udp_socket.recvfrom(addr, buffer.data(), buffer.size());
+            if (len > 0)
+            {
+                LOG(Log::LogLevel::TRACE, "Received message from: %s", addr.to_string().c_str());
+                if (msg.ParseFromArray(buffer.data(), len))
+                {
+                    LOCAL_LOCK();
+                    //if (msg.relay())
+                    //{// We are relaying a message from another user
+                    //    ipv4_addr real_addr;
+                    //    real_addr.set_ip(msg.real_ip());
+                    //    real_addr.set_port(msg.real_port());
+                    //    _peers_addrs[msg.source_id()] = real_addr;
+                    //}
+                    //else
+                    {
+                        _peers_addrs[msg.source_id()] = addr;
+                    }
+
+                    if (msg.dest_id() == peer_t())
+                    {
+                        for (auto& channel : _default_channels)
+                            _network_msgs[channel.second].emplace_back(msg);
+                    }
+                    else
+                    {
+                        _network_msgs[_default_channels[msg.dest_id()]].emplace_back(std::move(msg));
+                    }
+                }
+            }
         }
         catch (socket_exception & e)
         {
             LOG(Log::LogLevel::WARN, "Udp socket exception: %s", e.what());
             len = 0;
-        }
-        if (len > 0)
-        {
-            LOG(Log::LogLevel::TRACE, "Received message from: %s", addr.to_string().c_str());
-            if (msg.ParseFromArray(buffer.data(), len))
-            {
-                LOCAL_LOCK();
-                //if (msg.relay())
-                //{// We are relaying a message from another user
-                //    ipv4_addr real_addr;
-                //    real_addr.set_ip(msg.real_ip());
-                //    real_addr.set_port(msg.real_port());
-                //    _peers_addrs[msg.source_id()] = real_addr;
-                //}
-                //else
-                {
-                    _peers_addrs[msg.source_id()] = addr;
-                }
-
-                if (msg.dest_id() == 0)
-                {
-                    for(auto &channel : _default_channels)
-                        _network_msgs[channel.second].emplace_back(msg);
-                }
-                else
-                {
-                    _network_msgs[_default_channels[msg.dest_id()]].emplace_back(std::move(msg));
-                }
-            }
         }
     }
 }
@@ -125,7 +138,7 @@ void Network::network_thread()
 //    return _peers_addrs[steam_id];
 //}
 
-void Network::set_default_channel(uint64_t peerid, channel_t default_channel)
+void Network::set_default_channel(peer_t peerid, channel_t default_channel)
 {
     _default_channels[peerid] = default_channel;
 }
@@ -209,14 +222,14 @@ bool Network::SendBroadcast(Network_Message_pb& msg)
     return true;
 }
 
-std::set<uint64_t> Network::SendToAllPeers(Network_Message_pb& msg)
+std::set<Network::peer_t> Network::SendToAllPeers(Network_Message_pb& msg)
 {
-    std::set<uint64_t> peers_sent_to;
+    std::set<peer_t> peers_sent_to;
 
     //if (msg.appid() == 0)
     //    msg.set_appid(Settings::Inst().gameid.AppID());
 
-    std::for_each(_peers_addrs.begin(), _peers_addrs.end(), [&](std::pair<uint64_t const, PortableAPI::ipv4_addr>& peer_infos)
+    std::for_each(_peers_addrs.begin(), _peers_addrs.end(), [&](std::pair<peer_t const, PortableAPI::ipv4_addr>& peer_infos)
     {
         msg.set_dest_id(peer_infos.first);
 
