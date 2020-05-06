@@ -19,8 +19,6 @@
 
 #pragma once
 
-#ifdef _DEBUG
-
 #include <string>
 
 class Log
@@ -68,44 +66,45 @@ public:
     static void L(LogLevel lv, const char* format, ...);
 };
 
-#if defined(WIN64) || defined(_WIN64) || defined(__MINGW64__)
-    #define __WINDOWS_64__
-    #define __64BITS__
-#elif defined(WIN32) || defined(_WIN32) || defined(__MINGW32__)
-    #define __WINDOWS_32__
-    #define __32BITS__
-#endif
+#ifdef _DEBUG
+    #if defined(WIN64) || defined(_WIN64) || defined(__MINGW64__)
+        #define __WINDOWS_64__
+        #define __64BITS__
+    #elif defined(WIN32) || defined(_WIN32) || defined(__MINGW32__)
+        #define __WINDOWS_32__
+        #define __32BITS__
+    #endif
 
-#if defined(__WINDOWS_32__) || defined(__WINDOWS_64__)
-    #define __MY_FUNCTION__ __FUNCTION__
-#else
+    #if defined(__WINDOWS_32__) || defined(__WINDOWS_64__)
+        #define __MY_FUNCTION__ __FUNCTION__
+    #else
 
-inline std::string className(const std::string& prettyFunction)
-{
-    size_t colons = prettyFunction.rfind("::");
-    if (colons == std::string::npos)
-        return "";
-    size_t begin = prettyFunction.substr(0, colons).rfind(" ") + 1;
-    size_t end = colons - begin;
+    inline std::string className(const std::string& prettyFunction)
+    {
+        size_t colons = prettyFunction.rfind("::");
+        if (colons == std::string::npos)
+            return "";
+        size_t begin = prettyFunction.substr(0, colons).rfind(" ") + 1;
+        size_t end = colons - begin;
 
-    return prettyFunction.substr(begin, end);
-}
+        return prettyFunction.substr(begin, end);
+    }
 
-#define __CLASS_NAME__ className(__PRETTY_FUNCTION__)
+    #define __CLASS_NAME__ className(__PRETTY_FUNCTION__)
 
-inline std::string fq_func(std::string const& classname, std::string const& funcname)
-{
-    if (classname.empty())
-        return funcname;
+    inline std::string fq_func(std::string const& classname, std::string const& funcname)
+    {
+        if (classname.empty())
+            return funcname;
 
-    return classname + "::" + funcname;
-}
+        return classname + "::" + funcname;
+    }
 
-#define __MY_FUNCTION__ fq_func(__CLASS_NAME__, __FUNCTION__).c_str()
+    #define __MY_FUNCTION__ fq_func(__CLASS_NAME__, __FUNCTION__).c_str()
 
-#endif
+    #endif
 
-#define LOG(lv, fmt, ...) Log::L(lv, "(%lu)%s - %s: " fmt, std::this_thread::get_id(), Log::loglevel_to_str(lv), __MY_FUNCTION__, ##__VA_ARGS__)
+    #define LOG(lv, fmt, ...) Log::L(lv, "(%lu)%s - %s: " fmt, std::this_thread::get_id(), Log::loglevel_to_str(lv), __MY_FUNCTION__, ##__VA_ARGS__)
 #else //!_DEBUG
-#define LOG(...)
+    #define LOG(...)
 #endif
