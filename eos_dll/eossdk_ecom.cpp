@@ -63,17 +63,27 @@ void EOSSDK_Ecom::QueryOwnership(const EOS_Ecom_QueryOwnershipOptions* Options, 
                 EOS_Ecom_ItemOwnership* ownerships = new EOS_Ecom_ItemOwnership[qoci.ItemOwnershipCount];
                 for (int i = 0; i < Options->CatalogItemIdCount; ++i)
                 {
-                    char* id = nullptr;
+                    char* id;
                     if (po->CatalogItemIds[i] != nullptr)
                     {
                         size_t idlen = strlen(po->CatalogItemIds[i])+1;
                         id = new char[idlen];
                         strncpy(id, po->CatalogItemIds[i], idlen);
+                        
+                        LOG(Log::LogLevel::INFO, "Owning Catalog Item: %s", id);
+                        ownerships[i].OwnershipStatus = EOS_EOwnershipStatus::EOS_OS_Owned;
+                    }
+                    else
+                    {
+                        id = new char[1];
+                        *id = 0;
+
+                        LOG(Log::LogLevel::INFO, "Empty Catalog Item id, not owned");
+                        ownerships[i].OwnershipStatus = EOS_EOwnershipStatus::EOS_OS_NotOwned;
                     }
 
                     ownerships[i].ApiVersion = itemownershipversion;
                     ownerships[i].Id = id;
-                    ownerships[i].OwnershipStatus = EOS_EOwnershipStatus::EOS_OS_Owned;
                 }
                 qoci.ItemOwnership = ownerships;
             }
