@@ -75,6 +75,8 @@ void EOS_Platform::Init(const EOS_Platform_Options* options)
                     auto pf = reinterpret_cast<const EOS_Platform_Options006*>(options);
                     if (pf->CacheDirectory != nullptr)
                         _cache_directory = pf->CacheDirectory;
+
+                    LOG(Log::LogLevel::DEBUG, "CacheDirectory = '%s'", _cache_directory.c_str());
                 }
                 case EOS_PLATFORM_OPTIONS_API_005:
                 {
@@ -92,6 +94,12 @@ void EOS_Platform::Init(const EOS_Platform_Options* options)
                         _deployment_id = pf->DeploymentId;
 
                     _flags = pf->Flags;
+
+                    LOG(Log::LogLevel::DEBUG, "EncryptionKey = '%s'", _encryption_key.c_str());
+                    LOG(Log::LogLevel::DEBUG, "OverrideCountryCode = '%s'", _override_country_code.c_str());
+                    LOG(Log::LogLevel::DEBUG, "OverrideLocaleCode = '%s'", _override_locale_code.c_str());
+                    LOG(Log::LogLevel::DEBUG, "DeploymentId = '%s'", _deployment_id.c_str());
+                    LOG(Log::LogLevel::DEBUG, "Flags = %llu", _flags);
                 }
                 case EOS_PLATFORM_OPTIONS_API_001:
                 {
@@ -111,6 +119,12 @@ void EOS_Platform::Init(const EOS_Platform_Options* options)
                         _client_secret = pf->ClientCredentials.ClientSecret;
 
                     _is_server = pf->bIsServer;
+
+                    LOG(Log::LogLevel::DEBUG, "ProductId = '%s'", _product_id.c_str());
+                    LOG(Log::LogLevel::DEBUG, "SandboxId = '%s'", _sandbox_id.c_str());
+                    LOG(Log::LogLevel::DEBUG, "ClientId = '%s'", _client_id.c_str());
+                    LOG(Log::LogLevel::DEBUG, "ClientSecret = '%s'", _client_secret.c_str());
+                    LOG(Log::LogLevel::DEBUG, "ApiVersion = %u", pf->ApiVersion);
                 }
             }
         }

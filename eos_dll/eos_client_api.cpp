@@ -51,6 +51,32 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
     if (Options == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
+    switch (Options->ApiVersion)
+    {
+        case EOS_INITIALIZE_API_003:
+        {
+            auto p = reinterpret_cast<const EOS_InitializeOptions003*>(Options);
+            LOG(Log::LogLevel::DEBUG, "SystemInitializeOptions = %p", p->SystemInitializeOptions);
+        }
+
+        case EOS_INITIALIZE_API_002:
+        {
+            auto p = reinterpret_cast<const EOS_InitializeOptions002*>(Options);
+            LOG(Log::LogLevel::DEBUG, "Reserved = %p", p->Reserved);
+        }
+
+        case EOS_INITIALIZE_API_001:
+        {
+            auto p = reinterpret_cast<const EOS_InitializeOptions001*>(Options);
+            LOG(Log::LogLevel::DEBUG, "ApiVersion = %u", p->ApiVersion);
+            LOG(Log::LogLevel::DEBUG, "AllocateMemoryFunction = %p", p->AllocateMemoryFunction);
+            LOG(Log::LogLevel::DEBUG, "ReallocateMemoryFunction = %p", p->ReallocateMemoryFunction);
+            LOG(Log::LogLevel::DEBUG, "ReleaseMemoryFunction = %p", p->ReleaseMemoryFunction);
+            LOG(Log::LogLevel::DEBUG, "ProductName = %s", p->ProductName);
+            LOG(Log::LogLevel::DEBUG, "ProductVersion = %s", p->ProductVersion);
+        }
+    }
+
     if (Options->ProductName != nullptr)
     {
         LOG(Log::LogLevel::DEBUG, "Game name: %s", Options->ProductName);

@@ -46,15 +46,20 @@ void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, 
             //Options->ScopeFlags;
         }
 
+        LOG(Log::LogLevel::DEBUG, "ApiVersion = %u", Options->ApiVersion);
+        LOG(Log::LogLevel::DEBUG, "Credentials ApiVersion = %u", Options->Credentials->ApiVersion);
+        LOG(Log::LogLevel::DEBUG, "Id    = '%s'", Options->Credentials->Id);
+        LOG(Log::LogLevel::DEBUG, "Token = '%s'", Options->Credentials->Token);
+        LOG(Log::LogLevel::DEBUG, "Type  = %u", Options->Credentials->Type);
+
         pFrameResult_t res(new FrameResult);
 
         EOS_Auth_LoginCallbackInfo &lci = res->CreateCallback<EOS_Auth_LoginCallbackInfo>((CallbackFunc)CompletionDelegate, std::chrono::milliseconds(10000));
         lci.ClientData = ClientData;
         lci.LocalUserId = &Settings::Inst().userid;
         lci.ResultCode = EOS_EResult::EOS_Success;
-        lci.PinGrantInfo = 0;
+        lci.PinGrantInfo = nullptr;
         res->done = true;
-
 
         GetCB_Manager().add_callback(this, res);
     }
