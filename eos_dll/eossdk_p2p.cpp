@@ -37,7 +37,14 @@ bool EOSSDK_P2P::RunNetwork(Network_Message_pb const& msg)
 
 bool EOSSDK_P2P::RunCallbacks(pFrameResult_t res)
 {
-    return false;
+    GLOBAL_LOCK();
+
+    return res->done;
+}
+
+void EOSSDK_P2P::FreeCallback(pFrameResult_t res)
+{
+
 }
 
 }

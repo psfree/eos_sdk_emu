@@ -143,6 +143,7 @@ void Callback_Manager::run_callbacks()
             {
                 LOG(Log::LogLevel::DEBUG, "Callback ready: %s", get_callback_name(res->res.m_iCallback).c_str());
                 res->res.cb_func(res->res.data);
+                frame->FreeCallback(res);
                 result_it = results.erase(result_it);
             }
             else

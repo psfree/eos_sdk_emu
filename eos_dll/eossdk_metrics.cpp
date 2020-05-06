@@ -22,22 +22,29 @@
 namespace sdk
 {
 
-    ///////////////////////////////////////////////////////////////////////////////
-    //                                 IRunFrame                                 //
-    ///////////////////////////////////////////////////////////////////////////////
-    bool EOSSDK_Metrics::CBRunFrame()
-    {
-        return false;
-    }
+///////////////////////////////////////////////////////////////////////////////
+//                                 IRunFrame                                 //
+///////////////////////////////////////////////////////////////////////////////
+bool EOSSDK_Metrics::CBRunFrame()
+{
+    return false;
+}
 
-    bool EOSSDK_Metrics::RunNetwork(Network_Message_pb const& msg)
-    {
-        return false;
-    }
+bool EOSSDK_Metrics::RunNetwork(Network_Message_pb const& msg)
+{
+    return false;
+}
 
-    bool EOSSDK_Metrics::RunCallbacks(pFrameResult_t res)
-    {
-        return false;
-    }
+bool EOSSDK_Metrics::RunCallbacks(pFrameResult_t res)
+{
+    GLOBAL_LOCK();
+
+    return res->done;
+}
+
+void EOSSDK_Metrics::FreeCallback(pFrameResult_t res)
+{
+
+}
 
 }

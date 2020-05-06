@@ -40,4 +40,9 @@ bool EOSSDK_Achievements::RunCallbacks(pFrameResult_t res)
     return false;
 }
 
+void EOSSDK_Achievements::FreeCallback(pFrameResult_t res)
+{
+
+}
+
 }

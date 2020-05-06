@@ -40,4 +40,9 @@ bool EOSSDK_Connect::RunCallbacks(pFrameResult_t res)
     return false;
 }
 
+void EOSSDK_Connect::FreeCallback(pFrameResult_t res)
+{
+
+}
+
 }

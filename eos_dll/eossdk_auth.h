@@ -33,6 +33,7 @@ namespace sdk
         virtual bool CBRunFrame();
         virtual bool RunNetwork(Network_Message_pb const& msg);
         virtual bool RunCallbacks(pFrameResult_t res);
+        virtual void FreeCallback(pFrameResult_t res);
 
         void Login(const EOS_Auth_LoginOptions* Options, void* ClientData, const EOS_Auth_OnLoginCallback CompletionDelegate);
         void Logout(const EOS_Auth_LogoutOptions* Options, void* ClientData, const EOS_Auth_OnLogoutCallback CompletionDelegate);

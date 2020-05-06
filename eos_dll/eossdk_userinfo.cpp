@@ -37,7 +37,14 @@ bool EOSSDK_UserInfo::RunNetwork(Network_Message_pb const& msg)
 
 bool EOSSDK_UserInfo::RunCallbacks(pFrameResult_t res)
 {
-    return false;
+    GLOBAL_LOCK();
+
+    return res->done;
+}
+
+void EOSSDK_UserInfo::FreeCallback(pFrameResult_t res)
+{
+
 }
 
 }

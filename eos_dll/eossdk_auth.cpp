@@ -48,11 +48,13 @@ void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, 
 
         pFrameResult_t res(new FrameResult);
 
-        EOS_Auth_LoginCallbackInfo &lci = res->CreateCallback<EOS_Auth_LoginCallbackInfo>((CallbackFunc)CompletionDelegate);
+        EOS_Auth_LoginCallbackInfo &lci = res->CreateCallback<EOS_Auth_LoginCallbackInfo>((CallbackFunc)CompletionDelegate, std::chrono::milliseconds(10000));
         lci.ClientData = ClientData;
         lci.LocalUserId = &Settings::Inst().userid;
         lci.ResultCode = EOS_EResult::EOS_Success;
+        lci.PinGrantInfo = 0;
         res->done = true;
+
 
         GetCB_Manager().add_callback(this, res);
     }
@@ -206,14 +208,12 @@ bool EOSSDK_Auth::RunCallbacks(pFrameResult_t res)
 {
     GLOBAL_LOCK();
 
-    switch (res->res.m_iCallback)
-    {
-        case EOS_Auth_LoginCallbackInfo::k_iCallback:
-            res->done = true;
-        break;
-    }
+    return res->done;
+}
 
-    return true;
+void EOSSDK_Auth::FreeCallback(pFrameResult_t res)
+{
+
 }
 
 }

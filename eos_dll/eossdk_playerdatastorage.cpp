@@ -37,7 +37,14 @@ bool EOSSDK_PlayerDataStorage::RunNetwork(Network_Message_pb const& msg)
 
 bool EOSSDK_PlayerDataStorage::RunCallbacks(pFrameResult_t res)
 {
-    return false;
+    GLOBAL_LOCK();
+
+    return res->done;
+}
+
+void EOSSDK_PlayerDataStorage::FreeCallback(pFrameResult_t res)
+{
+
 }
 
 }

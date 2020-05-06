@@ -35,5 +35,6 @@ namespace sdk
         // True  = FrameResult_t has been filled with a result
         // False = FrameResult_t is not changed
         virtual bool RunCallbacks(pFrameResult_t res);
+        virtual void FreeCallback(pFrameResult_t res);
     };
 }

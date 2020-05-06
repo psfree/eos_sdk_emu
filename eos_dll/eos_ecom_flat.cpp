@@ -41,9 +41,8 @@ using namespace sdk;
   */
 EOS_DECLARE_FUNC(void) EOS_Ecom_QueryOwnership(EOS_HEcom Handle, const EOS_Ecom_QueryOwnershipOptions* Options, void* ClientData, const EOS_Ecom_OnQueryOwnershipCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
+    pInst->QueryOwnership(Options, ClientData, CompletionDelegate);
 }
 
 /**
@@ -56,9 +55,8 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_QueryOwnership(EOS_HEcom Handle, const EOS_Ecom_
  */
 EOS_DECLARE_FUNC(void) EOS_Ecom_QueryOwnershipToken(EOS_HEcom Handle, const EOS_Ecom_QueryOwnershipTokenOptions* Options, void* ClientData, const EOS_Ecom_OnQueryOwnershipTokenCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
+    pInst->QueryOwnershipToken(Options, ClientData, CompletionDelegate);
 }
 
 /**
@@ -74,9 +72,8 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_QueryOwnershipToken(EOS_HEcom Handle, const EOS_
  */
 EOS_DECLARE_FUNC(void) EOS_Ecom_QueryEntitlements(EOS_HEcom Handle, const EOS_Ecom_QueryEntitlementsOptions* Options, void* ClientData, const EOS_Ecom_OnQueryEntitlementsCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
+    pInst->QueryEntitlements(Options, ClientData, CompletionDelegate);
 }
 
 /**
@@ -89,9 +86,8 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_QueryEntitlements(EOS_HEcom Handle, const EOS_Ec
  */
 EOS_DECLARE_FUNC(void) EOS_Ecom_QueryOffers(EOS_HEcom Handle, const EOS_Ecom_QueryOffersOptions* Options, void* ClientData, const EOS_Ecom_OnQueryOffersCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
+    pInst->QueryOffers(Options, ClientData, CompletionDelegate);
 }
 
 /**
@@ -108,9 +104,8 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_QueryOffers(EOS_HEcom Handle, const EOS_Ecom_Que
  */
 EOS_DECLARE_FUNC(void) EOS_Ecom_Checkout(EOS_HEcom Handle, const EOS_Ecom_CheckoutOptions* Options, void* ClientData, const EOS_Ecom_OnCheckoutCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
+    pInst->Checkout(Options, ClientData, CompletionDelegate);
 }
 
 /**
@@ -123,9 +118,8 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_Checkout(EOS_HEcom Handle, const EOS_Ecom_Checko
  */
 EOS_DECLARE_FUNC(void) EOS_Ecom_RedeemEntitlements(EOS_HEcom Handle, const EOS_Ecom_RedeemEntitlementsOptions* Options, void* ClientData, const EOS_Ecom_OnRedeemEntitlementsCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
+    pInst->RedeemEntitlements(Options, ClientData, CompletionDelegate);
 }
 
 /**
@@ -139,10 +133,8 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_RedeemEntitlements(EOS_HEcom Handle, const EOS_E
  */
 EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetEntitlementsCount(EOS_HEcom Handle, const EOS_Ecom_GetEntitlementsCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return 0;
+    return pInst->GetEntitlementsCount(Options);
 }
 
 /**
@@ -156,10 +148,8 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetEntitlementsCount(EOS_HEcom Handle, const
  */
 EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetEntitlementsByNameCount(EOS_HEcom Handle, const EOS_Ecom_GetEntitlementsByNameCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return 0;
+    return pInst->GetEntitlementsByNameCount(Options);
 }
 
 /**
@@ -177,10 +167,8 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetEntitlementsByNameCount(EOS_HEcom Handle,
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementByIndex(EOS_HEcom Handle, const EOS_Ecom_CopyEntitlementByIndexOptions* Options, EOS_Ecom_Entitlement** OutEntitlement)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return EOS_EResult::EOS_Success;
+    return pInst->CopyEntitlementByIndex(Options, OutEntitlement);
 }
 
 /**
@@ -200,10 +188,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementByIndex(EOS_HEcom Handle, 
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementByNameAndIndex(EOS_HEcom Handle, const EOS_Ecom_CopyEntitlementByNameAndIndexOptions* Options, EOS_Ecom_Entitlement** OutEntitlement)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return EOS_EResult::EOS_Success;
+    return pInst->CopyEntitlementByNameAndIndex(Options, OutEntitlement);
 }
 
 /**
@@ -222,10 +208,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementByNameAndIndex(EOS_HEcom H
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementById(EOS_HEcom Handle, const EOS_Ecom_CopyEntitlementByIdOptions* Options, EOS_Ecom_Entitlement** OutEntitlement)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return EOS_EResult::EOS_Success;
+    return pInst->CopyEntitlementById(Options, OutEntitlement);
 }
 
 /**
@@ -239,10 +223,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementById(EOS_HEcom Handle, con
  */
 EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetOfferCount(EOS_HEcom Handle, const EOS_Ecom_GetOfferCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return 0;
+    return pInst->GetOfferCount(Options);
 }
 
 /**
@@ -262,10 +244,8 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetOfferCount(EOS_HEcom Handle, const EOS_Ec
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyOfferByIndex(EOS_HEcom Handle, const EOS_Ecom_CopyOfferByIndexOptions* Options, EOS_Ecom_CatalogOffer** OutOffer)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return EOS_EResult::EOS_Success;
+    return pInst->CopyOfferByIndex(Options, OutOffer);
 }
 
 /**
@@ -285,10 +265,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyOfferByIndex(EOS_HEcom Handle, const 
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyOfferById(EOS_HEcom Handle, const EOS_Ecom_CopyOfferByIdOptions* Options, EOS_Ecom_CatalogOffer** OutOffer)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return EOS_EResult::EOS_Success;
+    return pInst->CopyOfferById(Options, OutOffer);
 }
 
 /**
@@ -298,10 +276,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyOfferById(EOS_HEcom Handle, const EOS
  */
 EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetOfferItemCount(EOS_HEcom Handle, const EOS_Ecom_GetOfferItemCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return 0;
+    return pInst->GetOfferItemCount(Options);
 }
 
 /**
@@ -321,10 +297,8 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetOfferItemCount(EOS_HEcom Handle, const EO
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyOfferItemByIndex(EOS_HEcom Handle, const EOS_Ecom_CopyOfferItemByIndexOptions* Options, EOS_Ecom_CatalogItem** OutItem)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return EOS_EResult::EOS_Success;
+    return pInst->CopyOfferItemByIndex(Options, OutItem);
 }
 
 /**
@@ -344,10 +318,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyOfferItemByIndex(EOS_HEcom Handle, co
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyItemById(EOS_HEcom Handle, const EOS_Ecom_CopyItemByIdOptions* Options, EOS_Ecom_CatalogItem** OutItem)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return EOS_EResult::EOS_Success;
+    return pInst->CopyItemById(Options, OutItem);
 }
 
 /**
@@ -357,10 +329,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyItemById(EOS_HEcom Handle, const EOS_
  */
 EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetOfferImageInfoCount(EOS_HEcom Handle, const EOS_Ecom_GetOfferImageInfoCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return 0;
+    return pInst->GetOfferImageInfoCount(Options);
 }
 
 /**
@@ -378,10 +348,8 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetOfferImageInfoCount(EOS_HEcom Handle, con
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyOfferImageInfoByIndex(EOS_HEcom Handle, const EOS_Ecom_CopyOfferImageInfoByIndexOptions* Options, EOS_Ecom_KeyImageInfo** OutImageInfo)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return EOS_EResult::EOS_Success;
+    return pInst->CopyOfferImageInfoByIndex(Options, OutImageInfo);
 }
 
 /**
@@ -391,10 +359,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyOfferImageInfoByIndex(EOS_HEcom Handl
  */
 EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetItemImageInfoCount(EOS_HEcom Handle, const EOS_Ecom_GetItemImageInfoCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return 0;
+    return pInst->GetItemImageInfoCount(Options);
 }
 
 /**
@@ -412,10 +378,8 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetItemImageInfoCount(EOS_HEcom Handle, cons
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyItemImageInfoByIndex(EOS_HEcom Handle, const EOS_Ecom_CopyItemImageInfoByIndexOptions* Options, EOS_Ecom_KeyImageInfo** OutImageInfo)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return EOS_EResult::EOS_Success;
+    return pInst->CopyItemImageInfoByIndex(Options, OutImageInfo);
 }
 
 /**
@@ -425,10 +389,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyItemImageInfoByIndex(EOS_HEcom Handle
  */
 EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetItemReleaseCount(EOS_HEcom Handle, const EOS_Ecom_GetItemReleaseCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return 0;
+    return pInst->GetItemReleaseCount(Options);
 }
 
 /**
@@ -446,10 +408,8 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetItemReleaseCount(EOS_HEcom Handle, const 
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyItemReleaseByIndex(EOS_HEcom Handle, const EOS_Ecom_CopyItemReleaseByIndexOptions* Options, EOS_Ecom_CatalogRelease** OutRelease)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return EOS_EResult::EOS_Success;
+    return pInst->CopyItemReleaseByIndex(Options, OutRelease);
 }
 
 /**
@@ -462,10 +422,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyItemReleaseByIndex(EOS_HEcom Handle, 
  */
 EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetTransactionCount(EOS_HEcom Handle, const EOS_Ecom_GetTransactionCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return 0;
+    return pInst->GetTransactionCount(Options);
 }
 
 /**
@@ -482,10 +440,8 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetTransactionCount(EOS_HEcom Handle, const 
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyTransactionByIndex(EOS_HEcom Handle, const EOS_Ecom_CopyTransactionByIndexOptions* Options, EOS_Ecom_HTransaction* OutTransaction)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return EOS_EResult::EOS_Success;
+    return pInst->CopyTransactionByIndex(Options, OutTransaction);
 }
 
 /**
@@ -502,10 +458,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyTransactionByIndex(EOS_HEcom Handle, 
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyTransactionById(EOS_HEcom Handle, const EOS_Ecom_CopyTransactionByIdOptions* Options, EOS_Ecom_HTransaction* OutTransaction)
 {
-    LOG(Log::LogLevel::TRACE, "");
-
     auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return EOS_EResult::EOS_Success;
+    return pInst->CopyTransactionById(Options, OutTransaction);
 }
 
 /**
@@ -525,7 +479,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_Transaction_GetTransactionId(EOS_Ecom_HTr
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
+    
     return EOS_EResult::EOS_Success;
 }
 
@@ -542,7 +496,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_Transaction_GetEntitlementsCount(EOS_Ecom_HT
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
+    
     return 0;
 }
 
@@ -563,8 +517,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_Transaction_CopyEntitlementByIndex(EOS_Ec
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    auto pInst = reinterpret_cast<EOSSDK_Ecom*>(Handle);
-    return EOS_EResult::EOS_Success;
+    
+    return EOS_EResult::EOS_NotFound;
 }
 
 /**
@@ -581,6 +535,7 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_Entitlement_Release(EOS_Ecom_Entitlement* Entitl
 {
     LOG(Log::LogLevel::TRACE, "");
 
+    delete Entitlement;
 }
 
 /**
@@ -596,6 +551,7 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_CatalogItem_Release(EOS_Ecom_CatalogItem* Catalo
 {
     LOG(Log::LogLevel::TRACE, "");
 
+    delete CatalogItem;
 }
 
 /**
@@ -611,6 +567,7 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_CatalogOffer_Release(EOS_Ecom_CatalogOffer* Cata
 {
     LOG(Log::LogLevel::TRACE, "");
 
+    delete CatalogOffer;
 }
 
 /**
@@ -626,6 +583,7 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_KeyImageInfo_Release(EOS_Ecom_KeyImageInfo* KeyI
 {
     LOG(Log::LogLevel::TRACE, "");
 
+    delete KeyImageInfo;
 }
 
 /**
@@ -641,6 +599,7 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_CatalogRelease_Release(EOS_Ecom_CatalogRelease* 
 {
     LOG(Log::LogLevel::TRACE, "");
 
+    delete CatalogRelease;
 }
 
 /**
@@ -657,4 +616,5 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_Transaction_Release(EOS_Ecom_HTransaction Transa
 {
     LOG(Log::LogLevel::TRACE, "");
 
+    delete Transaction;
 }

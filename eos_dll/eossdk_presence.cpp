@@ -37,7 +37,14 @@ bool EOSSDK_Presence::RunNetwork(Network_Message_pb const& msg)
 
 bool EOSSDK_Presence::RunCallbacks(pFrameResult_t res)
 {
-    return false;
+    GLOBAL_LOCK();
+
+    return res->done;
+}
+
+void EOSSDK_Presence::FreeCallback(pFrameResult_t res)
+{
+
 }
 
 }

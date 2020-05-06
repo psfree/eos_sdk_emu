@@ -76,7 +76,7 @@ struct FrameResult
     }
 
     template<typename T>
-    inline T& CreateCallback(CallbackFunc func, std::chrono::milliseconds ok_timeout = std::chrono::milliseconds(0))
+    inline T& CreateCallback(CallbackFunc func, std::chrono::milliseconds ok_timeout = std::chrono::milliseconds(200))
     {
         this->ok_timeout = ok_timeout;
         T* cb = reinterpret_cast<T*>(new uint8_t[sizeof(T)]);
@@ -98,4 +98,6 @@ public:
     // True  = FrameResult_t has been filled with a result
     // False = FrameResult_t is not changed
     virtual bool RunCallbacks(pFrameResult_t res) = 0;
+    // Free a callback after it has been called
+    virtual void FreeCallback(pFrameResult_t res) = 0;
 };
