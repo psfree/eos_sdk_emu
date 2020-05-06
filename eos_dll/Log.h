@@ -19,6 +19,8 @@
 
 #pragma once
 
+#ifdef _DEBUG
+
 #include <string>
 
 class Log
@@ -38,22 +40,15 @@ public:
     };
 
 private:
-    Log();
+    Log()                      = delete;
     Log(Log const&)            = delete;
     Log(Log&&)                 = delete;
     Log& operator=(Log const&) = delete;
     Log& operator=(Log&&)      = delete;
-    ~Log();
-
-    LogLevel _lv;
+    ~Log()                     = delete;
 
 public:
-    static Log L;
-    static void set_loglevel(LogLevel lv)
-    {
-        if (lv >= LogLevel::MIN && lv <= LogLevel::MAX)
-            L._lv = lv;
-    }
+    static void set_loglevel(LogLevel lv);
 
     constexpr static const char* loglevel_to_str(LogLevel lv)
     {
@@ -70,20 +65,19 @@ public:
         }
     }
 
-    void operator()(LogLevel lv, const char* format, ...);
+    static void L(LogLevel lv, const char* format, ...);
 };
 
-#ifdef _DEBUG
 #if defined(WIN64) || defined(_WIN64) || defined(__MINGW64__)
-#define __WINDOWS_64__
-#define __64BITS__
+    #define __WINDOWS_64__
+    #define __64BITS__
 #elif defined(WIN32) || defined(_WIN32) || defined(__MINGW32__)
-#define __WINDOWS_32__
-#define __32BITS__
+    #define __WINDOWS_32__
+    #define __32BITS__
 #endif
 
 #if defined(__WINDOWS_32__) || defined(__WINDOWS_64__)
-#define __MY_FUNCTION__ __FUNCTION__
+    #define __MY_FUNCTION__ __FUNCTION__
 #else
 
 inline std::string className(const std::string& prettyFunction)
@@ -112,6 +106,6 @@ inline std::string fq_func(std::string const& classname, std::string const& func
 #endif
 
 #define LOG(lv, fmt, ...) Log::L(lv, "(%lu)%s - %s: " fmt, std::this_thread::get_id(), Log::loglevel_to_str(lv), __MY_FUNCTION__, ##__VA_ARGS__)
-#else
+#else //!_DEBUG
 #define LOG(...)
 #endif

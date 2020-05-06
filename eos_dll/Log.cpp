@@ -17,21 +17,12 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#ifdef _DEBUG
+
 #include "Log.h"
 #include "common_includes.h"
 
-Log Log::L;
-
-Log::Log():
-    _lv(LogLevel::OFF)
-{
-
-}
-
-Log::~Log()
-{
-
-}
+static Log::LogLevel _lv = Log::LogLevel::OFF;
 
 LOCAL_API bool _trace(const char* format, va_list argptr)
 {
@@ -67,7 +58,13 @@ LOCAL_API bool _trace(const char* format, va_list argptr)
     return true;
 }
 
-void Log::operator()(LogLevel lv, const char* format, ...)
+void Log::set_loglevel(LogLevel lv)
+{
+    if (lv >= LogLevel::MIN && lv <= LogLevel::MAX)
+        _lv = lv;
+}
+
+void Log::L(LogLevel lv, const char* format, ...)
 {
     if (lv >= _lv && _lv < LogLevel::MAX)
     {
@@ -76,3 +73,5 @@ void Log::operator()(LogLevel lv, const char* format, ...)
         _trace(format, argptr);
     }
 }
+
+#endif
