@@ -46,7 +46,11 @@ private:
     ~Log()                     = delete;
 
 public:
+#ifdef _DEBUG
     static void set_loglevel(LogLevel lv);
+#else
+    static void set_loglevel(LogLevel lv) {}
+#endif
 
     constexpr static const char* loglevel_to_str(LogLevel lv)
     {
@@ -63,7 +67,9 @@ public:
         }
     }
 
+#ifdef _DEBUG
     static void L(LogLevel lv, const char* format, ...);
+#endif
 };
 
 #ifdef _DEBUG
