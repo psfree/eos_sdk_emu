@@ -19,6 +19,58 @@ syntax = "proto3";
 
 option optimize_for = LITE_RUNTIME;
 
+//////////////////////////////////////////////////////////////////////////
+//                          Presence messages                           //
+//////////////////////////////////////////////////////////////////////////
+message Presence_Info_Request_pb {
+
+}
+
+message Presence_Info_pb {
+    int32  status = 1;
+    string productid = 2;
+    string productversion = 3;
+    string platform = 4;
+    string richtext = 5;
+    map<string, string> records = 6;
+    string productname = 7;
+    string joininfo = 8;
+}
+
+// Base Presence related message
+message Presence_Message_pb {
+    oneof message {
+        Presence_Info_Request_pb  presence_info_request = 1;
+        Presence_Info_pb presence_info = 2;
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+//                         UserInfo messages                            //
+//////////////////////////////////////////////////////////////////////////
+message UserInfo_Info_Request_pb {
+
+}
+
+message UserInfo_Info_pb {
+	string country = 1;
+	string displayname = 2;
+	string preferredlanguage = 3;
+	string nickname = 4;
+}
+
+// Base Friends related message
+message UserInfo_Message_pb {
+    oneof message {
+        UserInfo_Info_Request_pb userinfo_info_request = 1;
+        UserInfo_Info_pb userinfo_info = 2;
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+//                          Friends messages                            //
+//////////////////////////////////////////////////////////////////////////
+// Base Friends related message
 message Friends_Message_pb {
 
 }
@@ -30,5 +82,7 @@ message Network_Message_pb {
 	string gameid = 3;
     oneof messages {
 		Friends_Message_pb friends = 4;
+        Presence_Message_pb presence = 5;
+        UserInfo_Message_pb userinfo = 6;
     }
 }

@@ -20,20 +20,40 @@
 #pragma once
 
 #include "common_includes.h"
+#include "network.h"
 
 namespace sdk
 {
     class EOSSDK_UserInfo :
         public IRunFrame
     {
+        static constexpr std::chrono::milliseconds userinfo_query_timeout = std::chrono::milliseconds(1000);
+
+        std::map<std::string, UserInfo_Info_pb> _userinfos;
+        std::map<std::string, std::list<pFrameResult_t>> _userinfos_queries;
+
     public:
-        // RunFrame is always called when running callbacks
+        EOSSDK_UserInfo();
+        ~EOSSDK_UserInfo();
+
+        void setup_myself();
+        UserInfo_Info_pb& get_myself();
+        UserInfo_Info_pb* get_userinfo(std::string userid);
+
+        // Send Network messages
+        bool send_userinfo_request(Network::peer_t const& peerid, UserInfo_Info_Request_pb* req);
+        bool send_userinfo(Network::peer_t const& peerid, UserInfo_Info_pb* infos);
+
+        // Receive Network messages
+        bool on_userinfo_request(Network_Message_pb const& msg, UserInfo_Info_Request_pb const& req);
+        bool on_userinfo(Network_Message_pb const& msg, UserInfo_Info_pb const& infos);
+
+        void QueryUserInfo(const EOS_UserInfo_QueryUserInfoOptions* Options, void* ClientData, const EOS_UserInfo_OnQueryUserInfoCallback CompletionDelegate);
+        void QueryUserInfoByDisplayName(const EOS_UserInfo_QueryUserInfoByDisplayNameOptions* Options, void* ClientData, const EOS_UserInfo_OnQueryUserInfoByDisplayNameCallback CompletionDelegate);
+        EOS_EResult CopyUserInfo(const EOS_UserInfo_CopyUserInfoOptions* Options, EOS_UserInfo** OutUserInfo);
+
         virtual bool CBRunFrame();
-        // RunNetwork is run if you register to a network message and we received that message
         virtual bool RunNetwork(Network_Message_pb const& msg);
-        // RunCallbacks is run when you sent a callback
-        // True  = FrameResult_t has been filled with a result
-        // False = FrameResult_t is not changed
         virtual bool RunCallbacks(pFrameResult_t res);
         virtual void FreeCallback(pFrameResult_t res);
     };
