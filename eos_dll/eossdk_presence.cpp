@@ -37,6 +37,8 @@ EOSSDK_Presence::EOSSDK_Presence()
 EOSSDK_Presence::~EOSSDK_Presence()
 {
     GetNetwork().unregister_listener(this, 0, Network_Message_pb::MessagesCase::kPresence);
+
+    GetCB_Manager().remove_all_notifications(this);
     GetCB_Manager().unregister_callbacks(this);
     GetCB_Manager().unregister_frame(this);
 }
