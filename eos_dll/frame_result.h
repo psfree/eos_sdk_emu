@@ -72,6 +72,7 @@ struct FrameResult
     template<typename T>
     inline T& GetCallback()
     {
+        assert((res.m_iCallback == T::k_iCallback));
         return *reinterpret_cast<T*>(res.data);
     }
 

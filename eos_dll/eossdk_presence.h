@@ -20,21 +20,74 @@
 #pragma once
 
 #include "common_includes.h"
+#include "network.h"
 
 namespace sdk
 {
+    struct presence_query_t
+    {
+        pFrameResult_t result;
+        std::chrono::steady_clock::time_point start_time;
+    };
+
+    class EOSSDK_Presence;
+
+    class EOSSDK_PresenceModification
+    {
+        friend EOSSDK_Presence;
+
+        Presence_Info_pb infos;
+
+        std::recursive_mutex local_mutex;
+
+    public:
+        EOS_EResult SetStatus(const EOS_PresenceModification_SetStatusOptions* Options);
+        EOS_EResult SetRawRichText(const EOS_PresenceModification_SetRawRichTextOptions* Options);
+        EOS_EResult SetData( const EOS_PresenceModification_SetDataOptions* Options);
+        EOS_EResult DeleteData(const EOS_PresenceModification_DeleteDataOptions* Options);
+        EOS_EResult SetJoinInfo(const EOS_PresenceModification_SetJoinInfoOptions* Options);
+    };
+
     class EOSSDK_Presence :
         public IRunFrame
     {
+        static constexpr std::chrono::milliseconds presence_query_timeout = std::chrono::milliseconds(1000);
+
+        nlohmann::fifo_map<std::string, Presence_Info_pb> _presences;
+        std::map<std::string, std::list<presence_query_t>> _presence_queries;
+
     public:
-        // RunFrame is always called when running callbacks
+        EOSSDK_Presence();
+        ~EOSSDK_Presence();
+
+        void setup_myself();
+        Presence_Info_pb& get_myself();
+        Presence_Info_pb* get_presence(std::string userid);
+        void trigger_presence_change(std::string userid);
+
+        // Send Network messages
+        bool send_presence_info_request(Network::peer_t peerid, Presence_Info_Request_pb* req);
+        bool send_presence_info(Network::peer_t peerid, Presence_Info_pb* infos);
+        bool send_presence_info_to_all_peers(Presence_Info_pb* infos);
+
+        // Receive Network messages
+        bool on_presence_request(Network_Message_pb const& msg, Presence_Info_Request_pb const& req);
+        bool on_presence_infos(Network_Message_pb const& msg, Presence_Info_pb const& infos);
+
         virtual bool CBRunFrame();
-        // RunNetwork is run if you register to a network message and we received that message
         virtual bool RunNetwork(Network_Message_pb const& msg);
-        // RunCallbacks is run when you sent a callback
-        // True  = FrameResult_t has been filled with a result
-        // False = FrameResult_t is not changed
         virtual bool RunCallbacks(pFrameResult_t res);
         virtual void FreeCallback(pFrameResult_t res);
+
+        void QueryPresence( const EOS_Presence_QueryPresenceOptions* Options, void* ClientData, const EOS_Presence_OnQueryPresenceCompleteCallback CompletionDelegate);
+        EOS_Bool HasPresence( const EOS_Presence_HasPresenceOptions* Options);
+        EOS_EResult CopyPresence( const EOS_Presence_CopyPresenceOptions* Options, EOS_Presence_Info** OutPresence);
+        EOS_EResult CreatePresenceModification( const EOS_Presence_CreatePresenceModificationOptions* Options, EOS_HPresenceModification* OutPresenceModificationHandle);
+        void SetPresence( const EOS_Presence_SetPresenceOptions* Options, void* ClientData, const EOS_Presence_SetPresenceCompleteCallback CompletionDelegate);
+        EOS_NotificationId AddNotifyOnPresenceChanged( const EOS_Presence_AddNotifyOnPresenceChangedOptions* Options, void* ClientData, const EOS_Presence_OnPresenceChangedCallback NotificationHandler);
+        void RemoveNotifyOnPresenceChanged( EOS_NotificationId NotificationId);
+        EOS_NotificationId AddNotifyJoinGameAccepted( const EOS_Presence_AddNotifyJoinGameAcceptedOptions* Options, void* ClientData, const EOS_Presence_OnJoinGameAcceptedCallback NotificationFn);
+        void RemoveNotifyJoinGameAccepted( EOS_NotificationId InId);
+        EOS_EResult GetJoinInfo( const EOS_Presence_GetJoinInfoOptions* Options, char* OutBuffer, int32_t* InOutBufferLength);
     };
 }
