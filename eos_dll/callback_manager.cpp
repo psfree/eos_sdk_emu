@@ -59,9 +59,11 @@ void Callback_Manager::unregister_callbacks(IRunFrame* obj)
     LOG(Log::LogLevel::TRACE, "");
     LOCAL_LOCK();
 
-    auto it = _callbacks_to_run.find(obj);
-    if (it != _callbacks_to_run.end())
-        _callbacks_to_run.erase(it);
+    {
+        auto it = _callbacks_to_run.find(obj);
+        if (it != _callbacks_to_run.end())
+            _callbacks_to_run.erase(it);
+    }
 }
 
 bool Callback_Manager::add_callback(IRunFrame* obj, pFrameResult_t res)
@@ -98,6 +100,23 @@ bool Callback_Manager::remove_notification(IRunFrame* obj, EOS_NotificationId id
     notifs.erase(it);
 
     return true;
+}
+
+void Callback_Manager::remove_all_notifications(IRunFrame* obj)
+{
+    auto it = _notifications.find(obj);
+    if (it != _notifications.end())
+        _notifications.erase(it);
+}
+
+pFrameResult_t Callback_Manager::get_notification(IRunFrame* obj, EOS_NotificationId id)
+{
+    auto& notifs = _notifications[obj];
+    auto it = notifs.find(id);
+    if (it != notifs.end())
+        return it->second;
+
+    return pFrameResult_t();
 }
 
 std::vector<pFrameResult_t> Callback_Manager::get_notifications(IRunFrame* obj, int callback_id)

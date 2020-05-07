@@ -45,6 +45,8 @@ public:
 
     EOS_NotificationId add_notification(IRunFrame* obj, pFrameResult_t res);
     bool remove_notification(IRunFrame* obj, EOS_NotificationId id);
+    void remove_all_notifications(IRunFrame* obj);
+    pFrameResult_t get_notification(IRunFrame* obj, EOS_NotificationId id);
     std::vector<pFrameResult_t> get_notifications(IRunFrame* obj, int callback_id);
     
     

@@ -104,6 +104,7 @@
 #include <utility>
 #include <type_traits>
 #include <cstdarg>
+#include <cassert>
 
 #include <ipv4/tcp_socket.h>
 #include <ipv4/udp_socket.h>
