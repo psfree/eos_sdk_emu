@@ -25,9 +25,9 @@ message Friends_Message_pb {
 
 // Network base message
 message Network_Message_pb {
-    uint64 source_id = 1;
-    uint64 dest_id = 2;
-	uint32 appid = 3;
+    string source_id = 1;
+    string dest_id = 2;
+	string gameid = 3;
     oneof messages {
 		Friends_Message_pb friends = 4;
     }
