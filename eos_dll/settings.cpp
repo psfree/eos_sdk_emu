@@ -67,7 +67,12 @@ void Settings::load_settings()
 
     username       = get_setting(settings, "username"      , save_settings, std::string(u8"DefaultName"));
     if (username.empty() || !utf8::is_valid(username.begin(), username.end()))
+    {
+        LOG(Log::LogLevel::WARN, "Invalid username, resetting to default name.");
         username = u8"DefaultName";
+    }
+
+    settings["username"] = username;
 
     userid = get_setting(settings, "epicid", save_settings, std::string(""));
     while (!userid.IsValid())
