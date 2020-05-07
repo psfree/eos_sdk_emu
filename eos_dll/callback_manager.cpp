@@ -97,6 +97,7 @@ bool Callback_Manager::remove_notification(IRunFrame* obj, EOS_NotificationId id
     if (it == notifs.end())
         return false;
 
+    obj->FreeCallback(it->second);
     notifs.erase(it);
 
     return true;
@@ -106,7 +107,12 @@ void Callback_Manager::remove_all_notifications(IRunFrame* obj)
 {
     auto it = _notifications.find(obj);
     if (it != _notifications.end())
+    {
+        for(auto& res : it->second)
+            obj->FreeCallback(res.second);
+
         _notifications.erase(it);
+    }
 }
 
 pFrameResult_t Callback_Manager::get_notification(IRunFrame* obj, EOS_NotificationId id)
