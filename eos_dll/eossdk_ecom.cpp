@@ -19,6 +19,7 @@
 
 #include "eossdk_ecom.h"
 #include "eossdk_platform.h"
+#include "eos_client_api.h"
 #include "settings.h"
 
 namespace sdk
@@ -43,7 +44,7 @@ void EOSSDK_Ecom::QueryOwnership(const EOS_Ecom_QueryOwnershipOptions* Options, 
 
     EOS_Ecom_QueryOwnershipCallbackInfo& qoci = res->CreateCallback<EOS_Ecom_QueryOwnershipCallbackInfo>((CallbackFunc)CompletionDelegate);
 
-    int32_t itemownershipversion = EOS_ECOM_ITEMOWNERSHIP_API_001;
+    int32_t itemownershipversion = EOS_ECOM_ITEMOWNERSHIP_API_LATEST;
 
     switch (Options->ApiVersion)
     {
