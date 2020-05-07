@@ -164,14 +164,19 @@ void Callback_Manager::run_callbacks()
         for (auto result_it = results.begin(); result_it != results.end();)
         {
             pFrameResult_t& res = *result_it;
-            if (res->done || frame->RunCallbacks(res))
+            if (res->CallbackOKTimeout())
             {
-                LOG(Log::LogLevel::DEBUG, "Callback ready: %s", get_callback_name(res->res.m_iCallback).c_str());
-                if(res->res.cb_func != nullptr)
-                    res->res.cb_func(res->res.data);
+                if (res->done || frame->RunCallbacks(res))
+                {
+                    LOG(Log::LogLevel::DEBUG, "Callback ready: %s", get_callback_name(res->res.m_iCallback).c_str());
+                        if (res->res.cb_func != nullptr)
+                            res->res.cb_func(res->res.data);
 
-                frame->FreeCallback(res);
-                result_it = results.erase(result_it);
+                        frame->FreeCallback(res);
+                        result_it = results.erase(result_it);
+                }
+                else
+                    ++result_it;
             }
             else
                 ++result_it;
