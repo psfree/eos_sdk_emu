@@ -17,12 +17,19 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "common_includes.h"
-
+#include "eos_client_api.h"
 #include "eossdk_platform.h"
 #include "settings.h"
 
-static bool sdk_initialized = false;
+EOSSDK_Client::EOSSDK_Client():
+    _sdk_initialized(false)
+{}
+EOSSDK_Client& EOSSDK_Client::Inst()
+{
+    static EOSSDK_Client inst;
+    return inst;
+}
+
 
 /**
  * Initialize the Epic Online Services SDK.
@@ -45,7 +52,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
     Settings::Inst();
     LOG(Log::LogLevel::TRACE, "");
 
-    if (sdk_initialized)
+    auto &inst = EOSSDK_Client::Inst();
+
+    if (inst._sdk_initialized)
         return EOS_EResult::EOS_AlreadyConfigured;
 
     if (Options == nullptr)
@@ -74,16 +83,16 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
             LOG(Log::LogLevel::DEBUG, "ReleaseMemoryFunction = %p", p->ReleaseMemoryFunction);
             LOG(Log::LogLevel::DEBUG, "ProductName = %s", p->ProductName);
             LOG(Log::LogLevel::DEBUG, "ProductVersion = %s", p->ProductVersion);
+
+            inst.api_version = p->ApiVersion;
+            if (p->ProductName != nullptr)
+                inst.product_name = Options->ProductName;
+            if (p->ProductVersion != nullptr)
+                inst.product_version = Options->ProductVersion;
         }
     }
 
-    if (Options->ProductName != nullptr)
-    {
-        LOG(Log::LogLevel::DEBUG, "Game name: %s", Options->ProductName);
-        Settings::Inst().gamename = Options->ProductName;
-    }
-
-    sdk_initialized = true;
+    inst._sdk_initialized = true;
     return EOS_EResult::EOS_Success;
 }
 
@@ -101,10 +110,10 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Shutdown()
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
-    if (!sdk_initialized)
+    if (!EOSSDK_Client::Inst()._sdk_initialized)
         return EOS_EResult::EOS_NotConfigured;
 
-    sdk_initialized = false;
+    EOSSDK_Client::Inst()._sdk_initialized = false;
     return EOS_EResult::EOS_Success;
 }
 
@@ -331,6 +340,9 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_EpicAccountId_IsValid(EOS_EpicAccountId AccountId
 {
     LOG(Log::LogLevel::TRACE, "");
 
+    if (AccountId != nullptr)
+        EOSSDK_Client::Inst()._epicuserids[AccountId->to_string()] = AccountId;
+
     return AccountId->IsValid();
 }
 
@@ -353,6 +365,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_EpicAccountId_ToString(EOS_EpicAccountId Accou
 {
     LOG(Log::LogLevel::TRACE, "");
 
+    if (AccountId != nullptr)
+        EOSSDK_Client::Inst()._epicuserids[AccountId->to_string()] = AccountId;
+
     return AccountId->ToString(OutBuffer, InOutBufferLength);
 }
 
@@ -366,8 +381,17 @@ EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_EpicAccountId_FromString(const char* Acc
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    EOS_EpicAccountId id = new EOS_EpicAccountIdDetails;
-    id->FromString(AccountIdString);
+    EOS_EpicAccountId id;
+    auto it = EOSSDK_Client::Inst()._epicuserids.find(AccountIdString);
+    if (it == EOSSDK_Client::Inst()._epicuserids.end())
+    {
+        id = new EOS_EpicAccountIdDetails;
+        id->FromString(AccountIdString);
+        EOSSDK_Client::Inst()._epicuserids[id->to_string()] = id;
+    }
+    else
+        id = it->second;
+    
     return id;
 }
 
@@ -381,7 +405,9 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_ProductUserId_IsValid(EOS_ProductUserId AccountId
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    return EOS_TRUE;
+    if (AccountId != nullptr)
+        EOSSDK_Client::Inst()._productuserids[AccountId->to_string()] = AccountId;
+    return AccountId->IsValid();
 }
 
 /**
@@ -403,7 +429,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ProductUserId_ToString(EOS_ProductUserId Accou
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    return EOS_EResult::EOS_Success;
+    if (AccountId != nullptr)
+        EOSSDK_Client::Inst()._productuserids[AccountId->to_string()] = AccountId;
+    return AccountId->ToString(OutBuffer, InOutBufferLength);
 }
 
 /**
@@ -416,7 +444,18 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_ProductUserId_FromString(const char* Acc
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    return nullptr;
+    EOS_ProductUserId id;
+    auto it = EOSSDK_Client::Inst()._productuserids.find(AccountIdString);
+    if (it == EOSSDK_Client::Inst()._productuserids.end())
+    {
+        id = new EOS_ProductUserIdDetails;
+        id->FromString(AccountIdString);
+        EOSSDK_Client::Inst()._productuserids[id->to_string()] = id;
+    }
+    else
+        id = it->second;
+
+    return id;
 }
 
 /**
