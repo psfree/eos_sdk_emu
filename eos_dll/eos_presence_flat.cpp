@@ -175,6 +175,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetJoinInfo(EOS_HPresence
  */
 EOS_DECLARE_FUNC(void) EOS_Presence_Info_Release(EOS_Presence_Info* PresenceInfo)
 {
+    if (PresenceInfo == nullptr)
+        return;
+
     delete[] PresenceInfo->Platform;
     delete[] PresenceInfo->ProductId;
     delete[] PresenceInfo->ProductName;
