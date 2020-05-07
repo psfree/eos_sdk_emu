@@ -19,6 +19,7 @@
 
 #include "eossdk_userinfo.h"
 #include "eossdk_platform.h"
+#include "eos_client_api.h"
 #include "settings.h"
 
 namespace sdk
@@ -52,7 +53,7 @@ void EOSSDK_UserInfo::setup_myself()
 
 UserInfo_Info_pb& EOSSDK_UserInfo::get_myself()
 {
-    return _userinfos[Settings::Inst().userid.to_string()];
+    return _userinfos[Settings::Inst().userid->to_string()];
 }
 
 UserInfo_Info_pb* EOSSDK_UserInfo::get_userinfo(std::string userid)
@@ -80,17 +81,18 @@ UserInfo_Info_pb* EOSSDK_UserInfo::get_userinfo(std::string userid)
 void EOSSDK_UserInfo::QueryUserInfo(const EOS_UserInfo_QueryUserInfoOptions* Options, void* ClientData, const EOS_UserInfo_OnQueryUserInfoCallback CompletionDelegate)
 {
     LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
 
     pFrameResult_t res(new FrameResult);
     EOS_UserInfo_QueryUserInfoCallbackInfo& quici = res->CreateCallback<EOS_UserInfo_QueryUserInfoCallbackInfo>((CallbackFunc)CompletionDelegate);
     quici.ClientData = ClientData;
-    quici.LocalUserId = &Settings::Inst().userid;
+    quici.LocalUserId = Settings::Inst().userid;
 
     std::string userid;
 
     if (Options == nullptr || Options->TargetUserId == nullptr)
     {
-        quici.TargetUserId = nullptr;
+        quici.TargetUserId = GetEpicUserId("null");
         quici.ResultCode = EOS_EResult::EOS_InvalidParameters;
 
         res->done = true;
@@ -98,15 +100,24 @@ void EOSSDK_UserInfo::QueryUserInfo(const EOS_UserInfo_QueryUserInfoOptions* Opt
     else
     {
         userid = Options->TargetUserId->to_string();
-        quici.TargetUserId = new EOS_EpicAccountIdDetails(*Options->TargetUserId);
+        quici.TargetUserId = Options->TargetUserId;
     }
 
     GetCB_Manager().add_callback(this, res);
 
-    _userinfos_queries[userid].push_back(res);
+    friend_infos_t* finfos = GetEOS_Friends().get_friend(userid);
+    if (finfos == nullptr || !finfos->online)
+    {
+        quici.ResultCode = EOS_EResult::EOS_NotFound;
+        res->done = true;
+    }
+    else
+    {
+        _userinfos_queries[userid].push_back(res);
 
-    UserInfo_Info_Request_pb *request = new UserInfo_Info_Request_pb;
-    send_userinfo_request(userid, request);
+        UserInfo_Info_Request_pb* request = new UserInfo_Info_Request_pb;
+        send_userinfo_request(userid, request);
+    }
 }
 
 /**
@@ -125,8 +136,40 @@ void EOSSDK_UserInfo::QueryUserInfo(const EOS_UserInfo_QueryUserInfoOptions* Opt
 void EOSSDK_UserInfo::QueryUserInfoByDisplayName(const EOS_UserInfo_QueryUserInfoByDisplayNameOptions* Options, void* ClientData, const EOS_UserInfo_OnQueryUserInfoByDisplayNameCallback CompletionDelegate)
 {
     LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
 
-    //EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo
+    pFrameResult_t res(new FrameResult);
+    EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo& quibdnci = res->CreateCallback<EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo>((CallbackFunc)CompletionDelegate);
+    quibdnci.ClientData = ClientData;
+    quibdnci.LocalUserId = Settings::Inst().userid;
+
+    std::string userid;
+
+    if (Options == nullptr || Options->DisplayName == nullptr)
+    {
+        quibdnci.TargetUserId = GetEpicUserId("null");
+        quibdnci.ResultCode = EOS_EResult::EOS_InvalidParameters;
+
+        res->done = true;
+    }
+
+    GetCB_Manager().add_callback(this, res);
+
+    std::pair<std::string const, friend_infos_t>* finfos = GetEOS_Friends().get_friend_by_name(userid);
+    if (finfos == nullptr || !finfos->second.online)
+    {
+        quibdnci.ResultCode = EOS_EResult::EOS_NotFound;
+        res->done = true;
+    }
+    else
+    {
+        userid = finfos->first;
+        quibdnci.TargetUserId = GetEpicUserId(userid);
+        _userinfos_queries[userid].push_back(res);
+
+        UserInfo_Info_Request_pb* request = new UserInfo_Info_Request_pb;
+        send_userinfo_request(userid, request);
+    }
 }
 
 /**
@@ -148,6 +191,7 @@ void EOSSDK_UserInfo::QueryUserInfoByDisplayName(const EOS_UserInfo_QueryUserInf
 EOS_EResult EOSSDK_UserInfo::CopyUserInfo(const EOS_UserInfo_CopyUserInfoOptions* Options, EOS_UserInfo** OutUserInfo)
 {
     LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
 
     if (OutUserInfo == nullptr || Options == nullptr || Options->TargetUserId == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -168,7 +212,7 @@ EOS_EResult EOSSDK_UserInfo::CopyUserInfo(const EOS_UserInfo_CopyUserInfoOptions
     infos->PreferredLanguage = (userinfo->preferredlanguage().empty() ? nullptr : userinfo->preferredlanguage().c_str());
     infos->DisplayName       = (userinfo->displayname().empty()       ? nullptr : userinfo->displayname().c_str());
     infos->Nickname          = (userinfo->nickname().empty()          ? nullptr : userinfo->nickname().c_str());
-    infos->UserId            = new EOS_EpicAccountIdDetails(Options->TargetUserId->to_string());
+    infos->UserId            = Options->TargetUserId;
 
     return EOS_EResult::EOS_Success;
 }
@@ -288,7 +332,7 @@ bool EOSSDK_UserInfo::CBRunFrame()
 
 bool EOSSDK_UserInfo::RunNetwork(Network_Message_pb const& msg)
 {
-    if (msg.source_id() == Settings::Inst().userid.to_string())
+    if (msg.source_id() == Settings::Inst().userid->to_string())
         return true;
 
     UserInfo_Message_pb const& userinfo = msg.userinfo();
@@ -318,19 +362,16 @@ void EOSSDK_UserInfo::FreeCallback(pFrameResult_t res)
         /////////////////////////////
         //        Callbacks        //
         /////////////////////////////
-        case EOS_UserInfo_QueryUserInfoCallbackInfo::k_iCallback:
-        {
-            EOS_UserInfo_QueryUserInfoCallbackInfo& quici = res->GetCallback<EOS_UserInfo_QueryUserInfoCallbackInfo>();
-            delete quici.TargetUserId;
-        }
-        break;
-
-        case EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo::k_iCallback:
-        {
-            EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo& quibdnci = res->GetCallback<EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo>();
-            delete quibdnci.TargetUserId;
-        }
-        break;
+        //case EOS_UserInfo_QueryUserInfoCallbackInfo::k_iCallback:
+        //{
+        //    EOS_UserInfo_QueryUserInfoCallbackInfo& quici = res->GetCallback<EOS_UserInfo_QueryUserInfoCallbackInfo>();
+        //}
+        //break;
+        //case EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo::k_iCallback:
+        //{
+        //    EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo& quibdnci = res->GetCallback<EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo>();
+        //}
+        //break;
         /////////////////////////////
         //      Notifications      //
         /////////////////////////////

@@ -18,8 +18,8 @@
  */
 
 #include "eossdk_presence.h"
-#include "eos_client_api.h"
 #include "eossdk_platform.h"
+#include "eos_client_api.h"
 #include "settings.h"
 
 namespace sdk
@@ -50,12 +50,12 @@ void EOSSDK_Presence::setup_myself()
     presence.set_productname(EOSSDK_Client::Inst().product_name);
     presence.set_productversion(EOSSDK_Client::Inst().product_version);
     presence.set_status((int32_t)EOS_Presence_EStatus::EOS_PS_Online);
-    presence.set_productid(GetEOS_Connect()._productid.to_string());
+    presence.set_productid(GetEOS_Connect()._productid->to_string());
 }
 
 Presence_Info_pb& EOSSDK_Presence::get_myself()
 {
-    return _presences[Settings::Inst().userid.to_string()];
+    return _presences[Settings::Inst().userid->to_string()];
 }
 
 Presence_Info_pb* EOSSDK_Presence::get_presence(std::string userid)
@@ -73,20 +73,20 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
     for (auto& notif : notifs)
     {
         auto& pcci = notif->GetCallback<EOS_Presence_PresenceChangedCallbackInfo>();
-        *pcci.PresenceUserId = userid;
+        pcci.PresenceUserId = GetEpicUserId(userid);
         notif->res.cb_func(notif->res.data);
     }
 }
 
- /**
-  * Query a user's presence. This must complete successfully before CopyPresence will have valid results. If HasPresence returns true for a remote
-  * user, this does not need to be called.
-  *
-  * @param Options Object containing properties related to who is querying presence and for what user
-  * @param ClientData Optional pointer to help track this request, that is returned in the completion callback
-  * @param CompletionDelegate Pointer to a function that handles receiving the completion information
-  */
- void EOSSDK_Presence::QueryPresence( const EOS_Presence_QueryPresenceOptions* Options, void* ClientData, const EOS_Presence_OnQueryPresenceCompleteCallback CompletionDelegate)
+/**
+ * Query a user's presence. This must complete successfully before CopyPresence will have valid results. If HasPresence returns true for a remote
+ * user, this does not need to be called.
+ *
+ * @param Options Object containing properties related to who is querying presence and for what user
+ * @param ClientData Optional pointer to help track this request, that is returned in the completion callback
+ * @param CompletionDelegate Pointer to a function that handles receiving the completion information
+ */
+void EOSSDK_Presence::QueryPresence( const EOS_Presence_QueryPresenceOptions* Options, void* ClientData, const EOS_Presence_OnQueryPresenceCompleteCallback CompletionDelegate)
 {
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
@@ -94,19 +94,19 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
     pFrameResult_t res(new FrameResult);
     EOS_Presence_QueryPresenceCallbackInfo& qpci = res->CreateCallback<EOS_Presence_QueryPresenceCallbackInfo>((CallbackFunc)CompletionDelegate);
     qpci.ClientData = ClientData;
-    qpci.LocalUserId = &Settings::Inst().userid;
+    qpci.LocalUserId = Settings::Inst().userid;
 
     if (Options == nullptr || Options->TargetUserId == nullptr)
     {
         qpci.ResultCode = EOS_EResult::EOS_InvalidParameters;
-        qpci.TargetUserId = nullptr;
+        qpci.TargetUserId = GetEpicUserId("null");
 
         res->done = true;
         GetCB_Manager().add_callback(this, res);
         return;
     }
 
-    qpci.TargetUserId = new EOS_EpicAccountIdDetails(Options->TargetUserId->to_string());
+    qpci.TargetUserId = Options->TargetUserId;
 
     _presence_queries[Options->TargetUserId->to_string()].emplace_back(res);
     Presence_Info_Request_pb* req = new Presence_Info_Request_pb;
@@ -119,7 +119,7 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
  * @param Options Object containing properties related to who is requesting presence and for what user
  * @return EOS_TRUE if we have presence for the requested user, or EOS_FALSE if the request was invalid or we do not have cached data
  */
- EOS_Bool EOSSDK_Presence::HasPresence( const EOS_Presence_HasPresenceOptions* Options)
+EOS_Bool EOSSDK_Presence::HasPresence( const EOS_Presence_HasPresenceOptions* Options)
 {
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
@@ -136,7 +136,7 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
  *
  * @see EOS_Presence_Info_Release
  */
- EOS_EResult EOSSDK_Presence::CopyPresence( const EOS_Presence_CopyPresenceOptions* Options, EOS_Presence_Info** OutPresence)
+EOS_EResult EOSSDK_Presence::CopyPresence( const EOS_Presence_CopyPresenceOptions* Options, EOS_Presence_Info** OutPresence)
 {
      // TODO: Check the return codes from the real sdk
     LOG(Log::LogLevel::TRACE, "");
@@ -155,7 +155,7 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
 
     EOS_Presence_Info* presence_info = new EOS_Presence_Info;
 
-    presence_info->ApiVersion = 2;
+    presence_info->ApiVersion = EOS_PRESENCE_COPYPRESENCE_API_LATEST;
     char *str;
     size_t len;
 
@@ -209,7 +209,7 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
 
     presence_info->Records = records;
     presence_info->Status = (EOS_Presence_EStatus)presence->status();
-    presence_info->UserId = new EOS_EpicAccountIdDetails(Options->TargetUserId->to_string());
+    presence_info->UserId = Options->TargetUserId;
 
     *OutPresence = presence_info;
     return EOS_EResult::EOS_Success;
@@ -230,13 +230,13 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
  * @see EOS_PresenceModification_SetData
  * @see EOS_PresenceModification_DeleteData
  */
- EOS_EResult EOSSDK_Presence::CreatePresenceModification( const EOS_Presence_CreatePresenceModificationOptions* Options, EOS_HPresenceModification* OutPresenceModificationHandle)
+EOS_EResult EOSSDK_Presence::CreatePresenceModification( const EOS_Presence_CreatePresenceModificationOptions* Options, EOS_HPresenceModification* OutPresenceModificationHandle)
 {
     // TODO: Check the return codes from the real sdk
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
-    if (*Options->LocalUserId == Settings::Inst().userid)
+    if (*Options->LocalUserId == *Settings::Inst().userid)
     {
         EOSSDK_PresenceModification *modification = new EOSSDK_PresenceModification;
         modification->infos = get_myself();
@@ -258,7 +258,7 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
  * @see EOS_Presence_CreatePresenceModification
  * @see EOS_PresenceModification_Release
  */
- void EOSSDK_Presence::SetPresence( const EOS_Presence_SetPresenceOptions* Options, void* ClientData, const EOS_Presence_SetPresenceCompleteCallback CompletionDelegate)
+void EOSSDK_Presence::SetPresence( const EOS_Presence_SetPresenceOptions* Options, void* ClientData, const EOS_Presence_SetPresenceCompleteCallback CompletionDelegate)
 {
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
@@ -266,14 +266,14 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
     pFrameResult_t res(new FrameResult);
     EOS_Presence_SetPresenceCallbackInfo& spci = res->CreateCallback<EOS_Presence_SetPresenceCallbackInfo>((CallbackFunc)CompletionDelegate);
     spci.ClientData = ClientData;
-    spci.LocalUserId = &Settings::Inst().userid;
+    spci.LocalUserId = Settings::Inst().userid;
     res->done = true;
 
     if (Options->PresenceModificationHandle == nullptr)
     {
         spci.ResultCode = EOS_EResult::EOS_InvalidParameters;
     }
-    else if (*Options->LocalUserId != Settings::Inst().userid)
+    else if (*Options->LocalUserId != *Settings::Inst().userid)
     {
         spci.ResultCode = EOS_EResult::EOS_MissingPermissions;
     }
@@ -302,7 +302,7 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
  * @see EOS_ENotificationId::EOS_NotificationId_Invalid
  * @see EOS_Presence_RemoveNotifyOnPresenceChanged
  */
- EOS_NotificationId EOSSDK_Presence::AddNotifyOnPresenceChanged( const EOS_Presence_AddNotifyOnPresenceChangedOptions* Options, void* ClientData, const EOS_Presence_OnPresenceChangedCallback NotificationHandler)
+EOS_NotificationId EOSSDK_Presence::AddNotifyOnPresenceChanged( const EOS_Presence_AddNotifyOnPresenceChangedOptions* Options, void* ClientData, const EOS_Presence_OnPresenceChangedCallback NotificationHandler)
 {
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
@@ -310,8 +310,8 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
     pFrameResult_t res(new FrameResult);
     EOS_Presence_PresenceChangedCallbackInfo& pcci = res->CreateCallback<EOS_Presence_PresenceChangedCallbackInfo>((CallbackFunc)NotificationHandler);
     pcci.ClientData = ClientData;
-    pcci.LocalUserId = &Settings::Inst().userid;
-    pcci.PresenceUserId = new EOS_EpicAccountIdDetails;
+    pcci.LocalUserId = Settings::Inst().userid;
+    pcci.PresenceUserId = GetEpicUserId("null");
 
     return GetCB_Manager().add_notification(this, res);
 }
@@ -321,7 +321,7 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
  *
  * @param NotificationId The Notification ID representing the registered callback
  */
- void EOSSDK_Presence::RemoveNotifyOnPresenceChanged( EOS_NotificationId NotificationId)
+void EOSSDK_Presence::RemoveNotifyOnPresenceChanged( EOS_NotificationId NotificationId)
 {
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
@@ -340,7 +340,7 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
  *
  * @return handle representing the registered callback
  */
- EOS_NotificationId EOSSDK_Presence::AddNotifyJoinGameAccepted( const EOS_Presence_AddNotifyJoinGameAcceptedOptions* Options, void* ClientData, const EOS_Presence_OnJoinGameAcceptedCallback NotificationFn)
+EOS_NotificationId EOSSDK_Presence::AddNotifyJoinGameAccepted( const EOS_Presence_AddNotifyJoinGameAcceptedOptions* Options, void* ClientData, const EOS_Presence_OnJoinGameAcceptedCallback NotificationFn)
 {
      LOG(Log::LogLevel::TRACE, "");
      GLOBAL_LOCK();
@@ -348,8 +348,8 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
      pFrameResult_t res(new FrameResult);
      EOS_Presence_JoinGameAcceptedCallbackInfo& jgaci = res->CreateCallback<EOS_Presence_JoinGameAcceptedCallbackInfo>((CallbackFunc)NotificationFn);
      jgaci.ClientData = ClientData;
-     jgaci.LocalUserId = &Settings::Inst().userid;
-     jgaci.TargetUserId = new EOS_EpicAccountIdDetails;
+     jgaci.LocalUserId = Settings::Inst().userid;
+     jgaci.TargetUserId = GetEpicUserId("null");
      jgaci.JoinInfo = new char[EOS_PRESENCEMODIFICATION_JOININFO_MAX_LENGTH + 1];
 
      return GetCB_Manager().add_notification(this, res);
@@ -360,7 +360,7 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
  *
  * @param InId Handle representing the registered callback
  */
- void EOSSDK_Presence::RemoveNotifyJoinGameAccepted( EOS_NotificationId InId)
+void EOSSDK_Presence::RemoveNotifyJoinGameAccepted( EOS_NotificationId InId)
 {
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
@@ -388,7 +388,7 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
  *
  * @see EOS_PRESENCE_LOCATIONSTRING_MAX_LEN
  */
- EOS_EResult EOSSDK_Presence::GetJoinInfo( const EOS_Presence_GetJoinInfoOptions* Options, char* OutBuffer, int32_t* InOutBufferLength)
+EOS_EResult EOSSDK_Presence::GetJoinInfo( const EOS_Presence_GetJoinInfoOptions* Options, char* OutBuffer, int32_t* InOutBufferLength)
 {
     // TODO: Check the return codes from the real sdk
     LOG(Log::LogLevel::TRACE, "");
@@ -416,125 +416,125 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
 ///////////////////////////////////////////////////////////////////////////////
 //                           Network Send messages                           //
 ///////////////////////////////////////////////////////////////////////////////
- bool EOSSDK_Presence::send_presence_info_request(Network::peer_t const& peerid, Presence_Info_Request_pb* req)
- {
-     Network_Message_pb msg;
-     Presence_Message_pb* presence = new Presence_Message_pb;
+bool EOSSDK_Presence::send_presence_info_request(Network::peer_t const& peerid, Presence_Info_Request_pb* req)
+{
+    Network_Message_pb msg;
+    Presence_Message_pb* presence = new Presence_Message_pb;
 
-     presence->set_allocated_presence_info_request(req);
-     msg.set_allocated_presence(presence);
+    presence->set_allocated_presence_info_request(req);
+    msg.set_allocated_presence(presence);
 
-     msg.set_dest_id(peerid);
+    msg.set_dest_id(peerid);
 
-     return GetNetwork().SendTo(msg);
- }
+    return GetNetwork().SendTo(msg);
+}
 
- bool EOSSDK_Presence::send_presence_info(Network::peer_t const& peerid, Presence_Info_pb* infos)
- {
-     Network_Message_pb msg;
-     Presence_Message_pb* presence = new Presence_Message_pb;
+bool EOSSDK_Presence::send_presence_info(Network::peer_t const& peerid, Presence_Info_pb* infos)
+{
+    Network_Message_pb msg;
+    Presence_Message_pb* presence = new Presence_Message_pb;
 
-     presence->set_allocated_presence_info(infos);
-     msg.set_allocated_presence(presence);
+    presence->set_allocated_presence_info(infos);
+    msg.set_allocated_presence(presence);
 
-     msg.set_dest_id(peerid);
+    msg.set_dest_id(peerid);
 
-     return GetNetwork().SendTo(msg);
- }
+    return GetNetwork().SendTo(msg);
+}
 
- bool EOSSDK_Presence::send_presence_info_to_all_peers(Presence_Info_pb* infos)
- {
-     Network_Message_pb msg;
-     Presence_Message_pb* presence = new Presence_Message_pb;
+bool EOSSDK_Presence::send_presence_info_to_all_peers(Presence_Info_pb* infos)
+{
+    Network_Message_pb msg;
+    Presence_Message_pb* presence = new Presence_Message_pb;
 
-     presence->set_allocated_presence_info(infos);
-     msg.set_allocated_presence(presence);
+    presence->set_allocated_presence_info(infos);
+    msg.set_allocated_presence(presence);
 
-     GetNetwork().SendToAllPeers(msg).size();
-     return true;
- }
+    GetNetwork().SendToAllPeers(msg).size();
+    return true;
+}
 
- ///////////////////////////////////////////////////////////////////////////////
- //                          Network Receive messages                         //
- ///////////////////////////////////////////////////////////////////////////////
- bool EOSSDK_Presence::on_presence_request(Network_Message_pb const& msg, Presence_Info_Request_pb const& req)
- {
-     LOG(Log::LogLevel::TRACE, "");
-     GLOBAL_LOCK();
+///////////////////////////////////////////////////////////////////////////////
+//                          Network Receive messages                         //
+///////////////////////////////////////////////////////////////////////////////
+bool EOSSDK_Presence::on_presence_request(Network_Message_pb const& msg, Presence_Info_Request_pb const& req)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
 
-     Presence_Info_pb* info = new Presence_Info_pb(get_myself());
-     return send_presence_info(msg.source_id(), info);
- }
+    Presence_Info_pb* info = new Presence_Info_pb(get_myself());
+    return send_presence_info(msg.source_id(), info);
+}
 
- bool EOSSDK_Presence::on_presence_infos(Network_Message_pb const& msg, Presence_Info_pb const& infos)
- {
-     LOG(Log::LogLevel::TRACE, "");
-     GLOBAL_LOCK();
+bool EOSSDK_Presence::on_presence_infos(Network_Message_pb const& msg, Presence_Info_pb const& infos)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
 
-     if (!msg.source_id().empty())
-     {
-         bool presence_changed = false;
-         Presence_Info_pb& presence_infos = _presences[msg.source_id()];
+    if (!msg.source_id().empty())
+    {
+        bool presence_changed = false;
+        Presence_Info_pb& presence_infos = _presences[msg.source_id()];
 
-         if(presence_infos.status()         != infos.status()         ||
-            presence_infos.productid()      != infos.productid()      ||
-            presence_infos.productversion() != infos.productversion() ||
-            presence_infos.platform()       != infos.platform()       ||
-            presence_infos.richtext()       != infos.richtext()       ||
-            presence_infos.productname()    != infos.productname()    ||
-            presence_infos.joininfo()       != infos.joininfo()       ||
-            presence_infos.records_size()   != infos.records_size())
-         {
-             presence_changed = true;
-         }
-         else
-         {
-             for (auto const& record : presence_infos.records())
-             {
-                 auto it = infos.records().find(record.first);
-                 if (it != infos.records().end())
-                 {
-                     if (record.second != it->second)
-                     {
-                         presence_changed = true;
-                         break;
-                     }
-                 }
-                 else
-                 {
-                     presence_changed = true;
-                     break;
-                 }
-             }
-         }
+        if(presence_infos.status()         != infos.status()         ||
+        presence_infos.productid()      != infos.productid()      ||
+        presence_infos.productversion() != infos.productversion() ||
+        presence_infos.platform()       != infos.platform()       ||
+        presence_infos.richtext()       != infos.richtext()       ||
+        presence_infos.productname()    != infos.productname()    ||
+        presence_infos.joininfo()       != infos.joininfo()       ||
+        presence_infos.records_size()   != infos.records_size())
+        {
+            presence_changed = true;
+        }
+        else
+        {
+            for (auto const& record : presence_infos.records())
+            {
+                auto it = infos.records().find(record.first);
+                if (it != infos.records().end())
+                {
+                    if (record.second != it->second)
+                    {
+                        presence_changed = true;
+                        break;
+                    }
+                }
+                else
+                {
+                    presence_changed = true;
+                    break;
+                }
+            }
+        }
 
-         auto it = _presence_queries.find(msg.source_id());
-         if (it != _presence_queries.end() && !it->second.empty())
-         {
-             auto presence_query_it = it->second.begin();
+        auto it = _presence_queries.find(msg.source_id());
+        if (it != _presence_queries.end() && !it->second.empty())
+        {
+            auto presence_query_it = it->second.begin();
 
-             (*presence_query_it)->done = true;
-             (*presence_query_it)->GetCallback<EOS_Presence_QueryPresenceCallbackInfo>().ResultCode = EOS_EResult::EOS_Success;
+            (*presence_query_it)->done = true;
+            (*presence_query_it)->GetCallback<EOS_Presence_QueryPresenceCallbackInfo>().ResultCode = EOS_EResult::EOS_Success;
 
-             it->second.erase(presence_query_it);
+            it->second.erase(presence_query_it);
 
-             if (presence_changed)
-             {
-                 presence_infos = infos;
-                 trigger_presence_change(msg.source_id());
-                 std::vector<pFrameResult_t> notifs = std::move(GetCB_Manager().get_notifications(this, EOS_Presence_QueryPresenceCallbackInfo::k_iCallback));
-                 for (auto& notif : notifs)
-                 {// Notify all listeners
-                     EOS_Presence_PresenceChangedCallbackInfo& qpci = notif->GetCallback<EOS_Presence_PresenceChangedCallbackInfo>();
-                     *qpci.PresenceUserId = msg.source_id();
-                     notif->res.cb_func(notif->res.data);
-                 }
-             }
-         }
-     }
+            if (presence_changed)
+            {
+                presence_infos = infos;
+                trigger_presence_change(msg.source_id());
+                std::vector<pFrameResult_t> notifs = std::move(GetCB_Manager().get_notifications(this, EOS_Presence_QueryPresenceCallbackInfo::k_iCallback));
+                for (auto& notif : notifs)
+                {// Notify all listeners
+                    EOS_Presence_PresenceChangedCallbackInfo& qpci = notif->GetCallback<EOS_Presence_PresenceChangedCallbackInfo>();
+                    qpci.PresenceUserId = GetEpicUserId(msg.source_id());
+                    notif->res.cb_func(notif->res.data);
+                }
+            }
+        }
+    }
 
-     return true;
- }
+    return true;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                 IRunFrame                                 //
@@ -563,7 +563,7 @@ bool EOSSDK_Presence::CBRunFrame()
 
 bool EOSSDK_Presence::RunNetwork(Network_Message_pb const& msg)
 {
-    if (msg.source_id() == Settings::Inst().userid.to_string())
+    if (msg.source_id() == Settings::Inst().userid->to_string())
         return true;
 
     Presence_Message_pb const& pres = msg.presence();

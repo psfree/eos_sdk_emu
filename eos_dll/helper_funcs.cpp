@@ -117,12 +117,12 @@ LOCAL_API std::string generate_account_id_from_name(std::string const& username)
     return epicid.to_string();
 }
 
-LOCAL_API EOS_EpicAccountIdDetails generate_epic_id_user()
+LOCAL_API std::string generate_epic_id_user()
 {
     return generate_account_id();
 }
 
-LOCAL_API EOS_EpicAccountIdDetails generate_epic_id_user_from_name(std::string const& username)
+LOCAL_API std::string generate_epic_id_user_from_name(std::string const& username)
 {
     return generate_account_id_from_name(username);
 }

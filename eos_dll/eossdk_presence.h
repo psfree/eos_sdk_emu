@@ -45,7 +45,7 @@ namespace sdk
     class EOSSDK_Presence :
         public IRunFrame
     {
-        static constexpr std::chrono::milliseconds presence_query_timeout = std::chrono::milliseconds(1000);
+        static constexpr auto presence_query_timeout = std::chrono::milliseconds(1000);
 
         nlohmann::fifo_map<std::string, Presence_Info_pb> _presences;
         std::map<std::string, std::list<pFrameResult_t>> _presence_queries;

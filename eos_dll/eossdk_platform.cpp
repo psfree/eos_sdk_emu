@@ -149,7 +149,7 @@ void EOS_Platform::Init(const EOS_Platform_Options* options)
         _presence->setup_myself();
         _userinfo->setup_myself();
 
-        _network->set_default_channel(Settings::Inst().userid.to_string(), 0);
+        _network->set_default_channel(Settings::Inst().userid->to_string(), 0);
 
         _platform_init = true;
     }

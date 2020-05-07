@@ -19,6 +19,7 @@
 
 #include "eossdk_auth.h"
 #include "eossdk_platform.h"
+#include "eos_client_api.h"
 #include "settings.h"
 
 namespace sdk
@@ -57,7 +58,7 @@ void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, 
 
         EOS_Auth_LoginCallbackInfo &lci = res->CreateCallback<EOS_Auth_LoginCallbackInfo>((CallbackFunc)CompletionDelegate, std::chrono::milliseconds(10000));
         lci.ClientData = ClientData;
-        lci.LocalUserId = &Settings::Inst().userid;
+        lci.LocalUserId = Settings::Inst().userid;
         lci.ResultCode = EOS_EResult::EOS_Success;
         lci.PinGrantInfo = nullptr;
         res->done = true;
@@ -79,7 +80,7 @@ void EOSSDK_Auth::Logout(const EOS_Auth_LogoutOptions* Options, void* ClientData
 
         EOS_Auth_LogoutCallbackInfo& lci = res->CreateCallback<EOS_Auth_LogoutCallbackInfo>((CallbackFunc)CompletionDelegate);
         lci.ClientData = ClientData;
-        lci.LocalUserId = &Settings::Inst().userid;
+        lci.LocalUserId = Settings::Inst().userid;
         lci.ResultCode = EOS_EResult::EOS_Success;
         res->done = true;
 
@@ -113,7 +114,7 @@ EOS_EpicAccountId EOSSDK_Auth::GetLoggedInAccountByIndex(int32_t Index)
     GLOBAL_LOCK();
 
     if (Index == 0)
-        return &Settings::Inst().userid;
+        return Settings::Inst().userid;
 
     return nullptr;
 }
@@ -123,7 +124,7 @@ EOS_ELoginStatus EOSSDK_Auth::GetLoginStatus(EOS_EpicAccountId LocalUserId)
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
-    if (LocalUserId == &Settings::Inst().userid)
+    if (LocalUserId == Settings::Inst().userid)
         return EOS_ELoginStatus::EOS_LS_LoggedIn;
 
     return EOS_ELoginStatus::EOS_LS_NotLoggedIn;
@@ -137,7 +138,7 @@ EOS_EResult EOSSDK_Auth::CopyUserAuthToken(const EOS_Auth_CopyUserAuthTokenOptio
     if (OutUserAuthToken == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
-    if (*LocalUserId == Settings::Inst().userid)
+    if (*LocalUserId == *Settings::Inst().userid)
     {
         EOS_Auth_Token* token = new EOS_Auth_Token;
         time_t now;
@@ -184,7 +185,7 @@ EOS_NotificationId EOSSDK_Auth::AddNotifyLoginStatusChanged(const EOS_Auth_AddNo
     lscci.ClientData = ClientData;
     lscci.CurrentStatus = EOS_ELoginStatus::EOS_LS_LoggedIn;
     lscci.PrevStatus = EOS_ELoginStatus::EOS_LS_LoggedIn;
-    lscci.LocalUserId = &Settings::Inst().userid;
+    lscci.LocalUserId = Settings::Inst().userid;
 
     return GetCB_Manager().add_notification(this, res);
 }

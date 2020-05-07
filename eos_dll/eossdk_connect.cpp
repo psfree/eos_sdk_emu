@@ -19,13 +19,14 @@
 
 #include "eossdk_connect.h"
 #include "eossdk_platform.h"
+#include "eos_client_api.h"
 #include "settings.h"
 
 namespace sdk
 {
 
 EOSSDK_Connect::EOSSDK_Connect():
-    _productid(generate_account_id())
+    _productid(GetProductUserId(generate_account_id()))
 {
     GetCB_Manager().register_callbacks(this);
 }
@@ -52,7 +53,7 @@ void EOSSDK_Connect::Login(const EOS_Connect_LoginOptions* Options, void* Client
 
     lci.ClientData = ClientData;
     lci.ContinuanceToken = nullptr;
-    lci.LocalUserId = &_productid;
+    lci.LocalUserId = _productid;
     lci.ResultCode = EOS_EResult::EOS_Success;
     
     res->done = true;
@@ -74,7 +75,7 @@ void EOSSDK_Connect::CreateUser(const EOS_Connect_CreateUserOptions* Options, vo
     EOS_Connect_CreateUserCallbackInfo& cuci = res->CreateCallback<EOS_Connect_CreateUserCallbackInfo>((CallbackFunc)CompletionDelegate);
 
     cuci.ClientData = ClientData;
-    cuci.LocalUserId = &_productid;
+    cuci.LocalUserId = _productid;
     cuci.ResultCode = EOS_EResult::EOS_Connect_UserAlreadyExists;
 
     res->done = true;
@@ -230,7 +231,7 @@ EOS_ProductUserId EOSSDK_Connect::GetLoggedInUserByIndex(int32_t Index)
     LOG(Log::LogLevel::TRACE, "");
 
     if (Index == 0)
-        return &_productid;
+        return _productid;
 
     return nullptr;
 }
@@ -246,7 +247,7 @@ EOS_ELoginStatus EOSSDK_Connect::GetLoginStatus(EOS_ProductUserId LocalUserId)
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    if (*LocalUserId == _productid)
+    if (*LocalUserId == *_productid)
         return EOS_ELoginStatus::EOS_LS_LoggedIn;
 
     return EOS_ELoginStatus::EOS_LS_NotLoggedIn;
@@ -275,7 +276,7 @@ EOS_NotificationId EOSSDK_Connect::AddNotifyAuthExpiration(const EOS_Connect_Add
     EOS_Connect_AuthExpirationCallbackInfo& aeci = res->CreateCallback<EOS_Connect_AuthExpirationCallbackInfo>((CallbackFunc)Notification);
 
     aeci.ClientData = ClientData;
-    aeci.LocalUserId = &_productid;
+    aeci.LocalUserId = _productid;
 
     return GetCB_Manager().add_notification(this, res);
 }
@@ -315,7 +316,7 @@ EOS_NotificationId EOSSDK_Connect::AddNotifyLoginStatusChanged(const EOS_Connect
     lscci.ClientData = ClientData;
     lscci.PreviousStatus = EOS_ELoginStatus::EOS_LS_LoggedIn;
     lscci.CurrentStatus = EOS_ELoginStatus::EOS_LS_LoggedIn;
-    lscci.LocalUserId = &_productid;
+    lscci.LocalUserId = _productid;
 
     return GetCB_Manager().add_notification(this, res);
 }

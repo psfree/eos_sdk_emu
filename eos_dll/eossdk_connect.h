@@ -27,7 +27,7 @@ namespace sdk
         public IRunFrame
     {
     public:
-        EOS_ProductUserIdDetails _productid;
+        EOS_ProductUserId _productid;
         std::string _username; // This is used for leaderboards thing ?
 
         EOSSDK_Connect();

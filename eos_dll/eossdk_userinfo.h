@@ -27,7 +27,7 @@ namespace sdk
     class EOSSDK_UserInfo :
         public IRunFrame
     {
-        static constexpr std::chrono::milliseconds userinfo_query_timeout = std::chrono::milliseconds(1000);
+        static constexpr auto userinfo_query_timeout = std::chrono::milliseconds(1000);
 
         std::map<std::string, UserInfo_Info_pb> _userinfos;
         std::map<std::string, std::list<pFrameResult_t>> _userinfos_queries;

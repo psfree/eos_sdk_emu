@@ -42,7 +42,7 @@ private:
     std::string config_path;
 
 public:
-    EOS_EpicAccountIdDetails userid;
+    EOS_EpicAccountId userid;
     std::string username;
     std::string languages;
     std::string language;

@@ -18,7 +18,7 @@
  */
 
 #include "settings.h"
-//#include "epic_client.h"
+#include "eos_client_api.h"
 
 template<typename T>
 T get_setting(nlohmann::json& settings, std::string const& key, bool& save, T default_val)
@@ -74,11 +74,12 @@ void Settings::load_settings()
 
     settings["username"] = username;
 
-    userid = get_setting(settings, "epicid", save_settings, std::string(""));
-    while (!userid.IsValid())
-        userid = generate_epic_id_user_from_name(username);
+    
+    userid = GetEpicUserId(get_setting(settings, "epicid", save_settings, std::string("")));
+    while (!userid->IsValid())
+        userid = GetEpicUserId(generate_epic_id_user_from_name(username));
 
-    settings["epicid"] = userid.to_string();
+    settings["epicid"] = userid->to_string();
 
     language       = get_setting(settings, "language"      , save_settings, std::string("english"));
     languages      = get_setting(settings, "languages"     , save_settings, std::string("english"));
@@ -151,7 +152,7 @@ void Settings::load_settings()
     savepath += PATH_SEPARATOR;
     savepath += emu_savepath;
     savepath += PATH_SEPARATOR;
-    savepath += userid.to_string();
+    savepath += userid->to_string();
     savepath += PATH_SEPARATOR;
     savepath += gamename;
 
