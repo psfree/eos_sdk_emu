@@ -275,7 +275,7 @@ EOS_NotificationId EOSSDK_Connect::AddNotifyAuthExpiration(const EOS_Connect_Add
     EOS_Connect_AuthExpirationCallbackInfo& aeci = res->CreateCallback<EOS_Connect_AuthExpirationCallbackInfo>((CallbackFunc)Notification);
 
     aeci.ClientData = ClientData;
-    aeci.LocalUserId = nullptr; // TODO!
+    aeci.LocalUserId = &_productid;
 
     return GetCB_Manager().add_notification(this, res);
 }
@@ -315,7 +315,7 @@ EOS_NotificationId EOSSDK_Connect::AddNotifyLoginStatusChanged(const EOS_Connect
     lscci.ClientData = ClientData;
     lscci.PreviousStatus = EOS_ELoginStatus::EOS_LS_LoggedIn;
     lscci.CurrentStatus = EOS_ELoginStatus::EOS_LS_LoggedIn;
-    lscci.LocalUserId = nullptr; // TODO!
+    lscci.LocalUserId = &_productid;
 
     return GetCB_Manager().add_notification(this, res);
 }
