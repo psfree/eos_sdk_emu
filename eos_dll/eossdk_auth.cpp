@@ -32,6 +32,7 @@ EOSSDK_Auth::EOSSDK_Auth()
 EOSSDK_Auth::~EOSSDK_Auth()
 {
     GetCB_Manager().unregister_callbacks(this);
+    GetCB_Manager().remove_all_notifications(this);
 }
 
 void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, const EOS_Auth_OnLoginCallback CompletionDelegate)
