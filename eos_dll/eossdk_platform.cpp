@@ -18,6 +18,7 @@
  */
 
 #include "eossdk_platform.h"
+#include "settings.h"
 
 namespace sdk
 {
@@ -144,6 +145,11 @@ void EOS_Platform::Init(const EOS_Platform_Options* options)
         _achievements      = new EOSSDK_Achievements;
         _stats             = new EOSSDK_Stats;
         _leaderboards      = new EOSSDK_Leaderboards;
+
+        _presence->setup_myself();
+        _userinfo->setup_myself();
+
+        _network->set_default_channel(Settings::Inst().userid.to_string(), 0);
 
         _platform_init = true;
     }
