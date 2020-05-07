@@ -1,13 +1,13 @@
 #include "eos_epicaccountiddetails.h"
 
 EOS_EpicAccountIdDetails::EOS_EpicAccountIdDetails():
-    _idstr(),
+    _idstr("null"),
     _valid(false)
 {}
 
 EOS_EpicAccountIdDetails::EOS_EpicAccountIdDetails(std::string const& id)
 {
-    FromString(id.c_str());
+    from_string(id);
 }
 
 EOS_EpicAccountIdDetails::EOS_EpicAccountIdDetails(EOS_EpicAccountIdDetails const& other):
@@ -25,7 +25,7 @@ EOS_EpicAccountIdDetails::~EOS_EpicAccountIdDetails()
 
 EOS_EpicAccountIdDetails& EOS_EpicAccountIdDetails::operator=(std::string const& other)
 {
-    FromString(other.c_str());
+    from_string(other);
     return *this;
 }
 
@@ -72,54 +72,69 @@ void EOS_EpicAccountIdDetails::FromString(const char* accountIdStr)
 {
     LOCAL_LOCK();
 
-    _idstr = accountIdStr;
     if (accountIdStr != nullptr)
     {
-        size_t len = strlen(accountIdStr);
-        if (len >= 2 &&
-            accountIdStr[0] == '0' &&
-            accountIdStr[1] == 'x')
-        {
-            accountIdStr += 2;
-            len -= 2;
-        }
+        from_string(accountIdStr);
+    }
+    else
+    {
+        _valid = false;
+        _idstr = "null";
+    }
+}
 
-        if (len > 0)
+void EOS_EpicAccountIdDetails::from_string(std::string const& accountIdStr)
+{
+    _idstr = accountIdStr;
+    validate();
+}
+
+std::string const& EOS_EpicAccountIdDetails::to_string()
+{
+    LOCAL_LOCK();
+    return _idstr;
+}
+
+void EOS_EpicAccountIdDetails::validate()
+{
+    auto it = _idstr.begin();
+    _valid = false;
+
+    if (_idstr.length() > 2 &&
+        _idstr[0] == '0' &&
+        _idstr[1] == 'x')
+    {
+        std::advance(it, 2);
+    }
+
+    if (it != _idstr.end())
+    {
+        _valid = true;
+        for (; it != _idstr.end(); ++it)
         {
-            _valid = true;
-            for (int i = 0; i < len; ++i)
+            char c = *it;
+            if ((c < '0' || c > '9') &&
+                (c < 'A' || c > 'F') &&
+                (c < 'a' || c > 'f')
+                )
             {
-                char c = accountIdStr[i];
-                if ((c < '0' || c > '9') &&
-                    (c < 'A' || c > 'Z') &&
-                    (c < 'a' || c > 'z')
-                    )
-                {
-                    _valid = false;
-                    break;
-                }
+                _valid = false;
+                break;
             }
         }
     }
-    else
-        _valid = false;
-}
-
-std::string EOS_EpicAccountIdDetails::to_string() const
-{
-    return _idstr;
 }
 
 /////////////////////////////////////////////////////////
 
 EOS_ProductUserIdDetails::EOS_ProductUserIdDetails() :
-    _idstr(),
+    _idstr("null"),
     _valid(false)
 {}
 
 EOS_ProductUserIdDetails::EOS_ProductUserIdDetails(std::string const& id)
 {
-    FromString(id.c_str());
+    from_string(id);
 }
 
 EOS_ProductUserIdDetails::EOS_ProductUserIdDetails(EOS_ProductUserIdDetails const& other) :
@@ -137,7 +152,7 @@ EOS_ProductUserIdDetails::~EOS_ProductUserIdDetails()
 
 EOS_ProductUserIdDetails& EOS_ProductUserIdDetails::operator=(std::string const& other)
 {
-    FromString(other.c_str());
+    from_string(other);
     return *this;
 }
 
@@ -184,40 +199,58 @@ void EOS_ProductUserIdDetails::FromString(const char* accountIdStr)
 {
     LOCAL_LOCK();
 
-    _idstr = accountIdStr;
     if (accountIdStr != nullptr)
     {
-        size_t len = strlen(accountIdStr);
-        if (len >= 2 &&
-            accountIdStr[0] == '0' &&
-            accountIdStr[1] == 'x')
-        {
-            accountIdStr += 2;
-            len -= 2;
-        }
+        _idstr = accountIdStr;
+        validate();
+    }
+    else
+    {
+        _idstr = "null";
+        _valid = false;
+    }
+}
 
-        if (len > 0)
+std::string const& EOS_ProductUserIdDetails::to_string()
+{
+    LOCAL_LOCK();
+    return _idstr;
+}
+
+void EOS_ProductUserIdDetails::from_string(std::string const& accountIdStr)
+{
+    LOCAL_LOCK();
+    
+    _idstr = accountIdStr;
+    validate();
+}
+
+void EOS_ProductUserIdDetails::validate()
+{
+    auto it = _idstr.begin();
+    _valid = false;
+
+    if (_idstr.length() > 2 &&
+        _idstr[0] == '0' &&
+        _idstr[1] == 'x')
+    {
+        std::advance(it, 2);
+    }
+
+    if (it != _idstr.end())
+    {
+        _valid = true;
+        for (; it != _idstr.end(); ++it)
         {
-            _valid = true;
-            for (int i = 0; i < len; ++i)
+            char c = *it;
+            if ((c < '0' || c > '9') &&
+                (c < 'A' || c > 'F') &&
+                (c < 'a' || c > 'f')
+                )
             {
-                char c = accountIdStr[i];
-                if ((c < '0' || c > '9') &&
-                    (c < 'A' || c > 'Z') &&
-                    (c < 'a' || c > 'z')
-                    )
-                {
-                    _valid = false;
-                    break;
-                }
+                _valid = false;
+                break;
             }
         }
     }
-    else
-        _valid = false;
-}
-
-std::string EOS_ProductUserIdDetails::to_string() const
-{
-    return _idstr;
 }

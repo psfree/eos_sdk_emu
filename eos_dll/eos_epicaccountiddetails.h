@@ -21,29 +21,37 @@
 
 #include "common_includes.h"
 
+class EOSSDK_Client;
+
 struct EOS_EpicAccountIdDetails
 {
+    friend class EOSSDK_Client;
+
 private:
     std::recursive_mutex local_mutex;
     std::string _idstr;
     bool _valid;
 
-public:
     EOS_EpicAccountIdDetails();
     EOS_EpicAccountIdDetails(std::string const& id);
     EOS_EpicAccountIdDetails(EOS_EpicAccountIdDetails const&);
     EOS_EpicAccountIdDetails(EOS_EpicAccountIdDetails &&) noexcept;
-    ~EOS_EpicAccountIdDetails();
 
     EOS_EpicAccountIdDetails& operator=(std::string const&);
     EOS_EpicAccountIdDetails& operator=(EOS_EpicAccountIdDetails const&);
-    EOS_EpicAccountIdDetails& operator=(EOS_EpicAccountIdDetails &&) noexcept;
+    EOS_EpicAccountIdDetails& operator=(EOS_EpicAccountIdDetails&&) noexcept;
+
+    void FromString(const char* accountIdStr);
+    void from_string(std::string const& accountIdStr);
+    void validate();
+
+public:
+    ~EOS_EpicAccountIdDetails();
 
     EOS_Bool IsValid();
     EOS_EResult ToString(char* outBuffer, int32_t* outBufferSize);
-    void FromString(const char* accountIdStr);
 
-    std::string to_string() const;
+    std::string const& to_string();
 
     inline bool operator ==(EOS_EpicAccountIdDetails const& other) { return (_idstr == other._idstr); }
     inline bool operator !=(EOS_EpicAccountIdDetails const& other) { return !(*this == other); }
@@ -51,27 +59,33 @@ public:
 
 struct EOS_ProductUserIdDetails
 {
+    friend class EOSSDK_Client;
+
 private:
     std::recursive_mutex local_mutex;
     std::string _idstr;
     bool _valid;
 
-public:
     EOS_ProductUserIdDetails();
     EOS_ProductUserIdDetails(std::string const& id);
     EOS_ProductUserIdDetails(EOS_ProductUserIdDetails const&);
     EOS_ProductUserIdDetails(EOS_ProductUserIdDetails&&) noexcept;
-    ~EOS_ProductUserIdDetails();
 
     EOS_ProductUserIdDetails& operator=(std::string const&);
     EOS_ProductUserIdDetails& operator=(EOS_ProductUserIdDetails const&);
     EOS_ProductUserIdDetails& operator=(EOS_ProductUserIdDetails&&) noexcept;
 
+    void FromString(const char* accountIdStr);
+    void from_string(std::string const& accountIdStr);
+    void validate();
+
+public:
+    ~EOS_ProductUserIdDetails();
+
     EOS_Bool IsValid();
     EOS_EResult ToString(char* outBuffer, int32_t* outBufferSize);
-    void FromString(const char* accountIdStr);
 
-    std::string to_string() const;
+    std::string const& to_string();
 
     inline bool operator ==(EOS_ProductUserIdDetails const& other) { return (_idstr == other._idstr); }
     inline bool operator !=(EOS_ProductUserIdDetails const& other) { return !(*this == other); }
