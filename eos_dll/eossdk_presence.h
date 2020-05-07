@@ -24,12 +24,6 @@
 
 namespace sdk
 {
-    struct presence_query_t
-    {
-        pFrameResult_t result;
-        std::chrono::steady_clock::time_point start_time;
-    };
-
     class EOSSDK_Presence;
 
     class EOSSDK_PresenceModification
@@ -54,7 +48,7 @@ namespace sdk
         static constexpr std::chrono::milliseconds presence_query_timeout = std::chrono::milliseconds(1000);
 
         nlohmann::fifo_map<std::string, Presence_Info_pb> _presences;
-        std::map<std::string, std::list<presence_query_t>> _presence_queries;
+        std::map<std::string, std::list<pFrameResult_t>> _presence_queries;
 
     public:
         EOSSDK_Presence();
@@ -66,8 +60,8 @@ namespace sdk
         void trigger_presence_change(std::string userid);
 
         // Send Network messages
-        bool send_presence_info_request(Network::peer_t peerid, Presence_Info_Request_pb* req);
-        bool send_presence_info(Network::peer_t peerid, Presence_Info_pb* infos);
+        bool send_presence_info_request(Network::peer_t const& peerid, Presence_Info_Request_pb* req);
+        bool send_presence_info(Network::peer_t const& peerid, Presence_Info_pb* infos);
         bool send_presence_info_to_all_peers(Presence_Info_pb* infos);
 
         // Receive Network messages

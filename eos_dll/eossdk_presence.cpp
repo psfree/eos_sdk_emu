@@ -106,11 +106,7 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
 
     qpci.TargetUserId = new EOS_EpicAccountIdDetails(Options->TargetUserId->to_string());
 
-    presence_query_t query;
-    query.result = res;
-    query.start_time = std::chrono::steady_clock::now();
-
-    _presence_queries[Options->TargetUserId->to_string()].emplace_back(query);
+    _presence_queries[Options->TargetUserId->to_string()].emplace_back(res);
     Presence_Info_Request_pb* req = new Presence_Info_Request_pb;
     send_presence_info_request(Options->TargetUserId->to_string(), req);
 }
@@ -241,6 +237,7 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
     if (*Options->LocalUserId == Settings::Inst().userid)
     {
         EOSSDK_PresenceModification *modification = new EOSSDK_PresenceModification;
+        modification->infos = get_myself();
         *OutPresenceModificationHandle = reinterpret_cast<EOS_HPresenceModification>(modification);
         return EOS_EResult::EOS_Success;
     }
@@ -426,10 +423,10 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
     return EOS_EResult::EOS_Success;
 }
 
- ///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 //                           Network Send messages                           //
 ///////////////////////////////////////////////////////////////////////////////
- bool EOSSDK_Presence::send_presence_info_request(Network::peer_t peerid, Presence_Info_Request_pb* req)
+ bool EOSSDK_Presence::send_presence_info_request(Network::peer_t const& peerid, Presence_Info_Request_pb* req)
  {
      Network_Message_pb msg;
      Presence_Message_pb* presence = new Presence_Message_pb;
@@ -442,7 +439,7 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
      return GetNetwork().SendTo(msg);
  }
 
- bool EOSSDK_Presence::send_presence_info(Network::peer_t peerid, Presence_Info_pb* infos)
+ bool EOSSDK_Presence::send_presence_info(Network::peer_t const& peerid, Presence_Info_pb* infos)
  {
      Network_Message_pb msg;
      Presence_Message_pb* presence = new Presence_Message_pb;
@@ -526,8 +523,8 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
          {
              auto presence_query_it = it->second.begin();
 
-             presence_query_it->result->done = true;
-             presence_query_it->result->GetCallback<EOS_Presence_QueryPresenceCallbackInfo>().ResultCode = EOS_EResult::EOS_Success;
+             (*presence_query_it)->done = true;
+             (*presence_query_it)->GetCallback<EOS_Presence_QueryPresenceCallbackInfo>().ResultCode = EOS_EResult::EOS_Success;
 
              it->second.erase(presence_query_it);
 
@@ -560,10 +557,10 @@ bool EOSSDK_Presence::CBRunFrame()
     {
         for(auto presence_it = presence_queries.second.begin(); presence_it != presence_queries.second.end();)
         {
-            if ((std::chrono::steady_clock::now() - presence_it->start_time) > presence_query_timeout )
+            if ((std::chrono::steady_clock::now() - (*presence_it)->created_time) > presence_query_timeout )
             {
-                presence_it->result->done = true;
-                presence_it->result->GetCallback<EOS_Presence_QueryPresenceCallbackInfo>().ResultCode = EOS_EResult::EOS_TimedOut;
+                (*presence_it)->done = true;
+                (*presence_it)->GetCallback<EOS_Presence_QueryPresenceCallbackInfo>().ResultCode = EOS_EResult::EOS_TimedOut;
                 presence_it = presence_queries.second.erase(presence_it);
             }
             else
@@ -607,6 +604,12 @@ void EOSSDK_Presence::FreeCallback(pFrameResult_t res)
         {
             EOS_Presence_QueryPresenceCallbackInfo& qpci = res->GetCallback<EOS_Presence_QueryPresenceCallbackInfo>();
             delete qpci.TargetUserId;
+        }
+        break;
+
+        case EOS_Presence_SetPresenceCallbackInfo::k_iCallback:
+        {// Nothing to free right now
+            //EOS_Presence_SetPresenceCallbackInfo& spci = res->GetCallback<EOS_Presence_SetPresenceCallbackInfo>();
         }
         break;
     }
@@ -724,7 +727,9 @@ EOS_EResult EOSSDK_PresenceModification::DeleteData(const EOS_PresenceModificati
         auto& records = *infos.mutable_records();
         for (int i = 0; i < Options->RecordsCount; ++i)
         {
-            records[Options->Records[i].Key] = "#<remove>#";
+            auto it = records.find(Options->Records[i].Key);
+            if (it == records.end())
+                records.erase(it);
         }
         return EOS_EResult::EOS_Success;
     }
