@@ -173,6 +173,8 @@ EOS_DECLARE_FUNC(void) EOS_Auth_RemoveNotifyLoginStatusChanged(EOS_HAuth Handle,
 EOS_DECLARE_FUNC(void) EOS_Auth_Token_Release(EOS_Auth_Token* AuthToken)
 {
     LOG(Log::LogLevel::TRACE, "");
+    if (AuthToken == nullptr)
+        return;
 
     delete[] AuthToken->ExpiresAt;
     delete[] AuthToken->RefreshExpiresAt;

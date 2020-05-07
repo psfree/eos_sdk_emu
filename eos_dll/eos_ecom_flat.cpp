@@ -534,6 +534,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_Transaction_CopyEntitlementByIndex(EOS_Ec
 EOS_DECLARE_FUNC(void) EOS_Ecom_Entitlement_Release(EOS_Ecom_Entitlement* Entitlement)
 {
     LOG(Log::LogLevel::TRACE, "");
+    if (Entitlement == nullptr)
+        return;
 
     delete Entitlement;
 }
@@ -550,6 +552,8 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_Entitlement_Release(EOS_Ecom_Entitlement* Entitl
 EOS_DECLARE_FUNC(void) EOS_Ecom_CatalogItem_Release(EOS_Ecom_CatalogItem* CatalogItem)
 {
     LOG(Log::LogLevel::TRACE, "");
+    if (CatalogItem == nullptr)
+        return;
 
     delete CatalogItem;
 }
@@ -566,6 +570,8 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_CatalogItem_Release(EOS_Ecom_CatalogItem* Catalo
 EOS_DECLARE_FUNC(void) EOS_Ecom_CatalogOffer_Release(EOS_Ecom_CatalogOffer* CatalogOffer)
 {
     LOG(Log::LogLevel::TRACE, "");
+    if (CatalogOffer == nullptr)
+        return;
 
     delete CatalogOffer;
 }
@@ -582,6 +588,8 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_CatalogOffer_Release(EOS_Ecom_CatalogOffer* Cata
 EOS_DECLARE_FUNC(void) EOS_Ecom_KeyImageInfo_Release(EOS_Ecom_KeyImageInfo* KeyImageInfo)
 {
     LOG(Log::LogLevel::TRACE, "");
+    if (KeyImageInfo == nullptr)
+        return;
 
     delete KeyImageInfo;
 }
@@ -598,6 +606,8 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_KeyImageInfo_Release(EOS_Ecom_KeyImageInfo* KeyI
 EOS_DECLARE_FUNC(void) EOS_Ecom_CatalogRelease_Release(EOS_Ecom_CatalogRelease* CatalogRelease)
 {
     LOG(Log::LogLevel::TRACE, "");
+    if (CatalogRelease == nullptr)
+        return;
 
     delete CatalogRelease;
 }
@@ -615,6 +625,8 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_CatalogRelease_Release(EOS_Ecom_CatalogRelease* 
 EOS_DECLARE_FUNC(void) EOS_Ecom_Transaction_Release(EOS_Ecom_HTransaction Transaction)
 {
     LOG(Log::LogLevel::TRACE, "");
+    if (Transaction == nullptr)
+        return;
 
     delete Transaction;
 }
