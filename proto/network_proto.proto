@@ -87,6 +87,7 @@ message Friend_Info_Request_pb {
 // Response to peer friend infos request
 message Friend_Info_pb {
     string displayname = 1;
+    int32 status = 2;
 }
 
 // Base Friends related message

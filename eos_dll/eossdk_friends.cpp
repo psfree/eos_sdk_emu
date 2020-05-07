@@ -312,6 +312,7 @@ bool EOSSDK_Friends::on_friend_info_request(Network_Message_pb const& msg, Frien
     Friend_Info_pb* infos = new Friend_Info_pb;
 
     infos->set_displayname(Settings::Inst().username);
+    infos->set_status(static_cast<int32_t>(EOS_EFriendsStatus::EOS_FS_Friends));
     return send_friend_info(msg.source_id(), infos);
 }
 
