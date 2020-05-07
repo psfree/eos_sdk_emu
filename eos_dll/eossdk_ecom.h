@@ -23,6 +23,16 @@
 
 namespace sdk
 {
+    class EOSSDK_Ecom;
+
+    class EOSSDK_Ecom_Transaction
+    {
+        friend EOSSDK_Ecom;
+
+        EOS_ProductUserId _transaction_id;
+    public:
+    };
+
     class EOSSDK_Ecom :
         public IRunFrame
     {
