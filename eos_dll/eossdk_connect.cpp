@@ -359,7 +359,64 @@ void EOSSDK_Connect::FreeCallback(pFrameResult_t res)
 
     switch (res->res.m_iCallback)
     {
-
+        /////////////////////////////
+        //        Callbacks        //
+        /////////////////////////////
+        //case EOS_Connect_LoginCallbackInfo::k_iCallback:
+        //{
+        //    EOS_Connect_LoginCallbackInfo& callback = res->GetCallback<EOS_Connect_LoginCallbackInfo>();
+        //}
+        //break;
+        //
+        //case EOS_Connect_CreateUserCallbackInfo::k_iCallback:
+        //{
+        //    EOS_Connect_CreateUserCallbackInfo& callback = res->GetCallback<EOS_Connect_CreateUserCallbackInfo>();
+        //}
+        //break;
+        //
+        //case EOS_Connect_LinkAccountCallbackInfo::k_iCallback:
+        //{
+        //    EOS_Connect_LinkAccountCallbackInfo& callback = res->GetCallback<EOS_Connect_LinkAccountCallbackInfo>();
+        //}
+        //break;
+        //
+        //case EOS_Connect_CreateDeviceIdCallbackInfo::k_iCallback:
+        //{
+        //    EOS_Connect_CreateDeviceIdCallbackInfo& callback = res->GetCallback<EOS_Connect_CreateDeviceIdCallbackInfo>();
+        //}
+        //break;
+        //
+        //case EOS_Connect_DeleteDeviceIdCallbackInfo::k_iCallback:
+        //{
+        //    EOS_Connect_DeleteDeviceIdCallbackInfo& callback = res->GetCallback<EOS_Connect_DeleteDeviceIdCallbackInfo>();
+        //}
+        //break;
+        //
+        //case EOS_Connect_QueryExternalAccountMappingsCallbackInfo::k_iCallback:
+        //{
+        //    EOS_Connect_QueryExternalAccountMappingsCallbackInfo& callback = res->GetCallback<EOS_Connect_QueryExternalAccountMappingsCallbackInfo>();
+        //}
+        //break;
+        //
+        //case EOS_Connect_QueryProductUserIdMappingsCallbackInfo::k_iCallback:
+        //{
+        //    EOS_Connect_QueryProductUserIdMappingsCallbackInfo& callback = res->GetCallback<EOS_Connect_QueryProductUserIdMappingsCallbackInfo>();
+        //}
+        //break;
+        /////////////////////////////
+        //      Notifications      //
+        /////////////////////////////
+        //case EOS_Connect_AuthExpirationCallbackInfo::k_iCallback:
+        //{
+        //    EOS_Connect_AuthExpirationCallbackInfo& callback = res->GetCallback<EOS_Connect_AuthExpirationCallbackInfo>();
+        //}
+        //break;
+        //
+        //case EOS_Connect_LoginStatusChangedCallbackInfo::k_iCallback:
+        //{
+        //    EOS_Connect_LoginStatusChangedCallbackInfo& callback = res->GetCallback<EOS_Connect_LoginStatusChangedCallbackInfo>();
+        //}
+        //break;
     }
 }
 

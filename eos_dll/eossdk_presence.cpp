@@ -326,13 +326,8 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
-    pFrameResult_t res = GetCB_Manager().get_notification(this, NotificationId);
-    if (res.get() != nullptr)
-    {
-        EOS_Presence_PresenceChangedCallbackInfo& pcci = res->GetCallback<EOS_Presence_PresenceChangedCallbackInfo>();
-        delete pcci.PresenceUserId;
-        GetCB_Manager().remove_notification(this, NotificationId);
-    }
+   
+    GetCB_Manager().remove_notification(this, NotificationId);
 }
 
 /**
@@ -370,14 +365,7 @@ void EOSSDK_Presence::trigger_presence_change(std::string userid)
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
     
-    pFrameResult_t res = GetCB_Manager().get_notification(this, InId);
-    if (res.get() != nullptr)
-    {
-        EOS_Presence_JoinGameAcceptedCallbackInfo& jgaci = res->GetCallback<EOS_Presence_JoinGameAcceptedCallbackInfo>();
-        delete jgaci.TargetUserId;
-        delete []jgaci.JoinInfo;
-        GetCB_Manager().remove_notification(this, InId);
-    }
+    GetCB_Manager().remove_notification(this, InId);
 }
 
 /**
@@ -602,6 +590,9 @@ void EOSSDK_Presence::FreeCallback(pFrameResult_t res)
 
     switch (res->res.m_iCallback)
     {
+        /////////////////////////////
+        //        Callbacks        //
+        /////////////////////////////
         case EOS_Presence_QueryPresenceCallbackInfo::k_iCallback:
         {
             EOS_Presence_QueryPresenceCallbackInfo& qpci = res->GetCallback<EOS_Presence_QueryPresenceCallbackInfo>();
@@ -614,6 +605,22 @@ void EOSSDK_Presence::FreeCallback(pFrameResult_t res)
             //EOS_Presence_SetPresenceCallbackInfo& spci = res->GetCallback<EOS_Presence_SetPresenceCallbackInfo>();
         }
         break;
+        /////////////////////////////
+        //      Notifications      //
+        /////////////////////////////
+        case EOS_Presence_PresenceChangedCallbackInfo::k_iCallback:
+        {
+            EOS_Presence_PresenceChangedCallbackInfo& pcci = res->GetCallback<EOS_Presence_PresenceChangedCallbackInfo>();
+            delete pcci.PresenceUserId;
+        }
+        break;
+
+        case EOS_Presence_JoinGameAcceptedCallbackInfo::k_iCallback:
+        {
+            EOS_Presence_JoinGameAcceptedCallbackInfo& jgaci = res->GetCallback<EOS_Presence_JoinGameAcceptedCallbackInfo>();
+            delete jgaci.TargetUserId;
+            delete[]jgaci.JoinInfo;
+        }
     }
 }
 

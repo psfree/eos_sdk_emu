@@ -315,6 +315,9 @@ void EOSSDK_UserInfo::FreeCallback(pFrameResult_t res)
 
     switch (res->res.m_iCallback)
     {
+        /////////////////////////////
+        //        Callbacks        //
+        /////////////////////////////
         case EOS_UserInfo_QueryUserInfoCallbackInfo::k_iCallback:
         {
             EOS_UserInfo_QueryUserInfoCallbackInfo& quici = res->GetCallback<EOS_UserInfo_QueryUserInfoCallbackInfo>();
@@ -328,6 +331,9 @@ void EOSSDK_UserInfo::FreeCallback(pFrameResult_t res)
             delete quibdnci.TargetUserId;
         }
         break;
+        /////////////////////////////
+        //      Notifications      //
+        /////////////////////////////
     }
 }
 

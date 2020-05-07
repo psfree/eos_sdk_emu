@@ -44,7 +44,29 @@ bool EOSSDK_Friends::RunCallbacks(pFrameResult_t res)
 
 void EOSSDK_Friends::FreeCallback(pFrameResult_t res)
 {
+    GLOBAL_LOCK();
 
+    switch (res->res.m_iCallback)
+    {
+        /////////////////////////////
+        //        Callbacks        //
+        /////////////////////////////
+        //case callback_type::k_iCallback:
+        //{
+        //    callback_type& callback = res->GetCallback<callback_type>();
+        //    // Free resources
+        //}
+        //break;
+        /////////////////////////////
+        //      Notifications      //
+        /////////////////////////////
+        //case notification_type::k_iCallback:
+        //{
+        //    notification_type& callback = res->GetCallback<notification_type>();
+        //    // Free resources
+        //}
+        //break;
+    }
 }
 
 }

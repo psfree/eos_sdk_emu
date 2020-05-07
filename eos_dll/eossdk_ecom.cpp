@@ -342,6 +342,9 @@ void EOSSDK_Ecom::FreeCallback(pFrameResult_t res)
 
     switch (res->res.m_iCallback)
     {
+        /////////////////////////////
+        //        Callbacks        //
+        /////////////////////////////
         case EOS_Ecom_QueryOwnershipCallbackInfo::k_iCallback:
         {
             EOS_Ecom_QueryOwnershipCallbackInfo& qoci = res->GetCallback<EOS_Ecom_QueryOwnershipCallbackInfo>();
@@ -354,6 +357,15 @@ void EOSSDK_Ecom::FreeCallback(pFrameResult_t res)
             }
         }
         break;
+        /////////////////////////////
+        //      Notifications      //
+        /////////////////////////////
+        //case notification_type::k_iCallback:
+        //{
+        //    notification_type& callback = res->GetCallback<notification_type>();
+        //    // Free resources
+        //}
+        //break;
     }
 }
 
