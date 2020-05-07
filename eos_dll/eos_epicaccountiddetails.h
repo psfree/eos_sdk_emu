@@ -48,3 +48,31 @@ public:
     inline bool operator ==(EOS_EpicAccountIdDetails const& other) { return (_idstr == other._idstr); }
     inline bool operator !=(EOS_EpicAccountIdDetails const& other) { return !(*this == other); }
 };
+
+struct EOS_ProductUserIdDetails
+{
+private:
+    std::recursive_mutex local_mutex;
+    std::string _idstr;
+    bool _valid;
+
+public:
+    EOS_ProductUserIdDetails();
+    EOS_ProductUserIdDetails(std::string const& id);
+    EOS_ProductUserIdDetails(EOS_ProductUserIdDetails const&);
+    EOS_ProductUserIdDetails(EOS_ProductUserIdDetails&&) noexcept;
+    ~EOS_ProductUserIdDetails();
+
+    EOS_ProductUserIdDetails& operator=(std::string const&);
+    EOS_ProductUserIdDetails& operator=(EOS_ProductUserIdDetails const&);
+    EOS_ProductUserIdDetails& operator=(EOS_ProductUserIdDetails&&) noexcept;
+
+    EOS_Bool IsValid();
+    EOS_EResult ToString(char* outBuffer, int32_t* outBufferSize);
+    void FromString(const char* accountIdStr);
+
+    std::string to_string() const;
+
+    inline bool operator ==(EOS_ProductUserIdDetails const& other) { return (_idstr == other._idstr); }
+    inline bool operator !=(EOS_ProductUserIdDetails const& other) { return !(*this == other); }
+};
