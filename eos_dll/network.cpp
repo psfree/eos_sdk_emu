@@ -255,7 +255,7 @@ bool Network::SendTo(Network_Message_pb& msg)
 
     if (it == _peers_addrs.end())
     {
-        LOG(Log::LogLevel::ERR, "No route to %llu", msg.dest_id());
+        LOG(Log::LogLevel::ERR, "No route to %s", msg.dest_id().c_str());
         return false;
     }
 
