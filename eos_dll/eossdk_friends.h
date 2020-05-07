@@ -20,21 +20,63 @@
 #pragma once
 
 #include "common_includes.h"
+#include "network.h"
 
 namespace sdk
 {
+    struct friend_infos_t
+    {
+        bool online;
+        std::chrono::steady_clock::time_point last_hearbeat;
+        std::chrono::steady_clock::time_point last_infos;
+        Friend_Info_pb infos;
+    };
+
     class EOSSDK_Friends :
         public IRunFrame
     {
+        // Heartbeat rate
+        static constexpr auto alive_heartbeat_rate = std::chrono::seconds(2);
+        // Heartbeat timeout to delete disconnected friends
+        static constexpr auto alive_heartbeat = std::chrono::seconds(10);
+        // Retrieve all friends infos rate (except rich_presence)
+        static constexpr auto friend_infos_rate = std::chrono::seconds(5);
+
+        std::chrono::steady_clock::time_point _last_heartbeat;
+
+        nlohmann::fifo_map<std::string, friend_infos_t> _friends;
+        nlohmann::fifo_map<std::string, friend_infos_t> _friends_cache_for_query;
+
     public:
-        // RunFrame is always called when running callbacks
+        EOSSDK_Friends();
+        ~EOSSDK_Friends();
+
+        friend_infos_t* get_friend(std::string const& userid);
+        std::pair<std::string const, friend_infos_t>* get_friend_by_name(std::string const& username);
+
+        // Send Network messages
+        bool send_heartbeat(Friend_Heartbeat_pb *hb);
+        bool send_friend_info_request(Network::peer_t const& peerid, Friend_Info_Request_pb* req);
+        bool send_friend_info(Network::peer_t const& peerid, Friend_Info_pb* infos);
+
+        // Receive Network messages
+        bool on_heartbeat(Network_Message_pb const& msg, Friend_Heartbeat_pb const& hb);
+        bool on_friend_info_request(Network_Message_pb const& msg, Friend_Info_Request_pb const& req);
+        bool on_friend_info(Network_Message_pb const& msg, Friend_Info_pb const& infos);
+
         virtual bool CBRunFrame();
-        // RunNetwork is run if you register to a network message and we received that message
         virtual bool RunNetwork(Network_Message_pb const& msg);
-        // RunCallbacks is run when you sent a callback
-        // True  = FrameResult_t has been filled with a result
-        // False = FrameResult_t is not changed
         virtual bool RunCallbacks(pFrameResult_t res);
         virtual void FreeCallback(pFrameResult_t res);
+
+        void QueryFriends(const EOS_Friends_QueryFriendsOptions* Options, void* ClientData, const EOS_Friends_OnQueryFriendsCallback CompletionDelegate);
+        void SendInvite(const EOS_Friends_SendInviteOptions* Options, void* ClientData, const EOS_Friends_OnSendInviteCallback CompletionDelegate);
+        void AcceptInvite(const EOS_Friends_AcceptInviteOptions* Options, void* ClientData, const EOS_Friends_OnAcceptInviteCallback CompletionDelegate);
+        void RejectInvite(const EOS_Friends_RejectInviteOptions* Options, void* ClientData, const EOS_Friends_OnRejectInviteCallback CompletionDelegate);
+        int32_t GetFriendsCount(const EOS_Friends_GetFriendsCountOptions* Options);
+        EOS_EpicAccountId GetFriendAtIndex(const EOS_Friends_GetFriendAtIndexOptions* Options);
+        EOS_EFriendsStatus GetStatus(const EOS_Friends_GetStatusOptions* Options);
+        EOS_NotificationId AddNotifyFriendsUpdate(const EOS_Friends_AddNotifyFriendsUpdateOptions* Options, void* ClientData, const EOS_Friends_OnFriendsUpdateCallback FriendsUpdateHandler);
+        void RemoveNotifyFriendsUpdate(EOS_NotificationId NotificationId);
     };
 }
