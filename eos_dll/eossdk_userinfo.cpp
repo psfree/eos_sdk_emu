@@ -28,6 +28,7 @@ decltype(EOSSDK_UserInfo::userinfo_query_timeout) EOSSDK_UserInfo::userinfo_quer
 
 EOSSDK_UserInfo::EOSSDK_UserInfo()
 {
+    GetNetwork().register_listener(this, 0, Network_Message_pb::MessagesCase::kUserinfo);
     GetCB_Manager().register_callbacks(this);
     GetCB_Manager().register_frame(this);
 }
@@ -36,6 +37,7 @@ EOSSDK_UserInfo::~EOSSDK_UserInfo()
 {
     GetCB_Manager().unregister_frame(this);
     GetCB_Manager().unregister_callbacks(this);
+    GetNetwork().unregister_listener(this, 0, Network_Message_pb::MessagesCase::kUserinfo);
 }
 
 void EOSSDK_UserInfo::setup_myself()
