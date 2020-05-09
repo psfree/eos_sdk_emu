@@ -72,32 +72,176 @@ message UserInfo_Message_pb {
 }
 
 //////////////////////////////////////////////////////////////////////////
-//                          Friends messages                            //
+//                         Sessions messages                            //
 //////////////////////////////////////////////////////////////////////////
-// Broadcast to discover and be discoverable by other players
-message Friend_Heartbeat_pb {
-    
+// Request peer sessions info
+message Sessions_Info_Request_pb {
+    string sessionid = 1;
 }
 
+message Session_Attr_Value {
+    oneof value {
+        int64  i = 1;
+		double d = 2;
+		bool   b = 3;
+		string s = 4;
+	}
+}
+
+message Session_Attribute {
+    int32 advertisement_type = 1;
+    Session_Attr_Value value = 2;
+}
+
+// Response to peer sessions infos request
+message Sessions_Info_pb {
+	string sessionname = 1;
+    string sessionid = 2;
+	string bucketid = 3;
+	uint32 maxplayers = 4;
+    repeated string players = 5;
+    bool presence_allowed = 6;
+    string host_address = 7;
+    int32 permission_level = 8;
+    bool join_in_progress_allowed = 9;
+    bool invites_allowed = 10;
+    map<string, Session_Attribute> attributes = 11;
+    bool started = 12;
+}
+
+// Message sent to all members when the session is destroyed
+message Sessions_Destroy_pb {
+    string sessionname = 1;
+    string sessionid = 2;
+}
+
+// Base Sessions related message
+message Sessions_Message_pb {
+    oneof message {
+        Sessions_Info_Request_pb sessions_request = 1;
+        Sessions_Info_pb session_info = 2;
+        Sessions_Destroy_pb session_destroy = 3;
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+//                      Sessions Search messages                        //
+//////////////////////////////////////////////////////////////////////////
+
+message Search_Parameter {
+    map<int32, Session_Attr_Value> param = 1;
+}
+
+// Search sessions
+message Sessions_Search_pb {
+    uint64 search_id = 1;
+    string sessionid = 2;
+    map<string, Search_Parameter> parameters = 3;
+    uint32 max_results = 4;
+}
+
+// Search Response
+message Sessions_Search_response_pb {
+    uint64 search_id = 1;
+    Sessions_Info_pb session_infos = 2;
+}
+
+message Sessions_Search_Message_pb {
+    oneof message {
+        Sessions_Search_pb search = 1;
+        Sessions_Search_response_pb search_response = 2;
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+//                            P2P messages                              //
+//////////////////////////////////////////////////////////////////////////
+// Request a P2P connection
+message P2P_Connect_Request_pb {
+    int32 channel = 1;
+}
+
+// Response to a P2P connection
+message P2P_Connect_Response_pb {
+    bool accepted = 1;
+    int32 channel = 2;
+}
+
+// Send P2P data
+message P2P_Data_Message_pb {
+    string data = 1;
+    uint64 message_id = 2;
+    int32 channel = 3;
+}
+
+// P2P data acknowledge
+message P2P_Data_Acknowledge_pb {
+    uint64 message_id = 1;
+    int32 channel = 2;
+}
+
+// P2P Connection close
+message P2P_Connection_Close_pb {
+    int32 channel = 1;
+}
+
+// Base P2P related message
+message P2P_Message_pb {
+    oneof message {
+        P2P_Connect_Request_pb connect_request = 1;
+        P2P_Connect_Response_pb connect_response = 2;
+        P2P_Data_Message_pb data_message = 3;
+        P2P_Data_Acknowledge_pb data_acknowledge = 4;
+        P2P_Connection_Close_pb connection_close = 5;
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+//                          Friends messages                            //
+//////////////////////////////////////////////////////////////////////////
 // Request peer friend infos
 message Friend_Info_Request_pb {
-
 }
 
 // Response to peer friend infos request
 message Friend_Info_pb {
-    string displayname = 1;
-    int32 status = 2;
 }
 
 // Base Friends related message
 message Friends_Message_pb {
     oneof message {
-        Friend_Heartbeat_pb heartbeat = 1;
-        Friend_Info_Request_pb friend_info_request = 2;
-        Friend_Info_pb friend_info = 3;
+        Friend_Info_Request_pb friend_info_request = 1;
+        Friend_Info_pb friend_info = 2;
 	}
 }
+
+//////////////////////////////////////////////////////////////////////////
+//                          Connect messages                            //
+//////////////////////////////////////////////////////////////////////////
+// Broadcast to discover and be discoverable by other players
+message Connect_Heartbeat_pb {
+    
+}
+
+message Connect_Request_Info_pb {
+
+}
+
+message Connect_Infos_pb {
+    string userid = 1;
+    map<string, string> sessions = 2;
+    string displayname = 3;
+}
+
+// Base Connect related message
+message Connect_Message_pb {
+    oneof message {
+        Connect_Heartbeat_pb heartbeat = 1;
+        Connect_Request_Info_pb request = 2;
+        Connect_Infos_pb infos = 3;
+	}
+}
+
 
 // Network base message
 message Network_Message_pb {
