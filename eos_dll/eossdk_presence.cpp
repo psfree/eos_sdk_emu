@@ -273,7 +273,7 @@ void EOSSDK_Presence::SetPresence( const EOS_Presence_SetPresenceOptions* Option
     {
         spci.ResultCode = EOS_EResult::EOS_InvalidParameters;
     }
-    else if (*Options->LocalUserId != *Settings::Inst().userid)
+    else if (Options->LocalUserId != Settings::Inst().userid)
     {
         spci.ResultCode = EOS_EResult::EOS_MissingPermissions;
     }
