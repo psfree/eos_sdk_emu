@@ -42,7 +42,7 @@ namespace sdk
 
         // Send Network messages
         bool send_userinfo_request(Network::peer_t const& peerid, UserInfo_Info_Request_pb* req);
-        bool send_userinfo(Network::peer_t const& peerid, UserInfo_Info_pb* infos);
+        bool send_my_userinfo(Network::peer_t const& peerid);
 
         // Receive Network messages
         bool on_userinfo_request(Network_Message_pb const& msg, UserInfo_Info_Request_pb const& req);

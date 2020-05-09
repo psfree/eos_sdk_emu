@@ -61,8 +61,8 @@ namespace sdk
 
         // Send Network messages
         bool send_presence_info_request(Network::peer_t const& peerid, Presence_Info_Request_pb* req);
-        bool send_presence_info(Network::peer_t const& peerid, Presence_Info_pb* infos);
-        bool send_presence_info_to_all_peers(Presence_Info_pb* infos);
+        bool send_my_presence_info(Network::peer_t const& peerid);
+        bool send_my_presence_info_to_all_peers();
 
         // Receive Network messages
         bool on_presence_request(Network_Message_pb const& msg, Presence_Info_Request_pb const& req);

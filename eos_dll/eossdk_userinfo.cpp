@@ -232,20 +232,23 @@ bool EOSSDK_UserInfo::send_userinfo_request(Network::peer_t const& peerid, UserI
     return GetNetwork().SendTo(msg);
 }
 
-bool EOSSDK_UserInfo::send_userinfo(Network::peer_t const& peerid, UserInfo_Info_pb* infos)
+bool EOSSDK_UserInfo::send_my_userinfo(Network::peer_t const& peerid)
 {
     Network_Message_pb msg;
     UserInfo_Message_pb* userinfo = new UserInfo_Message_pb;
 
     std::string const& userid = GetEOS_Connect().product_id()->to_string();
 
-    userinfo->set_allocated_userinfo_info(infos);
+    userinfo->set_allocated_userinfo_info(&get_myself());
     msg.set_allocated_userinfo(userinfo);
 
     msg.set_source_id(userid);
     msg.set_dest_id(peerid);
 
-    return GetNetwork().SendTo(msg);
+    auto res = GetNetwork().SendTo(msg);
+    userinfo->release_userinfo_info();
+
+    return res;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -255,8 +258,7 @@ bool EOSSDK_UserInfo::on_userinfo_request(Network_Message_pb const& msg, UserInf
 {
     GLOBAL_LOCK();
 
-    UserInfo_Info_pb* infos = new UserInfo_Info_pb(get_myself());
-    return send_userinfo(msg.source_id(), infos);
+    return send_my_userinfo(msg.source_id());
 }
 
 bool EOSSDK_UserInfo::on_userinfo(Network_Message_pb const& msg, UserInfo_Info_pb const& infos)

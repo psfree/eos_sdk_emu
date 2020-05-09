@@ -284,8 +284,7 @@ void EOSSDK_Presence::SetPresence( const EOS_Presence_SetPresenceOptions* Option
         EOSSDK_PresenceModification *new_presence = reinterpret_cast<EOSSDK_PresenceModification*>(Options->PresenceModificationHandle);
         get_myself() = new_presence->infos;
 
-        Presence_Info_pb* pres = new Presence_Info_pb(_presences.begin()->second);
-        send_presence_info_to_all_peers(pres);
+        send_my_presence_info_to_all_peers();
     }
 
     GetCB_Manager().add_callback(this, res);
@@ -432,35 +431,39 @@ bool EOSSDK_Presence::send_presence_info_request(Network::peer_t const& peerid, 
     return GetNetwork().SendTo(msg);
 }
 
-bool EOSSDK_Presence::send_presence_info(Network::peer_t const& peerid, Presence_Info_pb* infos)
+bool EOSSDK_Presence::send_my_presence_info(Network::peer_t const& peerid)
 {
     Network_Message_pb msg;
     Presence_Message_pb* presence = new Presence_Message_pb;
 
     std::string const& userid = GetEOS_Connect().product_id()->to_string();
 
-    presence->set_allocated_presence_info(infos);
+    presence->set_allocated_presence_info(&get_myself());
     msg.set_allocated_presence(presence);
 
     msg.set_source_id(userid);
     msg.set_dest_id(peerid);
 
-    return GetNetwork().SendTo(msg);
+    auto res = GetNetwork().SendTo(msg);
+    presence->release_presence_info();
+
+    return res;
 }
 
-bool EOSSDK_Presence::send_presence_info_to_all_peers(Presence_Info_pb* infos)
+bool EOSSDK_Presence::send_my_presence_info_to_all_peers()
 {
     Network_Message_pb msg;
     Presence_Message_pb* presence = new Presence_Message_pb;
 
     std::string const& userid = GetEOS_Connect().product_id()->to_string();
 
-    presence->set_allocated_presence_info(infos);
+    presence->set_allocated_presence_info(&get_myself());
     msg.set_allocated_presence(presence);
 
     msg.set_source_id(userid);
 
     GetNetwork().SendToAllPeers(msg).size();
+    presence->release_presence_info();
     return true;
 }
 
@@ -472,8 +475,7 @@ bool EOSSDK_Presence::on_presence_request(Network_Message_pb const& msg, Presenc
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
-    Presence_Info_pb* info = new Presence_Info_pb(get_myself());
-    return send_presence_info(msg.source_id(), info);
+    return send_my_presence_info(msg.source_id());
 }
 
 bool EOSSDK_Presence::on_presence_infos(Network_Message_pb const& msg, Presence_Info_pb const& infos)
@@ -487,13 +489,13 @@ bool EOSSDK_Presence::on_presence_infos(Network_Message_pb const& msg, Presence_
         Presence_Info_pb& presence_infos = _presences[GetEpicUserId(msg.source_id())];
 
         if(presence_infos.status()         != infos.status()         ||
-        presence_infos.productid()      != infos.productid()      ||
-        presence_infos.productversion() != infos.productversion() ||
-        presence_infos.platform()       != infos.platform()       ||
-        presence_infos.richtext()       != infos.richtext()       ||
-        presence_infos.productname()    != infos.productname()    ||
-        presence_infos.joininfo()       != infos.joininfo()       ||
-        presence_infos.records_size()   != infos.records_size())
+           presence_infos.productid()      != infos.productid()      ||
+           presence_infos.productversion() != infos.productversion() ||
+           presence_infos.platform()       != infos.platform()       ||
+           presence_infos.richtext()       != infos.richtext()       ||
+           presence_infos.productname()    != infos.productname()    ||
+           presence_infos.joininfo()       != infos.joininfo()       ||
+           presence_infos.records_size()   != infos.records_size())
         {
             presence_changed = true;
         }
