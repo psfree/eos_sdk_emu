@@ -20,21 +20,162 @@
 #pragma once
 
 #include "common_includes.h"
+#include "network.h"
 
 namespace sdk
 {
+    class EOSSDK_Sessions;
+
+    class EOSSDK_SessionModification
+    {
+    public:
+        friend class sdk::EOSSDK_Sessions;
+        enum class modif_type : uint8_t
+        {
+            creation = 0,
+            update = 1,
+        };
+
+    private:
+
+        std::recursive_mutex local_mutex;
+
+        uint32_t _api_version;
+        modif_type _type;
+        Sessions_Info_pb _infos;
+
+    public:
+        
+        EOS_EResult SetBucketId(const EOS_SessionModification_SetBucketIdOptions* Options);
+        EOS_EResult SetHostAddress(const EOS_SessionModification_SetHostAddressOptions* Options);
+        EOS_EResult SetPermissionLevel(const EOS_SessionModification_SetPermissionLevelOptions* Options);
+        EOS_EResult SetJoinInProgressAllowed(const EOS_SessionModification_SetJoinInProgressAllowedOptions* Options);
+        EOS_EResult SetMaxPlayers(const EOS_SessionModification_SetMaxPlayersOptions* Options);
+        EOS_EResult SetInvitesAllowed(const EOS_SessionModification_SetInvitesAllowedOptions* Options);
+        EOS_EResult AddAttribute(const EOS_SessionModification_AddAttributeOptions* Options);
+        EOS_EResult RemoveAttribute(const EOS_SessionModification_RemoveAttributeOptions* Options);
+    };
+
+    class EOSSDK_SessionSearch:
+        public IRunFrame
+    {
+        friend class sdk::EOSSDK_Sessions;
+     
+        static constexpr auto search_timeout = std::chrono::milliseconds(5000);
+        static std::atomic<uint64_t> search_id;
+
+        std::recursive_mutex local_mutex;
+
+        EOS_ProductUserId           _target_userid;
+        Sessions_Search_pb          _search_infos;
+        std::list<Sessions_Info_pb> _results;
+        pFrameResult_t              _search_cb;
+        std::set<std::string>       _search_peers;
+
+    public:
+        EOSSDK_SessionSearch();
+        ~EOSSDK_SessionSearch();
+
+        // Send Network messages
+        bool send_sessions_search(Sessions_Search_pb *search);
+
+        // Receive Network messages
+        bool on_sessions_search_response(Network_Message_pb const& msg, Sessions_Search_response_pb const& resp);
+
+        virtual bool CBRunFrame();
+        virtual bool RunNetwork(Network_Message_pb const& msg);
+        virtual bool RunCallbacks(pFrameResult_t res);
+        virtual void FreeCallback(pFrameResult_t res);
+
+        EOS_EResult SetSessionId(const EOS_SessionSearch_SetSessionIdOptions* Options);
+        EOS_EResult SetTargetUserId(const EOS_SessionSearch_SetTargetUserIdOptions* Options);
+        EOS_EResult SetParameter(const EOS_SessionSearch_SetParameterOptions* Options);
+        EOS_EResult RemoveParameter(const EOS_SessionSearch_RemoveParameterOptions* Options);
+        EOS_EResult SetMaxResults(const EOS_SessionSearch_SetMaxResultsOptions* Options);
+        void Find(const EOS_SessionSearch_FindOptions* Options, void* ClientData, const EOS_SessionSearch_OnFindCallback CompletionDelegate);
+        uint32_t GetSearchResultCount(const EOS_SessionSearch_GetSearchResultCountOptions* Options);
+        EOS_EResult CopySearchResultByIndex(const EOS_SessionSearch_CopySearchResultByIndexOptions* Options, EOS_HSessionDetails* OutSessionHandle);
+    };
+
+    class EOSSDK_SessionDetails
+    {
+        friend class sdk::EOSSDK_Sessions;
+        friend class sdk::EOSSDK_SessionSearch;
+
+        Sessions_Info_pb infos;
+
+    public:
+        EOS_EResult CopyInfo(const EOS_SessionDetails_CopyInfoOptions* Options, EOS_SessionDetails_Info** OutSessionInfo);
+        uint32_t GetSessionAttributeCount(const EOS_SessionDetails_GetSessionAttributeCountOptions* Options);
+        EOS_EResult CopySessionAttributeByIndex(const EOS_SessionDetails_CopySessionAttributeByIndexOptions* Options, EOS_SessionDetails_Attribute** OutSessionAttribute);
+        EOS_EResult CopySessionAttributeByKey(const EOS_SessionDetails_CopySessionAttributeByKeyOptions* Options, EOS_SessionDetails_Attribute** OutSessionAttribute);
+    };
+
+    class EOSSDK_ActiveSession
+    {
+        friend class sdk::EOSSDK_Sessions;
+
+    public:
+        EOS_EResult CopyInfo(const EOS_ActiveSession_CopyInfoOptions* Options, EOS_ActiveSession_Info** OutActiveSessionInfo);
+        uint32_t GetRegisteredPlayerCount(const EOS_ActiveSession_GetRegisteredPlayerCountOptions* Options);
+        EOS_ProductUserId GetRegisteredPlayerByIndex(const EOS_ActiveSession_GetRegisteredPlayerByIndexOptions* Options);
+    };
+
     class EOSSDK_Sessions :
         public IRunFrame
     {
+
     public:
-        // RunFrame is always called when running callbacks
+        EOSSDK_Sessions();
+        ~EOSSDK_Sessions();
+
+        std::map<std::string, Sessions_Info_pb> _sessions;
+
+        Sessions_Info_pb* get_session_by_name(std::string const& session_name);
+        Sessions_Info_pb* get_session_by_id(std::string const& session_id);
+        Sessions_Info_pb* get_session_from_attributes(google::protobuf::Map<std::string, Search_Parameter> const& parameters);
+
+        // Send Network messages
+        bool send_to_all_members(Sessions_Message_pb* sess, Sessions_Info_pb* session);
+        bool send_sessions_info_request(Network::peer_t const& peerid, Sessions_Info_Request_pb* req) const;
+        bool send_sessions_info(Network::peer_t const& peerid, Sessions_Info_pb* infos) const;
+        bool send_session_destroy(Network::peer_t const& peerid, Sessions_Destroy_pb* destr) const;
+        bool send_sessions_search_response(Network::peer_t const& peerid, Sessions_Search_response_pb* resp) const;
+
+        // Receive Network messages
+        bool on_sessions_info_request(Network_Message_pb const& msg, Sessions_Info_Request_pb const& req);
+        bool on_sessions_info(Network_Message_pb const& msg, Sessions_Info_pb const& infos);
+        bool on_session_destroy(Network_Message_pb const& msg, Sessions_Destroy_pb const& destr);
+        bool on_sessions_search(Network_Message_pb const& msg, Sessions_Search_pb const& search);
+
         virtual bool CBRunFrame();
-        // RunNetwork is run if you register to a network message and we received that message
         virtual bool RunNetwork(Network_Message_pb const& msg);
-        // RunCallbacks is run when you sent a callback
-        // True  = FrameResult_t has been filled with a result
-        // False = FrameResult_t is not changed
         virtual bool RunCallbacks(pFrameResult_t res);
         virtual void FreeCallback(pFrameResult_t res);
+
+        EOS_EResult CreateSessionModification(const EOS_Sessions_CreateSessionModificationOptions* Options, EOS_HSessionModification* OutSessionModificationHandle);
+        EOS_EResult UpdateSessionModification(const EOS_Sessions_UpdateSessionModificationOptions* Options, EOS_HSessionModification* OutSessionModificationHandle);
+        void UpdateSession(const EOS_Sessions_UpdateSessionOptions* Options, void* ClientData, const EOS_Sessions_OnUpdateSessionCallback CompletionDelegate);
+        void DestroySession(const EOS_Sessions_DestroySessionOptions* Options, void* ClientData, const EOS_Sessions_OnDestroySessionCallback CompletionDelegate);
+        void JoinSession(const EOS_Sessions_JoinSessionOptions* Options, void* ClientData, const EOS_Sessions_OnJoinSessionCallback CompletionDelegate);
+        void StartSession(const EOS_Sessions_StartSessionOptions* Options, void* ClientData, const EOS_Sessions_OnStartSessionCallback CompletionDelegate);
+        void EndSession(const EOS_Sessions_EndSessionOptions* Options, void* ClientData, const EOS_Sessions_OnEndSessionCallback CompletionDelegate);
+        void RegisterPlayers(const EOS_Sessions_RegisterPlayersOptions* Options, void* ClientData, const EOS_Sessions_OnRegisterPlayersCallback CompletionDelegate);
+        void UnregisterPlayers(const EOS_Sessions_UnregisterPlayersOptions* Options, void* ClientData, const EOS_Sessions_OnUnregisterPlayersCallback CompletionDelegate);
+        void SendInvite(const EOS_Sessions_SendInviteOptions* Options, void* ClientData, const EOS_Sessions_OnSendInviteCallback CompletionDelegate);
+        void RejectInvite(const EOS_Sessions_RejectInviteOptions* Options, void* ClientData, const EOS_Sessions_OnRejectInviteCallback CompletionDelegate);
+        void QueryInvites(const EOS_Sessions_QueryInvitesOptions* Options, void* ClientData, const EOS_Sessions_OnQueryInvitesCallback CompletionDelegate);
+        uint32_t GetInviteCount(const EOS_Sessions_GetInviteCountOptions* Options);
+        EOS_EResult GetInviteIdByIndex(const EOS_Sessions_GetInviteIdByIndexOptions* Options, char* OutBuffer, int32_t* InOutBufferLength);
+        EOS_EResult CreateSessionSearch(const EOS_Sessions_CreateSessionSearchOptions* Options, EOS_HSessionSearch* OutSessionSearchHandle);
+        EOS_EResult CopyActiveSessionHandle(const EOS_Sessions_CopyActiveSessionHandleOptions* Options, EOS_HActiveSession* OutSessionHandle);
+        EOS_NotificationId AddNotifySessionInviteReceived(const EOS_Sessions_AddNotifySessionInviteReceivedOptions* Options, void* ClientData, const EOS_Sessions_OnSessionInviteReceivedCallback NotificationFn);
+        void RemoveNotifySessionInviteReceived(EOS_NotificationId InId);
+        EOS_NotificationId AddNotifySessionInviteAccepted(const EOS_Sessions_AddNotifySessionInviteAcceptedOptions* Options, void* ClientData, const EOS_Sessions_OnSessionInviteAcceptedCallback NotificationFn);
+        void RemoveNotifySessionInviteAccepted(EOS_NotificationId InId);
+        EOS_EResult CopySessionHandleByInviteId(const EOS_Sessions_CopySessionHandleByInviteIdOptions* Options, EOS_HSessionDetails* OutSessionHandle);
+        EOS_EResult CopySessionHandleForPresence(const EOS_Sessions_CopySessionHandleForPresenceOptions* Options, EOS_HSessionDetails* OutSessionHandle);
+        EOS_EResult IsUserInSession(const EOS_Sessions_IsUserInSessionOptions* Options);
+        EOS_EResult DumpSessionState(const EOS_Sessions_DumpSessionStateOptions* Options);
     };
 }
