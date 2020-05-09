@@ -1108,7 +1108,7 @@ bool EOSSDK_Sessions::RunNetwork(Network_Message_pb const& msg)
 
             switch (search.message_case())
             {
-                case Sessions_Message_pb::MessageCase::kSessionsRequest: return on_sessions_search(msg, search.search());
+                case Sessions_Search_Message_pb::MessageCase::kSearch: return on_sessions_search(msg, search.search());
             }
         }
     }
