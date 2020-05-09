@@ -30,11 +30,9 @@ union epicid_t {
     {
         std::stringstream sstr;
 
-        sstr << "0x" << std::hex;
-        if (part2 != 0)
-            sstr << part2;
-
-        sstr << part1;
+        sstr << std::hex
+            << std::setfill('0') << std::setw(16) << part2
+            << std::setfill('0') << std::setw(16) << part1;
         return sstr.str();
     }
 };

@@ -1,18 +1,8 @@
 #include "eos_epicaccountiddetails.h"
 
 EOS_EpicAccountIdDetails::EOS_EpicAccountIdDetails():
-    _idstr("null"),
+    _idstr(sdk::NULL_USER_ID),
     _valid(false)
-{}
-
-EOS_EpicAccountIdDetails::EOS_EpicAccountIdDetails(std::string const& id)
-{
-    from_string(id);
-}
-
-EOS_EpicAccountIdDetails::EOS_EpicAccountIdDetails(EOS_EpicAccountIdDetails const& other):
-    _idstr(other._idstr),
-    _valid(other._valid)
 {}
 
 EOS_EpicAccountIdDetails::EOS_EpicAccountIdDetails(EOS_EpicAccountIdDetails && other) noexcept :
@@ -22,19 +12,6 @@ EOS_EpicAccountIdDetails::EOS_EpicAccountIdDetails(EOS_EpicAccountIdDetails && o
 
 EOS_EpicAccountIdDetails::~EOS_EpicAccountIdDetails()
 {}
-
-EOS_EpicAccountIdDetails& EOS_EpicAccountIdDetails::operator=(std::string const& other)
-{
-    from_string(other);
-    return *this;
-}
-
-EOS_EpicAccountIdDetails& EOS_EpicAccountIdDetails::operator=(EOS_EpicAccountIdDetails const& other)
-{
-    _idstr = other._idstr;
-    _valid = other._valid;
-    return *this;
-}
 
 EOS_EpicAccountIdDetails& EOS_EpicAccountIdDetails::operator=(EOS_EpicAccountIdDetails && other) noexcept
 {
@@ -79,12 +56,14 @@ void EOS_EpicAccountIdDetails::FromString(const char* accountIdStr)
     else
     {
         _valid = false;
-        _idstr = "null";
+        _idstr = sdk::NULL_USER_ID;
     }
 }
 
 void EOS_EpicAccountIdDetails::from_string(std::string const& accountIdStr)
 {
+    LOCAL_LOCK();
+
     _idstr = accountIdStr;
     validate();
 }
@@ -104,11 +83,14 @@ void EOS_EpicAccountIdDetails::validate()
         _idstr[0] == '0' &&
         _idstr[1] == 'x')
     {
-        std::advance(it, 2);
+        it = _idstr.erase(_idstr.begin(), _idstr.begin() + 2);
     }
 
     if (it != _idstr.end())
     {
+        if (std::string(it, _idstr.end()) == sdk::NULL_USER_ID)
+            return;
+
         _valid = true;
         for (; it != _idstr.end(); ++it)
         {
@@ -119,7 +101,7 @@ void EOS_EpicAccountIdDetails::validate()
                 )
             {
                 _valid = false;
-                break;
+                return;
             }
         }
     }
@@ -128,18 +110,8 @@ void EOS_EpicAccountIdDetails::validate()
 /////////////////////////////////////////////////////////
 
 EOS_ProductUserIdDetails::EOS_ProductUserIdDetails() :
-    _idstr("null"),
+    _idstr(),
     _valid(false)
-{}
-
-EOS_ProductUserIdDetails::EOS_ProductUserIdDetails(std::string const& id)
-{
-    from_string(id);
-}
-
-EOS_ProductUserIdDetails::EOS_ProductUserIdDetails(EOS_ProductUserIdDetails const& other) :
-    _idstr(other._idstr),
-    _valid(other._valid)
 {}
 
 EOS_ProductUserIdDetails::EOS_ProductUserIdDetails(EOS_ProductUserIdDetails&& other) noexcept :
@@ -149,19 +121,6 @@ EOS_ProductUserIdDetails::EOS_ProductUserIdDetails(EOS_ProductUserIdDetails&& ot
 
 EOS_ProductUserIdDetails::~EOS_ProductUserIdDetails()
 {}
-
-EOS_ProductUserIdDetails& EOS_ProductUserIdDetails::operator=(std::string const& other)
-{
-    from_string(other);
-    return *this;
-}
-
-EOS_ProductUserIdDetails& EOS_ProductUserIdDetails::operator=(EOS_ProductUserIdDetails const& other)
-{
-    _idstr = other._idstr;
-    _valid = other._valid;
-    return *this;
-}
 
 EOS_ProductUserIdDetails& EOS_ProductUserIdDetails::operator=(EOS_ProductUserIdDetails&& other) noexcept
 {
@@ -206,7 +165,7 @@ void EOS_ProductUserIdDetails::FromString(const char* accountIdStr)
     }
     else
     {
-        _idstr = "null";
+        _idstr = sdk::NULL_USER_ID;
         _valid = false;
     }
 }
@@ -239,6 +198,9 @@ void EOS_ProductUserIdDetails::validate()
 
     if (it != _idstr.end())
     {
+        if (std::string(it, _idstr.end()) == sdk::NULL_USER_ID)
+            return;
+
         _valid = true;
         for (; it != _idstr.end(); ++it)
         {
@@ -249,7 +211,7 @@ void EOS_ProductUserIdDetails::validate()
                 )
             {
                 _valid = false;
-                break;
+                return;
             }
         }
     }

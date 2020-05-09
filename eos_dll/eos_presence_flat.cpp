@@ -189,7 +189,6 @@ EOS_DECLARE_FUNC(void) EOS_Presence_Info_Release(EOS_Presence_Info* PresenceInfo
         delete[] PresenceInfo->Records[i].Value;
     }
     delete[] PresenceInfo->Records;
-    delete PresenceInfo->UserId;
     delete PresenceInfo;
 }
 

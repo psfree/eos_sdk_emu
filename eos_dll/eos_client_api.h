@@ -38,13 +38,23 @@ public:
 
     static EOSSDK_Client& Inst();
 
-    EOS_EpicAccountId get_epicuserid(std::string userid);
-    EOS_ProductUserId get_productuserid(std::string userid);
+    EOS_EpicAccountId get_epicuserid(std::string const& userid);
+    EOS_ProductUserId get_productuserid(std::string const& userid);
 };
+
+inline EOS_EpicAccountId GetInvalidEpicUserId()
+{
+    return EOSSDK_Client::Inst().get_epicuserid(sdk::NULL_USER_ID);
+}
 
 inline EOS_EpicAccountId GetEpicUserId(std::string const& userid)
 {
     return EOSSDK_Client::Inst().get_epicuserid(userid);
+}
+
+inline EOS_ProductUserId GetInvalidProductUserId()
+{
+    return EOSSDK_Client::Inst().get_productuserid(sdk::NULL_USER_ID);
 }
 
 inline EOS_ProductUserId GetProductUserId(std::string const& userid)

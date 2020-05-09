@@ -40,7 +40,7 @@ EOSSDK_Client& EOSSDK_Client::Inst()
     return inst;
 }
 
-EOS_EpicAccountId EOSSDK_Client::get_epicuserid(std::string userid)
+EOS_EpicAccountId EOSSDK_Client::get_epicuserid(std::string const& userid)
 {
     EOS_EpicAccountId res;
 
@@ -49,7 +49,7 @@ EOS_EpicAccountId EOSSDK_Client::get_epicuserid(std::string userid)
     {
         EOS_EpicAccountId& accountid = _epicuserids[userid];
         accountid = new EOS_EpicAccountIdDetails;
-        *accountid = userid;
+        accountid->from_string(userid);
         res = accountid;
     }
     else
@@ -58,7 +58,7 @@ EOS_EpicAccountId EOSSDK_Client::get_epicuserid(std::string userid)
     return res;
 }
 
-EOS_ProductUserId EOSSDK_Client::get_productuserid(std::string userid)
+EOS_ProductUserId EOSSDK_Client::get_productuserid(std::string const& userid)
 {
     EOS_ProductUserId res;
 
@@ -67,7 +67,7 @@ EOS_ProductUserId EOSSDK_Client::get_productuserid(std::string userid)
     {
         EOS_ProductUserId& accountid = _productuserids[userid];
         accountid = new EOS_ProductUserIdDetails;
-        *accountid = userid;
+        accountid->from_string(userid);
         res = accountid;
     }
     else
@@ -424,7 +424,7 @@ EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_EpicAccountId_FromString(const char* Acc
 {
     LOG(Log::LogLevel::TRACE, "");
     if (AccountIdString == nullptr)
-        return EOSSDK_Client::Inst().get_epicuserid("null");
+        return EOSSDK_Client::Inst().get_epicuserid(sdk::NULL_USER_ID);
 
     return EOSSDK_Client::Inst().get_epicuserid(AccountIdString);
 }
@@ -479,7 +479,7 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_ProductUserId_FromString(const char* Acc
 {
     LOG(Log::LogLevel::TRACE, "");
     if (AccountIdString == nullptr)
-        return EOSSDK_Client::Inst().get_productuserid("null");
+        return EOSSDK_Client::Inst().get_productuserid(sdk::NULL_USER_ID);
 
     return EOSSDK_Client::Inst().get_productuserid(AccountIdString);
 }

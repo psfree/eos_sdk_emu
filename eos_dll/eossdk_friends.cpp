@@ -228,7 +228,7 @@ EOS_NotificationId EOSSDK_Friends::AddNotifyFriendsUpdate(const EOS_Friends_AddN
     EOS_Friends_OnFriendsUpdateInfo& ofup = res->CreateCallback<EOS_Friends_OnFriendsUpdateInfo>((CallbackFunc)FriendsUpdateHandler);
     ofup.ClientData = ClientData;
     ofup.LocalUserId = Settings::Inst().userid;
-    ofup.TargetUserId = GetEpicUserId("null");
+    ofup.TargetUserId = GetEpicUserId(sdk::NULL_USER_ID);
     ofup.PreviousStatus = EOS_EFriendsStatus::EOS_FS_Friends;
     ofup.CurrentStatus = EOS_EFriendsStatus::EOS_FS_Friends;
 

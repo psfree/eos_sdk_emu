@@ -23,6 +23,11 @@
 
 class EOSSDK_Client;
 
+namespace sdk
+{
+    static constexpr char NULL_USER_ID[] = "00000000000000000000000000000000";
+}
+
 struct EOS_EpicAccountIdDetails
 {
     friend class EOSSDK_Client;
@@ -33,20 +38,17 @@ private:
     bool _valid;
 
     EOS_EpicAccountIdDetails();
-    EOS_EpicAccountIdDetails(std::string const& id);
-    EOS_EpicAccountIdDetails(EOS_EpicAccountIdDetails const&);
     EOS_EpicAccountIdDetails(EOS_EpicAccountIdDetails &&) noexcept;
 
-    EOS_EpicAccountIdDetails& operator=(std::string const&);
-    EOS_EpicAccountIdDetails& operator=(EOS_EpicAccountIdDetails const&);
     EOS_EpicAccountIdDetails& operator=(EOS_EpicAccountIdDetails&&) noexcept;
 
     void FromString(const char* accountIdStr);
     void from_string(std::string const& accountIdStr);
     void validate();
 
-public:
     ~EOS_EpicAccountIdDetails();
+public:
+    
 
     EOS_Bool IsValid();
     EOS_EResult ToString(char* outBuffer, int32_t* outBufferSize);
@@ -67,21 +69,17 @@ private:
     bool _valid;
 
     EOS_ProductUserIdDetails();
-    EOS_ProductUserIdDetails(std::string const& id);
-    EOS_ProductUserIdDetails(EOS_ProductUserIdDetails const&);
     EOS_ProductUserIdDetails(EOS_ProductUserIdDetails&&) noexcept;
 
-    EOS_ProductUserIdDetails& operator=(std::string const&);
-    EOS_ProductUserIdDetails& operator=(EOS_ProductUserIdDetails const&);
     EOS_ProductUserIdDetails& operator=(EOS_ProductUserIdDetails&&) noexcept;
 
     void FromString(const char* accountIdStr);
     void from_string(std::string const& accountIdStr);
     void validate();
 
-public:
     ~EOS_ProductUserIdDetails();
-
+public:
+    
     EOS_Bool IsValid();
     EOS_EResult ToString(char* outBuffer, int32_t* outBufferSize);
 

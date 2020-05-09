@@ -61,7 +61,6 @@ EOS_DECLARE_FUNC(void) EOS_UserInfo_Release(EOS_UserInfo* UserInfo)
 
     if (UserInfo != nullptr)
     {
-        delete UserInfo->UserId;
         delete UserInfo;
     }
 }

@@ -138,7 +138,7 @@ EOS_EResult EOSSDK_Auth::CopyUserAuthToken(const EOS_Auth_CopyUserAuthTokenOptio
     if (OutUserAuthToken == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
-    if (*LocalUserId == *Settings::Inst().userid)
+    if (LocalUserId == Settings::Inst().userid)
     {
         EOS_Auth_Token* token = new EOS_Auth_Token;
         time_t now;

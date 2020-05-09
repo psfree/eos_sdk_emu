@@ -92,7 +92,7 @@ void EOSSDK_UserInfo::QueryUserInfo(const EOS_UserInfo_QueryUserInfoOptions* Opt
 
     if (Options == nullptr || Options->TargetUserId == nullptr)
     {
-        quici.TargetUserId = GetEpicUserId("null");
+        quici.TargetUserId = GetEpicUserId(sdk::NULL_USER_ID);
         quici.ResultCode = EOS_EResult::EOS_InvalidParameters;
 
         res->done = true;
@@ -147,7 +147,7 @@ void EOSSDK_UserInfo::QueryUserInfoByDisplayName(const EOS_UserInfo_QueryUserInf
 
     if (Options == nullptr || Options->DisplayName == nullptr)
     {
-        quibdnci.TargetUserId = GetEpicUserId("null");
+        quibdnci.TargetUserId = GetEpicUserId(sdk::NULL_USER_ID);
         quibdnci.ResultCode = EOS_EResult::EOS_InvalidParameters;
 
         res->done = true;
