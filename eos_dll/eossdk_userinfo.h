@@ -29,8 +29,8 @@ namespace sdk
     {
         static constexpr auto userinfo_query_timeout = std::chrono::milliseconds(1000);
 
-        std::map<std::string, UserInfo_Info_pb> _userinfos;
-        std::map<std::string, std::list<pFrameResult_t>> _userinfos_queries;
+        std::map<EOS_EpicAccountId, UserInfo_Info_pb> _userinfos;
+        std::map<EOS_EpicAccountId, std::list<pFrameResult_t>> _userinfos_queries;
 
     public:
         EOSSDK_UserInfo();
@@ -38,7 +38,7 @@ namespace sdk
 
         void setup_myself();
         UserInfo_Info_pb& get_myself();
-        UserInfo_Info_pb* get_userinfo(std::string userid);
+        UserInfo_Info_pb* get_userinfo(EOS_EpicAccountId userid);
 
         // Send Network messages
         bool send_userinfo_request(Network::peer_t const& peerid, UserInfo_Info_Request_pb* req);

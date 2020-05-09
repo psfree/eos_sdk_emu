@@ -47,8 +47,8 @@ namespace sdk
     {
         static constexpr auto presence_query_timeout = std::chrono::milliseconds(1000);
 
-        nlohmann::fifo_map<std::string, Presence_Info_pb> _presences;
-        std::map<std::string, std::list<pFrameResult_t>> _presence_queries;
+        nlohmann::fifo_map<EOS_EpicAccountId, Presence_Info_pb> _presences;
+        std::map<EOS_EpicAccountId, std::list<pFrameResult_t>> _presence_queries;
 
     public:
         EOSSDK_Presence();
@@ -56,8 +56,8 @@ namespace sdk
 
         void setup_myself();
         Presence_Info_pb& get_myself();
-        Presence_Info_pb* get_presence(std::string userid);
-        void trigger_presence_change(std::string userid);
+        Presence_Info_pb* get_presence(EOS_EpicAccountId userid);
+        void trigger_presence_change(EOS_EpicAccountId userid);
 
         // Send Network messages
         bool send_presence_info_request(Network::peer_t const& peerid, Presence_Info_Request_pb* req);

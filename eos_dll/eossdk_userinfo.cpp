@@ -53,10 +53,10 @@ void EOSSDK_UserInfo::setup_myself()
 
 UserInfo_Info_pb& EOSSDK_UserInfo::get_myself()
 {
-    return _userinfos[Settings::Inst().userid->to_string()];
+    return _userinfos[Settings::Inst().userid];
 }
 
-UserInfo_Info_pb* EOSSDK_UserInfo::get_userinfo(std::string userid)
+UserInfo_Info_pb* EOSSDK_UserInfo::get_userinfo(EOS_EpicAccountId userid)
 {
     auto it = _userinfos.find(userid);
     if (it != _userinfos.end())
@@ -88,8 +88,6 @@ void EOSSDK_UserInfo::QueryUserInfo(const EOS_UserInfo_QueryUserInfoOptions* Opt
     quici.ClientData = ClientData;
     quici.LocalUserId = Settings::Inst().userid;
 
-    std::string userid;
-
     if (Options == nullptr || Options->TargetUserId == nullptr)
     {
         quici.TargetUserId = GetEpicUserId(sdk::NULL_USER_ID);
@@ -99,25 +97,24 @@ void EOSSDK_UserInfo::QueryUserInfo(const EOS_UserInfo_QueryUserInfoOptions* Opt
     }
     else
     {
-        userid = Options->TargetUserId->to_string();
         quici.TargetUserId = Options->TargetUserId;
+
+        auto *user = GetEOS_Connect().get_user_by_userid(Options->TargetUserId);
+        if (user == nullptr || !user->second.connected)
+        {
+            quici.ResultCode = EOS_EResult::EOS_NotFound;
+            res->done = true;
+        }
+        else
+        {
+            _userinfos_queries[Options->TargetUserId].push_back(res);
+
+            UserInfo_Info_Request_pb* request = new UserInfo_Info_Request_pb;
+            send_userinfo_request(Options->TargetUserId->to_string(), request);
+        }
     }
 
     GetCB_Manager().add_callback(this, res);
-
-    friend_infos_t* finfos = GetEOS_Friends().get_friend(userid);
-    if (finfos == nullptr || !finfos->online)
-    {
-        quici.ResultCode = EOS_EResult::EOS_NotFound;
-        res->done = true;
-    }
-    else
-    {
-        _userinfos_queries[userid].push_back(res);
-
-        UserInfo_Info_Request_pb* request = new UserInfo_Info_Request_pb;
-        send_userinfo_request(userid, request);
-    }
 }
 
 /**
@@ -143,8 +140,6 @@ void EOSSDK_UserInfo::QueryUserInfoByDisplayName(const EOS_UserInfo_QueryUserInf
     quibdnci.ClientData = ClientData;
     quibdnci.LocalUserId = Settings::Inst().userid;
 
-    std::string userid;
-
     if (Options == nullptr || Options->DisplayName == nullptr)
     {
         quibdnci.TargetUserId = GetEpicUserId(sdk::NULL_USER_ID);
@@ -152,24 +147,25 @@ void EOSSDK_UserInfo::QueryUserInfoByDisplayName(const EOS_UserInfo_QueryUserInf
 
         res->done = true;
     }
-
-    GetCB_Manager().add_callback(this, res);
-
-    std::pair<std::string const, friend_infos_t>* finfos = GetEOS_Friends().get_friend_by_name(userid);
-    if (finfos == nullptr || !finfos->second.online)
-    {
-        quibdnci.ResultCode = EOS_EResult::EOS_NotFound;
-        res->done = true;
-    }
     else
     {
-        userid = finfos->first;
-        quibdnci.TargetUserId = GetEpicUserId(userid);
-        _userinfos_queries[userid].push_back(res);
+        auto* user = GetEOS_Connect().get_user_by_name(Options->DisplayName);
+        if (user == nullptr || !user->second.connected)
+        {
+            quibdnci.ResultCode = EOS_EResult::EOS_NotFound;
+            res->done = true;
+        }
+        else
+        {
+            quibdnci.TargetUserId = GetEpicUserId(user->second.infos.userid());
+            _userinfos_queries[quibdnci.TargetUserId].push_back(res);
 
-        UserInfo_Info_Request_pb* request = new UserInfo_Info_Request_pb;
-        send_userinfo_request(userid, request);
+            UserInfo_Info_Request_pb* request = new UserInfo_Info_Request_pb;
+            send_userinfo_request(user->first->to_string(), request);
+        }
     }
+
+    GetCB_Manager().add_callback(this, res);
 }
 
 /**
@@ -196,7 +192,7 @@ EOS_EResult EOSSDK_UserInfo::CopyUserInfo(const EOS_UserInfo_CopyUserInfoOptions
     if (OutUserInfo == nullptr || Options == nullptr || Options->TargetUserId == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
-    UserInfo_Info_pb* userinfo = get_userinfo(Options->TargetUserId->to_string());
+    UserInfo_Info_pb* userinfo = get_userinfo(Options->TargetUserId);
 
     EOS_UserInfo* infos = new EOS_UserInfo();
     *OutUserInfo = infos;
@@ -225,9 +221,12 @@ bool EOSSDK_UserInfo::send_userinfo_request(Network::peer_t const& peerid, UserI
     Network_Message_pb msg;
     UserInfo_Message_pb* userinfo = new UserInfo_Message_pb;
 
+    std::string const& userid = GetEOS_Connect().product_id()->to_string();
+
     userinfo->set_allocated_userinfo_info_request(req);
     msg.set_allocated_userinfo(userinfo);
 
+    msg.set_source_id(userid);
     msg.set_dest_id(peerid);
 
     return GetNetwork().SendTo(msg);
@@ -238,17 +237,20 @@ bool EOSSDK_UserInfo::send_userinfo(Network::peer_t const& peerid, UserInfo_Info
     Network_Message_pb msg;
     UserInfo_Message_pb* userinfo = new UserInfo_Message_pb;
 
+    std::string const& userid = GetEOS_Connect().product_id()->to_string();
+
     userinfo->set_allocated_userinfo_info(infos);
     msg.set_allocated_userinfo(userinfo);
 
+    msg.set_source_id(userid);
     msg.set_dest_id(peerid);
 
     return GetNetwork().SendTo(msg);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
- //                          Network Receive messages                         //
- ///////////////////////////////////////////////////////////////////////////////
+//                          Network Receive messages                         //
+///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_UserInfo::on_userinfo_request(Network_Message_pb const& msg, UserInfo_Info_Request_pb const& req)
 {
     GLOBAL_LOCK();
@@ -261,8 +263,8 @@ bool EOSSDK_UserInfo::on_userinfo(Network_Message_pb const& msg, UserInfo_Info_p
 {
     GLOBAL_LOCK();
 
-    _userinfos[msg.source_id()] = infos;
-    auto it = _userinfos_queries.find(msg.source_id());
+    _userinfos[GetEpicUserId(msg.source_id())] = infos;
+    auto it = _userinfos_queries.find(GetEpicUserId(msg.source_id()));
     if (it != _userinfos_queries.end())
     {
         auto result_it = it->second.begin();

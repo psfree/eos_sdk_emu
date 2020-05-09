@@ -24,46 +24,18 @@
 
 namespace sdk
 {
-
-decltype(EOSSDK_Friends::alive_heartbeat_rate) EOSSDK_Friends::alive_heartbeat_rate;
-decltype(EOSSDK_Friends::alive_heartbeat)      EOSSDK_Friends::alive_heartbeat;
-decltype(EOSSDK_Friends::friend_infos_rate)    EOSSDK_Friends::friend_infos_rate;
-
 EOSSDK_Friends::EOSSDK_Friends()
 {
     GetNetwork().register_listener(this, 0, Network_Message_pb::MessagesCase::kFriends);
-    GetCB_Manager().register_frame(this);
     GetCB_Manager().register_callbacks(this);
 }
 
 EOSSDK_Friends::~EOSSDK_Friends()
 {
     GetCB_Manager().unregister_callbacks(this);
-    GetCB_Manager().unregister_frame(this);
     GetNetwork().unregister_listener(this, 0, Network_Message_pb::MessagesCase::kFriends);
 
     GetCB_Manager().remove_all_notifications(this);
-}
-
-friend_infos_t* EOSSDK_Friends::get_friend(std::string const& userid)
-{
-    auto it = _friends.find(userid);
-    if (it == _friends.end())
-        return nullptr;
-
-    return &it->second;
-}
-
-std::pair<std::string const, friend_infos_t>* EOSSDK_Friends::get_friend_by_name(std::string const& username)
-{
-    auto it = std::find_if(_friends.begin(), _friends.end(), [&username]( std::pair<std::string const&, friend_infos_t> const& frd)
-    {
-        return frd.second.infos.displayname() == username;
-    });
-    if (it == _friends.end())
-        return nullptr;
-
-    return &(*it);
 }
 
 /**
@@ -85,12 +57,7 @@ void EOSSDK_Friends::QueryFriends(const EOS_Friends_QueryFriendsOptions* Options
     qfci.LocalUserId = Settings::Inst().userid;
     qfci.ResultCode = EOS_EResult::EOS_Success;
 
-    _friends_cache_for_query.clear();
-    std::copy_if(_friends.begin(), _friends.end(), std::inserter(_friends_cache_for_query, _friends_cache_for_query.end()), []( std::pair<std::string const, friend_infos_t>& finfos )
-    {
-        return finfos.second.online;
-    });
-
+    _friends_cache_for_query = _friends;
     res->done = true;
 
     GetCB_Manager().add_callback(this, res);
@@ -180,7 +147,7 @@ EOS_EpicAccountId EOSSDK_Friends::GetFriendAtIndex(const EOS_Friends_GetFriendAt
     auto it = _friends_cache_for_query.begin();
     std::advance(it, Options->Index);
 
-    return GetEpicUserId(it->first);
+    return it->first;
 }
 
 /**
@@ -203,11 +170,11 @@ EOS_EFriendsStatus EOSSDK_Friends::GetStatus(const EOS_Friends_GetStatusOptions*
     if (Options == nullptr || Options->TargetUserId == nullptr)
         return EOS_EFriendsStatus::EOS_FS_NotFriends;
 
-    friend_infos_t* finfos = get_friend(Options->TargetUserId->to_string());
-    if(finfos == nullptr)
+    auto it = _friends.find(Options->TargetUserId);
+    if(it == _friends.end())
         return EOS_EFriendsStatus::EOS_FS_NotFriends;
     
-    return static_cast<EOS_EFriendsStatus>(finfos->infos.status());
+    return EOS_EFriendsStatus::EOS_FS_Friends;
 }
 
 /**
@@ -251,27 +218,18 @@ void EOSSDK_Friends::RemoveNotifyFriendsUpdate(EOS_NotificationId NotificationId
 ///////////////////////////////////////////////////////////////////////////////
 //                           Network Send messages                           //
 ///////////////////////////////////////////////////////////////////////////////
-bool EOSSDK_Friends::send_heartbeat(Friend_Heartbeat_pb* hb)
-{
-    Network_Message_pb msg;
-
-    Friends_Message_pb* frd = new Friends_Message_pb;
-
-    frd->set_allocated_heartbeat(hb);
-    msg.set_allocated_friends(frd);
-
-    return GetNetwork().SendBroadcast(msg);
-}
-
 bool EOSSDK_Friends::send_friend_info_request(Network::peer_t const& peerid, Friend_Info_Request_pb* req)
 {
     Network_Message_pb msg;
+
+    std::string const& userid = GetEOS_Connect().product_id()->to_string();
 
     Friends_Message_pb* frd = new Friends_Message_pb;
 
     frd->set_allocated_friend_info_request(req);
     msg.set_allocated_friends(frd);
 
+    msg.set_source_id(userid);
     msg.set_dest_id(peerid);
 
     return GetNetwork().SendTo(msg);
@@ -281,11 +239,14 @@ bool EOSSDK_Friends::send_friend_info(Network::peer_t const& peerid, Friend_Info
 {
     Network_Message_pb msg;
 
+    std::string const& userid = GetEOS_Connect().product_id()->to_string();
+
     Friends_Message_pb* frd = new Friends_Message_pb;
 
     frd->set_allocated_friend_info(infos);
     msg.set_allocated_friends(frd);
 
+    msg.set_source_id(userid);
     msg.set_dest_id(peerid);
 
     return GetNetwork().SendTo(msg);
@@ -294,36 +255,17 @@ bool EOSSDK_Friends::send_friend_info(Network::peer_t const& peerid, Friend_Info
 ///////////////////////////////////////////////////////////////////////////////
 //                          Network Receive messages                         //
 ///////////////////////////////////////////////////////////////////////////////
-bool EOSSDK_Friends::on_heartbeat(Network_Message_pb const& msg, Friend_Heartbeat_pb const& hb)
-{
-    GLOBAL_LOCK();
-
-    auto& finfos = _friends[msg.source_id()];
-    finfos.online = true;
-    finfos.last_hearbeat = std::chrono::steady_clock::now();
-
-    return true;
-}
-
 bool EOSSDK_Friends::on_friend_info_request(Network_Message_pb const& msg, Friend_Info_Request_pb const& req)
 {
     GLOBAL_LOCK();
 
     Friend_Info_pb* infos = new Friend_Info_pb;
-
-    infos->set_displayname(Settings::Inst().username);
-    infos->set_status(static_cast<int32_t>(EOS_EFriendsStatus::EOS_FS_Friends));
     return send_friend_info(msg.source_id(), infos);
 }
 
 bool EOSSDK_Friends::on_friend_info(Network_Message_pb const& msg, Friend_Info_pb const& infos)
 {
     GLOBAL_LOCK();
-
-    auto& finfos = _friends[msg.source_id()];
-    finfos.last_infos = std::chrono::steady_clock::now();
-    finfos.infos = infos;
-
     return true;
 }
 
@@ -332,28 +274,6 @@ bool EOSSDK_Friends::on_friend_info(Network_Message_pb const& msg, Friend_Info_p
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Friends::CBRunFrame()
 {
-    GLOBAL_LOCK();
-
-    auto now = std::chrono::steady_clock::now();
-
-    for (auto& frd : _friends)
-    {
-        if (!frd.second.online)
-            continue;
-
-        if ((now - frd.second.last_hearbeat) > alive_heartbeat)
-        {
-            frd.second.online = false;
-            continue;
-        }
-
-        if ((now - frd.second.last_infos) > friend_infos_rate)
-        {
-            Friend_Info_Request_pb* req = new Friend_Info_Request_pb;
-            send_friend_info_request(frd.first, req);
-        }
-    }
-
     return false;
 }
 
@@ -366,7 +286,6 @@ bool EOSSDK_Friends::RunNetwork(Network_Message_pb const& msg)
 
     switch (frd.message_case())
     {
-        case Friends_Message_pb::MessageCase::kHeartbeat        : return on_heartbeat(msg, frd.heartbeat());
         case Friends_Message_pb::MessageCase::kFriendInfoRequest: return on_friend_info_request(msg, frd.friend_info_request());
         case Friends_Message_pb::MessageCase::kFriendInfo       : return on_friend_info(msg, frd.friend_info());
     }

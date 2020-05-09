@@ -24,45 +24,27 @@
 
 namespace sdk
 {
-    struct friend_infos_t
-    {
-        bool online;
-        std::chrono::steady_clock::time_point last_hearbeat;
-        std::chrono::steady_clock::time_point last_infos;
-        Friend_Info_pb infos;
-    };
-
     class EOSSDK_Friends :
         public IRunFrame
     {
-        // Heartbeat rate
-        static constexpr auto alive_heartbeat_rate = std::chrono::seconds(2);
-        // Heartbeat timeout to delete disconnected friends
-        static constexpr auto alive_heartbeat = std::chrono::seconds(10);
-        // Retrieve all friends infos rate (except rich_presence)
-        static constexpr auto friend_infos_rate = std::chrono::seconds(5);
-
-        std::chrono::steady_clock::time_point _last_heartbeat;
-
-        nlohmann::fifo_map<std::string, friend_infos_t> _friends;
-        nlohmann::fifo_map<std::string, friend_infos_t> _friends_cache_for_query;
+        nlohmann::fifo_map<EOS_EpicAccountId, Friend_Info_pb> _friends;
+        nlohmann::fifo_map<EOS_EpicAccountId, Friend_Info_pb> _friends_cache_for_query;
 
     public:
         EOSSDK_Friends();
         ~EOSSDK_Friends();
 
-        friend_infos_t* get_friend(std::string const& userid);
-        std::pair<std::string const, friend_infos_t>* get_friend_by_name(std::string const& username);
-
         // Send Network messages
-        bool send_heartbeat(Friend_Heartbeat_pb *hb);
         bool send_friend_info_request(Network::peer_t const& peerid, Friend_Info_Request_pb* req);
         bool send_friend_info(Network::peer_t const& peerid, Friend_Info_pb* infos);
+        //bool send_friend_invite(Network::peer_t const& peerid, Friend_Invite_pb* invite) const;
+        //bool send_friend_invite_response(Network::peer_t const& peerid, Friend_Invite_Response_pb* resp) const;
 
         // Receive Network messages
-        bool on_heartbeat(Network_Message_pb const& msg, Friend_Heartbeat_pb const& hb);
         bool on_friend_info_request(Network_Message_pb const& msg, Friend_Info_Request_pb const& req);
         bool on_friend_info(Network_Message_pb const& msg, Friend_Info_pb const& infos);
+        //bool on_friend_invite(Network_Message_pb const& msg, Friend_Invite_pb const& invite);
+        //bool on_friend_invite_response(Network_Message_pb const& msg, Friend_Invite_Response_pb const& resp);
 
         virtual bool CBRunFrame();
         virtual bool RunNetwork(Network_Message_pb const& msg);
