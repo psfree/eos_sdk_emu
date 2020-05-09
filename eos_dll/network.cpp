@@ -98,7 +98,7 @@ void Network::network_thread()
             {
                 if (msg.ParseFromArray(buffer.data(), len))
                 {
-                    LOG(Log::LogLevel::TRACE, "Received message from: %s - %s", addr.to_string().c_str(), msg.source_id().c_str());
+                    //LOG(Log::LogLevel::TRACE, "Received message from: %s - %s", addr.to_string().c_str(), msg.source_id().c_str());
                     LOCAL_LOCK();
                     //if (msg.relay())
                     //{// We are relaying a message from another user
@@ -238,7 +238,7 @@ std::set<Network::peer_t> Network::SendToAllPeers(Network_Message_pb& msg)
         {
             _udp_socket.sendto(peer_infos.second, buffer.c_str(), buffer.length());
             peers_sent_to.insert(peer_infos.first);
-            LOG(Log::LogLevel::TRACE, "Sent message to %s", peer_infos.second.to_string().c_str());
+            //LOG(Log::LogLevel::TRACE, "Sent message to %s", peer_infos.second.to_string().c_str());
         }
         catch (socket_exception & e)
         {
@@ -266,7 +266,7 @@ bool Network::SendTo(Network_Message_pb& msg)
     try
     {
         _udp_socket.sendto(it->second, buffer.c_str(), buffer.length());
-        LOG(Log::LogLevel::TRACE, "Sent message to %s", it->second.to_string().c_str());
+        //LOG(Log::LogLevel::TRACE, "Sent message to %s", it->second.to_string().c_str());
     }
     catch (socket_exception & e)
     {
