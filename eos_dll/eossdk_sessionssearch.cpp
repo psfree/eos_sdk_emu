@@ -26,7 +26,7 @@ namespace sdk
 {
 
 decltype(EOSSDK_SessionSearch::search_timeout) EOSSDK_SessionSearch::search_timeout;
-decltype(EOSSDK_SessionSearch::search_id) EOSSDK_SessionSearch::search_id = 0;
+decltype(EOSSDK_SessionSearch::search_id) EOSSDK_SessionSearch::search_id(0);
 
 EOSSDK_SessionSearch::EOSSDK_SessionSearch():
     _target_userid(nullptr)

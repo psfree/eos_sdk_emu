@@ -48,7 +48,10 @@ namespace sdk
         EOSSDK_Connect();
         ~EOSSDK_Connect();
 
-        inline EOS_ProductUserId product_id() const;
+        inline EOS_ProductUserId product_id() const
+        {
+            return _myself.first;
+        }
         std::pair<EOS_ProductUserId const, user_state_t>* get_user_by_userid(EOS_EpicAccountId userid);
         std::pair<EOS_ProductUserId const, user_state_t>* get_user_by_productid(EOS_ProductUserId productid);
         std::pair<EOS_ProductUserId const, user_state_t>* get_user_by_name(std::string const& username);

@@ -50,11 +50,6 @@ EOSSDK_Connect::~EOSSDK_Connect()
     GetCB_Manager().remove_all_notifications(this);
 }
 
-EOS_ProductUserId EOSSDK_Connect::product_id() const
-{
-    return _myself.first;
-}
-
 std::pair<EOS_ProductUserId const, user_state_t>* EOSSDK_Connect::get_user_by_userid(EOS_EpicAccountId userid)
 {
     auto it = std::find_if(_users.begin(), _users.end(), [&userid]( std::pair<EOS_ProductUserId const, user_state_t> &user )
