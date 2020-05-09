@@ -252,5 +252,9 @@ message Network_Message_pb {
 		Friends_Message_pb friends = 4;
         Presence_Message_pb presence = 5;
         UserInfo_Message_pb userinfo = 6;
+        Sessions_Message_pb sessions = 7;
+        P2P_Message_pb p2p = 8;
+        Connect_Message_pb connect = 9;
+        Sessions_Search_Message_pb session_search = 10;
     }
 }
