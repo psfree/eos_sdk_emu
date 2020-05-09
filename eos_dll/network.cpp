@@ -96,9 +96,9 @@ void Network::network_thread()
             len = _udp_socket.recvfrom(addr, buffer.data(), buffer.size());
             if (len > 0)
             {
-                LOG(Log::LogLevel::TRACE, "Received message from: %s", addr.to_string().c_str());
                 if (msg.ParseFromArray(buffer.data(), len))
                 {
+                    LOG(Log::LogLevel::TRACE, "Received message from: %s - %s", addr.to_string().c_str(), msg.source_id().c_str());
                     LOCAL_LOCK();
                     //if (msg.relay())
                     //{// We are relaying a message from another user
@@ -209,7 +209,7 @@ bool Network::SendBroadcast(Network_Message_pb& msg)
             try
             {
                 _udp_socket.sendto(brd, buffer.data(), buffer.length());
-                LOG(Log::LogLevel::TRACE, "Send broadcast");
+                //LOG(Log::LogLevel::TRACE, "Send broadcast");
             }
             catch (socket_exception & e)
             {
