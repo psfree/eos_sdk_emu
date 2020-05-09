@@ -20,21 +20,71 @@
 #pragma once
 
 #include "common_includes.h"
+#include "network.h"
 
 namespace sdk
 {
+    struct p2p_state_t
+    {
+        enum class status_e
+        {
+            none,
+            closed,
+            requested,
+            connected,
+        };
+
+        status_e status;
+        uint64_t last_in_message_id;
+        std::map<uint8_t, P2P_Data_Message_pb> p2p_in_messages;
+        uint64_t last_out_message_id;
+        std::map<uint8_t, P2P_Data_Message_pb> p2p_out_messages;
+    };
+
     class EOSSDK_P2P :
         public IRunFrame
     {
+        std::recursive_mutex local_mutex;
+
+        std::map<EOS_ProductUserId, p2p_state_t> _p2p_connections;
+
+        task _p2p_task;
+        void p2p_task_proc();
+
     public:
-        // RunFrame is always called when running callbacks
+        EOSSDK_P2P();
+        ~EOSSDK_P2P();
+
+        // Send Network messages
+        bool send_p2p_connection_request(Network::peer_t const& peerid, P2P_Connect_Request_pb *req) const;
+        bool send_p2p_connection_response(Network::peer_t const& peerid, P2P_Connect_Response_pb *resp) const;
+        bool send_p2p_data(Network::peer_t const& peerid, P2P_Data_Message_pb *data) const;
+        bool send_p2p_data_ack(Network::peer_t const& peerid, P2P_Data_Acknowledge_pb *ack) const;
+        bool send_p2p_connetion_close(Network::peer_t const& peerid, P2P_Connection_Close_pb *close) const;
+
+        // Receive Network messages
+        bool on_p2p_connection_request(Network_Message_pb const& msg, P2P_Connect_Request_pb const& req);
+        bool on_p2p_connection_response(Network_Message_pb const& msg, P2P_Connect_Response_pb const& resp);
+        bool on_p2p_data(Network_Message_pb const& msg, P2P_Data_Message_pb const& data);
+        bool on_p2p_data_ack(Network_Message_pb const& msg, P2P_Data_Acknowledge_pb const& ack);
+        bool on_p2p_connection_close(Network_Message_pb const& msg, P2P_Connection_Close_pb const& close);
+
         virtual bool CBRunFrame();
-        // RunNetwork is run if you register to a network message and we received that message
         virtual bool RunNetwork(Network_Message_pb const& msg);
-        // RunCallbacks is run when you sent a callback
-        // True  = FrameResult_t has been filled with a result
-        // False = FrameResult_t is not changed
         virtual bool RunCallbacks(pFrameResult_t res);
         virtual void FreeCallback(pFrameResult_t res);
+
+        EOS_EResult SendPacket(const EOS_P2P_SendPacketOptions* Options);
+        EOS_EResult GetNextReceivedPacketSize(const EOS_P2P_GetNextReceivedPacketSizeOptions* Options, uint32_t* OutPacketSizeBytes);
+        EOS_EResult ReceivePacket(const EOS_P2P_ReceivePacketOptions* Options, EOS_ProductUserId* OutPeerId, EOS_P2P_SocketId* OutSocketId, uint8_t* OutChannel, void* OutData, uint32_t* OutBytesWritten);
+        EOS_NotificationId AddNotifyPeerConnectionRequest(const EOS_P2P_AddNotifyPeerConnectionRequestOptions* Options, void* ClientData, EOS_P2P_OnIncomingConnectionRequestCallback ConnectionRequestHandler);
+        void RemoveNotifyPeerConnectionRequest(EOS_NotificationId NotificationId);
+        EOS_NotificationId AddNotifyPeerConnectionClosed(const EOS_P2P_AddNotifyPeerConnectionClosedOptions* Options, void* ClientData, EOS_P2P_OnRemoteConnectionClosedCallback ConnectionClosedHandler);
+        void RemoveNotifyPeerConnectionClosed(EOS_NotificationId NotificationId);
+        EOS_EResult AcceptConnection(const EOS_P2P_AcceptConnectionOptions* Options);
+        EOS_EResult CloseConnection(const EOS_P2P_CloseConnectionOptions* Options);
+        EOS_EResult CloseConnections(const EOS_P2P_CloseConnectionsOptions* Options);
+        void QueryNATType(const EOS_P2P_QueryNATTypeOptions* Options, void* ClientData, const EOS_P2P_OnQueryNATTypeCompleteCallback NATTypeQueriedHandler);
+        EOS_EResult GetNATType(const EOS_P2P_GetNATTypeOptions* Options, EOS_ENATType* OutNATType);
     };
 }
