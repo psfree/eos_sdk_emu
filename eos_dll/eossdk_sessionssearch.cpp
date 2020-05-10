@@ -33,12 +33,12 @@ EOSSDK_SessionSearch::EOSSDK_SessionSearch():
 {
     GetCB_Manager().register_callbacks(this);
 
-    GetNetwork().register_listener(this, 0, Network_Message_pb::MessagesCase::kSessionSearch);
+    GetNetwork().register_listener(this, 0, Network_Message_pb::MessagesCase::kSessionsSearch);
 }
 
 EOSSDK_SessionSearch::~EOSSDK_SessionSearch()
 {
-    GetNetwork().unregister_listener(this, 0, Network_Message_pb::MessagesCase::kSessionSearch);
+    GetNetwork().unregister_listener(this, 0, Network_Message_pb::MessagesCase::kSessionsSearch);
 
     GetCB_Manager().unregister_callbacks(this);
 }
@@ -289,7 +289,7 @@ bool EOSSDK_SessionSearch::send_sessions_search(Sessions_Search_pb* search)
     msg.set_source_id(userid);
 
     search_msg->set_allocated_search(search);
-    msg.set_allocated_session_search(search_msg);
+    msg.set_allocated_sessions_search(search_msg);
 
     _search_peers = std::move(GetNetwork().SendToAllPeers(msg));
     search_msg->release_search(); // Don't delete our search infos
@@ -327,7 +327,7 @@ bool EOSSDK_SessionSearch::CBRunFrame()
 
 bool EOSSDK_SessionSearch::RunNetwork(Network_Message_pb const& msg)
 {
-    Sessions_Search_Message_pb const& session = msg.session_search();
+    Sessions_Search_Message_pb const& session = msg.sessions_search();
 
     switch (session.message_case())
     {

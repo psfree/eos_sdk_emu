@@ -42,7 +42,7 @@ namespace sdk
 
         uint32_t _api_version;
         modif_type _type;
-        Sessions_Info_pb _infos;
+        Session_Info_pb _infos;
 
     public:
         
@@ -66,11 +66,11 @@ namespace sdk
 
         std::recursive_mutex local_mutex;
 
-        EOS_ProductUserId           _target_userid;
-        Sessions_Search_pb          _search_infos;
-        std::list<Sessions_Info_pb> _results;
-        pFrameResult_t              _search_cb;
-        std::set<std::string>       _search_peers;
+        EOS_ProductUserId          _target_userid;
+        Sessions_Search_pb         _search_infos;
+        std::list<Session_Info_pb> _results;
+        pFrameResult_t             _search_cb;
+        std::set<std::string>      _search_peers;
 
     public:
         EOSSDK_SessionSearch();
@@ -102,7 +102,7 @@ namespace sdk
         friend class sdk::EOSSDK_Sessions;
         friend class sdk::EOSSDK_SessionSearch;
 
-        Sessions_Info_pb infos;
+        Session_Info_pb infos;
 
     public:
         EOS_EResult CopyInfo(const EOS_SessionDetails_CopyInfoOptions* Options, EOS_SessionDetails_Info** OutSessionInfo);
@@ -121,32 +121,50 @@ namespace sdk
         EOS_ProductUserId GetRegisteredPlayerByIndex(const EOS_ActiveSession_GetRegisteredPlayerByIndexOptions* Options);
     };
 
+    struct session_state_t
+    {
+        enum state_e
+        {
+            created,
+            joined,
+            joining,
+        } state;
+        Session_Info_pb infos;
+    };
+
     class EOSSDK_Sessions :
         public IRunFrame
     {
+
+        static constexpr auto join_timeout = std::chrono::milliseconds(5000);
+        std::map<std::string, pFrameResult_t> _sessions_join;
 
     public:
         EOSSDK_Sessions();
         ~EOSSDK_Sessions();
 
-        std::map<std::string, Sessions_Info_pb> _sessions;
+        std::map<std::string, session_state_t> _sessions;
 
-        Sessions_Info_pb* get_session_by_name(std::string const& session_name);
-        Sessions_Info_pb* get_session_by_id(std::string const& session_id);
-        Sessions_Info_pb* get_session_from_attributes(google::protobuf::Map<std::string, Search_Parameter> const& parameters);
+        session_state_t* get_session_by_name(std::string const& session_name);
+        session_state_t* get_session_by_id(std::string const& session_id);
+        session_state_t* get_session_from_attributes(google::protobuf::Map<std::string, Search_Parameter> const& parameters);
 
         // Send Network messages
-        bool send_to_all_members(Sessions_Message_pb* sess, Sessions_Info_pb* session);
-        bool send_sessions_info_request(Network::peer_t const& peerid, Sessions_Info_Request_pb* req) const;
-        bool send_sessions_info(Network::peer_t const& peerid, Sessions_Info_pb* infos) const;
-        bool send_session_destroy(Network::peer_t const& peerid, Sessions_Destroy_pb* destr) const;
-        bool send_sessions_search_response(Network::peer_t const& peerid, Sessions_Search_response_pb* resp) const;
+        bool send_to_all_members(Session_Message_pb* sess, Session_Info_pb* session);
+        bool send_session_info_request(Network::peer_t const& peerid, Session_Info_Request_pb* req);
+        bool send_session_info(Network::peer_t const& peerid, Session_Info_pb* infos);
+        bool send_session_destroy(Network::peer_t const& peerid, Session_Destroy_pb* destr);
+        bool send_sessions_search_response(Network::peer_t const& peerid, Sessions_Search_response_pb* resp);
+        bool send_session_join_request(Network::peer_t const& peerid, Session_Join_Request_pb* req);
+        bool send_session_join_response(Network::peer_t const& peerid, Session_Join_Response_pb* resp);
 
         // Receive Network messages
-        bool on_sessions_info_request(Network_Message_pb const& msg, Sessions_Info_Request_pb const& req);
-        bool on_sessions_info(Network_Message_pb const& msg, Sessions_Info_pb const& infos);
-        bool on_session_destroy(Network_Message_pb const& msg, Sessions_Destroy_pb const& destr);
+        bool on_session_info_request(Network_Message_pb const& msg, Session_Info_Request_pb const& req);
+        bool on_session_info(Network_Message_pb const& msg, Session_Info_pb const& infos);
+        bool on_session_destroy(Network_Message_pb const& msg, Session_Destroy_pb const& destr);
         bool on_sessions_search(Network_Message_pb const& msg, Sessions_Search_pb const& search);
+        bool on_session_join_request(Network_Message_pb const& msg, Session_Join_Request_pb const& req);
+        bool on_session_join_response(Network_Message_pb const& msg, Session_Join_Response_pb const& resp);
 
         virtual bool CBRunFrame();
         virtual bool RunNetwork(Network_Message_pb const& msg);

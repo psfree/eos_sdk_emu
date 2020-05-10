@@ -29,14 +29,15 @@ message Presence_Info_Request_pb {
 
 // Response to peer presence info request
 message Presence_Info_pb {
-    int32  status = 1;
-    string productid = 2;
-    string productversion = 3;
-    string platform = 4;
-    string richtext = 5;
-    map<string, string> records = 6;
-    string productname = 7;
-    string joininfo = 8;
+    string userid = 1;
+    int32  status = 2;
+    string productid = 3;
+    string productversion = 4;
+    string platform = 5;
+    string richtext = 6;
+    map<string, string> records = 7;
+    string productname = 8;
+    string joininfo = 9;
 }
 
 // Base Presence related message
@@ -75,7 +76,7 @@ message UserInfo_Message_pb {
 //                         Sessions messages                            //
 //////////////////////////////////////////////////////////////////////////
 // Request peer sessions info
-message Sessions_Info_Request_pb {
+message Session_Info_Request_pb {
     string sessionid = 1;
 }
 
@@ -94,33 +95,48 @@ message Session_Attribute {
 }
 
 // Response to peer sessions infos request
-message Sessions_Info_pb {
-	string sessionname = 1;
-    string sessionid = 2;
-	string bucketid = 3;
-	uint32 maxplayers = 4;
-    repeated string players = 5;
-    bool presence_allowed = 6;
-    string host_address = 7;
-    int32 permission_level = 8;
-    bool join_in_progress_allowed = 9;
-    bool invites_allowed = 10;
-    map<string, Session_Attribute> attributes = 11;
-    bool started = 12;
+message Session_Info_pb {
+    string session_owner = 1;
+	string sessionname = 2;
+    string sessionid = 3;
+	string bucketid = 4;
+	uint32 maxplayers = 5;
+    repeated string players = 6;
+    bool presence_allowed = 7;
+    string host_address = 8;
+    int32 permission_level = 9;
+    bool join_in_progress_allowed = 10;
+    bool invites_allowed = 11;
+    map<string, Session_Attribute> attributes = 12;
+    bool started = 13;
 }
 
 // Message sent to all members when the session is destroyed
-message Sessions_Destroy_pb {
+message Session_Destroy_pb {
     string sessionname = 1;
     string sessionid = 2;
 }
 
+// Request a session join
+message Session_Join_Request_pb {
+    string sessionid = 1;
+    string sessionname = 2;
+}
+
+// Response to a session join
+message Session_Join_Response_pb {
+    string sessionname = 1;
+    int32 reason = 2;
+}
+
 // Base Sessions related message
-message Sessions_Message_pb {
+message Session_Message_pb {
     oneof message {
-        Sessions_Info_Request_pb sessions_request = 1;
-        Sessions_Info_pb session_info = 2;
-        Sessions_Destroy_pb session_destroy = 3;
+        Session_Info_Request_pb sessions_request = 1;
+        Session_Info_pb session_info = 2;
+        Session_Destroy_pb session_destroy = 3;
+        Session_Join_Request_pb session_join_request = 4;
+        Session_Join_Response_pb session_join_response = 5;
 	}
 }
 
@@ -143,7 +159,7 @@ message Sessions_Search_pb {
 // Search Response
 message Sessions_Search_response_pb {
     uint64 search_id = 1;
-    Sessions_Info_pb session_infos = 2;
+    Session_Info_pb session_infos = 2;
 }
 
 message Sessions_Search_Message_pb {
@@ -252,9 +268,9 @@ message Network_Message_pb {
 		Friends_Message_pb friends = 4;
         Presence_Message_pb presence = 5;
         UserInfo_Message_pb userinfo = 6;
-        Sessions_Message_pb sessions = 7;
+        Session_Message_pb session = 7;
         P2P_Message_pb p2p = 8;
         Connect_Message_pb connect = 9;
-        Sessions_Search_Message_pb session_search = 10;
+        Sessions_Search_Message_pb sessions_search = 10;
     }
 }
