@@ -330,8 +330,6 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
                 else
                 {
                     auto& session = _sessions[modif->_infos.sessionname()];
-                    session = modif->_infos;
-                    *session.add_players() = GetEOS_Connect().product_id()->to_string();
                     {
                         modif->_infos.set_sessionid(generate_account_id());
 
@@ -340,6 +338,9 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
                         strncpy(session_id, sess_id.c_str(), sess_id.length() + 1);
                         usci.SessionId = session_id;
                     }
+                    session = modif->_infos;
+                    *session.add_players() = GetEOS_Connect().product_id()->to_string();
+                    GetEOS_Connect().add_session(GetProductUserId(session.sessionid()), session.sessionname());
 
                     usci.ResultCode = EOS_EResult::EOS_Success;
                 }
@@ -354,9 +355,10 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
                 }
                 else
                 {
-                    _sessions[modif->_infos.sessionname()] = modif->_infos;
+                    modif->_infos.set_sessionid(session->sessionid());
+                    *session = modif->_infos;
                     {
-                        std::string const& sess_id = modif->_infos.sessionid();
+                        std::string const& sess_id = session->sessionid();
                         char* session_id = new char[sess_id.length() + 1];
                         strncpy(session_id, sess_id.c_str(), sess_id.length() + 1);
                         usci.SessionId = session_id;
@@ -425,6 +427,8 @@ void EOSSDK_Sessions::DestroySession(const EOS_Sessions_DestroySessionOptions* O
             destroy->set_sessionname(it->second.sessionname());
 
             send_to_all_members(session, &it->second);
+
+            GetEOS_Connect().remove_session(GetProductUserId(it->second.sessionid()), it->second.sessionname());
 
             _sessions.erase(it);
         }
