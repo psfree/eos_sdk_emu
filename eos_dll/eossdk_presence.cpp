@@ -81,6 +81,16 @@ void EOSSDK_Presence::trigger_presence_change(EOS_EpicAccountId userid)
     }
 }
 
+void EOSSDK_Presence::set_user_status(EOS_EpicAccountId userid, EOS_Presence_EStatus status)
+{
+    auto& presence = _presences[userid];
+    if (presence.status() != get_enum_value(status))
+    {
+        presence.set_status(get_enum_value(status));
+        trigger_presence_change(userid);
+    }
+}
+
 /**
  * Query a user's presence. This must complete successfully before CopyPresence will have valid results. If HasPresence returns true for a remote
  * user, this does not need to be called.
@@ -557,13 +567,6 @@ bool EOSSDK_Presence::on_presence_infos(Network_Message_pb const& msg, Presence_
         {
             presence_infos = infos;
             trigger_presence_change(userid);
-            std::vector<pFrameResult_t> notifs = std::move(GetCB_Manager().get_notifications(this, EOS_Presence_QueryPresenceCallbackInfo::k_iCallback));
-            for (auto& notif : notifs)
-            {// Notify all listeners
-                EOS_Presence_PresenceChangedCallbackInfo& qpci = notif->GetCallback<EOS_Presence_PresenceChangedCallbackInfo>();
-                qpci.PresenceUserId = userid;
-                notif->res.cb_func(notif->res.data);
-            }
         }
     }
 
@@ -610,7 +613,7 @@ bool EOSSDK_Presence::RunCallbacks(pFrameResult_t res)
                 res->done = true;
                 qpci.ResultCode = EOS_EResult::EOS_TimedOut;
                 
-                _presences[qpci.TargetUserId].set_status(get_enum_value(EOS_Presence_EStatus::EOS_PS_Offline));
+                set_user_status(qpci.TargetUserId, EOS_Presence_EStatus::EOS_PS_Offline);
                 auto it = _presence_queries.find(qpci.TargetUserId);
                 if (it != _presence_queries.end())
                     _presence_queries.erase(it);

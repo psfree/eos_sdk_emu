@@ -55,9 +55,10 @@ namespace sdk
         ~EOSSDK_Presence();
 
         void setup_myself();
-        Presence_Info_pb& get_myself();
+        inline Presence_Info_pb& get_myself();
         Presence_Info_pb* get_presence(EOS_EpicAccountId userid);
         void trigger_presence_change(EOS_EpicAccountId userid);
+        void set_user_status(EOS_EpicAccountId userid, EOS_Presence_EStatus status); // Will call trigger_presence_change
 
         // Send Network messages
         bool send_presence_info_request(Network::peer_t const& peerid, Presence_Info_Request_pb* req);
