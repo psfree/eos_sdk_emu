@@ -110,7 +110,7 @@ void EOSSDK_UserInfo::QueryUserInfo(const EOS_UserInfo_QueryUserInfoOptions* Opt
             _userinfos_queries[Options->TargetUserId].push_back(res);
 
             UserInfo_Info_Request_pb* request = new UserInfo_Info_Request_pb;
-            send_userinfo_request(Options->TargetUserId->to_string(), request);
+            send_userinfo_request(user->first->to_string(), request);
         }
     }
 
