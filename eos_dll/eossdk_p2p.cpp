@@ -439,6 +439,7 @@ bool EOSSDK_P2P::RunNetwork(Network_Message_pb const& msg)
         case P2P_Message_pb::MessageCase::kDataMessage    : return on_p2p_data(msg, p2p.data_message());
         case P2P_Message_pb::MessageCase::kDataAcknowledge: return on_p2p_data_ack(msg, p2p.data_acknowledge());
         case P2P_Message_pb::MessageCase::kConnectionClose: return on_p2p_connection_close(msg, p2p.connection_close());
+        default: LOG(Log::LogLevel::WARN, "Unhandled network message %d", p2p.message_case());
     }
 
     return true;

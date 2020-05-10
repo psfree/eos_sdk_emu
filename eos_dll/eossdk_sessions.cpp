@@ -1106,6 +1106,7 @@ bool EOSSDK_Sessions::RunNetwork(Network_Message_pb const& msg)
                 case Sessions_Message_pb::MessageCase::kSessionsRequest: return on_sessions_info_request(msg, session.sessions_request());
                 case Sessions_Message_pb::MessageCase::kSessionInfo: return on_sessions_info(msg, session.session_info());
                 case Sessions_Message_pb::MessageCase::kSessionDestroy: return on_session_destroy(msg, session.session_destroy());
+                default: LOG(Log::LogLevel::WARN, "Unhandled network message %d", session.message_case());
             }
         }
         break;

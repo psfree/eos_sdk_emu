@@ -293,6 +293,7 @@ bool EOSSDK_Friends::RunNetwork(Network_Message_pb const& msg)
     {
         case Friends_Message_pb::MessageCase::kFriendInfoRequest: return on_friend_info_request(msg, frd.friend_info_request());
         case Friends_Message_pb::MessageCase::kFriendInfo       : return on_friend_info(msg, frd.friend_info());
+        default: LOG(Log::LogLevel::WARN, "Unhandled network message %d", frd.message_case());
     }
 
     return true;

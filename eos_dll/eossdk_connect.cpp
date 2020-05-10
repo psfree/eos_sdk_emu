@@ -604,6 +604,7 @@ bool EOSSDK_Connect::RunNetwork(Network_Message_pb const& msg)
         case Connect_Message_pb::MessageCase::kHeartbeat: return on_connect_heartbeat(msg, conn.heartbeat());
         case Connect_Message_pb::MessageCase::kRequest  : return on_connect_infos_request(msg, conn.request());
         case Connect_Message_pb::MessageCase::kInfos    : return on_connect_infos(msg, conn.infos());
+        default: LOG(Log::LogLevel::WARN, "Unhandled network message %d", conn.message_case());
     }
 
     return true;
