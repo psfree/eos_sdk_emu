@@ -29,7 +29,6 @@ decltype(EOSSDK_Presence::presence_query_timeout) EOSSDK_Presence::presence_quer
 
 EOSSDK_Presence::EOSSDK_Presence()
 {
-    GetCB_Manager().register_frame(this);
     GetCB_Manager().register_callbacks(this);
     GetNetwork().register_listener(this, 0, Network_Message_pb::MessagesCase::kPresence);
 }
@@ -40,17 +39,21 @@ EOSSDK_Presence::~EOSSDK_Presence()
 
     GetCB_Manager().remove_all_notifications(this);
     GetCB_Manager().unregister_callbacks(this);
-    GetCB_Manager().unregister_frame(this);
 }
 
 void EOSSDK_Presence::setup_myself()
 {
     auto& presence = get_myself();
-    presence.set_platform("PC");
-    presence.set_productname(EOSSDK_Client::Inst().product_name);
-    presence.set_productversion(EOSSDK_Client::Inst().product_version);
-    presence.set_status((int32_t)EOS_Presence_EStatus::EOS_PS_Online);
-    presence.set_productid(GetEOS_Connect().product_id()->to_string());
+    presence.set_userid(Settings::Inst().userid->to_string());
+    presence.set_status(get_enum_value(EOS_Presence_EStatus::EOS_PS_Online));
+    presence.set_productid(GetEOS_Platform()._product_id);
+#if defined(__WINDOWS__)
+    presence.set_platform("WIN");
+#elif defined(__LINUX__)
+    presence.set_platform("LINUX"); // TODO
+#elif defined(__APPLE__)
+    presence.set_platform("APPLE"); // TODO
+#endif
 }
 
 Presence_Info_pb& EOSSDK_Presence::get_myself()
@@ -107,10 +110,28 @@ void EOSSDK_Presence::QueryPresence( const EOS_Presence_QueryPresenceOptions* Op
     }
 
     qpci.TargetUserId = Options->TargetUserId;
+    if (qpci.TargetUserId == Settings::Inst().userid)
+    {
+        qpci.ResultCode = EOS_EResult::EOS_Success;
+        res->done = true;
+    }
+    else
+    {
+        auto* user = GetEOS_Connect().get_user_by_userid(Options->TargetUserId);
+        if (user != nullptr)
+        {
+            _presence_queries[Options->TargetUserId].emplace_back(res);
+            Presence_Info_Request_pb* req = new Presence_Info_Request_pb;
+            send_presence_info_request(user->first->to_string(), req);
+        }
+        else
+        {
+            qpci.ResultCode = EOS_EResult::EOS_NotFound;
+            res->done = true;
+        }
+    }
 
-    _presence_queries[Options->TargetUserId].emplace_back(res);
-    Presence_Info_Request_pb* req = new Presence_Info_Request_pb;
-    send_presence_info_request(Options->TargetUserId->to_string(), req);
+    GetCB_Manager().add_callback(this, res);
 }
 
 /**
@@ -486,7 +507,8 @@ bool EOSSDK_Presence::on_presence_infos(Network_Message_pb const& msg, Presence_
     if (!msg.source_id().empty())
     {
         bool presence_changed = false;
-        Presence_Info_pb& presence_infos = _presences[GetEpicUserId(msg.source_id())];
+        auto userid = GetEpicUserId(infos.userid());
+        Presence_Info_pb& presence_infos = _presences[userid];
 
         if(presence_infos.status()         != infos.status()         ||
            presence_infos.productid()      != infos.productid()      ||
@@ -499,7 +521,7 @@ bool EOSSDK_Presence::on_presence_infos(Network_Message_pb const& msg, Presence_
         {
             presence_changed = true;
         }
-        else
+        else if(presence_infos.records_size())
         {
             for (auto const& record : presence_infos.records())
             {
@@ -520,7 +542,7 @@ bool EOSSDK_Presence::on_presence_infos(Network_Message_pb const& msg, Presence_
             }
         }
 
-        auto it = _presence_queries.find(GetEpicUserId(msg.source_id()));
+        auto it = _presence_queries.find(userid);
         if (it != _presence_queries.end() && !it->second.empty())
         {
             auto presence_query_it = it->second.begin();
@@ -529,18 +551,18 @@ bool EOSSDK_Presence::on_presence_infos(Network_Message_pb const& msg, Presence_
             (*presence_query_it)->GetCallback<EOS_Presence_QueryPresenceCallbackInfo>().ResultCode = EOS_EResult::EOS_Success;
 
             it->second.erase(presence_query_it);
+        }
 
-            if (presence_changed)
-            {
-                presence_infos = infos;
-                trigger_presence_change(GetEpicUserId(msg.source_id()));
-                std::vector<pFrameResult_t> notifs = std::move(GetCB_Manager().get_notifications(this, EOS_Presence_QueryPresenceCallbackInfo::k_iCallback));
-                for (auto& notif : notifs)
-                {// Notify all listeners
-                    EOS_Presence_PresenceChangedCallbackInfo& qpci = notif->GetCallback<EOS_Presence_PresenceChangedCallbackInfo>();
-                    qpci.PresenceUserId = GetEpicUserId(msg.source_id());
-                    notif->res.cb_func(notif->res.data);
-                }
+        if (presence_changed)
+        {
+            presence_infos = infos;
+            trigger_presence_change(userid);
+            std::vector<pFrameResult_t> notifs = std::move(GetCB_Manager().get_notifications(this, EOS_Presence_QueryPresenceCallbackInfo::k_iCallback));
+            for (auto& notif : notifs)
+            {// Notify all listeners
+                EOS_Presence_PresenceChangedCallbackInfo& qpci = notif->GetCallback<EOS_Presence_PresenceChangedCallbackInfo>();
+                qpci.PresenceUserId = userid;
+                notif->res.cb_func(notif->res.data);
             }
         }
     }
@@ -554,22 +576,6 @@ bool EOSSDK_Presence::on_presence_infos(Network_Message_pb const& msg, Presence_
 bool EOSSDK_Presence::CBRunFrame()
 {
     GLOBAL_LOCK();
-
-    for (auto &presence_queries : _presence_queries)
-    {
-        for(auto presence_it = presence_queries.second.begin(); presence_it != presence_queries.second.end();)
-        {
-            if ((std::chrono::steady_clock::now() - (*presence_it)->created_time) > presence_query_timeout )
-            {
-                (*presence_it)->done = true;
-                (*presence_it)->GetCallback<EOS_Presence_QueryPresenceCallbackInfo>().ResultCode = EOS_EResult::EOS_TimedOut;
-                presence_it = presence_queries.second.erase(presence_it);
-            }
-            else
-                ++presence_it;
-        }
-    }
-
     return true;
 }
 
@@ -591,9 +597,29 @@ bool EOSSDK_Presence::RunNetwork(Network_Message_pb const& msg)
 
 bool EOSSDK_Presence::RunCallbacks(pFrameResult_t res)
 {
-    //GLOBAL_LOCK();
+    GLOBAL_LOCK();
 
-    return false;
+    switch (res->res.m_iCallback)
+    {
+        case EOS_Presence_QueryPresenceCallbackInfo::k_iCallback:
+        {
+            EOS_Presence_QueryPresenceCallbackInfo& qpci = res->GetCallback<EOS_Presence_QueryPresenceCallbackInfo>();
+
+            if ((std::chrono::steady_clock::now() - res->created_time) > presence_query_timeout)
+            {
+                res->done = true;
+                qpci.ResultCode = EOS_EResult::EOS_TimedOut;
+                
+                _presences[qpci.TargetUserId].set_status(get_enum_value(EOS_Presence_EStatus::EOS_PS_Offline));
+                auto it = _presence_queries.find(qpci.TargetUserId);
+                if (it != _presence_queries.end())
+                    _presence_queries.erase(it);
+            }
+        }
+        break;
+    }
+
+    return res->done;
 }
 
 void EOSSDK_Presence::FreeCallback(pFrameResult_t res)
