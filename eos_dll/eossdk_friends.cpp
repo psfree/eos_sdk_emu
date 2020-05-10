@@ -57,7 +57,12 @@ void EOSSDK_Friends::QueryFriends(const EOS_Friends_QueryFriendsOptions* Options
     qfci.LocalUserId = Settings::Inst().userid;
     qfci.ResultCode = EOS_EResult::EOS_Success;
 
-    _friends_cache_for_query = _friends;
+    _friends.clear();
+    for (auto const& user : GetEOS_Connect()._users)
+    {
+        _friends[GetEpicUserId(user.second.infos.userid())];
+    }
+
     res->done = true;
 
     GetCB_Manager().add_callback(this, res);
@@ -122,7 +127,7 @@ int32_t EOSSDK_Friends::GetFriendsCount(const EOS_Friends_GetFriendsCountOptions
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
-    return static_cast<int32_t>(_friends_cache_for_query.size());
+    return static_cast<int32_t>(_friends.size());
 }
 
 /**
@@ -141,10 +146,10 @@ EOS_EpicAccountId EOSSDK_Friends::GetFriendAtIndex(const EOS_Friends_GetFriendAt
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
-    if (Options == nullptr || Options->Index >= _friends_cache_for_query.size())
+    if (Options == nullptr || Options->Index >= _friends.size())
         return nullptr;
     
-    auto it = _friends_cache_for_query.begin();
+    auto it = _friends.begin();
     std::advance(it, Options->Index);
 
     return it->first;

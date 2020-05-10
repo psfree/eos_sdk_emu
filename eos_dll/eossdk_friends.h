@@ -28,7 +28,6 @@ namespace sdk
         public IRunFrame
     {
         nlohmann::fifo_map<EOS_EpicAccountId, Friend_Info_pb> _friends;
-        nlohmann::fifo_map<EOS_EpicAccountId, Friend_Info_pb> _friends_cache_for_query;
 
     public:
         EOSSDK_Friends();
