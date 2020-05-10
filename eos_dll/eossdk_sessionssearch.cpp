@@ -302,6 +302,7 @@ bool EOSSDK_SessionSearch::send_sessions_search(Sessions_Search_pb* search)
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_SessionSearch::on_sessions_search_response(Network_Message_pb const& msg, Sessions_Search_response_pb const& resp)
 {
+    LOG(Log::LogLevel::TRACE, "");
     LOCAL_LOCK();
 
     if (_search_cb.get() != nullptr && resp.search_id() == _search_infos.search_id())

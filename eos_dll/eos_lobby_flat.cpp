@@ -898,7 +898,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_CopySearchResultByIndex(EOS_HLobby
 
 EOS_DECLARE_FUNC(void) EOS_LobbyModification_Release(EOS_HLobbyModification LobbyModificationHandle)
 {
-
+    LOG(Log::LogLevel::TRACE, "");
 }
 
 /**
@@ -910,7 +910,7 @@ EOS_DECLARE_FUNC(void) EOS_LobbyModification_Release(EOS_HLobbyModification Lobb
  */
 EOS_DECLARE_FUNC(void) EOS_LobbyDetails_Release(EOS_HLobbyDetails LobbyHandle)
 {
-
+    LOG(Log::LogLevel::TRACE, "");
 }
 
 /**
@@ -922,15 +922,15 @@ EOS_DECLARE_FUNC(void) EOS_LobbyDetails_Release(EOS_HLobbyDetails LobbyHandle)
  */
 EOS_DECLARE_FUNC(void) EOS_LobbySearch_Release(EOS_HLobbySearch LobbySearchHandle)
 {
-
+    LOG(Log::LogLevel::TRACE, "");
 }
 
 EOS_DECLARE_FUNC(void) EOS_LobbyDetails_Info_Release(EOS_LobbyDetails_Info* LobbyDetailsInfo)
 {
-
+    LOG(Log::LogLevel::TRACE, "");
 }
 
 EOS_DECLARE_FUNC(void) EOS_Lobby_Attribute_Release(EOS_Lobby_Attribute* LobbyAttribute)
 {
-
+    LOG(Log::LogLevel::TRACE, "");
 }

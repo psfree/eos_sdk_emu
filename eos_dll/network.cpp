@@ -113,7 +113,8 @@ void Network::network_thread()
                     }
 
                     if (msg.dest_id() == peer_t())
-                    {
+                    {// If we received a message without a destination, then its a broadcast.
+                     // Add the message to all listeners queue
                         for (auto& channel : _default_channels)
                             _network_msgs[channel.second].emplace_back(msg);
                     }

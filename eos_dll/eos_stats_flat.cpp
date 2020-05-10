@@ -125,5 +125,5 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Stats_CopyStatByName(EOS_HStats Handle, const 
  */
 EOS_DECLARE_FUNC(void) EOS_Stats_Stat_Release(EOS_Stats_Stat* Stat)
 {
-
+    LOG(Log::LogLevel::TRACE, "");
 }

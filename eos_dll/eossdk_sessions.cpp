@@ -1008,6 +1008,7 @@ bool EOSSDK_Sessions::send_sessions_search_response(Network::peer_t const& peeri
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Sessions::on_sessions_info_request(Network_Message_pb const& msg, Sessions_Info_Request_pb const& req)
 {
+    LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
     auto session = get_session_by_id(req.sessionid());
@@ -1027,6 +1028,7 @@ bool EOSSDK_Sessions::on_sessions_info_request(Network_Message_pb const& msg, Se
 
 bool EOSSDK_Sessions::on_sessions_info(Network_Message_pb const& msg, Sessions_Info_pb const& infos)
 {
+    LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
     
@@ -1036,6 +1038,7 @@ bool EOSSDK_Sessions::on_sessions_info(Network_Message_pb const& msg, Sessions_I
 
 bool EOSSDK_Sessions::on_session_destroy(Network_Message_pb const& msg, Sessions_Destroy_pb const& destr)
 {
+    LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
     
@@ -1045,6 +1048,7 @@ bool EOSSDK_Sessions::on_session_destroy(Network_Message_pb const& msg, Sessions
 
 bool EOSSDK_Sessions::on_sessions_search(Network_Message_pb const& msg, Sessions_Search_pb const& search)
 {
+    LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
     Sessions_Search_response_pb* resp = new Sessions_Search_response_pb;
