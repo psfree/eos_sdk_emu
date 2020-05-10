@@ -221,7 +221,34 @@ void EOSSDK_Connect::QueryExternalAccountMappings(const EOS_Connect_QueryExterna
     CompletionDelegate)
 {
     LOG(Log::LogLevel::TRACE, "");
+    
+    pFrameResult_t res(new FrameResult);
+    EOS_Connect_QueryExternalAccountMappingsCallbackInfo& qeamci = res->CreateCallback<EOS_Connect_QueryExternalAccountMappingsCallbackInfo>((CallbackFunc)CompletionDelegate);
+    qeamci.ClientData = ClientData;
+    qeamci.LocalUserId = product_id();
 
+    if (Options == nullptr || Options->ExternalAccountIds == nullptr)
+    {
+        qeamci.ResultCode = EOS_EResult::EOS_InvalidParameters;
+    }
+    else
+    {
+        switch (Options->AccountIdType)
+        {
+            case EOS_EExternalAccountType::EOS_EAT_EPIC:
+            {
+                qeamci.ResultCode = EOS_EResult::EOS_Success;
+            }
+            break;
+            default:
+            {
+                qeamci.ResultCode = EOS_EResult::EOS_Connect_ExternalServiceUnavailable;
+            }
+        }
+    }
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
 }
 
 /**
@@ -248,7 +275,18 @@ EOS_ProductUserId EOSSDK_Connect::GetExternalAccountMapping(const EOS_Connect_Ge
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    return nullptr;
+    if (Options == nullptr || Options->TargetExternalUserId == nullptr || Options->AccountIdType != EOS_EExternalAccountType::EOS_EAT_EPIC)
+        return GetInvalidProductUserId();
+
+    for (auto const& user : _users)
+    {
+        if (user.second.infos.userid() == Options->TargetExternalUserId)
+        {
+            return user.first;
+        }
+    }
+
+    return GetInvalidProductUserId();
 }
 
 /**
@@ -270,7 +308,27 @@ EOS_EResult EOSSDK_Connect::GetProductUserIdMapping(const EOS_Connect_GetProduct
 {
     LOG(Log::LogLevel::TRACE, "");
 
-    return EOS_EResult::EOS_NotFound;
+    if(Options == nullptr || Options->TargetProductUserId == nullptr || InOutBufferLength == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
+    if (OutBuffer != nullptr)
+        *OutBuffer = 0;
+
+    if (Options->AccountIdType != EOS_EExternalAccountType::EOS_EAT_EPIC)
+    {
+        *InOutBufferLength = 1;
+        return EOS_EResult::EOS_NotFound;
+    }
+
+    if (*InOutBufferLength < (Options->TargetProductUserId->to_string().length() + 1))
+    {
+        *InOutBufferLength = Options->TargetProductUserId->to_string().length() + 1;
+        return EOS_EResult::EOS_LimitExceeded;
+    }
+
+    strncpy(OutBuffer, Options->TargetProductUserId->to_string().c_str(), Options->TargetProductUserId->to_string().length() + 1);
+
+    return EOS_EResult::EOS_Success;
 }
 
 /**
@@ -299,7 +357,7 @@ EOS_ProductUserId EOSSDK_Connect::GetLoggedInUserByIndex(int32_t Index)
     if (Index == 0)
         return product_id();
 
-    return nullptr;
+    return GetInvalidProductUserId();
 }
 
 /**
@@ -479,6 +537,14 @@ bool EOSSDK_Connect::on_connect_infos(Network_Message_pb const& msg, Connect_Inf
 
     user.infos = infos;
     user.last_infos = now;
+
+    std::vector<pFrameResult_t> notifs = std::move(GetCB_Manager().get_notifications(&GetEOS_Friends(), EOS_Friends_OnFriendsUpdateInfo::k_iCallback));
+    for (auto& notif : notifs)
+    {
+        EOS_Friends_OnFriendsUpdateInfo& ofui = notif->GetCallback<EOS_Friends_OnFriendsUpdateInfo>();
+        ofui.TargetUserId = GetEpicUserId(user.infos.userid());
+        notif->res.cb_func(notif->res.data);
+    }
 
     return true;
 }
