@@ -494,6 +494,7 @@ void EOSSDK_Sessions::JoinSession(const EOS_Sessions_JoinSessionOptions* Options
             join->set_sessionname(Options->SessionName);
 
             _sessions[Options->SessionName].state = session_state_t::state_e::joining;
+            _sessions_join[Options->SessionName] = res;
 
             send_session_join_request(details->infos.session_owner(), join);
         }
@@ -933,10 +934,10 @@ EOS_EResult EOSSDK_Sessions::IsUserInSession(const EOS_Sessions_IsUserInSessionO
     }
     else
     {
-        auto finfos = GetEOS_Connect().get_user_by_productid(Options->TargetUserId);
-        if (finfos != nullptr)
+        auto user_infos = GetEOS_Connect().get_user_by_productid(Options->TargetUserId);
+        if (user_infos != nullptr)
         {
-            for (auto const& session : finfos->second.infos.sessions())
+            for (auto const& session : user_infos->second.infos.sessions())
             {
                 if (session.first == Options->SessionName)
                 {
@@ -1191,6 +1192,7 @@ bool EOSSDK_Sessions::on_session_join_request(Network_Message_pb const& msg, Ses
             if (it->second.infos.maxplayers() - it->second.infos.players_size())
             {
                 resp->set_reason(get_enum_value(EOS_EResult::EOS_Success));
+                *it->second.infos.add_players() = msg.source_id();
             }
             else
             {
