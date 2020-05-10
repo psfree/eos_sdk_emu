@@ -25,6 +25,7 @@
 #if defined(__WINDOWS__)
     #define WIN32_LEAN_AND_MEAN
     #define VC_EXTRALEAN
+    #define NOMINMAX
     #include <Windows.h>
     #include <shlobj.h>   // (shell32.lib) Infos about current user folders
     #include <PathCch.h>  // (pathcch.lib)  Canonicalize path
