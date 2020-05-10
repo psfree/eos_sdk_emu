@@ -30,7 +30,7 @@ EOSSDK_P2P::EOSSDK_P2P()
     GetCB_Manager().register_callbacks(this);
     GetCB_Manager().register_frame(this);
 
-    _p2p_task.run(&EOSSDK_P2P::p2p_task_proc, this);
+    //_p2p_task.run(&EOSSDK_P2P::p2p_task_proc, this);
 }
 
 EOSSDK_P2P::~EOSSDK_P2P()
@@ -263,9 +263,9 @@ void EOSSDK_P2P::QueryNATType(const EOS_P2P_QueryNATTypeOptions* Options, void* 
     LOCAL_LOCK();
 
     pFrameResult_t res(new FrameResult);
-    EOS_P2P_OnQueryNATTypeCompleteInfo& pqntci = res->CreateCallback<EOS_P2P_OnQueryNATTypeCompleteInfo>((CallbackFunc)NATTypeQueriedHandler);
+    EOS_P2P_OnQueryNATTypeCompleteInfo& pqntci = res->CreateCallback<EOS_P2P_OnQueryNATTypeCompleteInfo>((CallbackFunc)NATTypeQueriedHandler, std::chrono::milliseconds(15000));
     pqntci.ClientData = ClientData;
-    pqntci.NATType = EOS_ENATType::EOS_NAT_Unknown;
+    pqntci.NATType = EOS_ENATType::EOS_NAT_Moderate;
 
     if (Options == nullptr)
     {
@@ -295,7 +295,7 @@ EOS_EResult EOSSDK_P2P::GetNATType(const EOS_P2P_GetNATTypeOptions* Options, EOS
     LOG(Log::LogLevel::DEBUG, "TODO");
     LOCAL_LOCK();
 
-    *OutNATType = EOS_ENATType::EOS_NAT_Unknown;
+    *OutNATType = EOS_ENATType::EOS_NAT_Moderate;
     return EOS_EResult::EOS_Success;
 }
 
