@@ -15,6 +15,7 @@ EOS_EpicAccountIdDetails::~EOS_EpicAccountIdDetails()
 
 EOS_EpicAccountIdDetails& EOS_EpicAccountIdDetails::operator=(EOS_EpicAccountIdDetails && other) noexcept
 {
+    std::lock_guard<std::mutex> lg(_local_mutex);
     _idstr = std::move(other._idstr);
     _valid = other._valid;
     return *this;
@@ -22,13 +23,13 @@ EOS_EpicAccountIdDetails& EOS_EpicAccountIdDetails::operator=(EOS_EpicAccountIdD
 
 EOS_Bool EOS_EpicAccountIdDetails::IsValid()
 {
-    LOCAL_LOCK();
+    std::lock_guard<std::mutex> lg(_local_mutex);
     return _valid;
 }
 
 EOS_EResult EOS_EpicAccountIdDetails::ToString(char* outBuffer, int32_t* outBufferSize)
 {
-    LOCAL_LOCK();
+    std::lock_guard<std::mutex> lg(_local_mutex);
 
     if (outBuffer == nullptr || outBufferSize == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -47,14 +48,13 @@ EOS_EResult EOS_EpicAccountIdDetails::ToString(char* outBuffer, int32_t* outBuff
 
 void EOS_EpicAccountIdDetails::FromString(const char* accountIdStr)
 {
-    LOCAL_LOCK();
-
     if (accountIdStr != nullptr)
     {
         from_string(accountIdStr);
     }
     else
     {
+        std::lock_guard<std::mutex> lg(_local_mutex);
         _valid = false;
         _idstr = sdk::NULL_USER_ID;
     }
@@ -62,15 +62,14 @@ void EOS_EpicAccountIdDetails::FromString(const char* accountIdStr)
 
 void EOS_EpicAccountIdDetails::from_string(std::string const& accountIdStr)
 {
-    LOCAL_LOCK();
-
+    std::lock_guard<std::mutex> lg(_local_mutex);
     _idstr = accountIdStr;
     validate();
 }
 
 std::string const& EOS_EpicAccountIdDetails::to_string()
 {
-    LOCAL_LOCK();
+    std::lock_guard<std::mutex> lg(_local_mutex);
     return _idstr;
 }
 
@@ -124,6 +123,7 @@ EOS_ProductUserIdDetails::~EOS_ProductUserIdDetails()
 
 EOS_ProductUserIdDetails& EOS_ProductUserIdDetails::operator=(EOS_ProductUserIdDetails&& other) noexcept
 {
+    std::lock_guard<std::mutex> lg(_local_mutex);
     _idstr = std::move(other._idstr);
     _valid = other._valid;
     return *this;
@@ -131,13 +131,13 @@ EOS_ProductUserIdDetails& EOS_ProductUserIdDetails::operator=(EOS_ProductUserIdD
 
 EOS_Bool EOS_ProductUserIdDetails::IsValid()
 {
-    LOCAL_LOCK();
+    std::lock_guard<std::mutex> lg(_local_mutex);
     return _valid;
 }
 
 EOS_EResult EOS_ProductUserIdDetails::ToString(char* outBuffer, int32_t* outBufferSize)
 {
-    LOCAL_LOCK();
+    std::lock_guard<std::mutex> lg(_local_mutex);
 
     if (outBuffer == nullptr || outBufferSize == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -156,15 +156,13 @@ EOS_EResult EOS_ProductUserIdDetails::ToString(char* outBuffer, int32_t* outBuff
 
 void EOS_ProductUserIdDetails::FromString(const char* accountIdStr)
 {
-    LOCAL_LOCK();
-
     if (accountIdStr != nullptr)
     {
-        _idstr = accountIdStr;
-        validate();
+        from_string(accountIdStr);
     }
     else
     {
+        std::lock_guard<std::mutex> lg(_local_mutex);
         _idstr = sdk::NULL_USER_ID;
         _valid = false;
     }
@@ -172,14 +170,13 @@ void EOS_ProductUserIdDetails::FromString(const char* accountIdStr)
 
 std::string const& EOS_ProductUserIdDetails::to_string()
 {
-    LOCAL_LOCK();
+    std::lock_guard<std::mutex> lg(_local_mutex);
     return _idstr;
 }
 
 void EOS_ProductUserIdDetails::from_string(std::string const& accountIdStr)
 {
-    LOCAL_LOCK();
-    
+    std::lock_guard<std::mutex> lg(_local_mutex);
     _idstr = accountIdStr;
     validate();
 }
@@ -193,7 +190,7 @@ void EOS_ProductUserIdDetails::validate()
         _idstr[0] == '0' &&
         _idstr[1] == 'x')
     {
-        std::advance(it, 2);
+        it = _idstr.erase(_idstr.begin(), _idstr.begin() + 2);
     }
 
     if (it != _idstr.end())

@@ -49,6 +49,7 @@ namespace sdk
 EOS_EResult EOSSDK_SessionDetails::CopyInfo(const EOS_SessionDetails_CopyInfoOptions* Options, EOS_SessionDetails_Info** OutSessionInfo)
 {
     LOG(Log::LogLevel::TRACE, "");
+    std::lock_guard<std::mutex> lg(_local_mutex);
 
     if (Options == nullptr || OutSessionInfo == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -57,9 +58,9 @@ EOS_EResult EOSSDK_SessionDetails::CopyInfo(const EOS_SessionDetails_CopyInfoOpt
     EOS_SessionDetails_Settings *settings = new EOS_SessionDetails_Settings;
 
     details->ApiVersion = EOS_SESSIONDETAILS_COPYINFO_API_LATEST;
-    details->NumOpenPublicConnections = infos.maxplayers() - infos.players_size();
+    details->NumOpenPublicConnections = _infos.maxplayers() - _infos.players_size();
     {
-        std::string const& hostaddr = infos.host_address();
+        std::string const& hostaddr = _infos.host_address();
         if (!hostaddr.empty())
         {
             char* str = new char[hostaddr.length() + 1];
@@ -70,7 +71,7 @@ EOS_EResult EOSSDK_SessionDetails::CopyInfo(const EOS_SessionDetails_CopyInfoOpt
             details->HostAddress = nullptr;
     }
     {
-        std::string const& sessionid = infos.sessionid();
+        std::string const& sessionid = _infos.sessionid();
         if (!sessionid.empty())
         {
             char* str = new char[sessionid.length() + 1];
@@ -82,12 +83,12 @@ EOS_EResult EOSSDK_SessionDetails::CopyInfo(const EOS_SessionDetails_CopyInfoOpt
     }
     
     settings->ApiVersion = EOS_SESSIONDETAILS_SETTINGS_API_LATEST;
-    settings->bAllowJoinInProgress = infos.join_in_progress_allowed();
-    settings->bInvitesAllowed = infos.invites_allowed();
-    settings->PermissionLevel = static_cast<EOS_EOnlineSessionPermissionLevel>(infos.permission_level());
-    settings->NumPublicConnections = infos.maxplayers();
+    settings->bAllowJoinInProgress = _infos.join_in_progress_allowed();
+    settings->bInvitesAllowed = _infos.invites_allowed();
+    settings->PermissionLevel = static_cast<EOS_EOnlineSessionPermissionLevel>(_infos.permission_level());
+    settings->NumPublicConnections = _infos.maxplayers();
     {
-        std::string const& bucketid = infos.bucketid();
+        std::string const& bucketid = _infos.bucketid();
         char* str;
         if (!bucketid.empty())
         {
@@ -118,10 +119,12 @@ EOS_EResult EOSSDK_SessionDetails::CopyInfo(const EOS_SessionDetails_CopyInfoOpt
 uint32_t EOSSDK_SessionDetails::GetSessionAttributeCount(const EOS_SessionDetails_GetSessionAttributeCountOptions* Options)
 {
     LOG(Log::LogLevel::TRACE, "");
+    std::lock_guard<std::mutex> lg(_local_mutex);
+
     if (Options == nullptr)
         return 0;
 
-    return infos.attributes_size();
+    return _infos.attributes_size();
 }
 
 /**
@@ -142,7 +145,9 @@ uint32_t EOSSDK_SessionDetails::GetSessionAttributeCount(const EOS_SessionDetail
 EOS_EResult EOSSDK_SessionDetails::CopySessionAttributeByIndex(const EOS_SessionDetails_CopySessionAttributeByIndexOptions* Options, EOS_SessionDetails_Attribute** OutSessionAttribute)
 {
     LOG(Log::LogLevel::TRACE, "");
-    if (Options == nullptr || Options->AttrIndex >= infos.attributes_size() || OutSessionAttribute == nullptr)
+    std::lock_guard<std::mutex> lg(_local_mutex);
+
+    if (Options == nullptr || Options->AttrIndex >= _infos.attributes_size() || OutSessionAttribute == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
     
     EOS_SessionDetails_Attribute* attr = new EOS_SessionDetails_Attribute;
@@ -150,7 +155,7 @@ EOS_EResult EOSSDK_SessionDetails::CopySessionAttributeByIndex(const EOS_Session
 
     attr->ApiVersion = EOS_SESSIONDETAILS_COPYSESSIONATTRIBUTEBYINDEX_API_LATEST;
 
-    auto it = infos.attributes().begin();
+    auto it = _infos.attributes().begin();
     std::advance(it, Options->AttrIndex);
 
     attr->AdvertisementType = static_cast<EOS_ESessionAttributeAdvertisementType>(it->second.advertisement_type());
@@ -220,6 +225,8 @@ EOS_EResult EOSSDK_SessionDetails::CopySessionAttributeByIndex(const EOS_Session
 EOS_EResult EOSSDK_SessionDetails::CopySessionAttributeByKey(const EOS_SessionDetails_CopySessionAttributeByKeyOptions* Options, EOS_SessionDetails_Attribute** OutSessionAttribute)
 {
     LOG(Log::LogLevel::TRACE, "");
+    std::lock_guard<std::mutex> lg(_local_mutex);
+
     if (Options == nullptr || Options->AttrKey == nullptr || OutSessionAttribute == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
     
@@ -228,8 +235,8 @@ EOS_EResult EOSSDK_SessionDetails::CopySessionAttributeByKey(const EOS_SessionDe
 
     attr->ApiVersion = EOS_SESSIONDETAILS_COPYSESSIONATTRIBUTEBYINDEX_API_LATEST;
 
-    auto it = infos.attributes().find(Options->AttrKey);
-    if(it == infos.attributes().end())
+    auto it = _infos.attributes().find(Options->AttrKey);
+    if(it == _infos.attributes().end())
         return EOS_EResult::EOS_NotFound;
 
     attr->AdvertisementType = static_cast<EOS_ESessionAttributeAdvertisementType>(it->second.advertisement_type());

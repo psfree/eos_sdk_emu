@@ -33,7 +33,7 @@ struct EOS_EpicAccountIdDetails
     friend class EOSSDK_Client;
 
 private:
-    std::recursive_mutex local_mutex;
+    std::mutex _local_mutex;
     std::string _idstr;
     bool _valid;
 
@@ -64,7 +64,7 @@ struct EOS_ProductUserIdDetails
     friend class EOSSDK_Client;
 
 private:
-    std::recursive_mutex local_mutex;
+    std::mutex _local_mutex;
     std::string _idstr;
     bool _valid;
 

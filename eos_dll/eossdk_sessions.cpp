@@ -487,16 +487,16 @@ void EOSSDK_Sessions::JoinSession(const EOS_Sessions_JoinSessionOptions* Options
         if (_sessions.count(Options->SessionName) == 0) // If we haven't already a session with that name (created, joining or joined)
         {
             EOSSDK_SessionDetails* details = reinterpret_cast<EOSSDK_SessionDetails*>(Options->SessionHandle);
-            auto peer_productid = GetProductUserId(details->infos.session_owner());
+            auto peer_productid = GetProductUserId(details->_infos.session_owner());
 
             Session_Join_Request_pb* join = new Session_Join_Request_pb;
-            join->set_sessionid(details->infos.sessionid());
+            join->set_sessionid(details->_infos.sessionid());
             join->set_sessionname(Options->SessionName);
 
             _sessions[Options->SessionName].state = session_state_t::state_e::joining;
             _sessions_join[Options->SessionName] = res;
 
-            send_session_join_request(details->infos.session_owner(), join);
+            send_session_join_request(details->_infos.session_owner(), join);
         }
         else
         {
@@ -885,7 +885,7 @@ EOS_EResult EOSSDK_Sessions::CopySessionHandleForPresence(const EOS_Sessions_Cop
         if (session.second.infos.presence_allowed())
         {
             EOSSDK_SessionDetails *details = new EOSSDK_SessionDetails;
-            details->infos = session.second.infos;
+            details->_infos = session.second.infos;
             *OutSessionHandle = reinterpret_cast<EOS_HSessionDetails>(details);
             return EOS_EResult::EOS_Success;
         }

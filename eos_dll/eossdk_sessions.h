@@ -38,7 +38,7 @@ namespace sdk
 
     private:
 
-        std::recursive_mutex local_mutex;
+        std::mutex _local_mutex;
 
         uint32_t _api_version;
         modif_type _type;
@@ -64,7 +64,7 @@ namespace sdk
         static constexpr auto search_timeout = std::chrono::milliseconds(5000);
         static std::atomic<uint64_t> search_id;
 
-        std::recursive_mutex local_mutex;
+        std::mutex _local_mutex;
 
         EOS_ProductUserId          _target_userid;
         Sessions_Search_pb         _search_infos;
@@ -102,7 +102,9 @@ namespace sdk
         friend class sdk::EOSSDK_Sessions;
         friend class sdk::EOSSDK_SessionSearch;
 
-        Session_Info_pb infos;
+        std::mutex _local_mutex;
+
+        Session_Info_pb _infos;
 
     public:
         EOS_EResult CopyInfo(const EOS_SessionDetails_CopyInfoOptions* Options, EOS_SessionDetails_Info** OutSessionInfo);
