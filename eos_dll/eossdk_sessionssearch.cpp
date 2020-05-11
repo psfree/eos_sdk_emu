@@ -291,7 +291,7 @@ bool EOSSDK_SessionSearch::send_sessions_search(Sessions_Search_pb* search)
     search_msg->set_allocated_search(search);
     msg.set_allocated_sessions_search(search_msg);
 
-    _search_peers = std::move(GetNetwork().TCPSendToAllPeers(msg));
+    _search_peers = std::move(GetNetwork().SendToAllPeers(msg));
     search_msg->release_search(); // Don't delete our search infos
 
     return true;

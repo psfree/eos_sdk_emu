@@ -81,7 +81,7 @@ void Network::network_thread()
     }
 
     Poll p;
-    p.add_socket(&_udp_socket);
+    p.add_socket(_udp_socket);
 
     for (int i = 0; i < p.get_num_polls(); ++i)
         p.set_events(i, Socket::poll_flags::in);

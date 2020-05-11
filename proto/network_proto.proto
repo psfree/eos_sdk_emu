@@ -174,31 +174,29 @@ message Sessions_Search_Message_pb {
 //////////////////////////////////////////////////////////////////////////
 // Request a P2P connection
 message P2P_Connect_Request_pb {
-    int32 channel = 1;
+    string socket_name = 1;
 }
 
 // Response to a P2P connection
 message P2P_Connect_Response_pb {
     bool accepted = 1;
-    int32 channel = 2;
 }
 
 // Send P2P data
 message P2P_Data_Message_pb {
     string data = 1;
-    uint64 message_id = 2;
-    int32 channel = 3;
+    int32 channel = 2;
+    string socket_name = 3;
+    string user_id = 4;
 }
 
 // P2P data acknowledge
 message P2P_Data_Acknowledge_pb {
-    uint64 message_id = 1;
-    int32 channel = 2;
+    int32 channel = 1;
 }
 
 // P2P Connection close
 message P2P_Connection_Close_pb {
-    int32 channel = 1;
 }
 
 // Base P2P related message
