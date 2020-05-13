@@ -573,12 +573,14 @@ EOS_EResult EOSSDK_Connect::CopyProductUserInfo(const EOS_Connect_CopyProductUse
 bool EOSSDK_Connect::send_connect_heartbeat(Connect_Heartbeat_pb* hb) const
 {
     LOG(Log::LogLevel::TRACE, "");
+    std::string const& user_id = product_id()->to_string();
+
     Network_Message_pb msg;
     Connect_Message_pb* conn = new Connect_Message_pb;
 
     conn->set_allocated_heartbeat(hb);
 
-    msg.set_source_id(product_id()->to_string());
+    msg.set_source_id(user_id);
     msg.set_allocated_connect(conn);
 
     GetNetwork().TCPSendToAllPeers(msg);
@@ -588,12 +590,14 @@ bool EOSSDK_Connect::send_connect_heartbeat(Connect_Heartbeat_pb* hb) const
 bool EOSSDK_Connect::send_connect_infos_request(Network::peer_t const& peerid, Connect_Request_Info_pb* req) const
 {
     LOG(Log::LogLevel::TRACE, "");
+    std::string const& user_id = product_id()->to_string();
+
     Network_Message_pb msg;
     Connect_Message_pb* conn = new Connect_Message_pb;
 
     conn->set_allocated_request(req);
 
-    msg.set_source_id(product_id()->to_string());
+    msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
     msg.set_allocated_connect(conn);
 
@@ -603,12 +607,14 @@ bool EOSSDK_Connect::send_connect_infos_request(Network::peer_t const& peerid, C
 bool EOSSDK_Connect::send_connect_infos(Network::peer_t const& peerid, Connect_Infos_pb* infos) const
 {
     LOG(Log::LogLevel::TRACE, "");
+    std::string const& user_id = product_id()->to_string();
+
     Network_Message_pb msg;
     Connect_Message_pb* conn = new Connect_Message_pb;
 
     conn->set_allocated_infos(infos);
 
-    msg.set_source_id(product_id()->to_string());
+    msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
     msg.set_allocated_connect(conn);
 

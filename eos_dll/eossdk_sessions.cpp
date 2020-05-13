@@ -1025,13 +1025,15 @@ EOS_EResult EOSSDK_Sessions::DumpSessionState(const EOS_Sessions_DumpSessionStat
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Sessions::send_to_all_members(Network_Message_pb & msg, session_state_t* session)
 {
-    assert(session != nullptr);
-    std::string const& userid = GetEOS_Connect().product_id()->to_string();
+    LOG(Log::LogLevel::TRACE, "");
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
-    msg.set_source_id(userid);
+    assert(session != nullptr);
+
+    msg.set_source_id(user_id);
     for (auto const& player : session->infos.players())
     {
-        if (player != userid)
+        if (player != user_id)
         {
             msg.set_dest_id(player);
             GetNetwork().TCPSendTo(msg);
@@ -1042,8 +1044,9 @@ bool EOSSDK_Sessions::send_to_all_members(Network_Message_pb & msg, session_stat
 
 bool EOSSDK_Sessions::send_session_info_request(Network::peer_t const& peerid, Session_Info_Request_pb* req)
 {
+    LOG(Log::LogLevel::TRACE, "");
     // TODO: Make it P2P, send it to all, will have to filter results
-    std::string const& userid = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
     Session_Message_pb* session = new Session_Message_pb;
@@ -1052,7 +1055,7 @@ bool EOSSDK_Sessions::send_session_info_request(Network::peer_t const& peerid, S
 
     msg.set_allocated_session(session);
 
-    msg.set_source_id(userid);
+    msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
 
     return GetNetwork().TCPSendTo(msg);
@@ -1060,6 +1063,7 @@ bool EOSSDK_Sessions::send_session_info_request(Network::peer_t const& peerid, S
 
 bool EOSSDK_Sessions::send_session_info(session_state_t* session)
 {
+    LOG(Log::LogLevel::TRACE, "");
     if (session == nullptr)
         return false;
 
@@ -1078,6 +1082,7 @@ bool EOSSDK_Sessions::send_session_info(session_state_t* session)
 
 bool EOSSDK_Sessions::send_session_destroy(session_state_t *session)
 {
+    LOG(Log::LogLevel::TRACE, "");
     if (session == nullptr)
         return false;
 
@@ -1096,15 +1101,16 @@ bool EOSSDK_Sessions::send_session_destroy(session_state_t *session)
 
 bool EOSSDK_Sessions::send_sessions_search_response(Network::peer_t const& peerid, Sessions_Search_response_pb* resp)
 {
+    LOG(Log::LogLevel::TRACE, "");
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+
     Network_Message_pb msg;
     Sessions_Search_Message_pb* search = new Sessions_Search_Message_pb;
-
-    std::string const& userid = GetEOS_Connect().product_id()->to_string();
 
     search->set_allocated_search_response(resp);
     msg.set_allocated_sessions_search(search);
 
-    msg.set_source_id(userid);
+    msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
 
     return GetNetwork().TCPSendTo(msg);
@@ -1112,6 +1118,7 @@ bool EOSSDK_Sessions::send_sessions_search_response(Network::peer_t const& peeri
 
 bool EOSSDK_Sessions::send_session_join_request(session_state_t *session)
 {
+    LOG(Log::LogLevel::TRACE, "");
     if (session == nullptr)
         return false;
 
@@ -1130,15 +1137,16 @@ bool EOSSDK_Sessions::send_session_join_request(session_state_t *session)
 
 bool EOSSDK_Sessions::send_session_join_response(Network::peer_t const& peerid, Session_Join_Response_pb* resp)
 {
+    LOG(Log::LogLevel::TRACE, "");
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+
     Network_Message_pb msg;
     Session_Message_pb* session = new Session_Message_pb;
-
-    std::string const& userid = GetEOS_Connect().product_id()->to_string();
 
     session->set_allocated_session_join_response(resp);
     msg.set_allocated_session(session);
 
-    msg.set_source_id(userid);
+    msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
 
     return GetNetwork().TCPSendTo(msg);

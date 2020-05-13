@@ -226,16 +226,15 @@ void EOSSDK_Friends::RemoveNotifyFriendsUpdate(EOS_NotificationId NotificationId
 bool EOSSDK_Friends::send_friend_info_request(Network::peer_t const& peerid, Friend_Info_Request_pb* req)
 {
     LOG(Log::LogLevel::TRACE, "");
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+
     Network_Message_pb msg;
-
-    std::string const& userid = GetEOS_Connect().product_id()->to_string();
-
     Friends_Message_pb* frd = new Friends_Message_pb;
 
     frd->set_allocated_friend_info_request(req);
     msg.set_allocated_friends(frd);
 
-    msg.set_source_id(userid);
+    msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
 
     return GetNetwork().TCPSendTo(msg);
@@ -244,16 +243,15 @@ bool EOSSDK_Friends::send_friend_info_request(Network::peer_t const& peerid, Fri
 bool EOSSDK_Friends::send_friend_info(Network::peer_t const& peerid, Friend_Info_pb* infos)
 {
     LOG(Log::LogLevel::TRACE, "");
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+
     Network_Message_pb msg;
-
-    std::string const& userid = GetEOS_Connect().product_id()->to_string();
-
     Friends_Message_pb* frd = new Friends_Message_pb;
 
     frd->set_allocated_friend_info(infos);
     msg.set_allocated_friends(frd);
 
-    msg.set_source_id(userid);
+    msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
 
     return GetNetwork().TCPSendTo(msg);

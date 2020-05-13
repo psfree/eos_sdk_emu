@@ -448,13 +448,14 @@ EOS_EResult EOSSDK_P2P::GetNATType(const EOS_P2P_GetNATTypeOptions* Options, EOS
 bool EOSSDK_P2P::send_p2p_connection_request(Network::peer_t const& peerid, P2P_Connect_Request_pb* req) const
 {
     LOG(Log::LogLevel::TRACE, "");
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
     P2P_Message_pb* p2p = new P2P_Message_pb;
 
     p2p->set_allocated_connect_request(req);
 
-    msg.set_source_id(GetEOS_Connect().product_id()->to_string());
+    msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
 
     msg.set_allocated_p2p(p2p);
@@ -465,13 +466,14 @@ bool EOSSDK_P2P::send_p2p_connection_request(Network::peer_t const& peerid, P2P_
 bool EOSSDK_P2P::send_p2p_connection_response(Network::peer_t const& peerid, P2P_Connect_Response_pb* resp) const
 {
     LOG(Log::LogLevel::TRACE, "");
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
     P2P_Message_pb* p2p = new P2P_Message_pb;
 
     p2p->set_allocated_connect_response(resp);
 
-    msg.set_source_id(GetEOS_Connect().product_id()->to_string());
+    msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
 
     msg.set_allocated_p2p(p2p);
@@ -482,13 +484,14 @@ bool EOSSDK_P2P::send_p2p_connection_response(Network::peer_t const& peerid, P2P
 bool EOSSDK_P2P::send_p2p_data(Network::peer_t const& peerid, P2P_Data_Message_pb* data) const
 {
     LOG(Log::LogLevel::TRACE, "");
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
     P2P_Message_pb* p2p = new P2P_Message_pb;
 
     p2p->set_allocated_data_message(data);
 
-    msg.set_source_id(GetEOS_Connect().product_id()->to_string());
+    msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
 
     msg.set_allocated_p2p(p2p);
@@ -502,13 +505,14 @@ bool EOSSDK_P2P::send_p2p_data(Network::peer_t const& peerid, P2P_Data_Message_p
 bool EOSSDK_P2P::send_p2p_data_ack(Network::peer_t const& peerid, P2P_Data_Acknowledge_pb* ack) const
 {
     LOG(Log::LogLevel::TRACE, "");
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
     P2P_Message_pb* p2p = new P2P_Message_pb;
 
     p2p->set_allocated_data_acknowledge(ack);
 
-    msg.set_source_id(GetEOS_Connect().product_id()->to_string());
+    msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
 
     msg.set_allocated_p2p(p2p);
@@ -519,13 +523,14 @@ bool EOSSDK_P2P::send_p2p_data_ack(Network::peer_t const& peerid, P2P_Data_Ackno
 bool EOSSDK_P2P::send_p2p_connetion_close(Network::peer_t const& peerid, P2P_Connection_Close_pb* close) const
 {
     LOG(Log::LogLevel::TRACE, "");
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
     P2P_Message_pb* p2p = new P2P_Message_pb;
 
     p2p->set_allocated_connection_close(close);
 
-    msg.set_source_id(GetEOS_Connect().product_id()->to_string());
+    msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
 
     msg.set_allocated_p2p(p2p);

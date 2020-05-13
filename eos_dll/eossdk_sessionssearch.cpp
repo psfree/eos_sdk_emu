@@ -282,12 +282,12 @@ EOS_EResult EOSSDK_SessionSearch::CopySearchResultByIndex(const EOS_SessionSearc
 bool EOSSDK_SessionSearch::send_sessions_search(Sessions_Search_pb* search)
 {
     LOG(Log::LogLevel::TRACE, "");
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+
     Network_Message_pb msg;
     Sessions_Search_Message_pb* search_msg = new Sessions_Search_Message_pb();
 
-    std::string const& userid = GetEOS_Connect().product_id()->to_string();
-
-    msg.set_source_id(userid);
+    msg.set_source_id(user_id);
 
     search_msg->set_allocated_search(search);
     msg.set_allocated_sessions_search(search_msg);

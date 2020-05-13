@@ -449,15 +449,15 @@ EOS_EResult EOSSDK_Presence::GetJoinInfo( const EOS_Presence_GetJoinInfoOptions*
 bool EOSSDK_Presence::send_presence_info_request(Network::peer_t const& peerid, Presence_Info_Request_pb* req)
 {
     LOG(Log::LogLevel::TRACE, "");
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+
     Network_Message_pb msg;
     Presence_Message_pb* presence = new Presence_Message_pb;
-
-    std::string const& userid = GetEOS_Connect().product_id()->to_string();
 
     presence->set_allocated_presence_info_request(req);
     msg.set_allocated_presence(presence);
 
-    msg.set_source_id(userid);
+    msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
 
     return GetNetwork().TCPSendTo(msg);
@@ -466,15 +466,15 @@ bool EOSSDK_Presence::send_presence_info_request(Network::peer_t const& peerid, 
 bool EOSSDK_Presence::send_my_presence_info(Network::peer_t const& peerid)
 {
     LOG(Log::LogLevel::TRACE, "");
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+
     Network_Message_pb msg;
     Presence_Message_pb* presence = new Presence_Message_pb;
-
-    std::string const& userid = GetEOS_Connect().product_id()->to_string();
 
     presence->set_allocated_presence_info(&get_myself());
     msg.set_allocated_presence(presence);
 
-    msg.set_source_id(userid);
+    msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
 
     auto res = GetNetwork().TCPSendTo(msg);
@@ -486,15 +486,15 @@ bool EOSSDK_Presence::send_my_presence_info(Network::peer_t const& peerid)
 bool EOSSDK_Presence::send_my_presence_info_to_all_peers()
 {
     LOG(Log::LogLevel::TRACE, "");
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+
     Network_Message_pb msg;
     Presence_Message_pb* presence = new Presence_Message_pb;
-
-    std::string const& userid = GetEOS_Connect().product_id()->to_string();
 
     presence->set_allocated_presence_info(&get_myself());
     msg.set_allocated_presence(presence);
 
-    msg.set_source_id(userid);
+    msg.set_source_id(user_id);
 
     GetNetwork().TCPSendToAllPeers(msg).size();
     presence->release_presence_info();
