@@ -431,7 +431,7 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
                     }
                     usci.ResultCode = EOS_EResult::EOS_Success;
 
-                    send_session_join_request(session);
+                    send_session_info(session);
                 }
             }
             break;
