@@ -514,6 +514,10 @@ bool EOSSDK_Presence::on_presence_request(Network_Message_pb const& msg, Presenc
 
 bool EOSSDK_Presence::on_presence_infos(Network_Message_pb const& msg, Presence_Info_pb const& infos)
 {
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    if (msg.source_id() == user_id)
+        return true;
+
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
