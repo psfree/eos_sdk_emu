@@ -174,31 +174,29 @@ message Sessions_Search_Message_pb {
 //////////////////////////////////////////////////////////////////////////
 // Request a P2P connection
 message P2P_Connect_Request_pb {
-    int32 channel = 1;
+    string socket_name = 1;
 }
 
 // Response to a P2P connection
 message P2P_Connect_Response_pb {
     bool accepted = 1;
-    int32 channel = 2;
 }
 
 // Send P2P data
 message P2P_Data_Message_pb {
     string data = 1;
-    uint64 message_id = 2;
-    int32 channel = 3;
+    int32 channel = 2;
+    string socket_name = 3;
+    string user_id = 4;
 }
 
 // P2P data acknowledge
 message P2P_Data_Acknowledge_pb {
-    uint64 message_id = 1;
-    int32 channel = 2;
+    int32 channel = 1;
 }
 
 // P2P Connection close
 message P2P_Connection_Close_pb {
-    int32 channel = 1;
 }
 
 // Base P2P related message
@@ -257,7 +255,28 @@ message Connect_Message_pb {
         Connect_Infos_pb infos = 3;
 	}
 }
+//////////////////////////////////////////////////////////////////////////
+//                          Network messages                            //
+//////////////////////////////////////////////////////////////////////////
+message Network_Port_pb {
+    uint32 port = 1;
+}
 
+message Network_Peer_pb {
+    repeated string peer_ids = 1;
+}
+
+message Network_Peer_Accept_pb {
+
+}
+
+message Network_Advertise_pb {
+    oneof message {
+        Network_Port_pb port = 1;
+        Network_Peer_pb peer = 2;
+        Network_Peer_Accept_pb accept = 3;
+	}
+}
 
 // Network base message
 message Network_Message_pb {
@@ -265,12 +284,13 @@ message Network_Message_pb {
     string dest_id = 2;
 	string gameid = 3;
     oneof messages {
-		Friends_Message_pb friends = 4;
-        Presence_Message_pb presence = 5;
-        UserInfo_Message_pb userinfo = 6;
-        Session_Message_pb session = 7;
-        P2P_Message_pb p2p = 8;
-        Connect_Message_pb connect = 9;
-        Sessions_Search_Message_pb sessions_search = 10;
+        Network_Advertise_pb network_advertise = 4;
+		Friends_Message_pb friends = 5;
+        Presence_Message_pb presence = 6;
+        UserInfo_Message_pb userinfo = 7;
+        Session_Message_pb session = 8;
+        P2P_Message_pb p2p = 9;
+        Connect_Message_pb connect = 10;
+        Sessions_Search_Message_pb sessions_search = 11;
     }
 }

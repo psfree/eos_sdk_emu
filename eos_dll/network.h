@@ -28,21 +28,64 @@ public:
     using channel_t = int32_t;
     using peer_t = std::string;
 
+    struct tcp_buffer_t
+    {
+        PortableAPI::tcp_socket socket;
+        std::vector<uint8_t> buffer;
+        uint16_t next_packet_size;
+        uint16_t received_size;
+    };
+
+    using tcp_client_iterator = typename std::list<tcp_buffer_t>::iterator;
+
 private:
     static constexpr uint16_t network_port = 55789;
     static constexpr uint16_t max_network_port = (network_port + 10);
 
-    PortableAPI::udp_socket _udp_socket;
+    bool _advertise;
+    std::chrono::steady_clock::time_point _last_advertise;
+    std::set<peer_t> _my_peer_ids;
+    uint16_t _tcp_port;
 
-    std::map<peer_t, PortableAPI::ipv4_addr> _peers_addrs;
+    PortableAPI::Poll _poll;
+    PortableAPI::udp_socket _udp_socket;
+    PortableAPI::udp_socket _query_socket;
+    std::map<peer_t, PortableAPI::ipv4_addr> _udp_addrs;
+
+    PortableAPI::tcp_socket _tcp_socket;
+    std::list<tcp_buffer_t> _tcp_clients;
+    std::map<peer_t, PortableAPI::tcp_socket> _waiting_out_tcp_clients;
+    std::map<peer_t, PortableAPI::tcp_socket> _waiting_in_tcp_clients;
+    PortableAPI::tcp_socket _tcp_self_send;
+    tcp_buffer_t _tcp_self_recv;
+    std::map<peer_t, PortableAPI::tcp_socket*> _tcp_peers;
 
     std::map<Network_Message_pb::MessagesCase, std::map<channel_t, std::vector<IRunFrame*>>> _network_listeners;
 
-    std::recursive_mutex local_mutex;
-    
+    std::mutex local_mutex;
+
+    void start_network();
+    void stop_network();
+
+    void build_advertise_msg(Network_Message_pb& msg);
+    std::pair<PortableAPI::tcp_socket*, std::vector<peer_t>> get_new_peer_ids(Network_Peer_pb const& peer_msg);
+
+    void do_advertise();
+
+    void add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_t> const& peer_ids, bool advertise);
+    void connect_to_peer(PortableAPI::ipv4_addr& addr, peer_t const& peer_id);
+    void process_waiting_out_clients();
+    void process_waiting_in_client(PortableAPI::tcp_socket & new_client);
+
+    void process_network_message(Network_Message_pb &msg);
+    void process_udp();
+    void process_tcp_listen();
+    void process_tcp_data(tcp_buffer_t& tcp_buffer);
+    tcp_client_iterator process_tcp_client(tcp_client_iterator client);
     void network_thread();
     task _network_task;
 
+    std::map<channel_t, std::list<Network_Message_pb>> _pending_network_msgs;
     std::map<channel_t, std::list<Network_Message_pb>> _network_msgs;
 
     std::map<peer_t, channel_t> _default_channels;
@@ -53,7 +96,10 @@ public:
     Network();
     ~Network();
 
-    //PortableAPI::ipv4_addr const& get_steamid_addr(uint64 steam_id);
+    void advertise_peer_id(peer_t const& peerid);
+    void remove_advertise_peer_id(peer_t const& peerid);
+    void advertise(bool doit);
+    bool is_advertising();
 
     void set_default_channel(peer_t peerid, channel_t default_channel);
 
@@ -62,7 +108,13 @@ public:
 
     bool CBRunFrame(channel_t channel, Network_Message_pb::MessagesCase MessageFilter = Network_Message_pb::MessagesCase::MESSAGES_NOT_SET);
 
-    bool SendBroadcast(Network_Message_pb& msg);
-    std::set<peer_t> SendToAllPeers(Network_Message_pb& msg);
-    bool SendTo(Network_Message_pb& msg);
+    bool SendBroadcast(Network_Message_pb& msg); // Always UDP
+    std::set<peer_t> UDPSendToAllPeers(Network_Message_pb& msg);
+    bool UDPSendTo(Network_Message_pb& msg);
+
+    std::set<peer_t> TCPSendToAllPeers(Network_Message_pb& msg);
+    bool TCPSendTo(Network_Message_pb& msg);
+
+    bool StartQueryServer(PortableAPI::ipv4_addr& addr);
+    void StopQueryServer();
 };

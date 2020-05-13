@@ -448,6 +448,7 @@ EOS_EResult EOSSDK_Presence::GetJoinInfo( const EOS_Presence_GetJoinInfoOptions*
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Presence::send_presence_info_request(Network::peer_t const& peerid, Presence_Info_Request_pb* req)
 {
+    LOG(Log::LogLevel::TRACE, "");
     Network_Message_pb msg;
     Presence_Message_pb* presence = new Presence_Message_pb;
 
@@ -459,11 +460,12 @@ bool EOSSDK_Presence::send_presence_info_request(Network::peer_t const& peerid, 
     msg.set_source_id(userid);
     msg.set_dest_id(peerid);
 
-    return GetNetwork().SendTo(msg);
+    return GetNetwork().TCPSendTo(msg);
 }
 
 bool EOSSDK_Presence::send_my_presence_info(Network::peer_t const& peerid)
 {
+    LOG(Log::LogLevel::TRACE, "");
     Network_Message_pb msg;
     Presence_Message_pb* presence = new Presence_Message_pb;
 
@@ -475,7 +477,7 @@ bool EOSSDK_Presence::send_my_presence_info(Network::peer_t const& peerid)
     msg.set_source_id(userid);
     msg.set_dest_id(peerid);
 
-    auto res = GetNetwork().SendTo(msg);
+    auto res = GetNetwork().TCPSendTo(msg);
     presence->release_presence_info();
 
     return res;
@@ -483,6 +485,7 @@ bool EOSSDK_Presence::send_my_presence_info(Network::peer_t const& peerid)
 
 bool EOSSDK_Presence::send_my_presence_info_to_all_peers()
 {
+    LOG(Log::LogLevel::TRACE, "");
     Network_Message_pb msg;
     Presence_Message_pb* presence = new Presence_Message_pb;
 
@@ -493,7 +496,7 @@ bool EOSSDK_Presence::send_my_presence_info_to_all_peers()
 
     msg.set_source_id(userid);
 
-    GetNetwork().SendToAllPeers(msg).size();
+    GetNetwork().TCPSendToAllPeers(msg).size();
     presence->release_presence_info();
     return true;
 }

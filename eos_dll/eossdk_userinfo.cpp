@@ -306,7 +306,7 @@ bool EOSSDK_UserInfo::send_userinfo_request(Network::peer_t const& peerid, UserI
     msg.set_source_id(userid);
     msg.set_dest_id(peerid);
 
-    return GetNetwork().SendTo(msg);
+    return GetNetwork().TCPSendTo(msg);
 }
 
 bool EOSSDK_UserInfo::send_my_userinfo(Network::peer_t const& peerid)
@@ -322,7 +322,7 @@ bool EOSSDK_UserInfo::send_my_userinfo(Network::peer_t const& peerid)
     msg.set_source_id(userid);
     msg.set_dest_id(peerid);
 
-    auto res = GetNetwork().SendTo(msg);
+    auto res = GetNetwork().TCPSendTo(msg);
     userinfo->release_userinfo_info();
 
     return res;

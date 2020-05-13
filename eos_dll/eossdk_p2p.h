@@ -28,17 +28,19 @@ namespace sdk
     {
         enum class status_e
         {
-            none,
             closed,
-            requested,
+            requesting,
+            connecting,
             connected,
         };
 
         status_e status;
-        uint64_t last_in_message_id;
-        std::map<uint8_t, P2P_Data_Message_pb> p2p_in_messages;
-        uint64_t last_out_message_id;
-        std::map<uint8_t, P2P_Data_Message_pb> p2p_out_messages;
+        std::map<EOS_ProductUserId, std::queue<P2P_Data_Message_pb>> p2p_out_messages;
+        std::string socket_name;
+
+        p2p_state_t() :
+            status(status_e::closed)
+        {}
     };
 
     class EOSSDK_P2P :
@@ -46,10 +48,9 @@ namespace sdk
     {
         std::recursive_mutex local_mutex;
 
+        int32_t next_requested_channel;
+        std::map<uint8_t, std::list<P2P_Data_Message_pb>> _p2p_in_messages;
         std::map<EOS_ProductUserId, p2p_state_t> _p2p_connections;
-
-        task _p2p_task;
-        void p2p_task_proc();
 
     public:
         EOSSDK_P2P();
