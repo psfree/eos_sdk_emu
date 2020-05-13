@@ -495,7 +495,12 @@ void Network::network_thread()
         
         for (auto it = _tcp_clients.begin(); it != _tcp_clients.end();)
         {// Process the multiple tcp clients we have
-            if ((_poll.get_revents(it->socket) & Socket::poll_flags::in_hup) != Socket::poll_flags::none)
+            auto reevents = _poll.get_revents(it->socket);
+            if ((reevents & Socket::poll_flags::hup) != Socket::poll_flags::none)
+            {
+                it = _tcp_clients.erase(it);
+            }
+            else if ((reevents & Socket::poll_flags::in_hup) != Socket::poll_flags::none)
             {
                 it = process_tcp_client(it);
             }
