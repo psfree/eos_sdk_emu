@@ -205,7 +205,7 @@ void shared_library_load(void* hmodule)
         std::make_pair<void**, void*>((void**)&_WSAConnect, (void*)MyWSAConnect)
     );
 
-    //debug.EndHook();
+    debug.EndHook();
 
     std::fstream log("cmdline.txt", std::ios::out | std::ios::trunc);
     log << GetCommandLine();

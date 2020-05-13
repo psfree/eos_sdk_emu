@@ -36,6 +36,9 @@ EOSSDK_Connect::EOSSDK_Connect()
     _myself.second.infos.set_userid(Settings::Inst().userid->to_string());
     _myself.second.infos.set_displayname(Settings::Inst().username);
 
+    GetNetwork().advertise_peer_id(_myself.first->to_string());
+    GetNetwork().advertise(true);
+
     GetCB_Manager().register_callbacks(this);
     GetCB_Manager().register_frame(this);
     GetNetwork().register_listener(this, 0, Network_Message_pb::MessagesCase::kConnect);
@@ -569,6 +572,7 @@ EOS_EResult EOSSDK_Connect::CopyProductUserInfo(const EOS_Connect_CopyProductUse
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Connect::send_connect_heartbeat(Connect_Heartbeat_pb* hb) const
 {
+    LOG(Log::LogLevel::TRACE, "");
     Network_Message_pb msg;
     Connect_Message_pb* conn = new Connect_Message_pb;
 
@@ -577,11 +581,13 @@ bool EOSSDK_Connect::send_connect_heartbeat(Connect_Heartbeat_pb* hb) const
     msg.set_source_id(product_id()->to_string());
     msg.set_allocated_connect(conn);
 
-    return GetNetwork().SendBroadcast(msg);
+    GetNetwork().TCPSendToAllPeers(msg);
+    return true;
 }
 
 bool EOSSDK_Connect::send_connect_infos_request(Network::peer_t const& peerid, Connect_Request_Info_pb* req) const
 {
+    LOG(Log::LogLevel::TRACE, "");
     Network_Message_pb msg;
     Connect_Message_pb* conn = new Connect_Message_pb;
 
@@ -591,11 +597,12 @@ bool EOSSDK_Connect::send_connect_infos_request(Network::peer_t const& peerid, C
     msg.set_dest_id(peerid);
     msg.set_allocated_connect(conn);
 
-    return GetNetwork().SendTo(msg);
+    return GetNetwork().TCPSendTo(msg);
 }
 
 bool EOSSDK_Connect::send_connect_infos(Network::peer_t const& peerid, Connect_Infos_pb* infos) const
 {
+    LOG(Log::LogLevel::TRACE, "");
     Network_Message_pb msg;
     Connect_Message_pb* conn = new Connect_Message_pb;
 
@@ -605,7 +612,7 @@ bool EOSSDK_Connect::send_connect_infos(Network::peer_t const& peerid, Connect_I
     msg.set_dest_id(peerid);
     msg.set_allocated_connect(conn);
 
-    return GetNetwork().SendTo(msg);
+    return GetNetwork().TCPSendTo(msg);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -613,6 +620,7 @@ bool EOSSDK_Connect::send_connect_infos(Network::peer_t const& peerid, Connect_I
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Connect::on_connect_heartbeat(Network_Message_pb const& msg, Connect_Heartbeat_pb const& hb)
 {
+    LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
     auto &user = _users[GetProductUserId(msg.source_id())];
@@ -625,6 +633,7 @@ bool EOSSDK_Connect::on_connect_heartbeat(Network_Message_pb const& msg, Connect
 
 bool EOSSDK_Connect::on_connect_infos_request(Network_Message_pb const& msg, Connect_Request_Info_pb const& req)
 {
+    LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
     Connect_Infos_pb* infos = new Connect_Infos_pb;
@@ -636,6 +645,7 @@ bool EOSSDK_Connect::on_connect_infos_request(Network_Message_pb const& msg, Con
 
 bool EOSSDK_Connect::on_connect_infos(Network_Message_pb const& msg, Connect_Infos_pb const& infos)
 {
+    LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
     auto& user = _users[GetProductUserId(msg.source_id())];

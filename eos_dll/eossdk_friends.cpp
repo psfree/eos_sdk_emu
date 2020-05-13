@@ -225,6 +225,7 @@ void EOSSDK_Friends::RemoveNotifyFriendsUpdate(EOS_NotificationId NotificationId
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Friends::send_friend_info_request(Network::peer_t const& peerid, Friend_Info_Request_pb* req)
 {
+    LOG(Log::LogLevel::TRACE, "");
     Network_Message_pb msg;
 
     std::string const& userid = GetEOS_Connect().product_id()->to_string();
@@ -237,11 +238,12 @@ bool EOSSDK_Friends::send_friend_info_request(Network::peer_t const& peerid, Fri
     msg.set_source_id(userid);
     msg.set_dest_id(peerid);
 
-    return GetNetwork().SendTo(msg);
+    return GetNetwork().TCPSendTo(msg);
 }
 
 bool EOSSDK_Friends::send_friend_info(Network::peer_t const& peerid, Friend_Info_pb* infos)
 {
+    LOG(Log::LogLevel::TRACE, "");
     Network_Message_pb msg;
 
     std::string const& userid = GetEOS_Connect().product_id()->to_string();
@@ -254,7 +256,7 @@ bool EOSSDK_Friends::send_friend_info(Network::peer_t const& peerid, Friend_Info
     msg.set_source_id(userid);
     msg.set_dest_id(peerid);
 
-    return GetNetwork().SendTo(msg);
+    return GetNetwork().TCPSendTo(msg);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -262,6 +264,7 @@ bool EOSSDK_Friends::send_friend_info(Network::peer_t const& peerid, Friend_Info
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Friends::on_friend_info_request(Network_Message_pb const& msg, Friend_Info_Request_pb const& req)
 {
+    LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
     Friend_Info_pb* infos = new Friend_Info_pb;
@@ -270,6 +273,7 @@ bool EOSSDK_Friends::on_friend_info_request(Network_Message_pb const& msg, Frien
 
 bool EOSSDK_Friends::on_friend_info(Network_Message_pb const& msg, Friend_Info_pb const& infos)
 {
+    LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
     return true;
 }

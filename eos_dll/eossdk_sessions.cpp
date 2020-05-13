@@ -983,7 +983,7 @@ bool EOSSDK_Sessions::send_to_all_members(Session_Message_pb* sess, Session_Info
         for (auto const& player : session->players())
         {
             msg.set_dest_id(player);
-            GetNetwork().SendTo(msg);
+            GetNetwork().TCPSendTo(msg);
         }
     }
     return true;
@@ -1004,7 +1004,7 @@ bool EOSSDK_Sessions::send_session_info_request(Network::peer_t const& peerid, S
     msg.set_source_id(userid);
     msg.set_dest_id(peerid);
 
-    return GetNetwork().SendTo(msg);
+    return GetNetwork().TCPSendTo(msg);
 }
 
 bool EOSSDK_Sessions::send_session_info(Network::peer_t const& peerid, Session_Info_pb* infos)
@@ -1022,7 +1022,7 @@ bool EOSSDK_Sessions::send_session_info(Network::peer_t const& peerid, Session_I
     msg.set_source_id(userid);
     msg.set_dest_id(peerid);
 
-    return GetNetwork().SendTo(msg);
+    return GetNetwork().TCPSendTo(msg);
 }
 
 bool EOSSDK_Sessions::send_session_destroy(Network::peer_t const& peerid, Session_Destroy_pb* destr)
@@ -1040,7 +1040,7 @@ bool EOSSDK_Sessions::send_session_destroy(Network::peer_t const& peerid, Sessio
     msg.set_source_id(userid);
     msg.set_dest_id(peerid);
 
-    return GetNetwork().SendTo(msg);
+    return GetNetwork().TCPSendTo(msg);
 }
 
 bool EOSSDK_Sessions::send_sessions_search_response(Network::peer_t const& peerid, Sessions_Search_response_pb* resp)
@@ -1056,7 +1056,7 @@ bool EOSSDK_Sessions::send_sessions_search_response(Network::peer_t const& peeri
     msg.set_source_id(userid);
     msg.set_dest_id(peerid);
 
-    return GetNetwork().SendTo(msg);
+    return GetNetwork().TCPSendTo(msg);
 }
 
 bool EOSSDK_Sessions::send_session_join_request(Network::peer_t const& peerid, Session_Join_Request_pb* req)
@@ -1072,7 +1072,7 @@ bool EOSSDK_Sessions::send_session_join_request(Network::peer_t const& peerid, S
     msg.set_source_id(userid);
     msg.set_dest_id(peerid);
 
-    return GetNetwork().SendTo(msg);
+    return GetNetwork().TCPSendTo(msg);
 }
 
 bool EOSSDK_Sessions::send_session_join_response(Network::peer_t const& peerid, Session_Join_Response_pb* resp)
@@ -1088,7 +1088,7 @@ bool EOSSDK_Sessions::send_session_join_response(Network::peer_t const& peerid, 
     msg.set_source_id(userid);
     msg.set_dest_id(peerid);
 
-    return GetNetwork().SendTo(msg);
+    return GetNetwork().TCPSendTo(msg);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

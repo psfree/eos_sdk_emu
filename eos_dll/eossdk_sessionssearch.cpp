@@ -281,6 +281,7 @@ EOS_EResult EOSSDK_SessionSearch::CopySearchResultByIndex(const EOS_SessionSearc
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_SessionSearch::send_sessions_search(Sessions_Search_pb* search)
 {
+    LOG(Log::LogLevel::TRACE, "");
     Network_Message_pb msg;
     Sessions_Search_Message_pb* search_msg = new Sessions_Search_Message_pb();
 
