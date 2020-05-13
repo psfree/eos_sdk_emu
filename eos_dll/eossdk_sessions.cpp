@@ -1083,7 +1083,7 @@ bool EOSSDK_Sessions::send_session_destroy(session_state_t *session)
 
     Network_Message_pb msg;
     Session_Message_pb* session_pb = new Session_Message_pb;
-    Session_Destroy_pb* destr;
+    Session_Destroy_pb* destr = new Session_Destroy_pb;
 
     destr->set_sessionid(session->infos.sessionid());
     destr->set_sessionname(session->infos.sessionname());
@@ -1241,8 +1241,7 @@ bool EOSSDK_Sessions::on_session_join_request(Network_Message_pb const& msg, Ses
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
-    session_state_t *session = get_session_by_name(req.sessionname());
-    if (session == nullptr || !is_player_registered(GetEOS_Connect().product_id()->to_string(), get_session_by_name(req.sessionname)))
+    if (!is_player_registered(GetEOS_Connect().product_id()->to_string(), get_session_by_name(req.sessionname())))
     {// We are not in the session or we are not registered, we cannot accept the session join
         return true;
     }
