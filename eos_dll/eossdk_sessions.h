@@ -150,14 +150,20 @@ namespace sdk
         session_state_t* get_session_by_name(std::string const& session_name);
         session_state_t* get_session_by_id(std::string const& session_id);
         session_state_t* get_session_from_attributes(google::protobuf::Map<std::string, Search_Parameter> const& parameters);
+        void add_player_to_session(std::string const& player, session_state_t* session);
+        void register_player_to_session(std::string const& player, session_state_t *session);
+        void remove_player_from_session(std::string const& player, session_state_t *session);
+        void unregister_player_from_session(std::string const& player, session_state_t* session);
+        bool is_player_in_session(std::string const& player, session_state_t* session);
+        bool is_player_registered(std::string const& player, session_state_t *session);
 
         // Send Network messages
-        bool send_to_all_members(Session_Message_pb* sess, Session_Info_pb* session);
+        bool send_to_all_members(Network_Message_pb & msg, session_state_t *session);
         bool send_session_info_request(Network::peer_t const& peerid, Session_Info_Request_pb* req);
-        bool send_session_info(Network::peer_t const& peerid, Session_Info_pb* infos);
-        bool send_session_destroy(Network::peer_t const& peerid, Session_Destroy_pb* destr);
+        bool send_session_info(session_state_t* session);
+        bool send_session_destroy(session_state_t* session);
         bool send_sessions_search_response(Network::peer_t const& peerid, Sessions_Search_response_pb* resp);
-        bool send_session_join_request(Network::peer_t const& peerid, Session_Join_Request_pb* req);
+        bool send_session_join_request(session_state_t* session);
         bool send_session_join_response(Network::peer_t const& peerid, Session_Join_Response_pb* resp);
 
         // Receive Network messages

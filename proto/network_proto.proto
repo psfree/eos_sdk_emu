@@ -96,12 +96,12 @@ message Session_Attribute {
 
 // Response to peer sessions infos request
 message Session_Info_pb {
-    string session_owner = 1;
-	string sessionname = 2;
-    string sessionid = 3;
-	string bucketid = 4;
-	uint32 maxplayers = 5;
-    repeated string players = 6;
+	string sessionname = 1;
+    string sessionid = 2;
+	string bucketid = 3;
+	uint32 maxplayers = 4;
+    repeated string players = 5;
+    repeated string registered_players = 6;
     bool presence_allowed = 7;
     string host_address = 8;
     int32 permission_level = 9;
@@ -126,7 +126,8 @@ message Session_Join_Request_pb {
 // Response to a session join
 message Session_Join_Response_pb {
     string sessionname = 1;
-    int32 reason = 2;
+    string user_id = 2;
+    int32 reason = 3;
 }
 
 // Base Sessions related message

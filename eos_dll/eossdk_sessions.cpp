@@ -181,6 +181,68 @@ session_state_t* EOSSDK_Sessions::get_session_from_attributes(google::protobuf::
     return res;
 }
 
+void EOSSDK_Sessions::add_player_to_session(std::string const& player, session_state_t* session)
+{
+    if (session != nullptr)
+    {
+        if(!is_player_in_session(player, session))
+            *session->infos.add_players() = player;
+    }
+}
+
+void EOSSDK_Sessions::register_player_to_session(std::string const& player, session_state_t* session)
+{
+    if (session != nullptr)
+    {
+        if(!is_player_registered(player, session))
+            *session->infos.add_registered_players() = player;
+    }
+}
+
+void EOSSDK_Sessions::remove_player_from_session(std::string const& player, session_state_t* session)
+{
+    if (session != nullptr)
+    {
+        auto it = std::find(session->infos.players().begin(), session->infos.players().end(), player);
+        if (it != session->infos.players().end())
+            session->infos.mutable_players()->erase(it);
+
+        it = std::find(session->infos.registered_players().begin(), session->infos.registered_players().end(), player);
+        if (it != session->infos.registered_players().end())
+            session->infos.mutable_registered_players()->erase(it);
+    }
+}
+
+void EOSSDK_Sessions::unregister_player_from_session(std::string const& player, session_state_t* session)
+{
+    if (session != nullptr)
+    {
+        auto it = std::find(session->infos.registered_players().begin(), session->infos.registered_players().end(), player);
+        if (it != session->infos.registered_players().end())
+            session->infos.mutable_registered_players()->erase(it);
+    }
+}
+
+bool EOSSDK_Sessions::is_player_in_session(std::string const& player, session_state_t* session)
+{
+    if (session != nullptr)
+    {
+        auto it = std::find(session->infos.players().begin(), session->infos.players().end(), player);
+        return it != session->infos.players().end();
+    }
+    return false;
+}
+
+bool EOSSDK_Sessions::is_player_registered(std::string const& player, session_state_t* session)
+{
+    if (session != nullptr)
+    {
+        auto it = std::find(session->infos.registered_players().begin(), session->infos.registered_players().end(), player);
+        return it != session->infos.registered_players().end();
+    }
+    return false;
+}
+
 /**
   * Creates a session modification handle (EOS_HSessionModification).  The session modification handle is used to build a new session and can be applied with EOS_Sessions_UpdateSession
   * The EOS_HSessionModification must be released by calling EOS_SessionModification_Release once it no longer needed.
@@ -204,7 +266,6 @@ EOS_EResult EOSSDK_Sessions::CreateSessionModification(const EOS_Sessions_Create
     EOSSDK_SessionModification* modif = new EOSSDK_SessionModification;
     modif->_api_version = Options->ApiVersion;
     modif->_type = EOSSDK_SessionModification::modif_type::creation;
-    modif->_infos.set_session_owner(Options->LocalUserId->to_string());
 
     switch (Options->ApiVersion)
     {
@@ -344,6 +405,7 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
                     session.state = session_state_t::state_e::created;
                     session.infos = modif->_infos;
                     *session.infos.add_players() = GetEOS_Connect().product_id()->to_string();
+                    *session.infos.add_registered_players() = GetEOS_Connect().product_id()->to_string();
                     GetEOS_Connect().add_session(GetProductUserId(session.infos.sessionid()), session.infos.sessionname());
 
                     usci.ResultCode = EOS_EResult::EOS_Success;
@@ -369,12 +431,7 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
                     }
                     usci.ResultCode = EOS_EResult::EOS_Success;
 
-                    Session_Info_pb* info = new Session_Info_pb(session->infos);
-                    Session_Message_pb* session_msg = new Session_Message_pb;
-
-                    session_msg->set_allocated_session_info(info);
-
-                    send_to_all_members(session_msg, &session->infos);
+                    send_session_join_request(session);
                 }
             }
             break;
@@ -420,18 +477,18 @@ void EOSSDK_Sessions::DestroySession(const EOS_Sessions_DestroySessionOptions* O
             dsci.ResultCode = EOS_EResult::EOS_Success;
             if (it->second.state == session_state_t::state_e::created)
             {
-                Session_Message_pb* session = new Session_Message_pb;
-                Session_Destroy_pb* destroy = new Session_Destroy_pb;
-
-                destroy->set_sessionid(it->second.infos.sessionid());
-                destroy->set_sessionname(it->second.infos.sessionname());
-
-                session->set_allocated_session_destroy(destroy);
-
-                destroy->set_sessionid(it->second.infos.sessionid());
-                destroy->set_sessionname(it->second.infos.sessionname());
-
-                send_to_all_members(session, &it->second.infos);
+                //Session_Message_pb* session = new Session_Message_pb;
+                //Session_Destroy_pb* destroy = new Session_Destroy_pb;
+                //
+                //destroy->set_sessionid(it->second.infos.sessionid());
+                //destroy->set_sessionname(it->second.infos.sessionname());
+                //
+                //session->set_allocated_session_destroy(destroy);
+                //
+                //destroy->set_sessionid(it->second.infos.sessionid());
+                //destroy->set_sessionname(it->second.infos.sessionname());
+                //
+                //send_to_all_members(session);
             }
             else
             {
@@ -487,16 +544,16 @@ void EOSSDK_Sessions::JoinSession(const EOS_Sessions_JoinSessionOptions* Options
         if (_sessions.count(Options->SessionName) == 0) // If we haven't already a session with that name (created, joining or joined)
         {
             EOSSDK_SessionDetails* details = reinterpret_cast<EOSSDK_SessionDetails*>(Options->SessionHandle);
-            auto peer_productid = GetProductUserId(details->_infos.session_owner());
 
             Session_Join_Request_pb* join = new Session_Join_Request_pb;
             join->set_sessionid(details->_infos.sessionid());
             join->set_sessionname(Options->SessionName);
 
-            _sessions[Options->SessionName].state = session_state_t::state_e::joining;
+            session_state_t& session = _sessions[Options->SessionName];
+            session.state = session_state_t::state_e::joining;
             _sessions_join[Options->SessionName] = res;
 
-            send_session_join_request(details->_infos.session_owner(), join);
+            send_session_join_request(&session);
         }
         else
         {
@@ -543,12 +600,7 @@ void EOSSDK_Sessions::StartSession(const EOS_Sessions_StartSessionOptions* Optio
             if (!session->infos.started())
             {
                 session->infos.set_started(true);
-
-                Session_Message_pb* msg = new Session_Message_pb;
-                Session_Info_pb* infos = new Session_Info_pb(session->infos);
-
-                msg->set_allocated_session_info(infos);
-                send_to_all_members(msg, &session->infos);
+                send_session_info(session);
             }
         }
         else
@@ -971,16 +1023,15 @@ EOS_EResult EOSSDK_Sessions::DumpSessionState(const EOS_Sessions_DumpSessionStat
 ///////////////////////////////////////////////////////////////////////////////
 //                           Network Send messages                           //
 ///////////////////////////////////////////////////////////////////////////////
-bool EOSSDK_Sessions::send_to_all_members(Session_Message_pb* sess, Session_Info_pb* session)
+bool EOSSDK_Sessions::send_to_all_members(Network_Message_pb & msg, session_state_t* session)
 {
-    if (session != nullptr)
+    assert(session != nullptr);
+    std::string const& userid = GetEOS_Connect().product_id()->to_string();
+
+    msg.set_source_id(userid);
+    for (auto const& player : session->infos.players())
     {
-        Network_Message_pb msg;
-
-        std::string const& userid = GetEOS_Connect().product_id()->to_string();
-
-        msg.set_source_id(userid);
-        for (auto const& player : session->players())
+        if (player != userid)
         {
             msg.set_dest_id(player);
             GetNetwork().TCPSendTo(msg);
@@ -991,10 +1042,10 @@ bool EOSSDK_Sessions::send_to_all_members(Session_Message_pb* sess, Session_Info
 
 bool EOSSDK_Sessions::send_session_info_request(Network::peer_t const& peerid, Session_Info_Request_pb* req)
 {
-    Network_Message_pb msg;
-
+    // TODO: Make it P2P, send it to all, will have to filter results
     std::string const& userid = GetEOS_Connect().product_id()->to_string();
 
+    Network_Message_pb msg;
     Session_Message_pb* session = new Session_Message_pb;
 
     session->set_allocated_sessions_request(req);
@@ -1007,40 +1058,40 @@ bool EOSSDK_Sessions::send_session_info_request(Network::peer_t const& peerid, S
     return GetNetwork().TCPSendTo(msg);
 }
 
-bool EOSSDK_Sessions::send_session_info(Network::peer_t const& peerid, Session_Info_pb* infos)
+bool EOSSDK_Sessions::send_session_info(session_state_t* session)
 {
+    if (session == nullptr)
+        return false;
+
     Network_Message_pb msg;
+    Session_Message_pb* session_pb = new Session_Message_pb;
 
-    std::string const& userid = GetEOS_Connect().product_id()->to_string();
+    session_pb->set_allocated_session_info(&session->infos);
+    msg.set_allocated_session(session_pb);
 
-    Session_Message_pb* session = new Session_Message_pb;
+    bool res = send_to_all_members(msg, session);;
 
-    session->set_allocated_session_info(infos);
+    session_pb->release_session_info();
 
-    msg.set_allocated_session(session);
-
-    msg.set_source_id(userid);
-    msg.set_dest_id(peerid);
-
-    return GetNetwork().TCPSendTo(msg);
+    return res;
 }
 
-bool EOSSDK_Sessions::send_session_destroy(Network::peer_t const& peerid, Session_Destroy_pb* destr)
+bool EOSSDK_Sessions::send_session_destroy(session_state_t *session)
 {
+    if (session == nullptr)
+        return false;
+
     Network_Message_pb msg;
+    Session_Message_pb* session_pb = new Session_Message_pb;
+    Session_Destroy_pb* destr;
 
-    std::string const& userid = GetEOS_Connect().product_id()->to_string();
+    destr->set_sessionid(session->infos.sessionid());
+    destr->set_sessionname(session->infos.sessionname());
 
-    Session_Message_pb* session = new Session_Message_pb;
+    session_pb->set_allocated_session_destroy(destr);
+    msg.set_allocated_session(session_pb);
 
-    session->set_allocated_session_destroy(destr);
-
-    msg.set_allocated_session(session);
-
-    msg.set_source_id(userid);
-    msg.set_dest_id(peerid);
-
-    return GetNetwork().TCPSendTo(msg);
+    return send_to_all_members(msg, session);
 }
 
 bool EOSSDK_Sessions::send_sessions_search_response(Network::peer_t const& peerid, Sessions_Search_response_pb* resp)
@@ -1059,20 +1110,22 @@ bool EOSSDK_Sessions::send_sessions_search_response(Network::peer_t const& peeri
     return GetNetwork().TCPSendTo(msg);
 }
 
-bool EOSSDK_Sessions::send_session_join_request(Network::peer_t const& peerid, Session_Join_Request_pb* req)
+bool EOSSDK_Sessions::send_session_join_request(session_state_t *session)
 {
+    if (session == nullptr)
+        return false;
+
     Network_Message_pb msg;
-    Session_Message_pb* session = new Session_Message_pb;
+    Session_Message_pb* session_pb = new Session_Message_pb;
+    Session_Join_Request_pb* req = new Session_Join_Request_pb;
 
-    std::string const& userid = GetEOS_Connect().product_id()->to_string();
+    session_pb->set_allocated_session_join_request(req);
+    msg.set_allocated_session(session_pb);
 
-    session->set_allocated_session_join_request(req);
-    msg.set_allocated_session(session);
+    req->set_sessionid(session->infos.sessionid());
+    req->set_sessionname(session->infos.sessionname());
 
-    msg.set_source_id(userid);
-    msg.set_dest_id(peerid);
-
-    return GetNetwork().TCPSendTo(msg);
+    return send_to_all_members(msg, session);
 }
 
 bool EOSSDK_Sessions::send_session_join_response(Network::peer_t const& peerid, Session_Join_Response_pb* resp)
@@ -1111,7 +1164,16 @@ bool EOSSDK_Sessions::on_session_info_request(Network_Message_pb const& msg, Ses
         infos = new Session_Info_pb(session->infos);
     }
 
-    return send_session_info(msg.source_id(), infos);
+    Network_Message_pb resp;
+    Session_Message_pb* session_pb = new Session_Message_pb;
+
+    session_pb->set_allocated_session_info(infos);
+    resp.set_allocated_session(session_pb);
+
+    resp.set_source_id(GetEOS_Connect().product_id()->to_string());
+    resp.set_dest_id(msg.source_id());
+
+    return GetNetwork().TCPSendTo(resp);
 }
 
 bool EOSSDK_Sessions::on_session_info(Network_Message_pb const& msg, Session_Info_pb const& infos)
@@ -1119,9 +1181,9 @@ bool EOSSDK_Sessions::on_session_info(Network_Message_pb const& msg, Session_Inf
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
-    auto it = _sessions.find(infos.sessionname());
-    if (it != _sessions.end())
-        it->second.infos = infos;
+    session_state_t *session = get_session_by_name(infos.sessionname());
+    if (session != nullptr)
+        session->infos = infos;
 
     return true;
 }
@@ -1131,11 +1193,9 @@ bool EOSSDK_Sessions::on_session_destroy(Network_Message_pb const& msg, Session_
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
-    auto it = _sessions.find(destr.sessionname());
-    if (it != _sessions.end())
-    {
-
-    }
+    session_state_t* session = get_session_by_name(destr.sessionname());
+    if (session != nullptr)
+        remove_player_from_session(msg.source_id(), get_session_by_name(destr.sessionname()));
 
     return true;
 }
@@ -1181,9 +1241,17 @@ bool EOSSDK_Sessions::on_session_join_request(Network_Message_pb const& msg, Ses
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
+    session_state_t *session = get_session_by_name(req.sessionname());
+    if (session == nullptr || !is_player_registered(GetEOS_Connect().product_id()->to_string(), get_session_by_name(req.sessionname)))
+    {// We are not in the session or we are not registered, we cannot accept the session join
+        return true;
+    }
+
     Session_Join_Response_pb* resp = new Session_Join_Response_pb;
 
     resp->set_sessionname(req.sessionname());
+
+    // If we know the user
     if (GetEOS_Connect().get_user_by_productid(GetProductUserId(msg.source_id())) != nullptr)
     {
         auto it = _sessions.find(req.sessionname());
@@ -1218,11 +1286,15 @@ bool EOSSDK_Sessions::on_session_join_response(Network_Message_pb const& msg, Se
     GLOBAL_LOCK();
 
     auto it = _sessions_join.find(resp.sessionname());
-    if (it != _sessions_join.end())
+    if (it != _sessions_join.end() && resp.user_id() == GetEOS_Connect().product_id()->to_string())
     {
         EOS_Sessions_JoinSessionCallbackInfo& jsci = it->second->GetCallback<EOS_Sessions_JoinSessionCallbackInfo>();
         jsci.ResultCode = static_cast<EOS_EResult>(resp.reason());
         it->second->done = true;
+    }
+    else
+    {// We are not joining, so someone else is joining
+        add_player_to_session(resp.user_id(), get_session_by_name(resp.sessionname()));
     }
 
     return true;
