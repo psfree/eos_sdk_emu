@@ -97,34 +97,6 @@ EOS_ENUM(EOS_EExternalCredentialType,
 	EOS_ECT_APPLE_ID_TOKEN = 11
 );
 
-/**
- * All supported external account providers
- *
- * @see EOS_Connect_QueryAccountMappings
- */
-EOS_ENUM(EOS_EExternalAccountType,
-	/** External account is associated with Epic Games */
-	EOS_EAT_EPIC = 0,
-	/** External account is associated with Steam */
-	EOS_EAT_STEAM = 1,
-	/** External account is associated with Playstation */
-	EOS_EAT_PSN = 2,
-	/** External account is associated with Xbox Live */
-	EOS_EAT_XBL = 3,
-	/** External account is associated with Discord */
-	EOS_EAT_DISCORD = 4,
-	/** External account is associated with GOG */
-	EOS_EAT_GOG = 5,
-	/** External account is associated with Nintendo */
-	EOS_EAT_NINTENDO = 6,
-	/** External account is associated with Uplay */
-	EOS_EAT_UPLAY = 7,
-	/** External account is associated with an OpenID Provider */
-	EOS_EAT_OPENID = 8,
-	/** External account is associated with Apple */
-	EOS_EAT_APPLE = 9
-);
-
 /** The most recent version of the EOS_Connect_Credentials struct. */
 #define EOS_CONNECT_CREDENTIALS_API_001 1
 
@@ -405,8 +377,8 @@ EOS_STRUCT(EOS_Connect_QueryProductUserIdMappingsOptions001, (
 	int32_t ApiVersion;
 	/** Existing logged in user that is querying account mappings */
 	EOS_ProductUserId LocalUserId;
-	/** External auth service mapping to retrieve */
-	EOS_EExternalAccountType AccountIdType;
+	/** Deprecated - all external mappings are included in this call, it is no longer necessary to specify this value */
+	EOS_EExternalAccountType AccountIdType_DEPRECATED;
 	/** An array of product user ids to query for the given external account representation */
 	EOS_ProductUserId* ProductUserIds;
 	/** Number of account ids to query */
@@ -448,6 +420,115 @@ EOS_STRUCT(EOS_Connect_GetProductUserIdMappingOptions001, (
 	/** Target product user id to retrieve */
 	EOS_ProductUserId TargetProductUserId;
 ));
+
+/** The most recent version of the EOS_Connect_GetProductUserExternalAccountCount API. */
+#define EOS_CONNECT_GETPRODUCTUSEREXTERNALACCOUNTCOUNT_API_001 1
+
+/**
+ * Input parameters for the EOS_Connect_GetProductUserExternalAccountCount Function.
+ */
+EOS_STRUCT(EOS_Connect_GetProductUserExternalAccountCountOptions001, (
+       /** Version of the API */
+       int32_t ApiVersion;
+       /** Product user id to look for when getting external account info count from the cache. */
+       EOS_ProductUserId TargetUserId;
+));
+
+/** The most recent version of the EOS_Connect_CopyProductUserExternalAccountByIndex API. */
+#define EOS_CONNECT_COPYPRODUCTUSEREXTERNALACCOUNTBYINDEX_API_001 1
+
+/**
+ * Input parameters for the EOS_Connect_CopyProductUserExternalAccountByIndex Function.
+ */
+EOS_STRUCT(EOS_Connect_CopyProductUserExternalAccountByIndexOptions001, (
+       /** API Version of the EOS_Connect_CopyProductUserExternalAccountByIndex function. */
+       int32_t ApiVersion;
+       /** Product user id to look for when copying external account info from the cache. */
+       EOS_ProductUserId TargetUserId;
+       /** Index of the external account info to retrieve from the cache. */
+       uint32_t ExternalAccountInfoIndex;
+));
+
+/** The most recent version of the EOS_Connect_CopyProductUserExternalAccountByAccountType API. */
+#define EOS_CONNECT_COPYPRODUCTUSEREXTERNALACCOUNTBYACCOUNTTYPE_API_001 1
+
+/**
+ * Input parameters for the EOS_Connect_CopyProductUserExternalAccountByAccountType Function.
+ */
+EOS_STRUCT(EOS_Connect_CopyProductUserExternalAccountByAccountTypeOptions001, (
+       /** API Version of the EOS_Connect_CopyProductUserExternalAccountByAccountType function. */
+       int32_t ApiVersion;
+       /** Product user id to look for when copying external account info from the cache. */
+       EOS_ProductUserId TargetUserId;
+       /** External auth service account type to look for when copying external account info from the cache. */
+       EOS_EExternalAccountType AccountIdType;
+));
+
+/** The most recent version of the EOS_Connect_CopyProductUserExternalAccountByAccountId API. */
+#define EOS_CONNECT_COPYPRODUCTUSEREXTERNALACCOUNTBYACCOUNTID_API_001 1
+
+/**
+ * Input parameters for the EOS_Connect_CopyProductUserExternalAccountByAccountId Function.
+ */
+EOS_STRUCT(EOS_Connect_CopyProductUserExternalAccountByAccountIdOptions001, (
+       /** API Version of the EOS_Connect_CopyProductUserExternalAccountByAccountId function. */
+       int32_t ApiVersion;
+       /** Product user id to look for when copying external account info from the cache. */
+       EOS_ProductUserId TargetUserId;
+       /** External auth service account id to look for when copying external account info from the cache. */
+       const char* AccountId;
+));
+
+/** The most recent version of the EOS_Connect_CopyProductUserInfo API. */
+#define EOS_CONNECT_COPYPRODUCTUSERINFO_API_001 1
+
+/**
+ * Input parameters for the EOS_Connect_CopyProductUserInfo Function.
+ */
+EOS_STRUCT(EOS_Connect_CopyProductUserInfoOptions001, (
+       /** API Version of the EOS_Connect_CopyProductUserInfo function. */
+       int32_t ApiVersion;
+       /** Product user id to look for when copying external account info from the cache. */
+       EOS_ProductUserId TargetUserId;
+));
+
+/** Timestamp value representing an undefined time for last login time. */
+#define EOS_CONNECT_TIME_UNDEFINED -1
+
+/** The most recent version of the EOS_Connect_ExternalAccountInfo struct. */
+#define EOS_CONNECT_EXTERNALACCOUNTINFO_API_001 1
+
+/**
+ * Contains information about an external account info
+ */
+EOS_STRUCT(EOS_Connect_ExternalAccountInfo001, (
+       /** Version of the API. */
+       int32_t ApiVersion;
+       /** Product user id of the target user. */
+       EOS_ProductUserId ProductUserId;
+       /** Display name, can be null if not set. */
+       const char* DisplayName;
+       /** External account id. */
+       const char* AccountId;
+       /** The identity provider that owns the external account. */
+       EOS_EExternalAccountType AccountIdType;
+       /** The POSIX timestamp for the time the user last logged in, or EOS_CONNECT_TIME_UNDEFINED. */
+       int64_t LastLoginTime;
+));
+
+/**
+ * Release the memory associated with an external account info. This must be called on data retrieved from
+ * EOS_Connect_CopyProductUserExternalAccountByIndex, EOS_Connect_CopyProductUserExternalAccountByAccountType,
+ * EOS_Connect_CopyProductUserExternalAccountByAccountId or EOS_Connect_CopyProductUserInfo.
+ *
+ * @param ExternalAccountInfo The external account info data to release.
+ *
+ * @see EOS_Connect_CopyProductUserExternalAccountByIndex
+ * @see EOS_Connect_CopyProductUserExternalAccountByAccountType
+ * @see EOS_Connect_CopyProductUserExternalAccountByAccountId
+ * @see EOS_Connect_CopyProductUserInfo
+ */
+EOS_DECLARE_FUNC(void) EOS_Connect_ExternalAccountInfo_Release(EOS_Connect_ExternalAccountInfo* ExternalAccountInfo);
 
 /** The most recent version of the EOS_Connect_AddNotifyAuthExpiration API. */
 #define EOS_CONNECT_ADDNOTIFYAUTHEXPIRATION_API_001 1

@@ -35,7 +35,7 @@ enum { k_iSessionsCallbackBase = 11000 };
 #define EOS_SessionModification_AddAttributeOptions             EOS_SessionModification_AddAttributeOptions001
 #define EOS_SessionModification_RemoveAttributeOptions          EOS_SessionModification_RemoveAttributeOptions001
 #define EOS_SessionSearch_SetMaxResultsOptions                  EOS_SessionSearch_SetMaxResultsOptions001
-#define EOS_SessionSearch_FindOptions                           EOS_SessionSearch_FindOptions001
+#define EOS_SessionSearch_FindOptions                           EOS_SessionSearch_FindOptions002
 #define EOS_SessionSearch_GetSearchResultCountOptions           EOS_SessionSearch_GetSearchResultCountOptions001
 #define EOS_SessionSearch_CopySearchResultByIndexOptions        EOS_SessionSearch_CopySearchResultByIndexOptions001
 #define EOS_SessionSearch_SetSessionIdOptions                   EOS_SessionSearch_SetSessionIdOptions001
@@ -57,6 +57,7 @@ enum { k_iSessionsCallbackBase = 11000 };
 #define EOS_Sessions_IsUserInSessionOptions                     EOS_Sessions_IsUserInSessionOptions001
 #define EOS_Sessions_DumpSessionStateOptions                    EOS_Sessions_DumpSessionStateOptions001
 
+#include <eos_sessions_types1.6.0.h>
 #include <eos_sessions_types1.5.0.h>
 #include <eos_sessions_types1.3.1.h>
 

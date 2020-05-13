@@ -7,6 +7,10 @@
 /** Handle to the UI interface */
 EXTERN_C typedef struct EOS_UIHandle* EOS_HUI;
 
+/** ID representing a specific UI event. */
+EXTERN_C typedef uint64_t EOS_UI_EventId;
+#define EOS_UI_EVENTID_INVALID 0
+
 /** The most recent version of the EOS_UI_ShowFriends API. */
 #define EOS_UI_SHOWFRIENDS_API_001 1
 
@@ -162,8 +166,27 @@ EOS_ENUM(EOS_UI_ENotificationLocation,
 EOS_STRUCT(EOS_UI_SetDisplayPreferenceOptions001, (
 	/** Version of the API */
 	int32_t ApiVersion;
-	/** Prefrence for notification pop-up locations. */
+	/** Preference for notification pop-up locations. */
 	EOS_UI_ENotificationLocation NotificationLocation;
+));
+
+
+#define EOS_UI_ACKNOWLEDGECORRELATIONID_API_001 1
+
+/**
+ * Input parameters for the EOS_UI_AcknowledgeEventId.
+ */
+EOS_STRUCT(EOS_UI_AcknowledgeEventIdOptions001, (
+       /** API version of EOS_UI_AcknowledgeEventId. */
+       int32_t ApiVersion;
+       /** The ID being acknowledged. */
+       EOS_UI_EventId UiEventId;
+       /**
+        * The result to use for the acknowledgment.
+        * When acknowledging EOS_Presence_JoinGameAcceptedCallbackInfo this should be the
+        * result code from the JoinSession call.
+        */
+       EOS_EResult Result;
 ));
 
 #pragma pack(pop)

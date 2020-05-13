@@ -79,7 +79,7 @@ EOS_DECLARE_FUNC(void) EOS_Presence_SetPresence(EOS_HPresence Handle, const EOS_
  * @param NotificationHandler The callback to be fired when a presence change occurs
  * @return Notification ID representing the registered callback if successful, an invalid NotificationId if not
  *
- * @see EOS_ENotificationId::EOS_NotificationId_Invalid
+ * @see EOS_INVALID_NOTIFICATIONID
  * @see EOS_Presence_RemoveNotifyOnPresenceChanged
  */
 EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Presence_AddNotifyOnPresenceChanged(EOS_HPresence Handle, const EOS_Presence_AddNotifyOnPresenceChangedOptions* Options, void* ClientData, const EOS_Presence_OnPresenceChangedCallback NotificationHandler);
@@ -128,7 +128,7 @@ EOS_DECLARE_FUNC(void) EOS_Presence_RemoveNotifyJoinGameAccepted(EOS_HPresence H
  *         EOS_NotFound if there is user or the location string was not found.
  *         EOS_LimitExceeded - The OutBuffer is not large enough to receive the location string. InOutBufferLength contains the required minimum length to perform the operation successfully.
  *
- * @see EOS_PRESENCE_LOCATIONSTRING_MAX_LEN
+ * @see EOS_PRESENCEMODIFICATION_JOININFO_MAX_LENGTH
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Presence_GetJoinInfo(EOS_HPresence Handle, const EOS_Presence_GetJoinInfoOptions* Options, char* OutBuffer, int32_t* InOutBufferLength);
 
@@ -190,6 +190,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_DeleteData(EOS_HPresenceM
  * @param Options Object containing a join info string and associated user data
  * @return Success if modification was added successfully, otherwise an error code related to the problem
  *
- * @see EOS_PRESENCE_JOIN_INFO_STRING_LENGTH
+ * @see EOS_PRESENCEMODIFICATION_JOININFO_MAX_LENGTH
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetJoinInfo(EOS_HPresenceModification Handle, const EOS_PresenceModification_SetJoinInfoOptions* Options);

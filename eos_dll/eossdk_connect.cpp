@@ -458,6 +458,112 @@ void EOSSDK_Connect::RemoveNotifyLoginStatusChanged(EOS_NotificationId InId)
     GetCB_Manager().remove_notification(this, InId);
 }
 
+
+/**
+ * Fetch the number of linked external accounts for a product user id.
+ *
+ * @param Options The Options associated with retrieving the external account info count.
+ *
+ * @see EOS_Connect_CopyProductUserExternalAccountByIndex
+ *
+ * @return Number of external accounts or 0 otherwise
+ */
+uint32_t EOSSDK_Connect::GetProductUserExternalAccountCount(const EOS_Connect_GetProductUserExternalAccountCountOptions* Options)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
+
+    return 0;
+}
+
+/**
+ * Fetch information about an external account linked to a product user id.
+ * On a successful call, the caller must release the returned structure using the EOS_Connect_ExternalAccountInfo_Release API.
+ *
+ * @param Options Structure containing the target index.
+ * @param OutExternalAccountInfo The external account info data for the user with given index.
+ *
+ * @see EOS_Connect_ExternalAccountInfo_Release
+ *
+ * @return An EOS_EResult that indicates the external account data was copied into the OutExternalAccountInfo
+ *         EOS_Success if the information is available and passed out in OutExternalAccountInfo
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the account data doesn't exist or hasn't been queried yet
+ */
+EOS_EResult EOSSDK_Connect::CopyProductUserExternalAccountByIndex(const EOS_Connect_CopyProductUserExternalAccountByIndexOptions* Options, EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
+
+    return EOS_EResult::EOS_NotFound;
+}
+
+/**
+ * Fetch information about an external account of a specific type linked to a product user id.
+ * On a successful call, the caller must release the returned structure using the EOS_Connect_ExternalAccountInfo_Release API.
+ *
+ * @param Options Structure containing the target external account type.
+ * @param OutExternalAccountInfo The external account info data for the user with given external account type.
+ *
+ * @see EOS_Connect_ExternalAccountInfo_Release
+ *
+ * @return An EOS_EResult that indicates the external account data was copied into the OutExternalAccountInfo
+ *         EOS_Success if the information is available and passed out in OutExternalAccountInfo
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the account data doesn't exist or hasn't been queried yet
+ */
+EOS_EResult EOSSDK_Connect::CopyProductUserExternalAccountByAccountType(const EOS_Connect_CopyProductUserExternalAccountByAccountTypeOptions* Options, EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
+
+    return EOS_EResult::EOS_NotFound;
+}
+
+/**
+ * Fetch information about an external account linked to a product user id.
+ * On a successful call, the caller must release the returned structure using the EOS_Connect_ExternalAccountInfo_Release API.
+ *
+ * @param Options Structure containing the target external account id.
+ * @param OutExternalAccountInfo The external account info data for the user with given external account id.
+ *
+ * @see EOS_Connect_ExternalAccountInfo_Release
+ *
+ * @return An EOS_EResult that indicates the external account data was copied into the OutExternalAccountInfo
+ *         EOS_Success if the information is available and passed out in OutExternalAccountInfo
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the account data doesn't exist or hasn't been queried yet
+ */
+EOS_EResult EOSSDK_Connect::CopyProductUserExternalAccountByAccountId(const EOS_Connect_CopyProductUserExternalAccountByAccountIdOptions* Options, EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
+
+    return EOS_EResult::EOS_NotFound;
+}
+
+/**
+ * Fetch information about a Product User, using the external account that they most recently logged in with as the reference.
+ * On a successful call, the caller must release the returned structure using the EOS_Connect_ExternalAccountInfo_Release API.
+ *
+ * @param Options Structure containing the target external account id.
+ * @param OutExternalAccountInfo The external account info data last logged in for the user.
+ *
+ * @see EOS_Connect_ExternalAccountInfo_Release
+ *
+ * @return An EOS_EResult that indicates the external account data was copied into the OutExternalAccountInfo
+ *         EOS_Success if the information is available and passed out in OutExternalAccountInfo
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the account data doesn't exist or hasn't been queried yet
+ */
+EOS_EResult EOSSDK_Connect::CopyProductUserInfo(const EOS_Connect_CopyProductUserInfoOptions* Options, EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
+
+    return EOS_EResult::EOS_NotFound;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //                           Network Send messages                           //
 ///////////////////////////////////////////////////////////////////////////////

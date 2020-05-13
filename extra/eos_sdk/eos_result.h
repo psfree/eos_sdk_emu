@@ -53,8 +53,8 @@ EOS_RESULT_VALUE(EOS_LimitExceeded, 22)
 EOS_RESULT_VALUE(EOS_Disabled, 23)
 /** Duplicate entry not allowed */
 EOS_RESULT_VALUE(EOS_DuplicateNotAllowed, 24)
-/** Required parameters are missing */
-EOS_RESULT_VALUE(EOS_MissingParameters, 25)
+/** Required parameters are missing. DEPRECATED: This error is no longer used. */
+EOS_RESULT_VALUE(EOS_MissingParameters_DEPRECATED, 25)
 /** Sandbox id is invalid */
 EOS_RESULT_VALUE(EOS_InvalidSandboxId, 26)
 /** Request timed out */
@@ -329,6 +329,8 @@ EOS_RESULT_VALUE(EOS_Lobby_TooManyInvites, 9014)
 EOS_RESULT_VALUE(EOS_Lobby_DeploymentAtCapacity, 9015)
 /** Lobby operation not allowed */
 EOS_RESULT_VALUE(EOS_Lobby_NotAllowed, 9016)
+/** While restoring a lost connection lobby ownership changed and only local member data was updated */
+EOS_RESULT_VALUE(EOS_Lobby_MemberUpdateOnly, 9017)
 
 /** An unexpected error that we cannot identify has occurred. */
 EOS_RESULT_VALUE_LAST(EOS_UnexpectedError, 0x7FFFFFFF)

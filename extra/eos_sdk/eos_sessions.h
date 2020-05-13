@@ -23,7 +23,7 @@
  *
  * @see EOS_SessionModification_Release
  * @see EOS_Sessions_UpdateSession
- * @see EOS_SessionModification_*
+ * @see EOS_HSessionModification
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CreateSessionModification(EOS_HSessions Handle, const EOS_Sessions_CreateSessionModificationOptions* Options, EOS_HSessionModification* OutSessionModificationHandle);
 
@@ -37,7 +37,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CreateSessionModification(EOS_HSessio
  *
  * @see EOS_SessionModification_Release
  * @see EOS_Sessions_UpdateSession
- * @see EOS_SessionModification_*
+ * @see EOS_HSessionModification
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_UpdateSessionModification(EOS_HSessions Handle, const EOS_Sessions_UpdateSessionModificationOptions* Options, EOS_HSessionModification* OutSessionModificationHandle);
 
@@ -326,7 +326,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_DumpSessionState(EOS_HSessions Handle
 
 /**
  * To modify sessions, you must call EOS_Sessions_CreateSessionModification to create a Session Modification handle. To modify that handle, call
- * EOS_SessionModification_* methods. Once you are finished, call EOS_Sessions_UpdateSession with your handle. You must then release your Session Modification
+ * EOS_HSessionModification methods. Once you are finished, call EOS_Sessions_UpdateSession with your handle. You must then release your Session Modification
  * handle by calling EOS_SessionModification_Release.
  */
 
@@ -572,7 +572,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_SetTargetUserId(EOS_HSessionSear
  *         EOS_IncompatibleVersion if the API version passed in is incorrect
  *
  * @see EOS_Sessions_AttributeData
- * @see EOS_EOnlineComparisonOp
+ * @see EOS_EComparisonOp
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_SetParameter(EOS_HSessionSearch Handle, const EOS_SessionSearch_SetParameterOptions* Options);
 

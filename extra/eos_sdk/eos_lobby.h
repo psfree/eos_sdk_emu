@@ -78,7 +78,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_LeaveLobby(EOS_HLobby Handle, const EOS_Lobby_L
  *
  * @see EOS_LobbyModification_Release
  * @see EOS_Lobby_UpdateLobby
- * @see EOS_LobbyModification_*
+ * @see EOS_HLobbyModification
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_UpdateLobbyModification(EOS_HLobby Handle, const EOS_Lobby_UpdateLobbyModificationOptions* Options, EOS_HLobbyModification* OutLobbyModificationHandle);
 
@@ -307,7 +307,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_CopyLobbyDetailsHandle(EOS_HLobby Handle
 
 /**
  * To modify lobbies or the lobby member data, you must call EOS_Lobby_UpdateLobbyModification to create a Lobby Modification handle. To modify that handle, call
- * EOS_LobbyModification_* methods. Once you are finished, call EOS_Lobby_UpdateLobby with your handle. You must then release your Lobby Modification
+ * EOS_HLobbyModification methods. Once you are finished, call EOS_Lobby_UpdateLobby with your handle. You must then release your Lobby Modification
  * handle by calling EOS_LobbyModification_Release.
  */
 

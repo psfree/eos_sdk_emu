@@ -173,11 +173,11 @@ EOS_DECLARE_FUNC(EOS_HLeaderboards) EOS_Platform_GetLeaderboardsInterface(EOS_HP
 
 /**
  * Get the active country code that the SDK will send to services which require it.
- * This returns the override value otherwise it will use the country code of the given user.
- * This is currently used for determining pricing.
+ * This only will return the value set as the override otherwise EOS_NotFound is returned.
+ * This is not currently used for anything internally.
  *
  * @param LocalUserId The account to use for lookup if no override exists.
- * @param OutBuffer The buffer into which the character data should be written.  The buffer must be long enough to hold a string of EOS_COUNTRYCODE_MAX_LEN.
+ * @param OutBuffer The buffer into which the character data should be written.  The buffer must be long enough to hold a string of EOS_COUNTRYCODE_MAX_LENGTH.
  * @param InOutBufferLength The size of the OutBuffer in characters.
  *                          The input buffer should include enough space to be null-terminated.
  *                          When the function returns, this parameter will be filled with the length of the string copied into OutBuffer.
@@ -189,7 +189,7 @@ EOS_DECLARE_FUNC(EOS_HLeaderboards) EOS_Platform_GetLeaderboardsInterface(EOS_HP
  *         EOS_LimitExceeded - The OutBuffer is not large enough to receive the country code string. InOutBufferLength contains the required minimum length to perform the operation successfully.
  *
  * @see eos_ecom.h
- * @see EOS_COUNTRYCODE_MAX_LEN
+ * @see EOS_COUNTRYCODE_MAX_LENGTH
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Platform_GetActiveCountryCode(EOS_HPlatform Handle, EOS_EpicAccountId LocalUserId, char* OutBuffer, int32_t* InOutBufferLength);
 
@@ -219,7 +219,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Platform_GetActiveLocaleCode(EOS_HPlatform Han
  * Get the override country code that the SDK will send to services which require it.
  * This is currently used for determining pricing.
  *
- * @param OutBuffer The buffer into which the character data should be written.  The buffer must be long enough to hold a string of EOS_COUNTRYCODE_MAX_LEN.
+ * @param OutBuffer The buffer into which the character data should be written.  The buffer must be long enough to hold a string of EOS_COUNTRYCODE_MAX_LENGTH.
  * @param InOutBufferLength The size of the OutBuffer in characters.
  *                          The input buffer should include enough space to be null-terminated.
  *                          When the function returns, this parameter will be filled with the length of the string copied into OutBuffer.
@@ -230,7 +230,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Platform_GetActiveLocaleCode(EOS_HPlatform Han
  *         EOS_LimitExceeded - The OutBuffer is not large enough to receive the country code string. InOutBufferLength contains the required minimum length to perform the operation successfully.
  *
  * @see eos_ecom.h
- * @see EOS_COUNTRYCODE_MAX_LEN
+ * @see EOS_COUNTRYCODE_MAX_LENGTH
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Platform_GetOverrideCountryCode(EOS_HPlatform Handle, char* OutBuffer, int32_t* InOutBufferLength);
 
@@ -262,7 +262,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Platform_GetOverrideLocaleCode(EOS_HPlatform H
  *         EOS_InvalidParameters if you pass an invalid country code
  *
  * @see eos_ecom.h
- * @see EOS_COUNTRYCODE_MAX_LEN
+ * @see EOS_COUNTRYCODE_MAX_LENGTH
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Platform_SetOverrideCountryCode(EOS_HPlatform Handle, const char* NewCountryCode);
 

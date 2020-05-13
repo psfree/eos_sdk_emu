@@ -124,11 +124,11 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_ProductUserId_FromString(const char* Acc
 /** A character buffer of this size is large enough to fit a successful output of EOS_ProductUserId_ToString */
 #define EOS_PRODUCTUSERID_MAX_LENGTH 128
 
-/** An invalid EOS_NotificationID */
-#define EOS_INVALID_NOTIFICATIONID ((EOS_NotificationId)0)
-
 /** Handle to an existing registered notification (0 is an invalid handle) */
 EXTERN_C typedef uint64_t EOS_NotificationId;
+
+/** An invalid notification id */
+#define EOS_INVALID_NOTIFICATIONID ((EOS_NotificationId)0)
 
 /** A handle to a continuance token @see eos_connect.h */
 typedef struct EOS_ContinuanceTokenDetails* EOS_ContinuanceToken;
@@ -136,12 +136,10 @@ typedef struct EOS_ContinuanceTokenDetails* EOS_ContinuanceToken;
 /** The most recent version of the EOS_PageQuery and EOS_PageResult structs. */
 #define EOS_PAGINATION_API_001 1
 
-/** The default MaxCount used for a EOS_PageQuery when the API allows the EOS_PageQuery to be omitted.
- */
+/** The default MaxCount used for a EOS_PageQuery when the API allows the EOS_PageQuery to be omitted. */
 #define EOS_PAGEQUERY_MAXCOUNT_DEFAULT 10
 
-/** The maximum MaxCount used for a EOS_PageQuery.
- */
+/** The maximum MaxCount used for a EOS_PageQuery. */
 #define EOS_PAGEQUERY_MAXCOUNT_MAXIMUM 100
 
 /**
@@ -206,7 +204,7 @@ typedef EOS_EAttributeType EOS_ELobbyAttributeType;
 EOS_ENUM(EOS_EComparisonOp,
 	/** Value must equal the one stored on the lobby/session */
 	EOS_CO_EQUAL = 0,
-	/** Value must not queal the one stored on the lobby/session */
+    /** Value must not equal the one stored on the lobby/session */
 	EOS_CO_NOTEQUAL = 1,
 	/** Value must be strictly greater than the one stored on the lobby/session */
 	EOS_CO_GREATERTHAN = 2,
@@ -225,5 +223,33 @@ EOS_ENUM(EOS_EComparisonOp,
 );
 
 typedef EOS_EComparisonOp EOS_EOnlineComparisonOp;
+
+/**
+ * All supported external account providers
+ *
+ * @see EOS_Connect_QueryExternalAccountMappings
+ */
+EOS_ENUM(EOS_EExternalAccountType,
+       /** External account is associated with Epic Games */
+       EOS_EAT_EPIC = 0,
+       /** External account is associated with Steam */
+       EOS_EAT_STEAM = 1,
+       /** External account is associated with Playstation */
+       EOS_EAT_PSN = 2,
+       /** External account is associated with Xbox Live */
+       EOS_EAT_XBL = 3,
+       /** External account is associated with Discord */
+       EOS_EAT_DISCORD = 4,
+       /** External account is associated with GOG */
+       EOS_EAT_GOG = 5,
+       /** External account is associated with Nintendo */
+       EOS_EAT_NINTENDO = 6,
+       /** External account is associated with Uplay */
+       EOS_EAT_UPLAY = 7,
+       /** External account is associated with an OpenID Provider */
+       EOS_EAT_OPENID = 8,
+       /** External account is associated with Apple */
+       EOS_EAT_APPLE = 9
+);
 
 #pragma pack(pop)

@@ -73,7 +73,7 @@ EOS_ENUM(EOS_EEcomItemType,
 	/**
 	 * This entitlement is intended to be transient and redeemed.
 	 *
-	 * @see EOS_Ecom_RedeemEntitlement
+	 * @see EOS_Ecom_RedeemEntitlements
 	 */
 	EOS_EIT_Consumable = 1,
 	/** This entitlement has a type that is not currently intneded for an in-game store. */

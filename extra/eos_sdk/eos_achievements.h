@@ -13,6 +13,8 @@
 /**
  * Query for a list of definitions for all existing achievements, including localized text, icon IDs and whether an achievement is hidden.
  *
+ * @note When the Social Overlay is enabled then this will be called automatically.  The Social Overlay is enabled by default (see EOS_PF_DISABLE_SOCIAL_OVERLAY).
+ *
  * @param Options Structure containing information about the application whose achievement definitions we're retrieving.
  * @param ClientData Arbitrary data that is passed back to you in the CompletionDelegate
  * @param CompletionDelegate This function is called when the query definitions operation completes.
@@ -39,13 +41,13 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Achievements_GetAchievementDefinitionCount(EOS_HA
  * @param Options Structure containing the index being accessed
  * @param OutDefinition The achievement definition for the given index, if it exists and is valid, use EOS_Achievements_Definition_Release when finished
  *
- * @see EOS_Achievements_Definition_Release
+ * @see EOS_Achievements_DefinitionV2_Release
  *
  * @return EOS_Success if the information is available and passed out in OutDefinition
  *         EOS_InvalidParameters if you pass a null pointer for the out parameter
  *         EOS_NotFound if the achievement definition is not found
  */
-EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByIndex(EOS_HAchievements Handle, const EOS_Achievements_CopyAchievementDefinitionByIndexOptions* Options, EOS_Achievements_Definition ** OutDefinition);
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionV2ByIndex(EOS_HAchievements Handle, const EOS_Achievements_CopyAchievementDefinitionV2ByIndexOptions* Options, EOS_Achievements_DefinitionV2** OutDefinition);
 
 /**
  * Fetches an achievement definition from a given achievement ID.
@@ -53,16 +55,18 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByIndex(
  * @param Options Structure containing the achievement ID being accessed
  * @param OutDefinition The achievement definition for the given achievement ID, if it exists and is valid, use EOS_Achievements_Definition_Release when finished
  *
- * @see EOS_Achievements_Definition_Release
+ * @see EOS_Achievements_DefinitionV2_Release
  *
  * @return EOS_Success if the information is available and passed out in OutDefinition
  *         EOS_InvalidParameters if you pass a null pointer for the out parameter
  *         EOS_NotFound if the achievement definition is not found
  */
-EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByAchievementId(EOS_HAchievements Handle, const EOS_Achievements_CopyAchievementDefinitionByAchievementIdOptions* Options, EOS_Achievements_Definition ** OutDefinition);
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionV2ByAchievementId(EOS_HAchievements Handle, const EOS_Achievements_CopyAchievementDefinitionV2ByAchievementIdOptions* Options, EOS_Achievements_DefinitionV2** OutDefinition);
 
 /**
  * Query for a list of achievements for a specific player, including progress towards completion for each achievement.
+ *
+ * @note When the Social Overlay is enabled then this will be called automatically.  The Social Overlay is enabled by default (see EOS_PF_DISABLE_SOCIAL_OVERLAY).
  *
  * @param Options Structure containing information about the player whose achievements we're retrieving.
  * @param ClientData Arbitrary data that is passed back to you in the CompletionDelegate
@@ -125,6 +129,65 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyPlayerAchievementByAchievemen
 EOS_DECLARE_FUNC(void) EOS_Achievements_UnlockAchievements(EOS_HAchievements Handle, const EOS_Achievements_UnlockAchievementsOptions* Options, void* ClientData, const EOS_Achievements_OnUnlockAchievementsCompleteCallback CompletionDelegate);
 
 /**
+ * Register to receive achievement unlocked notifications.
+ * @note must call EOS_Achievements_RemoveNotifyAchievementsUnlocked to remove the notification
+ *
+ * @see EOS_Achievements_RemoveNotifyAchievementsUnlocked
+ *
+ * @param Options Structure containing information about the achievement unlocked notification
+ * @param ClientData Arbitrary data that is passed back to you in the CompletionDelegate
+ * @param NotificationFn A callback that is fired when an achievement unlocked notification for a user has been received
+ *
+ * @return handle representing the registered callback
+ */
+EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Achievements_AddNotifyAchievementsUnlockedV2(EOS_HAchievements Handle, const EOS_Achievements_AddNotifyAchievementsUnlockedV2Options * Options, void* ClientData, const EOS_Achievements_OnAchievementsUnlockedCallbackV2 NotificationFn);
+
+/**
+ * Unregister from receiving achievement unlocked notifications.
+ *
+ * @see EOS_Achievements_AddNotifyAchievementsUnlocked
+ *
+ * @param InId Handle representing the registered callback
+ */
+EOS_DECLARE_FUNC(void) EOS_Achievements_RemoveNotifyAchievementsUnlocked(EOS_HAchievements Handle, EOS_NotificationId InId);
+
+/**
+ * DEPRECATED! Use EOS_Achievements_CopyAchievementDefinitionV2ByIndex instead.
+ *
+ * Fetches an achievement definition from a given index.
+ *
+ * @param Options Structure containing the index being accessed
+ * @param OutDefinition The achievement definition for the given index, if it exists and is valid, use EOS_Achievements_Definition_Release when finished
+ *
+ * @see EOS_Achievements_CopyAchievementDefinitionV2ByIndex
+ * @see EOS_Achievements_Definition_Release
+ *
+ * @return EOS_Success if the information is available and passed out in OutDefinition
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the achievement definition is not found
+ */
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByIndex(EOS_HAchievements Handle, const EOS_Achievements_CopyAchievementDefinitionByIndexOptions * Options, EOS_Achievements_Definition * *OutDefinition);
+
+/**
+ * DEPRECATED! Use EOS_Achievements_CopyAchievementDefinitionV2ByAchievementId instead.
+ *
+ * Fetches an achievement definition from a given achievement ID.
+ *
+ * @param Options Structure containing the achievement ID being accessed
+ * @param OutDefinition The achievement definition for the given achievement ID, if it exists and is valid, use EOS_Achievements_Definition_Release when finished
+ *
+ * @see EOS_Achievements_Definition_Release
+ * @see EOS_Achievements_CopyAchievementDefinitionV2ByAchievementId
+ *
+ * @return EOS_Success if the information is available and passed out in OutDefinition
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the achievement definition is not found
+ */
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByAchievementId(EOS_HAchievements Handle, const EOS_Achievements_CopyAchievementDefinitionByAchievementIdOptions * Options, EOS_Achievements_Definition * *OutDefinition);
+
+/**
+ * DEPRECATED! Use EOS_Achievements_GetPlayerAchievementCount, EOS_Achievements_CopyPlayerAchievementByIndex and filter for unlocked instead.
+ *
  * Fetch the number of unlocked achievements that are cached locally.
  *
  * @param Options The Options associated with retrieving the unlocked achievement count
@@ -137,6 +200,8 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Achievements_GetUnlockedAchievementCount(EOS_HAch
 
 /**
  * Fetches an unlocked achievement from a given index.
+ *
+ * DEPRECATED! Use EOS_Achievements_CopyPlayerAchievementByAchievementId instead.
  *
  * @param Options Structure containing the account id and index being accessed
  * @param OutAchievement The unlocked achievement data for the given index, if it exists and is valid, use EOS_Achievements_UnlockedAchievement_Release when finished
@@ -152,6 +217,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyUnlockedAchievementByIndex(EO
 /**
  * Fetches an unlocked achievement from a given achievement ID.
  *
+ * DEPRECATED! Use EOS_Achievements_CopyPlayerAchievementByAchievementId instead.
+ *
  * @param Options Structure containing the account id and achievement ID being accessed
  * @param OutAchievement The unlocked achievement data for the given achievement ID, if it exists and is valid, use EOS_Achievements_UnlockedAchievement_Release when finished
  *
@@ -164,6 +231,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyUnlockedAchievementByIndex(EO
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyUnlockedAchievementByAchievementId(EOS_HAchievements Handle, const EOS_Achievements_CopyUnlockedAchievementByAchievementIdOptions* Options, EOS_Achievements_UnlockedAchievement ** OutAchievement);
 
 /**
+ DEPRECATED! Use EOS_Achievements_AddNotifyAchievementsUnlockedV2 instead.
+ *
  * Register to receive achievement unlocked notifications.
  * @note must call EOS_Achievements_RemoveNotifyAchievementsUnlocked to remove the notification
  *
@@ -176,12 +245,3 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyUnlockedAchievementByAchievem
  * @return handle representing the registered callback
  */
 EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Achievements_AddNotifyAchievementsUnlocked(EOS_HAchievements Handle, const EOS_Achievements_AddNotifyAchievementsUnlockedOptions* Options, void* ClientData, const EOS_Achievements_OnAchievementsUnlockedCallback NotificationFn);
-
-/**
- * Unregister from receiving achievement unlocked notifications.
- *
- * @see EOS_Achievements_AddNotifyAchievementsUnlocked
- *
- * @param InId Handle representing the registered callback
- */
-EOS_DECLARE_FUNC(void) EOS_Achievements_RemoveNotifyAchievementsUnlocked(EOS_HAchievements Handle, EOS_NotificationId InId);

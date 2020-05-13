@@ -201,7 +201,8 @@ EOS_DECLARE_FUNC(const char*) EOS_EResult_ToString(EOS_EResult Result)
         CASE_RESULT(EOS_LimitExceeded);
         CASE_RESULT(EOS_Disabled);
         CASE_RESULT(EOS_DuplicateNotAllowed);
-        CASE_RESULT(EOS_MissingParameters);
+        CASE_RESULT(EOS_MissingParameters_DEPRECATED);
+
         CASE_RESULT(EOS_InvalidSandboxId);
         CASE_RESULT(EOS_TimedOut);
         CASE_RESULT(EOS_PartialResult);
@@ -340,6 +341,7 @@ EOS_DECLARE_FUNC(const char*) EOS_EResult_ToString(EOS_EResult Result)
         CASE_RESULT(EOS_Lobby_TooManyInvites);
         CASE_RESULT(EOS_Lobby_DeploymentAtCapacity);
         CASE_RESULT(EOS_Lobby_NotAllowed);
+        CASE_RESULT(EOS_Lobby_MemberUpdateOnly);
 
         default: return "EOS_UnexpectedError";
 #undef CASE_RESULT
@@ -383,7 +385,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ByteArray_ToString(const uint8_t* ByteArray, c
  */
 EOS_DECLARE_FUNC(EOS_Bool) EOS_EpicAccountId_IsValid(EOS_EpicAccountId AccountId)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    //LOG(Log::LogLevel::TRACE, "");
     if (AccountId == nullptr)
         return EOS_FALSE;
 
@@ -407,7 +409,7 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_EpicAccountId_IsValid(EOS_EpicAccountId AccountId
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_EpicAccountId_ToString(EOS_EpicAccountId AccountId, char* OutBuffer, int32_t* InOutBufferLength)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    //LOG(Log::LogLevel::TRACE, "");
     if (AccountId == nullptr || !AccountId->IsValid())
         return EOS_EResult::EOS_InvalidUser;
 
@@ -422,7 +424,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_EpicAccountId_ToString(EOS_EpicAccountId Accou
  */
 EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_EpicAccountId_FromString(const char* AccountIdString)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    //LOG(Log::LogLevel::TRACE, "");
     if (AccountIdString == nullptr)
         return EOSSDK_Client::Inst().get_epicuserid(sdk::NULL_USER_ID);
 
@@ -437,7 +439,7 @@ EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_EpicAccountId_FromString(const char* Acc
  */
 EOS_DECLARE_FUNC(EOS_Bool) EOS_ProductUserId_IsValid(EOS_ProductUserId AccountId)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    //LOG(Log::LogLevel::TRACE, "");
     if (AccountId == nullptr)
         return EOS_FALSE;
 
@@ -461,7 +463,7 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_ProductUserId_IsValid(EOS_ProductUserId AccountId
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_ProductUserId_ToString(EOS_ProductUserId AccountId, char* OutBuffer, int32_t* InOutBufferLength)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    //LOG(Log::LogLevel::TRACE, "");
 
     if (AccountId == nullptr || !AccountId->IsValid())
         return EOS_EResult::EOS_InvalidUser;
@@ -477,7 +479,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ProductUserId_ToString(EOS_ProductUserId Accou
  */
 EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_ProductUserId_FromString(const char* AccountIdString)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    //LOG(Log::LogLevel::TRACE, "");
     if (AccountIdString == nullptr)
         return EOSSDK_Client::Inst().get_productuserid(sdk::NULL_USER_ID);
 

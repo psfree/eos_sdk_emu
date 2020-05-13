@@ -90,5 +90,10 @@ namespace sdk
         void RemoveNotifyAuthExpiration(EOS_NotificationId InId);
         EOS_NotificationId AddNotifyLoginStatusChanged(const EOS_Connect_AddNotifyLoginStatusChangedOptions* Options, void* ClientData, const EOS_Connect_OnLoginStatusChangedCallback Notification);
         void RemoveNotifyLoginStatusChanged(EOS_NotificationId InId);
+        uint32_t GetProductUserExternalAccountCount(const EOS_Connect_GetProductUserExternalAccountCountOptions * Options);
+        EOS_EResult CopyProductUserExternalAccountByIndex(const EOS_Connect_CopyProductUserExternalAccountByIndexOptions * Options, EOS_Connect_ExternalAccountInfo * *OutExternalAccountInfo);
+        EOS_EResult CopyProductUserExternalAccountByAccountType(const EOS_Connect_CopyProductUserExternalAccountByAccountTypeOptions * Options, EOS_Connect_ExternalAccountInfo * *OutExternalAccountInfo);
+        EOS_EResult CopyProductUserExternalAccountByAccountId(const EOS_Connect_CopyProductUserExternalAccountByAccountIdOptions * Options, EOS_Connect_ExternalAccountInfo * *OutExternalAccountInfo);
+        EOS_EResult CopyProductUserInfo(const EOS_Connect_CopyProductUserInfoOptions * Options, EOS_Connect_ExternalAccountInfo * *OutExternalAccountInfo);
     };
 }

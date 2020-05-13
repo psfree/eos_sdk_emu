@@ -163,3 +163,11 @@ EOS_DECLARE_FUNC(EOS_UI_ENotificationLocation) EOS_UI_GetNotificationLocationPre
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_UI_ENotificationLocation::EOS_UNL_BottomLeft;
 }
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_UI_AcknowledgeEventId(EOS_HUI Handle, const EOS_UI_AcknowledgeEventIdOptions* Options)
+{
+    LOG(Log::LogLevel::TRACE, "");
+
+    auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
+    return EOS_EResult::EOS_Success;
+}

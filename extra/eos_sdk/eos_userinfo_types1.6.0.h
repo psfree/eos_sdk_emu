@@ -143,4 +143,99 @@ EOS_STRUCT(EOS_UserInfo_CopyUserInfoOptions001, (
  */
 EOS_DECLARE_FUNC(void) EOS_UserInfo_Release(EOS_UserInfo* UserInfo);
 
+/** The most recent version of the EOS_UserInfo_External struct. */
+#define EOS_USERINFO_EXTERNALUSERINFO_API_001 1
+
+/**
+ * Contains information about a single external user info.
+ */
+EOS_STRUCT(EOS_UserInfo_ExternalUserInfo001, (
+       /** Version of the API. */
+       int32_t ApiVersion;
+       /** The type of the external account */
+       EOS_EExternalAccountType AccountType;
+       /** The id of the external account. Can be null */
+       const char* AccountId;
+       /** The display name of the external account. Can be null */
+       const char* DisplayName;
+));
+
+/** The most recent version of the EOS_Achievements_GetAchievementDefinitionCount API. */
+#define EOS_USERINFO_GETEXTERNALUSERINFOCOUNT_API_001 1
+
+/**
+ * Input parameters for the EOS_UserInfo_GetExternalUserInfoCount Function.
+ */
+EOS_STRUCT(EOS_UserInfo_GetExternalUserInfoCountOptions001, (
+       /** Version of the API */
+       int32_t ApiVersion;
+       /** Account ID of the local player requesting the information */
+       EOS_EpicAccountId LocalUserId;
+       /** Account ID of the player whose information is being retrieved */
+       EOS_EpicAccountId TargetUserId;
+));
+
+/** The most recent version of the EOS_UserInfo_CopyExternalUserInfoByIndexOptions struct. */
+#define EOS_USERINFO_COPYEXTERNALUSERINFOBYINDEX_API_001 1
+
+/**
+ * Input parameters for the EOS_UserInfo_CopyExternalUserInfoByIndex Function.
+ */
+EOS_STRUCT(EOS_UserInfo_CopyExternalUserInfoByIndexOptions001, (
+       /** Version of the API. */
+       int32_t ApiVersion;
+       /** Account ID of the local player requesting the information */
+       EOS_EpicAccountId LocalUserId;
+       /** Account ID of the player whose information is being retrieved */
+       EOS_EpicAccountId TargetUserId;
+       /** Index of the external user info to retrieve from the cache */
+       uint32_t Index;
+));
+
+/** The most recent version of the EOS_UserInfo_CopyExternalUserInfoByIndexOptions struct. */
+#define EOS_USERINFO_COPYEXTERNALUSERINFOBYACCOUNTTYPE_API_001 1
+
+/**
+ * Input parameters for the EOS_UserInfo_CopyExternalUserInfoByAccountType function.
+ */
+EOS_STRUCT(EOS_UserInfo_CopyExternalUserInfoByAccountTypeOptions001, (
+       /** Version of the API. */
+       int32_t ApiVersion;
+       /** Account ID of the local player requesting the information */
+       EOS_EpicAccountId LocalUserId;
+       /** Account ID of the player whose information is being retrieved */
+       EOS_EpicAccountId TargetUserId;
+       /** Account type of the external user info to retrieve from the cache */
+       EOS_EExternalAccountType AccountType;
+));
+
+/** The most recent version of the EOS_UserInfo_CopyExternalUserInfoByAccountIdOptions struct. */
+#define EOS_USERINFO_COPYEXTERNALUSERINFOBYACCOUNTID_API_001 1
+
+/**
+ * Input parameters for the EOS_UserInfo_CopyExternalUserInfoByAccountId Function.
+ */
+EOS_STRUCT(EOS_UserInfo_CopyExternalUserInfoByAccountIdOptions001, (
+       /** Version of the API. */
+       int32_t ApiVersion;
+       /** Account ID of the local player requesting the information */
+       EOS_EpicAccountId LocalUserId;
+       /** Account ID of the player whose information is being retrieved */
+       EOS_EpicAccountId TargetUserId;
+       /** Account ID of the external user info to retrieve from the cache. Cannot be null */
+       const char* AccountId;
+));
+
+/**
+ * Release the memory associated with external user info. This must be called on data retrieved from
+ * EOS_UserInfo_CopyExternalUserInfoByIndexOptions.
+ *
+ * @param ExternalUserInfo The external user info to release.
+ *
+ * @see EOS_UserInfo_ExternalUserInfo
+ * @see EOS_UserInfo_CopyExternalUserInfoByIndex
+ */
+EOS_DECLARE_FUNC(void) EOS_UserInfo_ExternalUserInfo_Release(EOS_UserInfo_ExternalUserInfo* ExternalUserInfo);
+
+
 #pragma pack(pop)

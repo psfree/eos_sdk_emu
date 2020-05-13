@@ -213,6 +213,83 @@ EOS_EResult EOSSDK_UserInfo::CopyUserInfo(const EOS_UserInfo_CopyUserInfoOptions
     return EOS_EResult::EOS_Success;
 }
 
+/**
+ * Fetch the number of external user infos that are cached locally.
+ *
+ * @param Options The options associated with retrieving the external user info count
+ *
+ * @see EOS_UserInfo_CopyExternalUserInfoByIndex
+ *
+ * @return The number of external user infos, or 0 if there is an error
+ */
+uint32_t EOSSDK_UserInfo::GetExternalUserInfoCount(const EOS_UserInfo_GetExternalUserInfoCountOptions* Options)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
+
+    return 0;
+}
+
+/**
+ * Fetches an external user info from a given index.
+ *
+ * @param Options Structure containing the index being accessed
+ * @param OutExternalUserInfo The external user info. If it exists and is valid, use EOS_UserInfo_ExternalUserInfo_Release when finished
+ *
+ * @see EOS_UserInfo_ExternalUserInfo_Release
+ *
+ * @return EOS_Success if the information is available and passed out in OutExternalUserInfo
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the external user info is not found
+ */
+EOS_EResult EOSSDK_UserInfo::CopyExternalUserInfoByIndex(const EOS_UserInfo_CopyExternalUserInfoByIndexOptions* Options, EOS_UserInfo_ExternalUserInfo** OutExternalUserInfo)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
+
+    return EOS_EResult::EOS_NotFound;
+}
+
+/**
+ * Fetches an external user info for a given external account type.
+ *
+ * @param Options Structure containing the account type being accessed
+ * @param OutExternalUserInfo The external user info. If it exists and is valid, use EOS_UserInfo_ExternalUserInfo_Release when finished
+ *
+ * @see EOS_UserInfo_ExternalUserInfo_Release
+ *
+ * @return EOS_Success if the information is available and passed out in OutExternalUserInfo
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the external user info is not found
+ */
+EOS_EResult EOSSDK_UserInfo::CopyExternalUserInfoByAccountType(const EOS_UserInfo_CopyExternalUserInfoByAccountTypeOptions* Options, EOS_UserInfo_ExternalUserInfo** OutExternalUserInfo)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
+
+    return EOS_EResult::EOS_NotFound;
+}
+
+/**
+ * Fetches an external user info for a given external account id.
+ *
+ * @param Options Structure containing the account id being accessed
+ * @param OutExternalUserInfo The external user info. If it exists and is valid, use EOS_UserInfo_ExternalUserInfo_Release when finished
+ *
+ * @see EOS_UserInfo_ExternalUserInfo_Release
+ *
+ * @return EOS_Success if the information is available and passed out in OutExternalUserInfo
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the external user info is not found
+ */
+EOS_EResult EOSSDK_UserInfo::CopyExternalUserInfoByAccountId(const EOS_UserInfo_CopyExternalUserInfoByAccountIdOptions* Options, EOS_UserInfo_ExternalUserInfo** OutExternalUserInfo)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
+
+    return EOS_EResult::EOS_NotFound;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //                           Network Send messages                           //
 ///////////////////////////////////////////////////////////////////////////////

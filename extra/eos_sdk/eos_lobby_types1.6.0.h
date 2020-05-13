@@ -549,7 +549,7 @@ EOS_STRUCT(EOS_Lobby_RejectInviteOptions001, (
 	/** Version of the API */
 	int32_t ApiVersion;
 	/** The id of the lobby affected */
-	EOS_LobbyId LobbyId;
+	const char* LobbyId;
 	/** Local user rejecting the invite */
 	EOS_ProductUserId LocalUserId;
 ));
@@ -564,7 +564,7 @@ EOS_STRUCT(EOS_Lobby_RejectInviteCallbackInfo, (
 	/** Context that was passed into EOS_Lobby_RejectInvite */
 	void* ClientData;
 	/** The id of the lobby affected */
-	EOS_LobbyId LobbyId;
+	const char* LobbyId;
 ));
 
 /**

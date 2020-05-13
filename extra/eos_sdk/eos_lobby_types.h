@@ -53,7 +53,7 @@ enum { k_iLobbyCallbackBase = 6000 };
 #define EOS_LobbySearch_GetSearchResultCountOptions         EOS_LobbySearch_GetSearchResultCountOptions001
 #define EOS_LobbySearch_CopySearchResultByIndexOptions      EOS_LobbySearch_CopySearchResultByIndexOptions001
 
-#include "eos_lobby_types1.5.0.h"
+#include "eos_lobby_types1.6.0.h"
 
 #define EOS_LOBBYDETAILS_INFO_API_LATEST                        EOS_LOBBYDETAILS_INFO_API_001
 #define EOS_LOBBY_CREATELOBBY_API_LATEST                        EOS_LOBBY_CREATELOBBY_API_001

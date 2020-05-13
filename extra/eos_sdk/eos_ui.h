@@ -71,12 +71,14 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_UI_SetToggleFriendsKey(EOS_HUI Handle, const E
  *
  * @param Options Structure containing any options that are needed to retrieve the key.
  * @return A valid key combination which represent a single key with zero or more modifier keys.
- *		EOS_UIK_ENone will be returned if any error occurs.
+ *         EOS_UIK_None will be returned if any error occurs.
  */
 EOS_DECLARE_FUNC(EOS_UI_EKeyCombination) EOS_UI_GetToggleFriendsKey(EOS_HUI Handle, const EOS_UI_GetToggleFriendsKeyOptions* Options);
 
 /**
- * Determine if a key combination is valid. Key combinations must have a key type and optional modifiers. Key combinations consisting of only modifiers are invalid.
+ * Determine if a key combination is valid. A key combinations must have a single key and at least one modifier.
+ * The single key must be one of the following: F1 through F12, Space, Backspace, Escape, or Tab.
+ * The modifier key must be one or more of the following: Shift, Control, or Alt.
  *
  * @param KeyCombination The key to test.
  * @return  EOS_TRUE if the provided key combination is valid.
@@ -99,3 +101,16 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_UI_SetDisplayPreference(EOS_HUI Handle, const 
  * @return The current notification location display preference.
  */
 EOS_DECLARE_FUNC(EOS_UI_ENotificationLocation) EOS_UI_GetNotificationLocationPreference(EOS_HUI Handle);
+
+
+/**
+ * Lets the SDK know that the given UI event ID has been acknowledged and should be released.
+ *
+ * @return An EOS_EResult is returned to indicate success or an error.
+ *
+ * EOS_Success is returned if the UI event ID has been acknowledged.
+ * EOS_NotFound is returned if the UI event ID does not exist.
+ *
+ * @see EOS_Presence_JoinGameAcceptedCallbackInfo
+ */
+EOS_DECLARE_FUNC(EOS_EResult) EOS_UI_AcknowledgeEventId(EOS_HUI Handle, const EOS_UI_AcknowledgeEventIdOptions * Options);

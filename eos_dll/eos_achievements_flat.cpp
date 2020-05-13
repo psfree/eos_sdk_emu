@@ -63,46 +63,6 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Achievements_GetAchievementDefinitionCount(EOS_HA
 }
 
 /**
- * Fetches an achievement definition from a given index.
- *
- * @param Options Structure containing the index being accessed
- * @param OutDefinition The achievement definition for the given index, if it exists and is valid, use EOS_Achievements_Definition_Release when finished
- *
- * @see EOS_Achievements_Definition_Release
- *
- * @return EOS_Success if the information is available and passed out in OutDefinition
- *         EOS_InvalidParameters if you pass a null pointer for the out parameter
- *         EOS_NotFound if the achievement definition is not found
- */
-EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByIndex(EOS_HAchievements Handle, const EOS_Achievements_CopyAchievementDefinitionByIndexOptions* Options, EOS_Achievements_Definition** OutDefinition)
-{
-    LOG(Log::LogLevel::TRACE, "");
-
-    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
-    return EOS_EResult::EOS_Success;
-}
-
-/**
- * Fetches an achievement definition from a given achievement ID.
- *
- * @param Options Structure containing the achievement ID being accessed
- * @param OutDefinition The achievement definition for the given achievement ID, if it exists and is valid, use EOS_Achievements_Definition_Release when finished
- *
- * @see EOS_Achievements_Definition_Release
- *
- * @return EOS_Success if the information is available and passed out in OutDefinition
- *         EOS_InvalidParameters if you pass a null pointer for the out parameter
- *         EOS_NotFound if the achievement definition is not found
- */
-EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByAchievementId(EOS_HAchievements Handle, const EOS_Achievements_CopyAchievementDefinitionByAchievementIdOptions* Options, EOS_Achievements_Definition** OutDefinition)
-{
-    LOG(Log::LogLevel::TRACE, "");
-
-    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
-    return EOS_EResult::EOS_Success;
-}
-
-/**
  * Query for a list of achievements for a specific player, including progress towards completion for each achievement.
  *
  * @param Options Structure containing information about the player whose achievements we're retrieving.
@@ -271,6 +231,26 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Achievements_AddNotifyAchievementsUnloc
 }
 
 /**
+ * Register to receive achievement unlocked notifications.
+ * @note must call EOS_Achievements_RemoveNotifyAchievementsUnlocked to remove the notification
+ *
+ * @see EOS_Achievements_RemoveNotifyAchievementsUnlocked
+ *
+ * @param Options Structure containing information about the achievement unlocked notification
+ * @param ClientData Arbitrary data that is passed back to you in the CompletionDelegate
+ * @param NotificationFn A callback that is fired when an achievement unlocked notification for a user has been received
+ *
+ * @return handle representing the registered callback
+ */
+EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Achievements_AddNotifyAchievementsUnlockedV2(EOS_HAchievements Handle, const EOS_Achievements_AddNotifyAchievementsUnlockedV2Options* Options, void* ClientData, const EOS_Achievements_OnAchievementsUnlockedCallbackV2 NotificationFn)
+{
+    LOG(Log::LogLevel::TRACE, "");
+
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
+    return EOS_INVALID_NOTIFICATIONID;
+}
+
+/**
  * Unregister from receiving achievement unlocked notifications.
  *
  * @see EOS_Achievements_AddNotifyAchievementsUnlocked
@@ -283,6 +263,71 @@ EOS_DECLARE_FUNC(void) EOS_Achievements_RemoveNotifyAchievementsUnlocked(EOS_HAc
 
     auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
 }
+
+/**
+ * DEPRECATED! Use EOS_Achievements_CopyAchievementDefinitionV2ByIndex instead.
+ *
+ * Fetches an achievement definition from a given index.
+ *
+ * @param Options Structure containing the index being accessed
+ * @param OutDefinition The achievement definition for the given index, if it exists and is valid, use EOS_Achievements_Definition_Release when finished
+ *
+ * @see EOS_Achievements_CopyAchievementDefinitionV2ByIndex
+ * @see EOS_Achievements_Definition_Release
+ *
+ * @return EOS_Success if the information is available and passed out in OutDefinition
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the achievement definition is not found
+ */
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByIndex(EOS_HAchievements Handle, const EOS_Achievements_CopyAchievementDefinitionByIndexOptions* Options, EOS_Achievements_Definition** OutDefinition)
+{
+    LOG(Log::LogLevel::TRACE, "");
+
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
+    return EOS_EResult::EOS_NotFound;
+}
+
+/**
+ * DEPRECATED! Use EOS_Achievements_CopyAchievementDefinitionV2ByAchievementId instead.
+ *
+ * Fetches an achievement definition from a given achievement ID.
+ *
+ * @param Options Structure containing the achievement ID being accessed
+ * @param OutDefinition The achievement definition for the given achievement ID, if it exists and is valid, use EOS_Achievements_Definition_Release when finished
+ *
+ * @see EOS_Achievements_Definition_Release
+ * @see EOS_Achievements_CopyAchievementDefinitionV2ByAchievementId
+ *
+ * @return EOS_Success if the information is available and passed out in OutDefinition
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the achievement definition is not found
+ */
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByAchievementId(EOS_HAchievements Handle, const EOS_Achievements_CopyAchievementDefinitionByAchievementIdOptions* Options, EOS_Achievements_Definition** OutDefinition)
+{
+    LOG(Log::LogLevel::TRACE, "");
+
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
+    return EOS_EResult::EOS_NotFound;
+}
+
+/**
+ * Release the memory associated with EOS_Achievements_DefinitionV2. This must be called on data retrieved from
+ * EOS_Achievements_CopyAchievementDefinitionV2ByIndex or EOS_Achievements_CopyAchievementDefinitionV2ByAchievementId.
+ *
+ * @param AchievementDefinition - The achievement definition to release.
+ *
+ * @see EOS_Achievements_DefinitionV2
+ * @see EOS_Achievements_CopyAchievementDefinitionV2ByIndex
+ * @see EOS_Achievements_CopyAchievementDefinitionV2ByAchievementId
+ */
+EOS_DECLARE_FUNC(void) EOS_Achievements_DefinitionV2_Release(EOS_Achievements_DefinitionV2* AchievementDefinition)
+{
+    LOG(Log::LogLevel::TRACE, "");
+
+    
+}
+
+
 
 /**
  * Release the memory associated with achievement definitions. This must be called on data retrieved from

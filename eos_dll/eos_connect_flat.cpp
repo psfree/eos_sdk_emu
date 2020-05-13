@@ -127,3 +127,41 @@ EOS_DECLARE_FUNC(void) EOS_Connect_RemoveNotifyLoginStatusChanged(EOS_HConnect H
     auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
     pInst->RemoveNotifyLoginStatusChanged(InId);
 }
+
+EOS_DECLARE_FUNC(uint32_t) EOS_Connect_GetProductUserExternalAccountCount(EOS_HConnect Handle, const EOS_Connect_GetProductUserExternalAccountCountOptions * Options)
+{
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
+    return pInst->GetProductUserExternalAccountCount(Options);
+}
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserExternalAccountByIndex(EOS_HConnect Handle, const EOS_Connect_CopyProductUserExternalAccountByIndexOptions* Options, EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo)
+{
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
+    return pInst->CopyProductUserExternalAccountByIndex(Options, OutExternalAccountInfo);
+}
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserExternalAccountByAccountType(EOS_HConnect Handle, const EOS_Connect_CopyProductUserExternalAccountByAccountTypeOptions* Options, EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo)
+{
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
+    return pInst->CopyProductUserExternalAccountByAccountType(Options, OutExternalAccountInfo);
+}
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserExternalAccountByAccountId(EOS_HConnect Handle, const EOS_Connect_CopyProductUserExternalAccountByAccountIdOptions* Options, EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo)
+{
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
+    return pInst->CopyProductUserExternalAccountByAccountId(Options, OutExternalAccountInfo);
+}
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserInfo(EOS_HConnect Handle, const EOS_Connect_CopyProductUserInfoOptions* Options, EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo)
+{
+    auto pInst = reinterpret_cast<EOSSDK_Connect*>(Handle);
+    return pInst->CopyProductUserInfo(Options, OutExternalAccountInfo);
+}
+
+EOS_DECLARE_FUNC(void) EOS_Connect_ExternalAccountInfo_Release(EOS_Connect_ExternalAccountInfo* ExternalAccountInfo)
+{
+    if (ExternalAccountInfo != nullptr)
+    {
+        delete ExternalAccountInfo;
+    }
+}

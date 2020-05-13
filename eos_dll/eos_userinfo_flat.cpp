@@ -48,6 +48,75 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyUserInfo(EOS_HUserInfo Handle, co
 }
 
 /**
+ * Fetch the number of external user infos that are cached locally.
+ *
+ * @param Options The options associated with retrieving the external user info count
+ *
+ * @see EOS_UserInfo_CopyExternalUserInfoByIndex
+ *
+ * @return The number of external user infos, or 0 if there is an error
+ */
+EOS_DECLARE_FUNC(uint32_t) EOS_UserInfo_GetExternalUserInfoCount(EOS_HUserInfo Handle, const EOS_UserInfo_GetExternalUserInfoCountOptions* Options)
+{
+    auto pInst = reinterpret_cast<sdk::EOSSDK_UserInfo*>(Handle);
+    return pInst->GetExternalUserInfoCount(Options);
+}
+
+/**
+ * Fetches an external user info from a given index.
+ *
+ * @param Options Structure containing the index being accessed
+ * @param OutExternalUserInfo The external user info. If it exists and is valid, use EOS_UserInfo_ExternalUserInfo_Release when finished
+ *
+ * @see EOS_UserInfo_ExternalUserInfo_Release
+ *
+ * @return EOS_Success if the information is available and passed out in OutExternalUserInfo
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the external user info is not found
+ */
+EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyExternalUserInfoByIndex(EOS_HUserInfo Handle, const EOS_UserInfo_CopyExternalUserInfoByIndexOptions* Options, EOS_UserInfo_ExternalUserInfo** OutExternalUserInfo)
+{
+    auto pInst = reinterpret_cast<sdk::EOSSDK_UserInfo*>(Handle);
+    return pInst->CopyExternalUserInfoByIndex(Options, OutExternalUserInfo);
+}
+
+/**
+ * Fetches an external user info for a given external account type.
+ *
+ * @param Options Structure containing the account type being accessed
+ * @param OutExternalUserInfo The external user info. If it exists and is valid, use EOS_UserInfo_ExternalUserInfo_Release when finished
+ *
+ * @see EOS_UserInfo_ExternalUserInfo_Release
+ *
+ * @return EOS_Success if the information is available and passed out in OutExternalUserInfo
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the external user info is not found
+ */
+EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyExternalUserInfoByAccountType(EOS_HUserInfo Handle, const EOS_UserInfo_CopyExternalUserInfoByAccountTypeOptions* Options, EOS_UserInfo_ExternalUserInfo** OutExternalUserInfo)
+{
+    auto pInst = reinterpret_cast<sdk::EOSSDK_UserInfo*>(Handle);
+    return pInst->CopyExternalUserInfoByAccountType(Options, OutExternalUserInfo);
+}
+
+/**
+ * Fetches an external user info for a given external account id.
+ *
+ * @param Options Structure containing the account id being accessed
+ * @param OutExternalUserInfo The external user info. If it exists and is valid, use EOS_UserInfo_ExternalUserInfo_Release when finished
+ *
+ * @see EOS_UserInfo_ExternalUserInfo_Release
+ *
+ * @return EOS_Success if the information is available and passed out in OutExternalUserInfo
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the external user info is not found
+ */
+EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyExternalUserInfoByAccountId(EOS_HUserInfo Handle, const EOS_UserInfo_CopyExternalUserInfoByAccountIdOptions* Options, EOS_UserInfo_ExternalUserInfo** OutExternalUserInfo)
+{
+    auto pInst = reinterpret_cast<sdk::EOSSDK_UserInfo*>(Handle);
+    return pInst->CopyExternalUserInfoByAccountId(Options, OutExternalUserInfo);
+}
+
+/**
  * Release the memory associated with an EOS_UserInfo structure. This must be called on data retrieved from EOS_UserInfo_CopyUserInfo.
  *
  * @param UserInfo - The user info structure to release
@@ -62,5 +131,24 @@ EOS_DECLARE_FUNC(void) EOS_UserInfo_Release(EOS_UserInfo* UserInfo)
     if (UserInfo != nullptr)
     {
         delete UserInfo;
+    }
+}
+
+/**
+ * Release the memory associated with external user info. This must be called on data retrieved from
+ * EOS_UserInfo_CopyExternalUserInfoByIndexOptions.
+ *
+ * @param ExternalUserInfo The external user info to release.
+ *
+ * @see EOS_UserInfo_ExternalUserInfo
+ * @see EOS_UserInfo_CopyExternalUserInfoByIndex
+ */
+EOS_DECLARE_FUNC(void) EOS_UserInfo_ExternalUserInfo_Release(EOS_UserInfo_ExternalUserInfo* ExternalUserInfo)
+{
+    LOG(Log::LogLevel::TRACE, "");
+
+    if (ExternalUserInfo != nullptr)
+    {
+        delete ExternalUserInfo;
     }
 }

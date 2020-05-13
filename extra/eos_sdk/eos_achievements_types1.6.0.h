@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "eos_common.h"
-
 #pragma pack(push, 8)
 
 EXTERN_C typedef struct EOS_AchievementsHandle* EOS_HAchievements;
@@ -66,42 +64,52 @@ EOS_STRUCT(EOS_Achievements_PlayerStatInfo001, (
 ));
 
 /** The most recent version of the EOS_Achievements_Definition struct. */
-#define EOS_ACHIEVEMENTS_DEFINITION_API_001 1
+#define EOS_ACHIEVEMENTS_DEFINITIONV2_API_002 2
 
 /**
  * Contains information about a single achievement definition with localized text.
  */
-EOS_STRUCT(EOS_Achievements_Definition001, (
+EOS_STRUCT(EOS_Achievements_DefinitionV2002, (
 	/** Version of the API. */
 	int32_t ApiVersion;
 	/** Achievement ID that can be used to uniquely identify the achievement. */
 	const char* AchievementId;
-	/** Text representing the Name to display in-game when achievement has been unlocked. */
-	const char* DisplayName;
-	/** Text representing the description to display in-game when achievement has been unlocked. */
-	const char* Description;
-	/** Text representing the name to display in-game when achievement is locked. */
+	/** Localized display name for the achievement when it has been unlocked. */
+	const char* UnlockedDisplayName;
+	/** Localized description for the achievement when it has been unlocked. */
+	const char* UnlockedDescription;
+	/** Localized display name for the achievement when it is locked or hidden. */
 	const char* LockedDisplayName;
-	/** Text representing the description of what needs to be done to trigger the unlock of this achievement. */
+	/** Localized description for the achievement when it is locked or hidden. */
 	const char* LockedDescription;
-	/** Text representing the description to display in-game when achievement is hidden. */
-	const char* HiddenDescription;
-	/** Text representing the description of what happens when the achievement is unlocked. */
-	const char* CompletionDescription;
-	/** Text representing the icon to display in-game when achievement is unlocked. */
-	const char* UnlockedIconId;
-	/** Text representing the icon to display in-game when achievement is locked. */
-	const char* LockedIconId;
+	/** Localized flavor text that can be used by the game in an arbitrary manner. This may be null if there is no data configured in the dev portal */
+	const char* FlavorText;
+	/** URL of an icon to display for the achievement when it is unlocked. This may be null if there is no data configured in the dev portal */
+	const char* UnlockedIconURL;
+	/** URL of an icon to display for the achievement when it is locked or hidden. This may be null if there is no data configured in the dev portal */
+	const char* LockedIconURL;
 	/** True if achievement is hidden, false otherwise. */
 	EOS_Bool bIsHidden;
 	/** The number of stat thresholds. */
-	int32_t StatThresholdsCount;
+	uint32_t StatThresholdsCount;
 	/** Array of stat thresholds that need to be satisfied to unlock the achievement. */
 	const EOS_Achievements_StatThresholds* StatThresholds;
 ));
 
 /** The most recent version of the EOS_Achievements_GetAchievementDefinitionCount API. */
 #define EOS_ACHIEVEMENTS_GETACHIEVEMENTDEFINITIONCOUNT_API_001 1
+
+/**
+ * Release the memory associated with EOS_Achievements_DefinitionV2. This must be called on data retrieved from
+ * EOS_Achievements_CopyAchievementDefinitionV2ByIndex or EOS_Achievements_CopyAchievementDefinitionV2ByAchievementId.
+ *
+ * @param AchievementDefinition - The achievement definition to release.
+ *
+ * @see EOS_Achievements_DefinitionV2
+ * @see EOS_Achievements_CopyAchievementDefinitionV2ByIndex
+ * @see EOS_Achievements_CopyAchievementDefinitionV2ByAchievementId
+ */
+EOS_DECLARE_FUNC(void) EOS_Achievements_DefinitionV2_Release(EOS_Achievements_DefinitionV2* AchievementDefinition);
 
 /**
  * Input parameters for the EOS_Achievements_GetAchievementDefinitionCount Function.
@@ -112,42 +120,30 @@ EOS_STRUCT(EOS_Achievements_GetAchievementDefinitionCountOptions001, (
 ));
 
 /** The most recent version of the EOS_Achievements_CopyAchievementDefinitionByIndexOptions struct. */
-#define EOS_ACHIEVEMENTS_COPYDEFINITIONBYINDEX_API_001 1
+#define EOS_ACHIEVEMENTS_COPYDEFINITIONV2BYINDEX_API_002 2
 
 /**
  * Input parameters for the EOS_Achievements_CopyAchievementDefinitionByIndex Function.
  */
-EOS_STRUCT(EOS_Achievements_CopyAchievementDefinitionByIndexOptions001, (
-	/** API Version of the EOS_Achievements_CopyAchievementDefinitionByIndexOptions function */
+EOS_STRUCT(EOS_Achievements_CopyAchievementDefinitionV2ByIndexOptions002, (
+	/** API Version of the EOS_Achievements_CopyAchievementDefinitionV2ByIndexOptions function */
 	int32_t ApiVersion;
 	/** Index of the achievement definition to retrieve from the cache */
 	uint32_t AchievementIndex;
 ));
 
-/** The most recent version of the EOS_Achievements_CopyAchievementDefinitionByAchievementIdOptions struct. */
-#define EOS_ACHIEVEMENTS_COPYDEFINITIONBYACHIEVEMENTID_API_001 1
+/** The most recent version of the EOS_Achievements_CopyAchievementDefinitionV2ByAchievementIdOptions struct. */
+#define EOS_ACHIEVEMENTS_COPYDEFINITIONV2BYACHIEVEMENTID_API_002 2
 
 /**
- * Input parameters for the EOS_Achievements_CopyAchievementDefinitionByAchievementId Function.
+ * Input parameters for the EOS_Achievements_CopyAchievementDefinitionV2ByAchievementId Function.
  */
-EOS_STRUCT(EOS_Achievements_CopyAchievementDefinitionByAchievementIdOptions001, (
-	/** API Version of the EOS_Achievements_CopyAchievementDefinitionByAchievementIdOptions function */
+EOS_STRUCT(EOS_Achievements_CopyAchievementDefinitionV2ByAchievementIdOptions002, (
+	/** API Version of the EOS_Achievements_CopyAchievementDefinitionV2ByAchievementIdOptions function */
 	int32_t ApiVersion;
 	/** Achievement ID to look for when copying definition from the cache */
 	const char* AchievementId;
 ));
-
-/**
- * Release the memory associated with achievement definitions. This must be called on data retrieved from
- * EOS_Achievements_CopyAchievementDefinitionByIndex or EOS_Achievements_CopyAchievementDefinitionByAchievementId.
- *
- * @param AchievementDefinition - The achievement definition to release.
- *
- * @see EOS_Achievements_Definition
- * @see EOS_Achievements_CopyAchievementDefinitionByIndex
- * @see EOS_Achievements_CopyAchievementDefinitionByAchievementId
- */
-EOS_DECLARE_FUNC(void) EOS_Achievements_Definition_Release(EOS_Achievements_Definition* AchievementDefinition);
 
 /**
  * Data containing the result information for a query definitions request.
@@ -320,68 +316,13 @@ EOS_STRUCT(EOS_Achievements_OnUnlockAchievementsCompleteCallbackInfo, (
  */
 EOS_DECLARE_CALLBACK(EOS_Achievements_OnUnlockAchievementsCompleteCallback, const EOS_Achievements_OnUnlockAchievementsCompleteCallbackInfo* Data);
 
-/** The most recent version of the EOS_Achievements_UnlockedAchievement struct. */
-#define EOS_ACHIEVEMENTS_UNLOCKEDACHIEVEMENT_API_001 1
+/** The most recent version of the EOS_Achievements_AddNotifyAchievementsUnlockedV2 API. */
+#define EOS_ACHIEVEMENTS_ADDNOTIFYACHIEVEMENTSUNLOCKEDV2_API_002 2
 
 /**
- * Contains information about a single unlocked achievement.
+ * Input parameters for the EOS_Achievements_AddNotifyAchievementsUnlocked Function.
  */
-EOS_STRUCT(EOS_Achievements_UnlockedAchievement001, (
-	/** Version of the API. */
-	int32_t ApiVersion;
-	/** Achievement ID that can be used to uniquely identify the unlocked achievement. */
-	const char* AchievementId;
-	/** If not EOS_ACHIEVEMENTS_ACHIEVEMENT_UNLOCKTIME_UNDEFINED then this is the POSIX timestamp that the achievement was unlocked. */
-	int64_t UnlockTime;
-));
-
-/** The most recent version of the EOS_Achievements_GetUnlockedAchievementCount API. */
-#define EOS_ACHIEVEMENTS_GETUNLOCKEDACHIEVEMENTCOUNT_API_001 1
-
-/**
- * Input parameters for the EOS_Achievements_GetUnlockedAchievementCount Function.
- */
-EOS_STRUCT(EOS_Achievements_GetUnlockedAchievementCountOptions001, (
-	/** Version of the API */
-	int32_t ApiVersion;
-	/** Account ID for user for which to retrieve the unlocked achievement count */
-	EOS_ProductUserId UserId;
-));
-
-/** The most recent version of the EOS_Achievements_CopyUnlockedAchievementByIndexOptions struct. */
-#define EOS_ACHIEVEMENTS_COPYUNLOCKEDACHIEVEMENTBYINDEX_API_001 1
-
-/**
- * Input parameters for the EOS_Achievements_CopyUnlockedAchievementByIndex Function.
- */
-EOS_STRUCT(EOS_Achievements_CopyUnlockedAchievementByIndexOptions001, (
-	/** API Version of the EOS_Achievements_CopyUnlockedAchievementByIndexOptions function */
-	int32_t ApiVersion;
-	/** The Account ID for the user who is copying the unlocked achievement. */
-	EOS_ProductUserId UserId;
-	/** Index of the unlocked achievement to retrieve from the cache */
-	uint32_t AchievementIndex;
-));
-
-/** The most recent version of the EOS_Achievements_CopyUnlockedAchievementByAchievementIdOptions struct. */
-#define EOS_ACHIEVEMENTS_COPYUNLOCKEDACHIEVEMENTBYACHIEVEMENTID_API_001 1
-
-/**
- * Input parameters for the EOS_Achievements_CopyUnlockedAchievementByAchievementId Function.
- */
-EOS_STRUCT(EOS_Achievements_CopyUnlockedAchievementByAchievementIdOptions001, (
-	/** API Version of the EOS_Achievements_CopyUnlockedAchievementByAchievementIdOptions function */
-	int32_t ApiVersion;
-	/** The Account ID for the user who is copying the unlocked achievement. */
-	EOS_ProductUserId UserId;
-	/** AchievementId of the unlocked achievement to retrieve from the cache */
-	const char* AchievementId;
-));
-
-
-/** The most recent version of the EOS_Achievements_AddNotifyAchievementsUnlocked API. */
-#define EOS_ACHIEVEMENTS_ADDNOTIFYACHIEVEMENTSUNLOCKED_API_001 1
-EOS_STRUCT(EOS_Achievements_AddNotifyAchievementsUnlockedOptions001, (
+EOS_STRUCT(EOS_Achievements_AddNotifyAchievementsUnlockedV2Options002, (
 	/** Version of the API */
 	int32_t ApiVersion;
 ));
@@ -389,35 +330,25 @@ EOS_STRUCT(EOS_Achievements_AddNotifyAchievementsUnlockedOptions001, (
 /**
  * Output parameters for the EOS_Achievements_OnAchievementsUnlockedCallback Function.
  */
-EOS_STRUCT(EOS_Achievements_OnAchievementsUnlockedCallbackInfo, (
-	enum { k_iCallback = k_iAchievementsCallbacks + 4 };
+EOS_STRUCT(EOS_Achievements_OnAchievementsUnlockedCallbackV2Info, (
+	enum { k_iCallback = k_iAchievementsCallbacks + 5 };
 	/** Context that was passed into EOS_Achievements_AddNotifyAchievementsUnlocked */
 	void* ClientData;
 	/** Account ID for user that received the unlocked achievements notification */
 	EOS_ProductUserId UserId;
-	/** The number of achievements. */
-	uint32_t AchievementsCount;
-	/** This member is not used and will always be set to NULL. */
-	const char** AchievementIds;
+	/** Achievement ID for the achievement that was unlocked. Can be passed to EOS_Achievements_CopyPlayerAchievementByAchievementId to get full information for the achievement. */
+	const char* AchievementId;
+	/** POSIX timestamp when the achievement was unlocked */
+	int64_t UnlockTime;
 ));
 
 /**
- * Function prototype definition for notifications that come from EOS_Achievements_AddNotifyAchievementsUnlocked
+ * Function prototype definition for notifications that come from EOS_Achievements_AddNotifyAchievementsUnlockedV2
  *
  * @param Data A EOS_Achievements_OnAchievementsUnlockedCallbackInfo containing the output information and result
  */
-EOS_DECLARE_CALLBACK(EOS_Achievements_OnAchievementsUnlockedCallback, const EOS_Achievements_OnAchievementsUnlockedCallbackInfo* Data);
-
-/**
- * Release the memory associated with an unlocked achievement. This must be called on data retrieved from
- * EOS_Achievements_CopyUnlockedAchievementByIndex or EOS_Achievements_CopyUnlockedAchievementByAchievementId.
- *
- * @param Achievement - The unlocked achievement data to release.
- *
- * @see EOS_Achievements_UnlockedAchievement
- * @see EOS_Achievements_CopyUnlockedAchievementByIndex
- * @see EOS_Achievements_CopyUnlockedAchievementByAchievementId
- */
-EOS_DECLARE_FUNC(void) EOS_Achievements_UnlockedAchievement_Release(EOS_Achievements_UnlockedAchievement* Achievement);
+EOS_DECLARE_CALLBACK(EOS_Achievements_OnAchievementsUnlockedCallbackV2, const EOS_Achievements_OnAchievementsUnlockedCallbackV2Info* Data);
 
 #pragma pack(pop)
+
+#include "eos_achievements_types_deprecated.inl"

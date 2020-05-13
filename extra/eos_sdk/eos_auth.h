@@ -33,7 +33,11 @@ EOS_DECLARE_FUNC(void) EOS_Auth_Logout(EOS_HAuth Handle, const EOS_Auth_LogoutOp
 
 /**
  * Deletes a previously received and locally stored persistent auth access token for the currently logged in user of the local device.
- * The access token is deleted in they keychain of the local user and a backend request is also made to revoke the token on the authentication server.
+ *
+ * On Desktop and Mobile platforms, the access token is deleted from the keychain of the local user and a backend request is made to revoke the token on the authentication server.
+ * On Console platforms, even though the caller is responsible for storing and deleting the access token on the local device,
+ * this function should still be called with the access token before its deletion to make the best effort in attempting to also revoke it on the authentication server.
+ * If the function would fail on Console, the caller should still proceed as normal to delete the access token locally as intended.
  *
  * @param Options structure containing operation input parameters
  * @param ClientData arbitrary data that is passed back to you in the CompletionDelegate

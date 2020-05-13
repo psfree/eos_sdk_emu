@@ -92,7 +92,19 @@ EOS_DECLARE_FUNC(void) EOS_Connect_DeleteDeviceId(EOS_HConnect Handle, const EOS
 EOS_DECLARE_FUNC(void) EOS_Connect_QueryExternalAccountMappings(EOS_HConnect Handle, const EOS_Connect_QueryExternalAccountMappingsOptions* Options, void* ClientData, const EOS_Connect_OnQueryExternalAccountMappingsCallback CompletionDelegate);
 
 /**
- * Retrieve the equivalent account id mappings from a list of product user ids.  The values will be cached and retrievable via EOS_Connect_GetProductUserIdMapping
+ * Retrieve the equivalent external account mappings from a list of product user ids.
+ * This will include data for each external account info found for the linked product ids.
+ *
+ * The values will be cached and retrievable via EOS_Connect_GetProductUserIdMapping, EOS_Connect_CopyProductUserExternalAccountByIndex,
+ * EOS_Connect_CopyProductUserExternalAccountByAccountType or EOS_Connect_CopyProductUserExternalAccountByAccountId.
+ *
+ * @see EOS_Connect_ExternalAccountInfo
+ * @see EOS_Connect_GetProductUserExternalAccountCount
+ * @see EOS_Connect_GetProductUserIdMapping
+ * @see EOS_Connect_CopyProductUserExternalAccountByIndex
+ * @see EOS_Connect_CopyProductUserExternalAccountByAccountType
+ * @see EOS_Connect_CopyProductUserExternalAccountByAccountId
+ * @see EOS_Connect_CopyProductUserInfo
  *
  * @param Options structure containing a list of product user ids to query for the external account representation
  * @param ClientData arbitrary data that is passed back to you in the CompletionDelegate
@@ -125,6 +137,81 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_Connect_GetExternalAccountMapping(EOS_HC
  *         EOS_LimitExceeded - The OutBuffer is not large enough to receive the external account id. InOutBufferLength contains the required minimum length to perform the operation successfully.
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_GetProductUserIdMapping(EOS_HConnect Handle, const EOS_Connect_GetProductUserIdMappingOptions* Options, char* OutBuffer, int32_t* InOutBufferLength);
+
+/**
+ * Fetch the number of linked external accounts for a product user id.
+ *
+ * @param Options The Options associated with retrieving the external account info count.
+ *
+ * @see EOS_Connect_CopyProductUserExternalAccountByIndex
+ *
+ * @return Number of external accounts or 0 otherwise
+ */
+EOS_DECLARE_FUNC(uint32_t) EOS_Connect_GetProductUserExternalAccountCount(EOS_HConnect Handle, const EOS_Connect_GetProductUserExternalAccountCountOptions * Options);
+
+/**
+ * Fetch information about an external account linked to a product user id.
+ * On a successful call, the caller must release the returned structure using the EOS_Connect_ExternalAccountInfo_Release API.
+ *
+ * @param Options Structure containing the target index.
+ * @param OutExternalAccountInfo The external account info data for the user with given index.
+ *
+ * @see EOS_Connect_ExternalAccountInfo_Release
+ *
+ * @return An EOS_EResult that indicates the external account data was copied into the OutExternalAccountInfo
+ *         EOS_Success if the information is available and passed out in OutExternalAccountInfo
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the account data doesn't exist or hasn't been queried yet
+ */
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserExternalAccountByIndex(EOS_HConnect Handle, const EOS_Connect_CopyProductUserExternalAccountByIndexOptions * Options, EOS_Connect_ExternalAccountInfo * *OutExternalAccountInfo);
+
+/**
+ * Fetch information about an external account of a specific type linked to a product user id.
+ * On a successful call, the caller must release the returned structure using the EOS_Connect_ExternalAccountInfo_Release API.
+ *
+ * @param Options Structure containing the target external account type.
+ * @param OutExternalAccountInfo The external account info data for the user with given external account type.
+ *
+ * @see EOS_Connect_ExternalAccountInfo_Release
+ *
+ * @return An EOS_EResult that indicates the external account data was copied into the OutExternalAccountInfo
+ *         EOS_Success if the information is available and passed out in OutExternalAccountInfo
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the account data doesn't exist or hasn't been queried yet
+ */
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserExternalAccountByAccountType(EOS_HConnect Handle, const EOS_Connect_CopyProductUserExternalAccountByAccountTypeOptions * Options, EOS_Connect_ExternalAccountInfo * *OutExternalAccountInfo);
+
+/**
+ * Fetch information about an external account linked to a product user id.
+ * On a successful call, the caller must release the returned structure using the EOS_Connect_ExternalAccountInfo_Release API.
+ *
+ * @param Options Structure containing the target external account id.
+ * @param OutExternalAccountInfo The external account info data for the user with given external account id.
+ *
+ * @see EOS_Connect_ExternalAccountInfo_Release
+ *
+ * @return An EOS_EResult that indicates the external account data was copied into the OutExternalAccountInfo
+ *         EOS_Success if the information is available and passed out in OutExternalAccountInfo
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the account data doesn't exist or hasn't been queried yet
+ */
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserExternalAccountByAccountId(EOS_HConnect Handle, const EOS_Connect_CopyProductUserExternalAccountByAccountIdOptions * Options, EOS_Connect_ExternalAccountInfo * *OutExternalAccountInfo);
+
+/**
+ * Fetch information about a Product User, using the external account that they most recently logged in with as the reference.
+ * On a successful call, the caller must release the returned structure using the EOS_Connect_ExternalAccountInfo_Release API.
+ *
+ * @param Options Structure containing the target external account id.
+ * @param OutExternalAccountInfo The external account info data last logged in for the user.
+ *
+ * @see EOS_Connect_ExternalAccountInfo_Release
+ *
+ * @return An EOS_EResult that indicates the external account data was copied into the OutExternalAccountInfo
+ *         EOS_Success if the information is available and passed out in OutExternalAccountInfo
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the account data doesn't exist or hasn't been queried yet
+ */
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserInfo(EOS_HConnect Handle, const EOS_Connect_CopyProductUserInfoOptions * Options, EOS_Connect_ExternalAccountInfo * *OutExternalAccountInfo);
 
 /**
  * Fetch the number of product users that are logged in.

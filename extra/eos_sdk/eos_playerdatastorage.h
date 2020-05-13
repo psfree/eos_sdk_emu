@@ -124,7 +124,7 @@ EOS_DECLARE_FUNC(EOS_HPlayerDataStorageFileTransferRequest) EOS_PlayerDataStorag
 /**
  * Get the current state of a file request.
  *
- * @return EOS_Success if complete and successful, EOS_EResult::EOS_Pending if the request is still in progress, or another state for failure.
+ * @return EOS_Success if complete and successful, EOS_PlayerDataStorage_RequestInProgress if the request is still in progress, or another state for failure.
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorageFileTransferRequest_GetFileRequestState(EOS_HPlayerDataStorageFileTransferRequest Handle);
 
@@ -136,7 +136,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorageFileTransferRequest_GetFileRe
  * @param OutStringLength How long the file name is (not including null terminator)
  * @return EOS_Success if the file name was successfully written to OutFilenameBuffer, a failure result otherwise
  *
- * @see EOS_PLAYERDATASTORAGE_FILENAME_MAX_LENGTH
+ * @see EOS_PLAYERDATASTORAGE_FILENAME_MAX_LENGTH_BYTES
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorageFileTransferRequest_GetFilename(EOS_HPlayerDataStorageFileTransferRequest Handle, uint32_t FilenameStringBufferSizeBytes, char* OutStringBuffer, int32_t* OutStringLength);
 

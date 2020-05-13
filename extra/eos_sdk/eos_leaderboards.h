@@ -37,9 +37,9 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Leaderboards_GetLeaderboardDefinitionCount(EOS_HL
  * Fetches a leaderboard definition from the cache using an index.
  *
  * @param Options Structure containing the index being accessed.
- * @param OutLeaderboardDefinition The leaderboard data for the given index, if it exists and is valid, use EOS_Leaderboards_LeaderboardDefinition_Release when finished.
+ * @param OutLeaderboardDefinition The leaderboard data for the given index, if it exists and is valid, use EOS_Leaderboards_Definition_Release when finished.
  *
- * @see EOS_Leaderboards_LeaderboardDefinition_Release
+ * @see EOS_Leaderboards_Definition_Release
  *
  * @return EOS_Success if the information is available and passed out in OutLeaderboardDefinition
  *         EOS_InvalidParameters if you pass a null pointer for the out parameter
@@ -51,9 +51,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardDefinitionByIndex(
  * Fetches a leaderboard definition from the cache using a leaderboard ID.
  *
  * @param Options Structure containing the leaderboard ID being accessed.
- * @param OutLeaderboardDefinition The leaderboard definition for the given leaderboard ID, if it exists and is valid, use EOS_Leaderboards_LeaderboardDefinition_Release when finished.
+ * @param OutLeaderboardDefinition The leaderboard definition for the given leaderboard ID, if it exists and is valid, use EOS_Leaderboards_Definition_Release when finished.
  *
- * @see EOS_Leaderboards_LeaderboardDefinition_Release
+ * @see EOS_Leaderboards_Definition_Release
  *
  * @return EOS_Success if the information is available and passed out in OutLeaderboardDefinition
  *         EOS_InvalidParameters if you pass a null pointer for the out parameter
