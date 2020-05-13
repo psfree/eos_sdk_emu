@@ -403,28 +403,27 @@ void Network::process_tcp_data(tcp_buffer_t& tcp_buffer)
         unsigned long count = 0;
         tcp_buffer.socket.ioctlsocket(Socket::cmd_name::fionread, &count);
         if (count >= sizeof(tcp_buffer_t::next_packet_size))
-        {
+        {// Wait until we have at least the size of the next message
             tcp_buffer.socket.recv(&tcp_buffer.next_packet_size, sizeof(tcp_buffer_t::next_packet_size));
             tcp_buffer.next_packet_size = Socket::net_swap(tcp_buffer.next_packet_size); // Re-order the size
             if(tcp_buffer.buffer.size() < tcp_buffer.next_packet_size)
                 tcp_buffer.buffer.resize(tcp_buffer.next_packet_size);
-
-            tcp_buffer.received_size = 0;
         }
     }
     if (tcp_buffer.next_packet_size > 0)
     {
         len = tcp_buffer.socket.recv(tcp_buffer.buffer.data() + tcp_buffer.received_size, tcp_buffer.next_packet_size - tcp_buffer.received_size);
         tcp_buffer.received_size += len;
-        assert((tcp_buffer.received_size <= tcp_buffer.next_packet_size && "recevied tcp buffer is bigger than what we're waiting for"));
+        assert((tcp_buffer.received_size <= tcp_buffer.next_packet_size && "received tcp buffer is bigger than what we're waiting for"));
         if (tcp_buffer.received_size == tcp_buffer.next_packet_size)
-        {
+        {// Message read, parse it now
             tcp_buffer.next_packet_size = 0;
             if (msg.ParseFromArray(tcp_buffer.buffer.data(), tcp_buffer.received_size))
             {
                 process_network_message(msg);
             }
             tcp_buffer.buffer.erase(tcp_buffer.buffer.begin(), tcp_buffer.buffer.begin() + tcp_buffer.received_size);
+            tcp_buffer.received_size = 0;
         }
     }
 }
