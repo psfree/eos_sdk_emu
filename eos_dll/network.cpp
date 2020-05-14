@@ -136,6 +136,7 @@ void Network::build_advertise_msg(Network_Message_pb& msg)
 
 std::pair<PortableAPI::tcp_socket*, std::vector<Network::peer_t>> Network::get_new_peer_ids(Network_Peer_pb const& peer_msg)
 {
+    std::lock_guard<std::mutex> lk(local_mutex);
     std::pair<tcp_socket*, std::vector<peer_t>> peer_ids_to_add;
     peer_ids_to_add.first = nullptr;
     peer_ids_to_add.second.reserve(peer_msg.peer_ids_size());
@@ -185,6 +186,8 @@ void Network::do_advertise()
 
 void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_t> const& peer_ids, bool advertise)
 {
+    std::lock_guard<std::mutex> lk(local_mutex);
+
     _poll.add_socket(*cli); // Add the client to the poll
     _poll.set_events(*cli, Socket::poll_flags::in);
     for (auto& peerid : peer_ids)
@@ -205,6 +208,23 @@ void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_
         std::string buff = std::move(msg.SerializeAsString());
 
         cli->send(buff.data(), buff.length());
+    }
+}
+
+void Network::remove_tcp_peer(tcp_buffer_t& tcp_buffer)
+{
+    std::lock_guard<std::mutex> lk(local_mutex);
+    //LOG(Log::LogLevel::DEBUG, "TCP Client %s gone: %s", client->socket.get_addr().to_string().c_str(), e.what());
+    _poll.remove_socket(tcp_buffer.socket);
+    // Remove the peer mappings
+    for (auto it = _tcp_peers.begin(); it != _tcp_peers.end();)
+    {
+        if (it->second == &(tcp_buffer.socket))
+        {
+            it = _tcp_peers.erase(it);
+        }
+        else
+            ++it;
     }
 }
 
@@ -428,38 +448,9 @@ void Network::process_tcp_data(tcp_buffer_t& tcp_buffer)
     }
 }
 
-Network::tcp_client_iterator Network::process_tcp_client(tcp_client_iterator client)
-{
-    try
-    {
-        process_tcp_data(*client);
-        ++client;
-    }
-    catch (std::exception &e)
-    {
-        //LOG(Log::LogLevel::DEBUG, "TCP Client %s gone: %s", client->socket.get_addr().to_string().c_str(), e.what());
-        _poll.remove_socket(client->socket);
-        // Remove the peer mappings
-        for (auto it = _tcp_peers.begin(); it != _tcp_peers.end();)
-        {
-            if (it->second == &(client->socket))
-            {
-                it = _tcp_peers.erase(it);
-            }
-            else
-                ++it;
-        }
-        client = _tcp_clients.erase(client);
-    }
-
-    return client;
-}
-
 void Network::network_thread()
 {
     int broadcast = 1;
-    std::vector<uint8_t> buffer(4096);
-    Network_Message_pb msg;
 
     start_network();
 
@@ -490,18 +481,37 @@ void Network::network_thread()
             process_tcp_listen(); // Process the waiting incoming peers
         
         if ((_poll.get_revents(_tcp_self_recv.socket) & Socket::poll_flags::in_hup) != Socket::poll_flags::none)
-            process_tcp_data(_tcp_self_recv); // Process our TCP message, we are not considered as a classic client as we have 2 sockets for the same peer id
+        {
+            try
+            {
+                process_tcp_data(_tcp_self_recv); // Process our TCP message, we are not considered as a classic client as we have 2 sockets for the same peer id
+            }
+            catch (...)
+            {
+                assert(0 == 1 && "The local socket should not fail");
+            }
+        }
         
         for (auto it = _tcp_clients.begin(); it != _tcp_clients.end();)
         {// Process the multiple tcp clients we have
             auto reevents = _poll.get_revents(it->socket);
             if ((reevents & Socket::poll_flags::hup) != Socket::poll_flags::none)
             {
+                remove_tcp_peer(*it);
                 it = _tcp_clients.erase(it);
             }
             else if ((reevents & Socket::poll_flags::in_hup) != Socket::poll_flags::none)
             {
-                it = process_tcp_client(it);
+                try
+                {
+                    process_tcp_data(*it);
+                    ++it;
+                }
+                catch (std::exception & e)
+                {
+                    remove_tcp_peer(*it);
+                    it = _tcp_clients.erase(it);
+                }
             }
             else
                 ++it;
@@ -593,8 +603,11 @@ bool Network::CBRunFrame(channel_t channel, Network_Message_pb::MessagesCase Mes
     {
         std::lock_guard<std::mutex> lk(local_mutex);
         auto& pending_channel_messages = _pending_network_msgs[channel];
-        if(!pending_channel_messages.empty())
+        if (!pending_channel_messages.empty())
+        {
             std::move(pending_channel_messages.begin(), pending_channel_messages.end(), std::back_inserter(channel_messages));
+            pending_channel_messages.clear();
+        }
     }
 
     return rerun;
@@ -605,6 +618,7 @@ bool Network::SendBroadcast(Network_Message_pb& msg)
     std::vector<ipv4_addr> broadcasts = std::move(get_broadcasts());
 
     assert((msg.source_id() != peer_t() && "Source id cannot be null"));
+    assert((msg.dest_id() == peer_t() && "Destination id should be null"));
 
     //if (msg.appid() == 0)
     //    msg.set_appid(Settings::Inst().gameid.AppID());

@@ -73,15 +73,15 @@ private:
     void do_advertise();
 
     void add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_t> const& peer_ids, bool advertise);
+    void remove_tcp_peer(tcp_buffer_t& tcp_buffer);
     void connect_to_peer(PortableAPI::ipv4_addr& addr, peer_t const& peer_id);
     void process_waiting_out_clients();
-    void process_waiting_in_client(PortableAPI::tcp_socket & new_client);
+    void process_waiting_in_client(PortableAPI::tcp_socket& new_client);
 
-    void process_network_message(Network_Message_pb &msg);
+    void process_network_message(Network_Message_pb& msg);
     void process_udp();
     void process_tcp_listen();
     void process_tcp_data(tcp_buffer_t& tcp_buffer);
-    tcp_client_iterator process_tcp_client(tcp_client_iterator client);
     void network_thread();
     task _network_task;
 
