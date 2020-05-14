@@ -35,9 +35,9 @@ namespace sdk
     class EOSSDK_Connect :
         public IRunFrame
     {
-        static constexpr std::chrono::milliseconds alive_heartbeat_rate = std::chrono::milliseconds(2000);
+        static constexpr std::chrono::milliseconds alive_heartbeat_rate = std::chrono::milliseconds(5000);
         static constexpr std::chrono::milliseconds alive_heartbeat      = std::chrono::milliseconds(10000);
-        static constexpr std::chrono::milliseconds user_infos_rate      = std::chrono::milliseconds(1000);
+        static constexpr std::chrono::milliseconds user_infos_rate      = std::chrono::milliseconds(3000);
 
     public:
         std::string _username; // This is used for leaderboards thing ?

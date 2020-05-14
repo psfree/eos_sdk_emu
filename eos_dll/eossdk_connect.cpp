@@ -36,6 +36,8 @@ EOSSDK_Connect::EOSSDK_Connect()
     _myself.second.infos.set_userid(Settings::Inst().userid->to_string());
     _myself.second.infos.set_displayname(Settings::Inst().username);
 
+    LOG(Log::LogLevel::DEBUG, "Userid: %s, Productid: %s", Settings::Inst().userid->to_string().c_str(), _myself.first->to_string().c_str());
+    GetNetwork().set_default_channel(_myself.first->to_string(), 0);
     GetNetwork().advertise_peer_id(_myself.first->to_string());
     GetNetwork().advertise(true);
 
