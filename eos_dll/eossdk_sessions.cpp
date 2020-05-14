@@ -551,6 +551,7 @@ void EOSSDK_Sessions::JoinSession(const EOS_Sessions_JoinSessionOptions* Options
 
             session_state_t& session = _sessions[Options->SessionName];
             session.state = session_state_t::state_e::joining;
+            session.infos = details->_infos;
             _sessions_join[Options->SessionName] = res;
 
             send_session_join_request(&session);
@@ -1257,6 +1258,7 @@ bool EOSSDK_Sessions::on_session_join_request(Network_Message_pb const& msg, Ses
     Session_Join_Response_pb* resp = new Session_Join_Response_pb;
 
     resp->set_sessionname(req.sessionname());
+    resp->set_user_id(msg.source_id());
 
     // If we know the user
     if (GetEOS_Connect().get_user_by_productid(GetProductUserId(msg.source_id())) != nullptr)
@@ -1292,16 +1294,23 @@ bool EOSSDK_Sessions::on_session_join_response(Network_Message_pb const& msg, Se
     LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
-    auto it = _sessions_join.find(resp.sessionname());
-    if (it != _sessions_join.end() && resp.user_id() == GetEOS_Connect().product_id()->to_string())
+    auto reason = static_cast<EOS_EResult>(resp.reason());
+    if (resp.user_id() == GetEOS_Connect().product_id()->to_string())
     {
-        EOS_Sessions_JoinSessionCallbackInfo& jsci = it->second->GetCallback<EOS_Sessions_JoinSessionCallbackInfo>();
-        jsci.ResultCode = static_cast<EOS_EResult>(resp.reason());
-        it->second->done = true;
+        auto it = _sessions_join.find(resp.sessionname());
+        if (it != _sessions_join.end())
+        {
+            EOS_Sessions_JoinSessionCallbackInfo& jsci = it->second->GetCallback<EOS_Sessions_JoinSessionCallbackInfo>();
+            jsci.ResultCode = static_cast<EOS_EResult>(resp.reason());
+            it->second->done = true;
+        }
     }
     else
     {// We are not joining, so someone else is joining
-        add_player_to_session(resp.user_id(), get_session_by_name(resp.sessionname()));
+        if (reason == EOS_EResult::EOS_Success)
+        {// If the user has been accepted in the session
+            add_player_to_session(resp.user_id(), get_session_by_name(resp.sessionname()));
+        }
     }
 
     return true;
