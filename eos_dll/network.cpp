@@ -158,8 +158,11 @@ std::pair<PortableAPI::tcp_socket*, std::vector<Network::peer_t>> Network::get_n
 
 void Network::do_advertise()
 {
-    if ((std::chrono::steady_clock::now() - _last_advertise) < std::chrono::milliseconds(2000))
+    auto now = std::chrono::steady_clock::now();
+    if ((now - _last_advertise) < std::chrono::milliseconds(2000))
         return;
+
+    _last_advertise = now;
 
     try
     {
@@ -341,6 +344,7 @@ void Network::process_network_message(Network_Message_pb &msg)
     }
     else
     {
+        assert(_default_channels.find(msg.dest_id()) != _default_channels.end());
         _pending_network_msgs[_default_channels[msg.dest_id()]].emplace_back(std::move(msg));
     }
 }
@@ -388,6 +392,7 @@ void Network::process_udp()
             }
             else
             {
+                LOG(Log::LogLevel::DEBUG, "Received UDP message from %s type %d", addr.to_string(true).c_str(), msg.messages_case());
                 process_network_message(msg);
             }
         }
@@ -414,7 +419,6 @@ void Network::process_tcp_listen()
 
 void Network::process_tcp_data(tcp_buffer_t& tcp_buffer)
 {
-    ipv4_addr addr;
     Network_Message_pb msg;
     size_t len;
 
@@ -440,6 +444,7 @@ void Network::process_tcp_data(tcp_buffer_t& tcp_buffer)
             tcp_buffer.next_packet_size = 0;
             if (msg.ParseFromArray(tcp_buffer.buffer.data(), tcp_buffer.received_size))
             {
+                //LOG(Log::LogLevel::DEBUG, "Received TCP message from %s type %d", tcp_buffer.socket.get_addr().to_string(true).c_str(), msg.messages_case());
                 process_network_message(msg);
             }
             tcp_buffer.buffer.erase(tcp_buffer.buffer.begin(), tcp_buffer.buffer.begin() + tcp_buffer.received_size);
@@ -696,7 +701,7 @@ bool Network::UDPSendTo(Network_Message_pb& msg)
     try
     {
         _udp_socket.sendto(it->second, buffer.c_str(), buffer.length());
-        ////LOG(Log::LogLevel::TRACE, "Sent message to %s", it->second.to_string().c_str());
+        LOG(Log::LogLevel::DEBUG, "Sent message to peer_id: %s, addr: %s", msg.dest_id().c_str(), it->second.to_string().c_str());
     }
     catch (socket_exception & e)
     {
