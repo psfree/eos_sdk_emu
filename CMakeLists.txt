@@ -180,7 +180,9 @@ set(CMAKE_PREFIX_PATH "${ZSTD_BUILD_FOLDER};${Protobuf_BUILD_FOLDER};${CMAKE_PRE
 include(FindProtobuf)
 find_package(Protobuf REQUIRED)
 
-find_package(ZSTD REQUIRED)
+if(USE_ZSTD_COMPRESS)
+  find_package(ZSTD REQUIRED)
+endif()
 
 #find_package(CURL REQUIRED)
 #
@@ -329,7 +331,7 @@ target_include_directories(
   ${GLEW_INCLUDE_DIRS}
   ${CURL_INCLUDE_DIRS}
   ${ImGui_INCLUDE}
-  ${ZSTD_INCLUDE}
+  ${ZSTD_INCLUDE_DIRS}
   
   extra/
   extra/utils/include
