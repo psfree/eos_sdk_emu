@@ -14,9 +14,12 @@ if(WIN32)
   if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
+
+    set(ZSTD_USE_STATIC_RUNTIME ON)
   else()
     add_compile_options(-std=c++11)
   endif()
+
 
 elseif(APPLE)
   if(X64)
