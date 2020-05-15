@@ -22,23 +22,53 @@
 
 using namespace PortableAPI;
 
+static uint64_t max_message_size = 0;
+static uint64_t max_compressed_message_size = 0;
 Network::Network():
     _udp_socket(),
     _tcp_self_recv({})
 {
     //LOG(Log::LogLevel::DEBUG, "");
+#if defined(NETWORK_COMPRESS)
+    _zstd_ccontext = ZSTD_createCCtx();
+    _zstd_dcontext = ZSTD_createDCtx();
+#endif
+
     _network_task.run(&Network::network_thread, this);
 }
 
 Network::~Network()
 {
-    //LOG(Log::LogLevel::DEBUG, "");
+    LOG(Log::LogLevel::DEBUG, "Shutting down Network, biggest message size was %llu, biggest compressed message size was %llu", max_message_size, max_compressed_message_size);
 
     _network_task.stop();
     _network_task.join();
 
+#if defined(NETWORK_COMPRESS)
+    ZSTD_freeCCtx(_zstd_ccontext);
+    ZSTD_freeDCtx(_zstd_dcontext);
+#endif
+
     //LOG(Log::LogLevel::DEBUG, "Network Thread Joined");
 }
+
+#if defined(NETWORK_COMPRESS)
+
+std::string Network::compress(void const* data, size_t len)
+{
+    std::string res(ZSTD_compressBound(len), '\0');
+    res.resize(ZSTD_compressCCtx(_zstd_ccontext, &res[0], res.length(), data, len, 20));
+    return res;
+}
+
+std::string Network::decompress(void const* data, size_t len)
+{
+    std::string res(3072, 0);
+    res.resize(ZSTD_decompressDCtx(_zstd_dcontext, &res[0], res.length(), data, len));
+    return res;
+}
+
+#endif
 
 void Network::start_network()
 {
@@ -64,7 +94,7 @@ void Network::start_network()
     }
     else
     {
-        //LOG(Log::LogLevel::INFO, "UDP socket started on port: %hu", port);
+        LOG(Log::LogLevel::INFO, "UDP socket started on port: %hu", port);
         std::uniform_int_distribution<int64_t> dis;
         std::mt19937_64& gen = get_gen();
         int x;
@@ -83,19 +113,19 @@ void Network::start_network()
             }
             catch (...)
             {
-                //LOG(Log::LogLevel::WARN, "Failed to start tcp socket on port %hu", x);
+                LOG(Log::LogLevel::WARN, "Failed to start tcp socket on port %hu", x);
             }
         }
         if (x == 100)
         {
-            //LOG(Log::LogLevel::ERR, "Failed to start tcp socket");
+            LOG(Log::LogLevel::ERR, "Failed to start tcp socket");
             _udp_socket.close();
             _network_task.stop();
         }
         else
         {
             _tcp_port = port;
-            //LOG(Log::LogLevel::INFO, "TCP socket started after %hu tries on port: %hu", x, port);
+            LOG(Log::LogLevel::INFO, "TCP socket started after %hu tries on port: %hu", x, port);
         }
     }
 }
@@ -237,22 +267,28 @@ void Network::connect_to_peer(ipv4_addr &addr, peer_t const& peer_id)
     {
         if (_waiting_out_tcp_clients.count(peer_id) == 0)
         {
-            //LOG(Log::LogLevel::DEBUG, "Connecting to %s : %llu", addr.to_string(true).c_str(), peer_id);
+            LOG(Log::LogLevel::DEBUG, "Connecting to %s : %s", addr.to_string(true).c_str(), peer_id.c_str());
             tcp_socket new_client;
             new_client.connect(addr);
 
             Network_Message_pb msg;
             build_advertise_msg(msg);
 
-            std::string buff = std::move(msg.SerializeAsString());
+            std::string buff(sizeof(uint16_t), 0);
+            std::string data(std::move(msg.SerializeAsString()));
+            buff += std::move(compress(data.data(), data.length()));
+            *reinterpret_cast<uint16_t*>(&buff[0]) = Socket::net_swap(uint16_t(buff.length() - sizeof(uint16_t)));
+            max_message_size = std::max<uint64_t>(max_message_size, data.length()) + 2;
+            max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buff.length());
+
             new_client.send(buff.c_str(), buff.length());
             new_client.set_nonblocking(true);
             _waiting_out_tcp_clients.emplace(peer_id, std::move(new_client));
         }
     }
-    catch (std::exception & e)
+    catch (std::exception &e)
     {
-        //LOG(Log::LogLevel::WARN, "Failed to TCP connect to %s: %s", addr.to_string().c_str(), e.what());
+        LOG(Log::LogLevel::WARN, "Failed to TCP connect to %s: %s", addr.to_string().c_str(), e.what());
     }
 }
 
@@ -272,6 +308,7 @@ void Network::process_waiting_out_clients()
             {
                 if (msg.ParseFromArray(buffer.data(), len) && msg.has_network_advertise() && msg.network_advertise().has_accept())
                 {
+                    LOG(Log::LogLevel::DEBUG, "Connected to %s : %s", it->second.get_addr().to_string(true).c_str(), it->first.c_str());
                     it->second.set_nonblocking(false);
                     tcp_buffer_t new_buff({});
                     new_buff.socket = std::move(it->second);
@@ -292,7 +329,7 @@ void Network::process_waiting_out_clients()
         catch (std::exception &e)
         {
             // Error while reading, connection closed ?
-            //LOG(Log::LogLevel::WARN, "Failed peer pair: %s", e.what());
+            LOG(Log::LogLevel::WARN, "Failed peer pair: %s", e.what());
             it = _waiting_out_tcp_clients.erase(it);
         }
     }
@@ -307,16 +344,24 @@ void Network::process_waiting_in_client(tcp_socket &new_client)
     {
         std::array<uint8_t, 2048> buff;
         Network_Message_pb msg;
-        size_t len = new_client.recv(buff.data(), buff.size());
-        if (len > 0 &&
-            msg.ParseFromArray(buff.data(), len) &&
+        uint16_t message_size;
+        size_t len = 0;
+        while(len != sizeof(uint16_t))
+            len += new_client.recv(&message_size, sizeof(uint16_t) - len);
+
+        len = 0;
+        message_size = Socket::net_swap(message_size);
+        while (len != message_size)
+            len += new_client.recv(buff.data() + len, message_size - len);
+
+        if (msg.ParseFromArray(buff.data(), len) &&
             msg.source_id() != peer_t() &&
             msg.has_network_advertise() &&
             msg.network_advertise().has_peer())
         {
             auto const& peer_msg = msg.network_advertise().peer();
             std::pair<tcp_socket*, std::vector<peer_t>> peer_ids_to_add = std::move(get_new_peer_ids(peer_msg));
-            
+
             if (!peer_ids_to_add.second.empty())
             {// We have peer ids to add
                 if (peer_ids_to_add.first == nullptr)
@@ -357,43 +402,60 @@ void Network::process_udp()
         std::array<uint8_t, 4096> buffer;
         Network_Message_pb msg;
         size_t len;
+        
         len = _udp_socket.recvfrom(addr, buffer.data(), buffer.size());
-        if (len > 0 && msg.ParseFromArray(buffer.data(), len) && msg.source_id() != peer_t())
+        if (len > 0)
         {
+            std::string buff = std::move(decompress(buffer.data(), len));
+            if (msg.ParseFromArray(buff.data(), buff.length()))
             {
-                std::lock_guard<std::mutex> lk(local_mutex);
-                _udp_addrs[msg.source_id()] = addr;
-            }
-            //LOG(Log::LogLevel::TRACE, "Received UDP message from: %s - %s", addr.to_string().c_str(), msg.source_id().c_str());
-            if (msg.has_network_advertise())
-            {
-                auto const& advertise = msg.network_advertise();
-                if (advertise.has_port())
+                if (msg.source_id() != peer_t())
                 {
-                    if (!_my_peer_ids.empty() &&
-                        _my_peer_ids.count(msg.source_id()) == 0 &&
-                        _tcp_peers.count(msg.source_id()) == 0)
                     {
-                        ipv4_addr peer_addr;
-                        peer_addr.set_ip(addr.get_ip());
-                        peer_addr.set_port(advertise.port().port());
-                        connect_to_peer(peer_addr, msg.source_id());
+                        std::lock_guard<std::mutex> lk(local_mutex);
+                        _udp_addrs[msg.source_id()] = addr;
                     }
-                }
-                else if (advertise.has_peer())
-                {
-                    std::pair<tcp_socket*, std::vector<peer_t>> peer_ids_to_add = std::move(get_new_peer_ids(advertise.peer()));
+                    //LOG(Log::LogLevel::TRACE, "Received UDP message from: %s - %s", addr.to_string().c_str(), msg.source_id().c_str());
+                    if (msg.has_network_advertise())
+                    {
+                        auto const& advertise = msg.network_advertise();
+                        if (advertise.has_port())
+                        {
+                            if (!_my_peer_ids.empty() &&
+                                _my_peer_ids.count(msg.source_id()) == 0 &&
+                                _tcp_peers.count(msg.source_id()) == 0)
+                            {
+                                ipv4_addr peer_addr;
+                                peer_addr.set_ip(addr.get_ip());
+                                peer_addr.set_port(advertise.port().port());
+                                connect_to_peer(peer_addr, msg.source_id());
+                            }
+                        }
+                        else if (advertise.has_peer())
+                        {
+                            std::pair<tcp_socket*, std::vector<peer_t>> peer_ids_to_add = std::move(get_new_peer_ids(advertise.peer()));
 
-                    if (peer_ids_to_add.first != nullptr && !peer_ids_to_add.second.empty())
-                    {// We have peer ids to add
-                        add_new_tcp_client(peer_ids_to_add.first, peer_ids_to_add.second, false);
+                            if (peer_ids_to_add.first != nullptr && !peer_ids_to_add.second.empty())
+                            {// We have peer ids to add
+                                add_new_tcp_client(peer_ids_to_add.first, peer_ids_to_add.second, false);
+                            }
+                        }
                     }
+                    else
+                    {
+                        //LOG(Log::LogLevel::DEBUG, "Received UDP message from %s type %d", addr.to_string(true).c_str(), msg.messages_case());
+                        process_network_message(msg);
+                    }
+                        
+                }
+                else
+                {
+                    LOG(Log::LogLevel::DEBUG, "Dropping UDP data: peer_id is null");
                 }
             }
             else
             {
-                LOG(Log::LogLevel::DEBUG, "Received UDP message from %s type %d", addr.to_string(true).c_str(), msg.messages_case());
-                process_network_message(msg);
+                LOG(Log::LogLevel::DEBUG, "Dropping UDP data: failed to pase protobuf");
             }
         }
     }
@@ -408,12 +470,11 @@ void Network::process_tcp_listen()
     try
     {
         tcp_socket new_client = std::move(_tcp_socket.accept());
-        //LOG(Log::LogLevel::DEBUG, "Accepted TCP client %s", new_client.get_addr().to_string().c_str());
         process_waiting_in_client(new_client);
     }
     catch (socket_exception & e)
     {
-        //LOG(Log::LogLevel::WARN, "Tcp socket exception: %s", e.what());
+        LOG(Log::LogLevel::WARN, "TCP Listen exception: %s", e.what());
     }
 }
 
@@ -442,7 +503,8 @@ void Network::process_tcp_data(tcp_buffer_t& tcp_buffer)
         if (tcp_buffer.received_size == tcp_buffer.next_packet_size)
         {// Message read, parse it now
             tcp_buffer.next_packet_size = 0;
-            if (msg.ParseFromArray(tcp_buffer.buffer.data(), tcp_buffer.received_size))
+            std::string buff = std::move(decompress(tcp_buffer.buffer.data(), tcp_buffer.received_size));
+            if (msg.ParseFromArray(buff.data(), buff.length()))
             {
                 //LOG(Log::LogLevel::DEBUG, "Received TCP message from %s type %d", tcp_buffer.socket.get_addr().to_string(true).c_str(), msg.messages_case());
                 process_network_message(msg);
@@ -628,7 +690,10 @@ bool Network::SendBroadcast(Network_Message_pb& msg)
     //if (msg.appid() == 0)
     //    msg.set_appid(Settings::Inst().gameid.AppID());
 
-    std::string buffer = std::move(msg.SerializeAsString());
+    std::string buffer(std::move(msg.SerializeAsString()));
+    max_message_size = std::max<uint64_t>(max_message_size, buffer.length());
+    buffer = std::move(compress(buffer.data(), buffer.length()));
+    max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buffer.length());
     for (auto& brd : broadcasts)
     {
         for (uint16_t port = network_port; port < max_network_port; ++port)
@@ -665,7 +730,10 @@ std::set<Network::peer_t> Network::UDPSendToAllPeers(Network_Message_pb& msg)
     {
         msg.set_dest_id(peer_infos.first);
 
-        std::string buffer = std::move(msg.SerializeAsString());
+        std::string buffer(std::move(msg.SerializeAsString()));
+        max_message_size = std::max<uint64_t>(max_message_size, buffer.length());
+        buffer = std::move(compress(buffer.data(), buffer.length()));
+        max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buffer.length());
         try
         {
             _udp_socket.sendto(peer_infos.second, buffer.c_str(), buffer.length());
@@ -697,7 +765,10 @@ bool Network::UDPSendTo(Network_Message_pb& msg)
     //if (msg.appid() == 0)
     //    msg.set_appid(Settings::Inst().gameid.AppID());
 
-    std::string buffer = std::move(msg.SerializeAsString());
+    std::string buffer(std::move(msg.SerializeAsString()));
+    max_message_size = std::max<uint64_t>(max_message_size, buffer.length());
+    buffer = std::move(compress(buffer.data(), buffer.length()));
+    max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buffer.length());
     try
     {
         _udp_socket.sendto(it->second, buffer.c_str(), buffer.length());
@@ -727,13 +798,16 @@ std::set<Network::peer_t> Network::TCPSendToAllPeers(Network_Message_pb& msg)
         msg.set_dest_id(client.first);
 
         std::string buffer(sizeof(uint16_t), 0);
-        buffer += std::move(msg.SerializeAsString());
+        std::string data(std::move(msg.SerializeAsString()));
+        buffer += std::move(compress(data.data(), data.length()));
         *reinterpret_cast<uint16_t*>(&buffer[0]) = Socket::net_swap(uint16_t(buffer.length() - sizeof(uint16_t)));
+        max_message_size = std::max<uint64_t>(max_message_size, data.length());
+        max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buffer.length());
         try
         {
             client.second->send(buffer.c_str(), buffer.length());
             peers_sent_to.insert(client.first);
-            ////LOG(Log::LogLevel::TRACE, "Sent message to %s", peer_infos.second.to_string().c_str());
+            //LOG(Log::LogLevel::TRACE, "Sent message to %s", peer_infos.second.to_string().c_str());
         }
         catch (socket_exception & e)
         {
@@ -761,8 +835,11 @@ bool Network::TCPSendTo(Network_Message_pb& msg)
     //    msg.set_appid(Settings::Inst().gameid.AppID());
 
     std::string buffer(sizeof(uint16_t), 0);
-    buffer += std::move(msg.SerializeAsString());
+    std::string data(std::move(msg.SerializeAsString()));
+    buffer += std::move(compress(data.data(), data.length()));
     *reinterpret_cast<uint16_t*>(&buffer[0]) = Socket::net_swap(uint16_t(buffer.length() - sizeof(uint16_t)));
+    max_message_size = std::max<uint64_t>(max_message_size, data.length());
+    max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buffer.length());
     try
     {
         it->second->send(buffer.c_str(), buffer.length());
