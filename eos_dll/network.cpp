@@ -354,7 +354,9 @@ void Network::process_waiting_in_client(tcp_socket &new_client)
         while (len != message_size)
             len += new_client.recv(buff.data() + len, message_size - len);
 
-        if (msg.ParseFromArray(buff.data(), len) &&
+        std::string decompressed_data(std::move(decompress(buff.data(), len)));
+
+        if (msg.ParseFromArray(decompressed_data.data(), decompressed_data.length()) &&
             msg.source_id() != peer_t() &&
             msg.has_network_advertise() &&
             msg.network_advertise().has_peer())
@@ -381,6 +383,14 @@ void Network::process_network_message(Network_Message_pb &msg)
 {
     std::lock_guard<std::mutex> lk(local_mutex);
     
+    std::chrono::system_clock::time_point msg_time(std::chrono::milliseconds(msg.timestamp()));
+    
+    if ((std::chrono::system_clock::now() - msg_time) > std::chrono::milliseconds(1500))
+    {
+        LOG(Log::LogLevel::WARN, "Message dropped because it was too old");
+        return;
+    }
+
     if (msg.dest_id() == peer_t())
     {// If we received a message without a destination, then its a broadcast.
         // Add the message to all listeners queue
@@ -690,6 +700,8 @@ bool Network::SendBroadcast(Network_Message_pb& msg)
     //if (msg.appid() == 0)
     //    msg.set_appid(Settings::Inst().gameid.AppID());
 
+    msg.set_timestamp(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+
     std::string buffer(std::move(msg.SerializeAsString()));
     max_message_size = std::max<uint64_t>(max_message_size, buffer.length());
     buffer = std::move(compress(buffer.data(), buffer.length()));
@@ -729,6 +741,7 @@ std::set<Network::peer_t> Network::UDPSendToAllPeers(Network_Message_pb& msg)
     std::for_each(_udp_addrs.begin(), _udp_addrs.end(), [&](std::pair<peer_t const, PortableAPI::ipv4_addr>& peer_infos)
     {
         msg.set_dest_id(peer_infos.first);
+        msg.set_timestamp(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 
         std::string buffer(std::move(msg.SerializeAsString()));
         max_message_size = std::max<uint64_t>(max_message_size, buffer.length());
@@ -765,6 +778,8 @@ bool Network::UDPSendTo(Network_Message_pb& msg)
     //if (msg.appid() == 0)
     //    msg.set_appid(Settings::Inst().gameid.AppID());
 
+    msg.set_timestamp(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+
     std::string buffer(std::move(msg.SerializeAsString()));
     max_message_size = std::max<uint64_t>(max_message_size, buffer.length());
     buffer = std::move(compress(buffer.data(), buffer.length()));
@@ -796,6 +811,7 @@ std::set<Network::peer_t> Network::TCPSendToAllPeers(Network_Message_pb& msg)
     std::for_each(_tcp_peers.begin(), _tcp_peers.end(), [&](std::pair<peer_t const, tcp_socket*>& client)
     {
         msg.set_dest_id(client.first);
+        msg.set_timestamp(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 
         std::string buffer(sizeof(uint16_t), 0);
         std::string data(std::move(msg.SerializeAsString()));
@@ -833,6 +849,8 @@ bool Network::TCPSendTo(Network_Message_pb& msg)
 
     //if (msg.appid() == 0)
     //    msg.set_appid(Settings::Inst().gameid.AppID());
+
+    msg.set_timestamp(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 
     std::string buffer(sizeof(uint16_t), 0);
     std::string data(std::move(msg.SerializeAsString()));
