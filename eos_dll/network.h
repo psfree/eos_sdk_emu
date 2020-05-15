@@ -19,7 +19,6 @@
 
 #pragma once
 
-#define NETWORK_COMPRESS
 #if defined(NETWORK_COMPRESS)
 #include <zstd.h>
 #endif
