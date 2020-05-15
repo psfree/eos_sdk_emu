@@ -24,13 +24,17 @@ protobuf:static:linux:
     - build_x64_curl=0
     - build_x86_glew=0
     - build_x64_glew=0
+    - build_x86_zstd=1
+    - build_x64_zstd=1
     - test -e extra/protobuf/linux32/bin/protoc && test -e extra/protobuf/linux32/lib/libprotobuf.a && build_x86_protobuf=0
     - test -e extra/protobuf/linux64/bin/protoc && test -e extra/protobuf/linux64/lib/libprotobuf.a && build_x64_protobuf=0
     - test -e extra/curl/linux32/lib/libcurl.a && build_x86_curl=0
     - test -e extra/curl/linux64/lib/libcurl.a && build_x64_curl=0
     - test -e extra/glew/linux32/lib/libGLEW.a && build_x86_glew=0
     - test -e extra/glew/linux64/lib/libGLEW.a && build_x64_glew=0
-    - test $build_x86_protobuf -eq 0 && test $build_x64_protobuf -eq 0 && test $build_x86_curl -eq 0 && test $build_x64_curl -eq 0 && test $build_x86_glew -eq 0 && test $build_x64_glew -eq 0 && exit 0
+    - test -e extra/zstd/linux32/lib/libzstd.a && build_x86_zstd=0
+    - test -e extra/zstd/linux64/lib/libzstd.a && build_x64_zstd=0
+    - test $build_x86_protobuf -eq 0 && test $build_x64_protobuf -eq 0 && test $build_x86_curl -eq 0 && test $build_x64_curl -eq 0 && test $build_x86_glew -eq 0 && test $build_x64_glew -eq 0 && test $build_x86_zstd -eq 0 && test $build_x64_zstd -eq 0 && exit 0
     - apt update
     - apt -y install gcc g++ gcc-multilib g++-multilib build-essential cmake python git wget curl libcurl4-openssl-dev zlib1g zlib1g-dev libssl-dev libssl-dev:i386 libgl1-mesa-dev libgl1-mesa-dev:i386
     - export JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
@@ -42,6 +46,8 @@ protobuf:static:linux:
     - test $build_x64_curl     -eq 1 && { ./build_curl.sh     "Release" "linux64" || exit 1; }
     - test $build_x86_glew     -eq 1 && { ./build_glew.sh     "Release" "linux32" || exit 1; }
     - test $build_x64_glew     -eq 1 && { ./build_glew.sh     "Release" "linux64" || exit 1; }
+    - test $build_x86_zstd     -eq 1 && { ./build_zstd.sh     "Release" "linux32" || exit 1; }
+    - test $build_x64_zstd     -eq 1 && { ./build_zstd.sh     "Release" "linux64" || exit 1; }
     - exit 0
 
   cache:
@@ -50,11 +56,13 @@ protobuf:static:linux:
       - extra/protobuf/
       - extra/curl/
       - extra/glew/
+      - extra/zstd/
   artifacts:
     paths:
       - extra/protobuf/
       - extra/curl/
       - extra/glew/
+      - extra/zstd/
     expire_in: 1 day
 
 protobuf:static:windows:
@@ -72,24 +80,29 @@ protobuf:static:windows:
     - build_x64_curl=0
     - build_x86_glew=0
     - build_x64_glew=0
+    - build_x86_zstd=1
+    - build_x64_zstd=1
     - test -e extra/protobuf/win32/bin/protoc.exe && test -e extra/protobuf/win32/lib/libprotobuf.lib && build_x86_protobuf=0
     - test -e extra/protobuf/win64/bin/protoc.exe && test -e extra/protobuf/win64/lib/libprotobuf.lib && build_x64_protobuf=0
     - test -e extra/curl/win32/lib/libcurl.lib && build_x86_curl=0
     - test -e extra/curl/win64/lib/libcurl.lib && build_x64_curl=0
     - test -e extra/glew/win32/lib/glew32.lib && build_x86_glew=0
     - test -e extra/glew/win64/lib/glew32.lib && build_x64_glew=0
-    - test $build_x86_protobuf -eq 0 && test $build_x64_protobuf -eq 0 && test $build_x86_curl -eq 0 && test $build_x64_curl -eq 0 && test $build_x86_glew -eq 0 && test $build_x64_glew -eq 0 && exit 0
+    - test -e extra/zstd/win32/lib/libzstd.a && build_x86_zstd=0
+    - test -e extra/zstd/win64/lib/libzstd.a && build_x64_zstd=0
+    - test $build_x86_protobuf -eq 0 && test $build_x64_protobuf -eq 0 && test $build_x86_curl -eq 0 && test $build_x64_curl -eq 0 && test $build_x86_glew -eq 0 && test $build_x64_glew -eq 0 && test $build_x86_zstd -eq 0 && test $build_x64_zstd -eq 0 && exit 0
     - export JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
     - test -z "${JOBS}" && JOBS=2
     - echo "Building protobuf with ${JOBS} jobs"
     - export HOST_ARCH="x86"
     - test $build_x86_protobuf -eq 1 && { ./build_protobuf.sh "Release" "win32" || exit 1; }
-    - test $build_x86_curl     -eq 1 && { ./build_curl.sh "Release" "win32" || exit 1; }
-    - test $build_x86_glew     -eq 1 && { ./build_glew.sh "Release" "win32" || exit 1; }
+    - test $build_x86_curl     -eq 1 && { ./build_curl.sh     "Release" "win32" || exit 1; }
+    - test $build_x86_glew     -eq 1 && { ./build_glew.sh     "Release" "win32" || exit 1; }
+    - test $build_x86_zstd     -eq 1 && { ./build_zstd.sh     "Release" "win32" || exit 1; }
     - export HOST_ARCH="x64"
     - test $build_x64_protobuf -eq 1 && { ./build_protobuf.sh "Release" "win64" || exit 1; }
-    - test $build_x64_curl     -eq 1 && { ./build_curl.sh "Release" "win64" || exit 1; }
-    - test $build_x64_glew     -eq 1 && { ./build_glew.sh "Release" "win64" || exit 1; }
+    - test $build_x64_curl     -eq 1 && { ./build_curl.sh     "Release" "win64" || exit 1; }
+    - test $build_x64_zstd     -eq 1 && { ./build_zstd.sh     "Release" "win64" || exit 1; }
     - exit 0
 
   cache:
@@ -98,11 +111,13 @@ protobuf:static:windows:
       - extra/protobuf/
       - extra/curl/
       - extra/glew/
+      - extra/zstd/
   artifacts:
     paths:
       - extra/protobuf/
       - extra/curl/
       - extra/glew/
+      - extra/zstd/
     expire_in: 1 day
 
 protobuf:static:macosx:
@@ -113,25 +128,33 @@ protobuf:static:macosx:
     # don't rebuild every time
     - build_x86_protobuf=1
     - build_x64_protobuf=1
+    - build_x86_zstd=1
+    - build_x64_zstd=1
     - test -e extra/protobuf/macosx32/bin/protoc && test -e extra/protobuf/macosx32/lib/libprotobuf.a && build_x86_protobuf=0
     - test -e extra/protobuf/macosx64/bin/protoc && test -e extra/protobuf/macosx64/lib/libprotobuf.a && build_x64_protobuf=0
-    - test $build_x86_protobuf -eq 0 && test $build_x64_protobuf -eq 0 && exit 0
+    - test -e extra/zstd/macosx32/lib/libzstd.a && build_x86_zstd=0
+    - test -e extra/zstd/macosx64/lib/libzstd.a && build_x64_zstd=0
+    - test $build_x86_protobuf -eq 0 && test $build_x64_protobuf -eq && test $build_x86_zstd -eq 0 && test $build_x86_zstd -eq 0 && exit 0
     - export JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
     - test -z "${JOBS}" && JOBS=2
     - echo "Building protobuf with ${JOBS} jobs"
     - export OSXCROSS_HOST="i386-apple-${OSXCROSS_TARGET}"
     - test $build_x86_protobuf -eq 1 && { ./build_protobuf.sh "Release" "macosx32" || exit 1; }
+    - test $build_x86_zstd -eq 1     && { ./build_zstd.sh     "Release" "macosx32" || exit 1; }
     - export OSXCROSS_HOST="x86_64-apple-${OSXCROSS_TARGET}"
     - test $build_x64_protobuf -eq 1 && { ./build_protobuf.sh "Release" "macosx64" || exit 1; }
+    - test $build_x64_zstd -eq 1     && { ./build_zstd.sh     "Release" "macosx64" || exit 1; }
     - exit 0
 
   cache:
     key: protobuf-static-macosx-cache
     paths:
       - extra/protobuf/
+      - extra/zstd/
   artifacts:
     paths:
       - extra/protobuf/
+      - extra/zstd/
     expire_in: 1 day
 
 build:linux:
@@ -146,14 +169,13 @@ build:linux:
     - apt -y install gcc g++ gcc-multilib g++-multilib build-essential cmake git wget curl libcurl4-openssl-dev libssl-dev libssl-dev:i386 zlib1g zlib1g-dev libudev-dev libudev-dev:i386 libgl1-mesa-dev libgl1-mesa-dev:i386
 
   script:
-    - pushd cmake && make install && popd
     - JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
     - test -z "${JOBS}" && JOBS=2
     - echo "Building epic api with ${JOBS} jobs"
     - ./build_epicapi.sh "Release" "linux32" || exit 1
-    - ./build_epicapi.sh "Debug" "linux32" || exit 1
+    - ./build_epicapi.sh "Debug"   "linux32" || exit 1
     - ./build_epicapi.sh "Release" "linux64" || exit 1
-    - ./build_epicapi.sh "Debug" "linux64" || exit 1
+    - ./build_epicapi.sh "Debug"   "linux64" || exit 1
     - exit 0
 
   artifacts:
@@ -200,10 +222,10 @@ build:macosx:
     - echo "Building steamapi with ${JOBS} jobs"
     - export OSXCROSS_HOST="i386-apple-${OSXCROSS_TARGET}"
     - ./build_epicapi.sh "Release" "macosx32" || exit 1
-    - ./build_epicapi.sh "Debug" "macosx32" || exit 1
+    - ./build_epicapi.sh "Debug"   "macosx32" || exit 1
     - export OSXCROSS_HOST="x86_64-apple-${OSXCROSS_TARGET}"
     - ./build_epicapi.sh "Release" "macosx64" || exit 1
-    - ./build_epicapi.sh "Debug" "macosx64" || exit 1
+    - ./build_epicapi.sh "Debug"   "macosx64" || exit 1
     - mkdir release/macosx
     - mkdir debug/macosx
     - x86_64-apple-${OSXCROSS_TARGET}-lipo -create release/macosx*/libEOSSDK-Mac-Shipping.dylib -output release/macosx/libEOSSDK-Mac-Shipping.dylib

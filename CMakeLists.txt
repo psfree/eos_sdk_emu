@@ -112,9 +112,13 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
 set(Protobuf_SRC_ROOT_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/protobuf-src/" CACHE PATH "Protobuf root folder")
 
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Debug or Release")
+
+option(USE_ZSTD_COMPRESS "Use zstd to compress network messages" ON)
 
 #option(GLEW_USE_STATIC_LIBS "Use GLEW static libs" ON)
 #set(Glew_INCLUDE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/glew/glew-src/include/" CACHE PATH "GLEW include folder")
@@ -125,6 +129,8 @@ set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Debug or Release")
 
 set(JSON_INCLUDE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/nlohmann/" CACHE PATH "Json include folder")
 
+set(ZSTD_INCLUDE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/zstd-src/lib/" CACHE PATH "zstd include folder")
+
 #set(GAMEPAD_INCLUDE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/gamepad/" CACHE PATH "Gamepad include folder")
 
 set(EOSSDK_INCLUDE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/eos_sdk/" CACHE PATH "Epic Online Service SDK include folder")
@@ -132,41 +138,49 @@ set(EOSSDK_INCLUDE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/eos_sdk/" CACHE PAT
 if(X64)
   if(APPLE)
     set(Protobuf_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/macosx64" CACHE PATH "Protobuf build directory")
+    set(ZSTD_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/macosx64" CACHE PATH "zstd build directory")
     #set(Glew_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/glew/macosx64" CACHE PATH "Glew build directory")
     #set(Curl_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/curl/macosx64" CACHE PATH "cURL build directory")
   elseif(UNIX)
     set(Protobuf_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/linux64" CACHE PATH "Protobuf build directory")
+	set(ZSTD_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/linux64" CACHE PATH "zstd build directory")
     #set(Glew_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/glew/linux64" CACHE PATH "Glew build directory")
     #set(Curl_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/curl/linux64" CACHE PATH "cURL build directory")
   elseif(WIN32)
     set(Protobuf_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/win64" CACHE PATH "Protobuf build directory")
+	set(ZSTD_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/win64" CACHE PATH "zstd build directory")
 	#set(Glew_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/glew/win64" CACHE PATH "Glew build directory")
 	#set(Curl_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/curl/win64" CACHE PATH "cURL build directory")
   endif()
 elseif(X86)
   if(APPLE)
     set(Protobuf_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/macosx32" CACHE PATH "Protobuf build directory")
+	set(ZSTD_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/macosx32" CACHE PATH "zstd build directory")
 	#set(Glew_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/glew/macosx32" CACHE PATH "Glew build directory")
 	#set(Curl_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/curl/macosx32" CACHE PATH "cURL build directory")
   elseif(UNIX)
     set(Protobuf_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/linux32" CACHE PATH "Protobuf build directory")
+	set(ZSTD_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/linux32" CACHE PATH "zstd build directory")
 	#set(Glew_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/glew/linux32" CACHE PATH "Glew build directory")
 	#set(Curl_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/curl/linux32" CACHE PATH "cURL build directory")
   elseif(WIN32)
     set(Protobuf_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/win32" CACHE PATH "Protobuf build directory")
+	set(ZSTD_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/win32" CACHE PATH "zstd build directory")
 	#set(Glew_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/glew/win32" CACHE PATH "Glew build directory")
 	#set(Curl_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/curl/win32" CACHE PATH "cURL build directory")
   endif()
 endif()
 
-#set(CMAKE_INCLUDE_PATH "${Glew_INCLUDE_FOLDER};${Curl_INCLUDE_FOLDER};${ImGui_INCLUDE_FOLDER};${JSON_INCLUDE_FOLDER};${EOSSDK_INCLUDE_FOLDER};${CMAKE_INCLUDE_PATH};${GAMEPAD_INCLUDE_FOLDER}" CACHE PATH "Where to find prebuilt includes")
-#set(CMAKE_PREFIX_PATH "${Protobuf_BUILD_FOLDER};${Glew_BUILD_FOLDER};${Curl_BUILD_FOLDER};${CMAKE_PREFIX_PATH}" CACHE PATH "Where to find prebuilt dependencies")
+#set(CMAKE_INCLUDE_PATH "${Glew_INCLUDE_FOLDER};${Curl_INCLUDE_FOLDER};${ImGui_INCLUDE_FOLDER};${JSON_INCLUDE_FOLDER};${EOSSDK_INCLUDE_FOLDER};${GAMEPAD_INCLUDE_FOLDER};${CMAKE_INCLUDE_PATH}" CACHE PATH "Where to find prebuilt includes")
+#set(CMAKE_PREFIX_PATH "${ZSTD_BUILD_FOLDER};${Protobuf_BUILD_FOLDER};${Glew_BUILD_FOLDER};${Curl_BUILD_FOLDER};${CMAKE_PREFIX_PATH}" CACHE PATH "Where to find prebuilt dependencies")
 
-set(CMAKE_INCLUDE_PATH "${JSON_INCLUDE_FOLDER};${EOSSDK_INCLUDE_FOLDER};${CMAKE_INCLUDE_PATH}" CACHE PATH "Where to find prebuilt includes")
-set(CMAKE_PREFIX_PATH "${Protobuf_BUILD_FOLDER};${CMAKE_PREFIX_PATH}" CACHE PATH "Where to find prebuilt dependencies")
+set(CMAKE_INCLUDE_PATH "${ZSTD_INCLUDE_FOLDER};${JSON_INCLUDE_FOLDER};${EOSSDK_INCLUDE_FOLDER};${CMAKE_INCLUDE_PATH}" CACHE PATH "Where to find prebuilt includes")
+set(CMAKE_PREFIX_PATH "${ZSTD_BUILD_FOLDER};${Protobuf_BUILD_FOLDER};${CMAKE_PREFIX_PATH}" CACHE PATH "Where to find prebuilt dependencies")
 
 include(FindProtobuf)
 find_package(Protobuf REQUIRED)
+
+find_package(ZSTD REQUIRED)
 
 #find_package(CURL REQUIRED)
 #
@@ -277,6 +291,7 @@ target_link_libraries(
   ${Protobuf_LITE_LIBRARIES}
   ${GLEW_LIBRARIES}
   ${CURL_LIBRARIES}
+  $<$<BOOL:${USE_ZSTD_COMPRESS}>:${ZSTD_LIBRARIES}>
 
   # For gamepad open-source xinput
   #$<$<BOOL:${WIN32}>:setupapi>
@@ -314,6 +329,7 @@ target_include_directories(
   ${GLEW_INCLUDE_DIRS}
   ${CURL_INCLUDE_DIRS}
   ${ImGui_INCLUDE}
+  ${ZSTD_INCLUDE}
   
   extra/
   extra/utils/include
@@ -343,6 +359,8 @@ target_compile_definitions(
   #GLEW_NO_GLU
   #CURL_STATICLIB
 
+  $<$<BOOL:${USE_ZSTD_COMPRESS}>:NETWORK_COMPRESS>
+  
   $<$<BOOL:${UNIX}>:GNUC>
 
   $<$<STREQUAL:${CMAKE_BUILD_TYPE},Debug>:_DEBUG>
