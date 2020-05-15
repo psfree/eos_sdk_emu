@@ -185,7 +185,7 @@ message P2P_Connect_Response_pb {
 
 // Send P2P data
 message P2P_Data_Message_pb {
-    string data = 1;
+    bytes data = 1;
     int32 channel = 2;
     string socket_name = 3;
     string user_id = 4;
