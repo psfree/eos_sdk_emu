@@ -131,4 +131,5 @@ public:
     #define TRACE_FUNC() Log __func_trace_log(Log::LogLevel::TRACE, __MY_FUNCTION__)
 #else //!_DEBUG
     #define LOG(...)
+    #define TRACE_FUNC()
 #endif
