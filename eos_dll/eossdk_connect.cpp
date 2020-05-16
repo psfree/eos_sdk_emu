@@ -700,8 +700,8 @@ bool EOSSDK_Connect::CBRunFrame()
         if ((now - user.second.last_hearbeat) > alive_heartbeat)
         {
             LOG(Log::LogLevel::DEBUG, "User disconnected (pid=%s, uid=%s)", user.first->to_string().c_str(), user.second.infos.userid().c_str());
-            user.second.connected = false;
-            GetEOS_Presence().set_user_status(GetEpicUserId(user.second.infos.userid()), EOS_Presence_EStatus::EOS_PS_Offline);
+            //user.second.connected = false;
+            //GetEOS_Presence().set_user_status(GetEpicUserId(user.second.infos.userid()), EOS_Presence_EStatus::EOS_PS_Offline);
             continue;
         }
 
