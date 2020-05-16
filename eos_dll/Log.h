@@ -20,6 +20,7 @@
 #pragma once
 
 #include <string>
+#include <thread>
 
 class Log
 {
@@ -38,14 +39,30 @@ public:
     };
 
 private:
+    static Log::LogLevel _log_level;
+
     Log()                      = delete;
     Log(Log const&)            = delete;
     Log(Log&&)                 = delete;
     Log& operator=(Log const&) = delete;
     Log& operator=(Log&&)      = delete;
-    ~Log()                     = delete;
+
+    LogLevel _lv;
+    std::string _func_name;
 
 public:
+    Log(LogLevel lv, const char* func_name):
+        _lv(lv),
+        _func_name(func_name)
+    {
+        Log::L(_lv, "(%lx)%s - %s ENTRY", *reinterpret_cast<uint32_t*>(&std::this_thread::get_id()), Log::loglevel_to_str(_lv), _func_name.c_str());
+    }
+
+    ~Log()
+    {
+        Log::L(_lv, "(%lx)%s - %s EXIT", *reinterpret_cast<uint32_t*>(&std::this_thread::get_id()), Log::loglevel_to_str(_lv), _func_name.c_str());
+    }
+
 #ifdef _DEBUG
     static void set_loglevel(LogLevel lv);
 #else
@@ -110,7 +127,8 @@ public:
 
     #endif
 
-    #define LOG(lv, fmt, ...) Log::L(lv, "(%lu)%s - %s: " fmt, std::this_thread::get_id(), Log::loglevel_to_str(lv), __MY_FUNCTION__, ##__VA_ARGS__)
+    #define LOG(lv, fmt, ...) Log::L(lv, "(%lx)%s - %s: " fmt, std::this_thread::get_id(), Log::loglevel_to_str(lv), __MY_FUNCTION__, ##__VA_ARGS__)
+    #define TRACE_FUNC() Log __func_trace_log(Log::LogLevel::TRACE, __MY_FUNCTION__)
 #else //!_DEBUG
     #define LOG(...)
 #endif

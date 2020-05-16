@@ -22,7 +22,7 @@
 #include "Log.h"
 #include "common_includes.h"
 
-static Log::LogLevel _lv = Log::LogLevel::OFF;
+decltype(Log::_log_level) Log::_log_level = Log::LogLevel::OFF;
 
 LOCAL_API bool _trace(const char* format, va_list argptr)
 {
@@ -50,9 +50,28 @@ LOCAL_API bool _trace(const char* format, va_list argptr)
         delete[]buffer;
     }
     else
+    {
+        static bool console = false;
+        if (!console)
+        {
+            AllocConsole();
+            freopen("CONOUT$", "w", stdout);
+        }
+        va_list argptr2;
+        va_copy(argptr2, argptr);
+        int len = vsnprintf(nullptr, 0, fmt.c_str(), argptr);
+
+        char* buffer = new char[++len];
+        vsnprintf(buffer, len, fmt.c_str(), argptr2);
+
+        va_end(argptr);
+        va_end(argptr2);
+
+        std::cout << buffer;
+    }
 #endif
     {
-        vfprintf(stderr, fmt.c_str(), argptr);
+        //vfprintf(stderr, fmt.c_str(), argptr);
     }
 
     return true;
@@ -61,12 +80,12 @@ LOCAL_API bool _trace(const char* format, va_list argptr)
 void Log::set_loglevel(LogLevel lv)
 {
     if (lv >= LogLevel::MIN && lv <= LogLevel::MAX)
-        _lv = lv;
+        _log_level = lv;
 }
 
 void Log::L(LogLevel lv, const char* format, ...)
 {
-    if (lv >= _lv && _lv < LogLevel::MAX)
+    if (lv >= _log_level && _log_level < LogLevel::MAX)
     {
         va_list argptr;
         va_start(argptr, format);
