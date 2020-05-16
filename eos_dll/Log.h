@@ -56,12 +56,14 @@ public:
         _lv(lv),
         _func_name(func_name)
     {
-        Log::L(_lv, "(%lx)%s - %s ENTRY", *reinterpret_cast<uint32_t*>(&std::this_thread::get_id()), Log::loglevel_to_str(_lv), _func_name.c_str());
+        auto tid = std::this_thread::get_id();
+        Log::L(_lv, "(%lx)%s - %s ENTRY", *reinterpret_cast<uint32_t*>(&tid), Log::loglevel_to_str(_lv), _func_name.c_str());
     }
 
     ~Log()
     {
-        Log::L(_lv, "(%lx)%s - %s EXIT", *reinterpret_cast<uint32_t*>(&std::this_thread::get_id()), Log::loglevel_to_str(_lv), _func_name.c_str());
+        auto tid = std::this_thread::get_id();
+        Log::L(_lv, "(%lx)%s - %s EXIT", *reinterpret_cast<uint32_t*>(&tid), Log::loglevel_to_str(_lv), _func_name.c_str());
     }
 
     static void set_loglevel(LogLevel lv);
