@@ -51,8 +51,8 @@ EOSSDK_P2P::~EOSSDK_P2P()
   */
 EOS_EResult EOSSDK_P2P::SendPacket(const EOS_P2P_SendPacketOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
-    LOCAL_LOCK();
+    TRACE_FUNC();
+    GLOBAL_LOCK();
     
     if (Options == nullptr || Options->RemoteUserId == nullptr || Options->Data == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -96,8 +96,8 @@ EOS_EResult EOSSDK_P2P::SendPacket(const EOS_P2P_SendPacketOptions* Options)
  */
 EOS_EResult EOSSDK_P2P::GetNextReceivedPacketSize(const EOS_P2P_GetNextReceivedPacketSizeOptions* Options, uint32_t* OutPacketSizeBytes)
 {
-    LOG(Log::LogLevel::TRACE, "");
-    LOCAL_LOCK();
+    TRACE_FUNC();
+    GLOBAL_LOCK();
 
     if (Options == nullptr || OutPacketSizeBytes == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -152,8 +152,8 @@ EOS_EResult EOSSDK_P2P::GetNextReceivedPacketSize(const EOS_P2P_GetNextReceivedP
  */
 EOS_EResult EOSSDK_P2P::ReceivePacket(const EOS_P2P_ReceivePacketOptions* Options, EOS_ProductUserId* OutPeerId, EOS_P2P_SocketId* OutSocketId, uint8_t* OutChannel, void* OutData, uint32_t* OutBytesWritten)
 {
-    //LOG(Log::LogLevel::TRACE, "");
-    LOCAL_LOCK();
+    //TRACE_FUNC();
+    GLOBAL_LOCK();
     
     if (Options == nullptr || OutPeerId == nullptr || OutSocketId == nullptr ||
         OutChannel == nullptr || OutData == nullptr || OutBytesWritten == nullptr)
@@ -206,8 +206,8 @@ EOS_EResult EOSSDK_P2P::ReceivePacket(const EOS_P2P_ReceivePacketOptions* Option
  */
 EOS_NotificationId EOSSDK_P2P::AddNotifyPeerConnectionRequest(const EOS_P2P_AddNotifyPeerConnectionRequestOptions* Options, void* ClientData, EOS_P2P_OnIncomingConnectionRequestCallback ConnectionRequestHandler)
 {
-    LOG(Log::LogLevel::TRACE, "");
-    LOCAL_LOCK();
+    TRACE_FUNC();
+    GLOBAL_LOCK();
 
     pFrameResult_t res(new FrameResult);
     
@@ -227,8 +227,8 @@ EOS_NotificationId EOSSDK_P2P::AddNotifyPeerConnectionRequest(const EOS_P2P_AddN
  */
 void EOSSDK_P2P::RemoveNotifyPeerConnectionRequest(EOS_NotificationId NotificationId)
 {
-    LOG(Log::LogLevel::TRACE, "");
-    LOCAL_LOCK();
+    TRACE_FUNC();
+    GLOBAL_LOCK();
 
     GetCB_Manager().remove_notification(this, NotificationId);
 }
@@ -243,8 +243,8 @@ void EOSSDK_P2P::RemoveNotifyPeerConnectionRequest(EOS_NotificationId Notificati
  */
 EOS_NotificationId EOSSDK_P2P::AddNotifyPeerConnectionClosed(const EOS_P2P_AddNotifyPeerConnectionClosedOptions* Options, void* ClientData, EOS_P2P_OnRemoteConnectionClosedCallback ConnectionClosedHandler)
 {
-    LOG(Log::LogLevel::TRACE, "");
-    LOCAL_LOCK();
+    TRACE_FUNC();
+    GLOBAL_LOCK();
     
     pFrameResult_t res(new FrameResult);
 
@@ -265,8 +265,8 @@ EOS_NotificationId EOSSDK_P2P::AddNotifyPeerConnectionClosed(const EOS_P2P_AddNo
  */
 void EOSSDK_P2P::RemoveNotifyPeerConnectionClosed(EOS_NotificationId NotificationId)
 {
-    LOG(Log::LogLevel::TRACE, "");
-    LOCAL_LOCK();
+    TRACE_FUNC();
+    GLOBAL_LOCK();
 
     GetCB_Manager().remove_notification(this, NotificationId);
 }
@@ -280,8 +280,8 @@ void EOSSDK_P2P::RemoveNotifyPeerConnectionClosed(EOS_NotificationId Notificatio
  */
 EOS_EResult EOSSDK_P2P::AcceptConnection(const EOS_P2P_AcceptConnectionOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
-    LOCAL_LOCK();
+    TRACE_FUNC();
+    GLOBAL_LOCK();
 
     if (Options == nullptr || Options->RemoteUserId == nullptr || Options->SocketId == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -308,9 +308,9 @@ EOS_EResult EOSSDK_P2P::AcceptConnection(const EOS_P2P_AcceptConnectionOptions* 
  */
 EOS_EResult EOSSDK_P2P::CloseConnection(const EOS_P2P_CloseConnectionOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     LOG(Log::LogLevel::DEBUG, "TODO");
-    LOCAL_LOCK();
+    GLOBAL_LOCK();
     
     if (Options == nullptr || Options->RemoteUserId == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -372,8 +372,8 @@ EOS_EResult EOSSDK_P2P::CloseConnection(const EOS_P2P_CloseConnectionOptions* Op
  */
 EOS_EResult EOSSDK_P2P::CloseConnections(const EOS_P2P_CloseConnectionsOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
-    LOCAL_LOCK();
+    TRACE_FUNC();
+    GLOBAL_LOCK();
 
     if (Options == nullptr || Options->SocketId == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -401,9 +401,9 @@ EOS_EResult EOSSDK_P2P::CloseConnections(const EOS_P2P_CloseConnectionsOptions* 
  */
 void EOSSDK_P2P::QueryNATType(const EOS_P2P_QueryNATTypeOptions* Options, void* ClientData, const EOS_P2P_OnQueryNATTypeCompleteCallback NATTypeQueriedHandler)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     LOG(Log::LogLevel::DEBUG, "TODO");
-    LOCAL_LOCK();
+    GLOBAL_LOCK();
 
     pFrameResult_t res(new FrameResult);
     EOS_P2P_OnQueryNATTypeCompleteInfo& pqntci = res->CreateCallback<EOS_P2P_OnQueryNATTypeCompleteInfo>((CallbackFunc)NATTypeQueriedHandler, std::chrono::milliseconds(15000));
@@ -434,9 +434,9 @@ void EOSSDK_P2P::QueryNATType(const EOS_P2P_QueryNATTypeOptions* Options, void* 
  */
 EOS_EResult EOSSDK_P2P::GetNATType(const EOS_P2P_GetNATTypeOptions* Options, EOS_ENATType* OutNATType)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     LOG(Log::LogLevel::DEBUG, "TODO");
-    LOCAL_LOCK();
+    GLOBAL_LOCK();
 
     *OutNATType = EOS_ENATType::EOS_NAT_Moderate;
     return EOS_EResult::EOS_Success;
@@ -447,7 +447,7 @@ EOS_EResult EOSSDK_P2P::GetNATType(const EOS_P2P_GetNATTypeOptions* Options, EOS
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_P2P::send_p2p_connection_request(Network::peer_t const& peerid, P2P_Connect_Request_pb* req) const
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
@@ -465,7 +465,7 @@ bool EOSSDK_P2P::send_p2p_connection_request(Network::peer_t const& peerid, P2P_
 
 bool EOSSDK_P2P::send_p2p_connection_response(Network::peer_t const& peerid, P2P_Connect_Response_pb* resp) const
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
@@ -483,7 +483,7 @@ bool EOSSDK_P2P::send_p2p_connection_response(Network::peer_t const& peerid, P2P
 
 bool EOSSDK_P2P::send_p2p_data(Network::peer_t const& peerid, P2P_Data_Message_pb* data) const
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
@@ -504,7 +504,7 @@ bool EOSSDK_P2P::send_p2p_data(Network::peer_t const& peerid, P2P_Data_Message_p
 
 bool EOSSDK_P2P::send_p2p_data_ack(Network::peer_t const& peerid, P2P_Data_Acknowledge_pb* ack) const
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
@@ -522,7 +522,7 @@ bool EOSSDK_P2P::send_p2p_data_ack(Network::peer_t const& peerid, P2P_Data_Ackno
 
 bool EOSSDK_P2P::send_p2p_connetion_close(Network::peer_t const& peerid, P2P_Connection_Close_pb* close) const
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
@@ -543,10 +543,11 @@ bool EOSSDK_P2P::send_p2p_connetion_close(Network::peer_t const& peerid, P2P_Con
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_P2P::on_p2p_connection_request(Network_Message_pb const& msg, P2P_Connect_Request_pb const& req)
 {
-    LOCAL_LOCK();
-    LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
+    TRACE_FUNC();
 
-    auto& conn = _p2p_connections[GetProductUserId(msg.source_id())];
+    auto peer_id = GetProductUserId(msg.source_id());
+    auto& conn = _p2p_connections[peer_id];
     if (conn.status != p2p_state_t::status_e::connected)
     {
         conn.status = p2p_state_t::status_e::requesting;
@@ -554,11 +555,17 @@ bool EOSSDK_P2P::on_p2p_connection_request(Network_Message_pb const& msg, P2P_Co
         for (auto& notif : notifs)
         {
             EOS_P2P_OnIncomingConnectionRequestInfo& oicrc = notif->GetCallback<EOS_P2P_OnIncomingConnectionRequestInfo>();
-            oicrc.RemoteUserId = GetProductUserId(msg.source_id());
+            oicrc.RemoteUserId = peer_id;
             strncpy(const_cast<char*>(oicrc.SocketId->SocketName), req.socket_name().c_str(), sizeof(EOS_P2P_SocketId::SocketName));
 
             notif->res.cb_func(notif->res.data);
         }
+    }
+    else
+    {
+        P2P_Connect_Response_pb* resp = new P2P_Connect_Response_pb;
+        resp->set_accepted(true);
+        send_p2p_connection_response(msg.source_id(), resp);
     }
 
     return true;
@@ -566,8 +573,8 @@ bool EOSSDK_P2P::on_p2p_connection_request(Network_Message_pb const& msg, P2P_Co
 
 bool EOSSDK_P2P::on_p2p_connection_response(Network_Message_pb const& msg, P2P_Connect_Response_pb const& resp)
 {
-    LOCAL_LOCK();
-    LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
+    TRACE_FUNC();
     
     if (resp.accepted())
     {
@@ -601,8 +608,8 @@ bool EOSSDK_P2P::on_p2p_connection_response(Network_Message_pb const& msg, P2P_C
 
 bool EOSSDK_P2P::on_p2p_data(Network_Message_pb const& msg, P2P_Data_Message_pb const& data)
 {
-    LOCAL_LOCK();
-    LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
+    TRACE_FUNC();
 
     P2P_Data_Acknowledge_pb* ack = new P2P_Data_Acknowledge_pb;
     ack->set_channel(data.channel());
@@ -614,16 +621,16 @@ bool EOSSDK_P2P::on_p2p_data(Network_Message_pb const& msg, P2P_Data_Message_pb 
 
 bool EOSSDK_P2P::on_p2p_data_ack(Network_Message_pb const& msg, P2P_Data_Acknowledge_pb const& ack)
 {
-    LOCAL_LOCK();
-    LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
+    TRACE_FUNC();
 
     return true;
 }
 
 bool EOSSDK_P2P::on_p2p_connection_close(Network_Message_pb const& msg, P2P_Connection_Close_pb const& close)
 {
-    LOCAL_LOCK();
-    LOG(Log::LogLevel::TRACE, "");
+    GLOBAL_LOCK();
+    TRACE_FUNC();
 
     std::vector<pFrameResult_t> notifs = std::move(GetCB_Manager().get_notifications(this, EOS_P2P_OnRemoteConnectionClosedInfo::k_iCallback));
     for (auto& notif : notifs)
@@ -645,14 +652,14 @@ bool EOSSDK_P2P::on_p2p_connection_close(Network_Message_pb const& msg, P2P_Conn
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_P2P::CBRunFrame()
 {
-    LOCAL_LOCK();
+    GLOBAL_LOCK();
 
     return true;
 }
 
 bool EOSSDK_P2P::RunNetwork(Network_Message_pb const& msg)
 {
-    if (GetEpicUserId(msg.source_id()) == Settings::Inst().userid)
+    if (GetProductUserId(msg.source_id()) == GetEOS_Connect().product_id())
         return true;
 
     P2P_Message_pb const& p2p = msg.p2p();
@@ -672,14 +679,14 @@ bool EOSSDK_P2P::RunNetwork(Network_Message_pb const& msg)
 
 bool EOSSDK_P2P::RunCallbacks(pFrameResult_t res)
 {
-    LOCAL_LOCK();
+    GLOBAL_LOCK();
 
     return res->done;
 }
 
 void EOSSDK_P2P::FreeCallback(pFrameResult_t res)
 {
-    LOCAL_LOCK();
+    GLOBAL_LOCK();
 
     switch (res->res.m_iCallback)
     {

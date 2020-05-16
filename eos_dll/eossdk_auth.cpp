@@ -38,7 +38,7 @@ EOSSDK_Auth::~EOSSDK_Auth()
 
 void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, const EOS_Auth_OnLoginCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     if (Options != nullptr)
@@ -69,7 +69,7 @@ void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, 
 
 void EOSSDK_Auth::Logout(const EOS_Auth_LogoutOptions* Options, void* ClientData, const EOS_Auth_OnLogoutCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     if (Options != nullptr)
@@ -90,19 +90,19 @@ void EOSSDK_Auth::Logout(const EOS_Auth_LogoutOptions* Options, void* ClientData
 
 void EOSSDK_Auth::DeletePersistentAuth(const EOS_Auth_DeletePersistentAuthOptions* Options, void* ClientData, const EOS_Auth_OnDeletePersistentAuthCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 }
 
 void EOSSDK_Auth::VerifyUserAuth(const EOS_Auth_VerifyUserAuthOptions* Options, void* ClientData, const EOS_Auth_OnVerifyUserAuthCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 }
 
 int32_t EOSSDK_Auth::GetLoggedInAccountsCount()
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return 1;
@@ -110,7 +110,7 @@ int32_t EOSSDK_Auth::GetLoggedInAccountsCount()
 
 EOS_EpicAccountId EOSSDK_Auth::GetLoggedInAccountByIndex(int32_t Index)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     if (Index == 0)
@@ -121,7 +121,7 @@ EOS_EpicAccountId EOSSDK_Auth::GetLoggedInAccountByIndex(int32_t Index)
 
 EOS_ELoginStatus EOSSDK_Auth::GetLoginStatus(EOS_EpicAccountId LocalUserId)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     if (LocalUserId == Settings::Inst().userid)
@@ -132,7 +132,7 @@ EOS_ELoginStatus EOSSDK_Auth::GetLoginStatus(EOS_EpicAccountId LocalUserId)
 
 EOS_EResult EOSSDK_Auth::CopyUserAuthToken(const EOS_Auth_CopyUserAuthTokenOptions* Options, EOS_EpicAccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     if (OutUserAuthToken == nullptr)
@@ -176,7 +176,7 @@ EOS_EResult EOSSDK_Auth::CopyUserAuthToken(const EOS_Auth_CopyUserAuthTokenOptio
 
 EOS_NotificationId EOSSDK_Auth::AddNotifyLoginStatusChanged(const EOS_Auth_AddNotifyLoginStatusChangedOptions* Options, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     pFrameResult_t res(new FrameResult);
@@ -192,7 +192,7 @@ EOS_NotificationId EOSSDK_Auth::AddNotifyLoginStatusChanged(const EOS_Auth_AddNo
 
 void EOSSDK_Auth::RemoveNotifyLoginStatusChanged(EOS_NotificationId InId)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     GetCB_Manager().remove_notification(this, InId);

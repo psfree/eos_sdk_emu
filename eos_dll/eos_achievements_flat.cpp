@@ -40,7 +40,7 @@ using namespace sdk;
   */
 EOS_DECLARE_FUNC(void) EOS_Achievements_QueryDefinitions(EOS_HAchievements Handle, const EOS_Achievements_QueryDefinitionsOptions* Options, void* ClientData, const EOS_Achievements_OnQueryDefinitionsCompleteCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
 }
@@ -56,7 +56,7 @@ EOS_DECLARE_FUNC(void) EOS_Achievements_QueryDefinitions(EOS_HAchievements Handl
  */
 EOS_DECLARE_FUNC(uint32_t) EOS_Achievements_GetAchievementDefinitionCount(EOS_HAchievements Handle, const EOS_Achievements_GetAchievementDefinitionCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return 0;
@@ -74,7 +74,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Achievements_GetAchievementDefinitionCount(EOS_HA
  */
 EOS_DECLARE_FUNC(void) EOS_Achievements_QueryPlayerAchievements(EOS_HAchievements Handle, const EOS_Achievements_QueryPlayerAchievementsOptions* Options, void* ClientData, const EOS_Achievements_OnQueryPlayerAchievementsCompleteCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
 }
@@ -90,7 +90,7 @@ EOS_DECLARE_FUNC(void) EOS_Achievements_QueryPlayerAchievements(EOS_HAchievement
  */
 EOS_DECLARE_FUNC(uint32_t) EOS_Achievements_GetPlayerAchievementCount(EOS_HAchievements Handle, const EOS_Achievements_GetPlayerAchievementCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return 0;
@@ -110,7 +110,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Achievements_GetPlayerAchievementCount(EOS_HAchie
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyPlayerAchievementByIndex(EOS_HAchievements Handle, const EOS_Achievements_CopyPlayerAchievementByIndexOptions* Options, EOS_Achievements_PlayerAchievement** OutAchievement)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -130,7 +130,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyPlayerAchievementByIndex(EOS_
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyPlayerAchievementByAchievementId(EOS_HAchievements Handle, const EOS_Achievements_CopyPlayerAchievementByAchievementIdOptions* Options, EOS_Achievements_PlayerAchievement** OutAchievement)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -148,7 +148,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyPlayerAchievementByAchievemen
  */
 EOS_DECLARE_FUNC(void) EOS_Achievements_UnlockAchievements(EOS_HAchievements Handle, const EOS_Achievements_UnlockAchievementsOptions* Options, void* ClientData, const EOS_Achievements_OnUnlockAchievementsCompleteCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
 }
@@ -164,7 +164,7 @@ EOS_DECLARE_FUNC(void) EOS_Achievements_UnlockAchievements(EOS_HAchievements Han
  */
 EOS_DECLARE_FUNC(uint32_t) EOS_Achievements_GetUnlockedAchievementCount(EOS_HAchievements Handle, const EOS_Achievements_GetUnlockedAchievementCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return 0;
@@ -184,7 +184,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Achievements_GetUnlockedAchievementCount(EOS_HAch
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyUnlockedAchievementByIndex(EOS_HAchievements Handle, const EOS_Achievements_CopyUnlockedAchievementByIndexOptions* Options, EOS_Achievements_UnlockedAchievement** OutAchievement)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -204,7 +204,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyUnlockedAchievementByIndex(EO
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyUnlockedAchievementByAchievementId(EOS_HAchievements Handle, const EOS_Achievements_CopyUnlockedAchievementByAchievementIdOptions* Options, EOS_Achievements_UnlockedAchievement** OutAchievement)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -224,7 +224,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyUnlockedAchievementByAchievem
  */
 EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Achievements_AddNotifyAchievementsUnlocked(EOS_HAchievements Handle, const EOS_Achievements_AddNotifyAchievementsUnlockedOptions* Options, void* ClientData, const EOS_Achievements_OnAchievementsUnlockedCallback NotificationFn)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return 0;
@@ -244,7 +244,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Achievements_AddNotifyAchievementsUnloc
  */
 EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Achievements_AddNotifyAchievementsUnlockedV2(EOS_HAchievements Handle, const EOS_Achievements_AddNotifyAchievementsUnlockedV2Options* Options, void* ClientData, const EOS_Achievements_OnAchievementsUnlockedCallbackV2 NotificationFn)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return EOS_INVALID_NOTIFICATIONID;
@@ -259,7 +259,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Achievements_AddNotifyAchievementsUnloc
  */
 EOS_DECLARE_FUNC(void) EOS_Achievements_RemoveNotifyAchievementsUnlocked(EOS_HAchievements Handle, EOS_NotificationId InId)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
 }
@@ -281,7 +281,7 @@ EOS_DECLARE_FUNC(void) EOS_Achievements_RemoveNotifyAchievementsUnlocked(EOS_HAc
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByIndex(EOS_HAchievements Handle, const EOS_Achievements_CopyAchievementDefinitionByIndexOptions* Options, EOS_Achievements_Definition** OutDefinition)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return EOS_EResult::EOS_NotFound;
@@ -304,7 +304,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByIndex(
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByAchievementId(EOS_HAchievements Handle, const EOS_Achievements_CopyAchievementDefinitionByAchievementIdOptions* Options, EOS_Achievements_Definition** OutDefinition)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
     return EOS_EResult::EOS_NotFound;
@@ -322,7 +322,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByAchiev
  */
 EOS_DECLARE_FUNC(void) EOS_Achievements_DefinitionV2_Release(EOS_Achievements_DefinitionV2* AchievementDefinition)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     
 }
@@ -341,7 +341,7 @@ EOS_DECLARE_FUNC(void) EOS_Achievements_DefinitionV2_Release(EOS_Achievements_De
  */
 EOS_DECLARE_FUNC(void) EOS_Achievements_Definition_Release(EOS_Achievements_Definition* AchievementDefinition)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
 }
 
@@ -357,7 +357,7 @@ EOS_DECLARE_FUNC(void) EOS_Achievements_Definition_Release(EOS_Achievements_Defi
  */
 EOS_DECLARE_FUNC(void) EOS_Achievements_PlayerAchievement_Release(EOS_Achievements_PlayerAchievement* Achievement)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
 }
 
@@ -373,6 +373,6 @@ EOS_DECLARE_FUNC(void) EOS_Achievements_PlayerAchievement_Release(EOS_Achievemen
  */
 EOS_DECLARE_FUNC(void) EOS_Achievements_UnlockedAchievement_Release(EOS_Achievements_UnlockedAchievement* Achievement)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
 }

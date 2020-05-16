@@ -257,7 +257,7 @@ bool EOSSDK_Sessions::is_player_registered(std::string const& player, session_st
   */
 EOS_EResult EOSSDK_Sessions::CreateSessionModification(const EOS_Sessions_CreateSessionModificationOptions* Options, EOS_HSessionModification* OutSessionModificationHandle)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     if (OutSessionModificationHandle == nullptr || Options == nullptr || Options->SessionName == nullptr || Options->BucketId == nullptr)
@@ -303,7 +303,7 @@ EOS_EResult EOSSDK_Sessions::CreateSessionModification(const EOS_Sessions_Create
  */
 EOS_EResult EOSSDK_Sessions::UpdateSessionModification(const EOS_Sessions_UpdateSessionModificationOptions* Options, EOS_HSessionModification* OutSessionModificationHandle)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     if (OutSessionModificationHandle == nullptr || Options == nullptr || Options->SessionName == nullptr)
@@ -348,7 +348,7 @@ EOS_EResult EOSSDK_Sessions::UpdateSessionModification(const EOS_Sessions_Update
  */
 void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Options, void* ClientData, const EOS_Sessions_OnUpdateSessionCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     pFrameResult_t res(new FrameResult);
@@ -456,7 +456,7 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
  */
 void EOSSDK_Sessions::DestroySession(const EOS_Sessions_DestroySessionOptions* Options, void* ClientData, const EOS_Sessions_OnDestroySessionCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     pFrameResult_t res(new FrameResult);
@@ -527,7 +527,7 @@ void EOSSDK_Sessions::DestroySession(const EOS_Sessions_DestroySessionOptions* O
  */
 void EOSSDK_Sessions::JoinSession(const EOS_Sessions_JoinSessionOptions* Options, void* ClientData, const EOS_Sessions_OnJoinSessionCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
     
     pFrameResult_t res(new FrameResult);
@@ -580,7 +580,7 @@ void EOSSDK_Sessions::JoinSession(const EOS_Sessions_JoinSessionOptions* Options
  */
 void EOSSDK_Sessions::StartSession(const EOS_Sessions_StartSessionOptions* Options, void* ClientData, const EOS_Sessions_OnStartSessionCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     pFrameResult_t res(new FrameResult);
@@ -628,7 +628,7 @@ void EOSSDK_Sessions::StartSession(const EOS_Sessions_StartSessionOptions* Optio
  */
 void EOSSDK_Sessions::EndSession(const EOS_Sessions_EndSessionOptions* Options, void* ClientData, const EOS_Sessions_OnEndSessionCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     pFrameResult_t res(new FrameResult);
@@ -673,7 +673,7 @@ void EOSSDK_Sessions::EndSession(const EOS_Sessions_EndSessionOptions* Options, 
  */
 void EOSSDK_Sessions::RegisterPlayers(const EOS_Sessions_RegisterPlayersOptions* Options, void* ClientData, const EOS_Sessions_OnRegisterPlayersCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     
 }
@@ -693,7 +693,7 @@ void EOSSDK_Sessions::RegisterPlayers(const EOS_Sessions_RegisterPlayersOptions*
  */
 void EOSSDK_Sessions::UnregisterPlayers(const EOS_Sessions_UnregisterPlayersOptions* Options, void* ClientData, const EOS_Sessions_OnUnregisterPlayersCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     
 }
@@ -711,7 +711,7 @@ void EOSSDK_Sessions::UnregisterPlayers(const EOS_Sessions_UnregisterPlayersOpti
  */
 void EOSSDK_Sessions::SendInvite(const EOS_Sessions_SendInviteOptions* Options, void* ClientData, const EOS_Sessions_OnSendInviteCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     
 }
@@ -729,7 +729,7 @@ void EOSSDK_Sessions::SendInvite(const EOS_Sessions_SendInviteOptions* Options, 
  */
 void EOSSDK_Sessions::RejectInvite(const EOS_Sessions_RejectInviteOptions* Options, void* ClientData, const EOS_Sessions_OnRejectInviteCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     
 }
@@ -744,7 +744,7 @@ void EOSSDK_Sessions::RejectInvite(const EOS_Sessions_RejectInviteOptions* Optio
  */
 void EOSSDK_Sessions::QueryInvites(const EOS_Sessions_QueryInvitesOptions* Options, void* ClientData, const EOS_Sessions_OnQueryInvitesCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     
 }
@@ -758,7 +758,7 @@ void EOSSDK_Sessions::QueryInvites(const EOS_Sessions_QueryInvitesOptions* Optio
  */
 uint32_t EOSSDK_Sessions::GetInviteCount(const EOS_Sessions_GetInviteCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     
     return 0;
@@ -778,7 +778,7 @@ uint32_t EOSSDK_Sessions::GetInviteCount(const EOS_Sessions_GetInviteCountOption
  */
 EOS_EResult EOSSDK_Sessions::GetInviteIdByIndex(const EOS_Sessions_GetInviteIdByIndexOptions* Options, char* OutBuffer, int32_t* InOutBufferLength)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     
     return EOS_EResult::EOS_Success;
@@ -799,7 +799,7 @@ EOS_EResult EOSSDK_Sessions::GetInviteIdByIndex(const EOS_Sessions_GetInviteIdBy
  */
 EOS_EResult EOSSDK_Sessions::CreateSessionSearch(const EOS_Sessions_CreateSessionSearchOptions* Options, EOS_HSessionSearch* OutSessionSearchHandle)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     if (Options == nullptr || Options->MaxSearchResults == 0)
         return EOS_EResult::EOS_InvalidParameters;
@@ -822,7 +822,7 @@ EOS_EResult EOSSDK_Sessions::CreateSessionSearch(const EOS_Sessions_CreateSessio
  */
 EOS_EResult EOSSDK_Sessions::CopyActiveSessionHandle(const EOS_Sessions_CopyActiveSessionHandleOptions* Options, EOS_HActiveSession* OutSessionHandle)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     
     return EOS_EResult::EOS_Success;
@@ -840,7 +840,7 @@ EOS_EResult EOSSDK_Sessions::CopyActiveSessionHandle(const EOS_Sessions_CopyActi
  */
 EOS_NotificationId EOSSDK_Sessions::AddNotifySessionInviteReceived(const EOS_Sessions_AddNotifySessionInviteReceivedOptions* Options, void* ClientData, const EOS_Sessions_OnSessionInviteReceivedCallback NotificationFn)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     
     return 0;
@@ -853,7 +853,7 @@ EOS_NotificationId EOSSDK_Sessions::AddNotifySessionInviteReceived(const EOS_Ses
  */
 void EOSSDK_Sessions::RemoveNotifySessionInviteReceived(EOS_NotificationId InId)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     
 }
@@ -870,7 +870,7 @@ void EOSSDK_Sessions::RemoveNotifySessionInviteReceived(EOS_NotificationId InId)
  */
 EOS_NotificationId EOSSDK_Sessions::AddNotifySessionInviteAccepted(const EOS_Sessions_AddNotifySessionInviteAcceptedOptions* Options, void* ClientData, const EOS_Sessions_OnSessionInviteAcceptedCallback NotificationFn)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     
     return 0;
@@ -883,7 +883,7 @@ EOS_NotificationId EOSSDK_Sessions::AddNotifySessionInviteAccepted(const EOS_Ses
  */
 void EOSSDK_Sessions::RemoveNotifySessionInviteAccepted(EOS_NotificationId InId)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     
 }
@@ -905,7 +905,7 @@ void EOSSDK_Sessions::RemoveNotifySessionInviteAccepted(EOS_NotificationId InId)
  */
 EOS_EResult EOSSDK_Sessions::CopySessionHandleByInviteId(const EOS_Sessions_CopySessionHandleByInviteIdOptions* Options, EOS_HSessionDetails* OutSessionHandle)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     
     return EOS_EResult::EOS_Success;
@@ -928,7 +928,7 @@ EOS_EResult EOSSDK_Sessions::CopySessionHandleByInviteId(const EOS_Sessions_Copy
  */
 EOS_EResult EOSSDK_Sessions::CopySessionHandleForPresence(const EOS_Sessions_CopySessionHandleForPresenceOptions* Options, EOS_HSessionDetails* OutSessionHandle)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     if (Options == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -962,7 +962,7 @@ EOS_EResult EOSSDK_Sessions::CopySessionHandleForPresence(const EOS_Sessions_Cop
  */
 EOS_EResult EOSSDK_Sessions::IsUserInSession(const EOS_Sessions_IsUserInSessionOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     if (Options == nullptr || Options->TargetUserId == nullptr || Options->SessionName == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -1015,7 +1015,7 @@ EOS_EResult EOSSDK_Sessions::IsUserInSession(const EOS_Sessions_IsUserInSessionO
 
 EOS_EResult EOSSDK_Sessions::DumpSessionState(const EOS_Sessions_DumpSessionStateOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
 
     return EOS_EResult::EOS_Success;
@@ -1026,7 +1026,7 @@ EOS_EResult EOSSDK_Sessions::DumpSessionState(const EOS_Sessions_DumpSessionStat
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Sessions::send_to_all_members(Network_Message_pb & msg, session_state_t* session)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     assert(session != nullptr);
@@ -1045,7 +1045,7 @@ bool EOSSDK_Sessions::send_to_all_members(Network_Message_pb & msg, session_stat
 
 bool EOSSDK_Sessions::send_session_info_request(Network::peer_t const& peerid, Session_Info_Request_pb* req)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     // TODO: Make it P2P, send it to all, will have to filter results
     std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
@@ -1064,7 +1064,7 @@ bool EOSSDK_Sessions::send_session_info_request(Network::peer_t const& peerid, S
 
 bool EOSSDK_Sessions::send_session_info(session_state_t* session)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     if (session == nullptr)
         return false;
 
@@ -1083,7 +1083,7 @@ bool EOSSDK_Sessions::send_session_info(session_state_t* session)
 
 bool EOSSDK_Sessions::send_session_destroy(session_state_t *session)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     if (session == nullptr)
         return false;
 
@@ -1102,7 +1102,7 @@ bool EOSSDK_Sessions::send_session_destroy(session_state_t *session)
 
 bool EOSSDK_Sessions::send_sessions_search_response(Network::peer_t const& peerid, Sessions_Search_response_pb* resp)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
@@ -1119,7 +1119,7 @@ bool EOSSDK_Sessions::send_sessions_search_response(Network::peer_t const& peeri
 
 bool EOSSDK_Sessions::send_session_join_request(session_state_t *session)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     if (session == nullptr)
         return false;
 
@@ -1138,7 +1138,7 @@ bool EOSSDK_Sessions::send_session_join_request(session_state_t *session)
 
 bool EOSSDK_Sessions::send_session_join_response(Network::peer_t const& peerid, Session_Join_Response_pb* resp)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
@@ -1158,7 +1158,7 @@ bool EOSSDK_Sessions::send_session_join_response(Network::peer_t const& peerid, 
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Sessions::on_session_info_request(Network_Message_pb const& msg, Session_Info_Request_pb const& req)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     auto session = get_session_by_id(req.sessionid());
@@ -1187,7 +1187,7 @@ bool EOSSDK_Sessions::on_session_info_request(Network_Message_pb const& msg, Ses
 
 bool EOSSDK_Sessions::on_session_info(Network_Message_pb const& msg, Session_Info_pb const& infos)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     session_state_t *session = get_session_by_name(infos.sessionname());
@@ -1199,7 +1199,7 @@ bool EOSSDK_Sessions::on_session_info(Network_Message_pb const& msg, Session_Inf
 
 bool EOSSDK_Sessions::on_session_destroy(Network_Message_pb const& msg, Session_Destroy_pb const& destr)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     session_state_t* session = get_session_by_name(destr.sessionname());
@@ -1211,7 +1211,7 @@ bool EOSSDK_Sessions::on_session_destroy(Network_Message_pb const& msg, Session_
 
 bool EOSSDK_Sessions::on_sessions_search(Network_Message_pb const& msg, Sessions_Search_pb const& search)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     Sessions_Search_response_pb* resp = new Sessions_Search_response_pb;
@@ -1247,7 +1247,7 @@ bool EOSSDK_Sessions::on_sessions_search(Network_Message_pb const& msg, Sessions
 
 bool EOSSDK_Sessions::on_session_join_request(Network_Message_pb const& msg, Session_Join_Request_pb const& req)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     if (!is_player_registered(GetEOS_Connect().product_id()->to_string(), get_session_by_name(req.sessionname())))
@@ -1291,7 +1291,7 @@ bool EOSSDK_Sessions::on_session_join_request(Network_Message_pb const& msg, Ses
 
 bool EOSSDK_Sessions::on_session_join_response(Network_Message_pb const& msg, Session_Join_Response_pb const& resp)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     auto reason = static_cast<EOS_EResult>(resp.reason());
@@ -1441,7 +1441,7 @@ void EOSSDK_Sessions::FreeCallback(pFrameResult_t res)
   */
 EOS_EResult EOSSDK_ActiveSession::CopyInfo(const EOS_ActiveSession_CopyInfoOptions* Options, EOS_ActiveSession_Info** OutActiveSessionInfo)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     
     return EOS_EResult::EOS_Success;
@@ -1456,7 +1456,7 @@ EOS_EResult EOSSDK_ActiveSession::CopyInfo(const EOS_ActiveSession_CopyInfoOptio
  */
 uint32_t EOSSDK_ActiveSession::GetRegisteredPlayerCount(const EOS_ActiveSession_GetRegisteredPlayerCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     
     return 0;
@@ -1474,7 +1474,7 @@ uint32_t EOSSDK_ActiveSession::GetRegisteredPlayerCount(const EOS_ActiveSession_
  */
 EOS_ProductUserId EOSSDK_ActiveSession::GetRegisteredPlayerByIndex(const EOS_ActiveSession_GetRegisteredPlayerByIndexOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     
     return nullptr;

@@ -101,7 +101,7 @@ void EOSSDK_Presence::set_user_status(EOS_EpicAccountId userid, EOS_Presence_ESt
  */
 void EOSSDK_Presence::QueryPresence( const EOS_Presence_QueryPresenceOptions* Options, void* ClientData, const EOS_Presence_OnQueryPresenceCompleteCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     pFrameResult_t res(new FrameResult);
@@ -152,7 +152,7 @@ void EOSSDK_Presence::QueryPresence( const EOS_Presence_QueryPresenceOptions* Op
  */
 EOS_Bool EOSSDK_Presence::HasPresence( const EOS_Presence_HasPresenceOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
     
     return (get_presence(Options->TargetUserId) == nullptr ? EOS_FALSE : EOS_TRUE);
@@ -170,7 +170,7 @@ EOS_Bool EOSSDK_Presence::HasPresence( const EOS_Presence_HasPresenceOptions* Op
 EOS_EResult EOSSDK_Presence::CopyPresence( const EOS_Presence_CopyPresenceOptions* Options, EOS_Presence_Info** OutPresence)
 {
      // TODO: Check the return codes from the real sdk
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     if (OutPresence == nullptr)
@@ -264,7 +264,7 @@ EOS_EResult EOSSDK_Presence::CopyPresence( const EOS_Presence_CopyPresenceOption
 EOS_EResult EOSSDK_Presence::CreatePresenceModification( const EOS_Presence_CreatePresenceModificationOptions* Options, EOS_HPresenceModification* OutPresenceModificationHandle)
 {
     // TODO: Check the return codes from the real sdk
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     if (*Options->LocalUserId == *Settings::Inst().userid)
@@ -291,7 +291,7 @@ EOS_EResult EOSSDK_Presence::CreatePresenceModification( const EOS_Presence_Crea
  */
 void EOSSDK_Presence::SetPresence( const EOS_Presence_SetPresenceOptions* Options, void* ClientData, const EOS_Presence_SetPresenceCompleteCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     pFrameResult_t res(new FrameResult);
@@ -334,7 +334,7 @@ void EOSSDK_Presence::SetPresence( const EOS_Presence_SetPresenceOptions* Option
  */
 EOS_NotificationId EOSSDK_Presence::AddNotifyOnPresenceChanged( const EOS_Presence_AddNotifyOnPresenceChangedOptions* Options, void* ClientData, const EOS_Presence_OnPresenceChangedCallback NotificationHandler)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     pFrameResult_t res(new FrameResult);
@@ -353,7 +353,7 @@ EOS_NotificationId EOSSDK_Presence::AddNotifyOnPresenceChanged( const EOS_Presen
  */
 void EOSSDK_Presence::RemoveNotifyOnPresenceChanged( EOS_NotificationId NotificationId)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
    
@@ -372,7 +372,7 @@ void EOSSDK_Presence::RemoveNotifyOnPresenceChanged( EOS_NotificationId Notifica
  */
 EOS_NotificationId EOSSDK_Presence::AddNotifyJoinGameAccepted( const EOS_Presence_AddNotifyJoinGameAcceptedOptions* Options, void* ClientData, const EOS_Presence_OnJoinGameAcceptedCallback NotificationFn)
 {
-     LOG(Log::LogLevel::TRACE, "");
+     TRACE_FUNC();
      GLOBAL_LOCK();
 
      pFrameResult_t res(new FrameResult);
@@ -392,7 +392,7 @@ EOS_NotificationId EOSSDK_Presence::AddNotifyJoinGameAccepted( const EOS_Presenc
  */
 void EOSSDK_Presence::RemoveNotifyJoinGameAccepted( EOS_NotificationId InId)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
     
     GetCB_Manager().remove_notification(this, InId);
@@ -421,7 +421,7 @@ void EOSSDK_Presence::RemoveNotifyJoinGameAccepted( EOS_NotificationId InId)
 EOS_EResult EOSSDK_Presence::GetJoinInfo( const EOS_Presence_GetJoinInfoOptions* Options, char* OutBuffer, int32_t* InOutBufferLength)
 {
     // TODO: Check the return codes from the real sdk
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     if (Options->TargetUserId == nullptr || InOutBufferLength == nullptr || OutBuffer == nullptr)
@@ -448,7 +448,7 @@ EOS_EResult EOSSDK_Presence::GetJoinInfo( const EOS_Presence_GetJoinInfoOptions*
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Presence::send_presence_info_request(Network::peer_t const& peerid, Presence_Info_Request_pb* req)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
@@ -465,7 +465,7 @@ bool EOSSDK_Presence::send_presence_info_request(Network::peer_t const& peerid, 
 
 bool EOSSDK_Presence::send_my_presence_info(Network::peer_t const& peerid)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
@@ -485,7 +485,7 @@ bool EOSSDK_Presence::send_my_presence_info(Network::peer_t const& peerid)
 
 bool EOSSDK_Presence::send_my_presence_info_to_all_peers()
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
@@ -506,7 +506,7 @@ bool EOSSDK_Presence::send_my_presence_info_to_all_peers()
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Presence::on_presence_request(Network_Message_pb const& msg, Presence_Info_Request_pb const& req)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return send_my_presence_info(msg.source_id());
@@ -518,7 +518,7 @@ bool EOSSDK_Presence::on_presence_infos(Network_Message_pb const& msg, Presence_
     if (msg.source_id() == user_id)
         return true;
 
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     if (!msg.source_id().empty())
@@ -681,7 +681,7 @@ void EOSSDK_Presence::FreeCallback(pFrameResult_t res)
 EOS_EResult EOSSDK_PresenceModification::SetStatus(const EOS_PresenceModification_SetStatusOptions* Options)
 {
     // TODO: Check the return codes from the real sdk
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     LOCAL_LOCK();
 
     if (Options != nullptr)
@@ -704,7 +704,7 @@ EOS_EResult EOSSDK_PresenceModification::SetStatus(const EOS_PresenceModificatio
  */
 EOS_EResult EOSSDK_PresenceModification::SetRawRichText(const EOS_PresenceModification_SetRawRichTextOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     LOCAL_LOCK();
 
     if (Options != nullptr && Options->RichText != nullptr)
@@ -729,7 +729,7 @@ EOS_EResult EOSSDK_PresenceModification::SetRawRichText(const EOS_PresenceModifi
  */
 EOS_EResult EOSSDK_PresenceModification::SetData(const EOS_PresenceModification_SetDataOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     LOCAL_LOCK();
 
     if (Options != nullptr)
@@ -767,7 +767,7 @@ EOS_EResult EOSSDK_PresenceModification::SetData(const EOS_PresenceModification_
  */
 EOS_EResult EOSSDK_PresenceModification::DeleteData(const EOS_PresenceModification_DeleteDataOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     LOCAL_LOCK();
 
     if (Options != nullptr)
@@ -802,7 +802,7 @@ EOS_EResult EOSSDK_PresenceModification::DeleteData(const EOS_PresenceModificati
  */
 EOS_EResult EOSSDK_PresenceModification::SetJoinInfo(const EOS_PresenceModification_SetJoinInfoOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     LOCAL_LOCK();
 
     if (Options != nullptr && Options->JoinInfo != nullptr)

@@ -32,32 +32,32 @@ Callback_Manager::~Callback_Manager()
 
 void Callback_Manager::register_frame(IRunFrame* obj)
 {
-    LOG(Log::LogLevel::TRACE, "");
-    LOCAL_LOCK();
+    TRACE_FUNC();
+    GLOBAL_LOCK();
 
     _frames_to_run.insert(obj);
 }
 
 void Callback_Manager::unregister_frame(IRunFrame* obj)
 {
-    LOG(Log::LogLevel::TRACE, "");
-    LOCAL_LOCK();
+    TRACE_FUNC();
+    GLOBAL_LOCK();
 
     _frames_to_run.erase(obj);
 }
 
 void Callback_Manager::register_callbacks(IRunFrame* obj)
 {
-    LOG(Log::LogLevel::TRACE, "");
-    LOCAL_LOCK();
+    TRACE_FUNC();
+    GLOBAL_LOCK();
 
     _callbacks_to_run[obj];
 }
 
 void Callback_Manager::unregister_callbacks(IRunFrame* obj)
 {
-    LOG(Log::LogLevel::TRACE, "");
-    LOCAL_LOCK();
+    TRACE_FUNC();
+    GLOBAL_LOCK();
 
     {
         auto it = _callbacks_to_run.find(obj);
@@ -68,8 +68,8 @@ void Callback_Manager::unregister_callbacks(IRunFrame* obj)
 
 bool Callback_Manager::add_callback(IRunFrame* obj, pFrameResult_t res)
 {
-    LOG(Log::LogLevel::TRACE, "");
-    LOCAL_LOCK();
+    //TRACE_FUNC();
+    GLOBAL_LOCK();
 
     _callbacks_to_run[obj].push_back(res);
     return true;
@@ -77,8 +77,8 @@ bool Callback_Manager::add_callback(IRunFrame* obj, pFrameResult_t res)
 
 EOS_NotificationId Callback_Manager::add_notification(IRunFrame* obj, pFrameResult_t res)
 {
-    LOG(Log::LogLevel::TRACE, "");
-    LOCAL_LOCK();
+    //TRACE_FUNC();
+    GLOBAL_LOCK();
 
     static EOS_NotificationId notif_id = 1;
 
@@ -89,8 +89,8 @@ EOS_NotificationId Callback_Manager::add_notification(IRunFrame* obj, pFrameResu
 
 bool Callback_Manager::remove_notification(IRunFrame* obj, EOS_NotificationId id)
 {
-    LOG(Log::LogLevel::TRACE, "");
-    LOCAL_LOCK();
+    //TRACE_FUNC();
+    GLOBAL_LOCK();
 
     auto& notifs = _notifications[obj];
     auto it = notifs.find(id);
@@ -141,8 +141,8 @@ std::vector<pFrameResult_t> Callback_Manager::get_notifications(IRunFrame* obj, 
 
 void Callback_Manager::run_frames()
 {
-    //LOG(Log::LogLevel::TRACE, "");
-    LOCAL_LOCK();
+    //TRACE_FUNC();
+    GLOBAL_LOCK();
 
     for (auto& frame : _frames_to_run)
         frame->CBRunFrame();
@@ -153,8 +153,8 @@ void Callback_Manager::run_frames()
 
 void Callback_Manager::run_callbacks()
 {
-    //LOG(Log::LogLevel::TRACE, "");
-    LOCAL_LOCK();
+    //TRACE_FUNC();
+    GLOBAL_LOCK();
 
     // For each callback registerer object
     for (auto& callback : _callbacks_to_run)

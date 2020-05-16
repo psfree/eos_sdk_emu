@@ -126,7 +126,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyExternalUserInfoByAccountId(EOS_H
  */
 EOS_DECLARE_FUNC(void) EOS_UserInfo_Release(EOS_UserInfo* UserInfo)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     if (UserInfo != nullptr)
     {
@@ -145,7 +145,7 @@ EOS_DECLARE_FUNC(void) EOS_UserInfo_Release(EOS_UserInfo* UserInfo)
  */
 EOS_DECLARE_FUNC(void) EOS_UserInfo_ExternalUserInfo_Release(EOS_UserInfo_ExternalUserInfo* ExternalUserInfo)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     if (ExternalUserInfo != nullptr)
     {

@@ -45,7 +45,7 @@ using namespace sdk;
   */
 EOS_DECLARE_FUNC(void) EOS_UI_ShowFriends(EOS_HUI Handle, const EOS_UI_ShowFriendsOptions* Options, void* ClientData, const EOS_UI_OnShowFriendsCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
 }
@@ -64,7 +64,7 @@ EOS_DECLARE_FUNC(void) EOS_UI_ShowFriends(EOS_HUI Handle, const EOS_UI_ShowFrien
  */
 EOS_DECLARE_FUNC(void) EOS_UI_HideFriends(EOS_HUI Handle, const EOS_UI_HideFriendsOptions* Options, void* ClientData, const EOS_UI_OnHideFriendsCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
 }
@@ -78,7 +78,7 @@ EOS_DECLARE_FUNC(void) EOS_UI_HideFriends(EOS_HUI Handle, const EOS_UI_HideFrien
  */
 EOS_DECLARE_FUNC(EOS_Bool) EOS_UI_GetFriendsVisible(EOS_HUI Handle, const EOS_UI_GetFriendsVisibleOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_FALSE;
@@ -99,7 +99,7 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_UI_GetFriendsVisible(EOS_HUI Handle, const EOS_UI
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_UI_SetToggleFriendsKey(EOS_HUI Handle, const EOS_UI_SetToggleFriendsKeyOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -115,7 +115,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_UI_SetToggleFriendsKey(EOS_HUI Handle, const E
  */
 EOS_DECLARE_FUNC(EOS_UI_EKeyCombination) EOS_UI_GetToggleFriendsKey(EOS_HUI Handle, const EOS_UI_GetToggleFriendsKeyOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_UI_EKeyCombination::EOS_UIK_ModifierShift | EOS_UI_EKeyCombination::EOS_UIK_Tab;
@@ -129,7 +129,7 @@ EOS_DECLARE_FUNC(EOS_UI_EKeyCombination) EOS_UI_GetToggleFriendsKey(EOS_HUI Hand
  */
 EOS_DECLARE_FUNC(EOS_Bool) EOS_UI_IsValidKeyCombination(EOS_HUI Handle, EOS_UI_EKeyCombination KeyCombination)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_TRUE;
@@ -146,7 +146,7 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_UI_IsValidKeyCombination(EOS_HUI Handle, EOS_UI_E
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_UI_SetDisplayPreference(EOS_HUI Handle, const EOS_UI_SetDisplayPreferenceOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -158,7 +158,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_UI_SetDisplayPreference(EOS_HUI Handle, const 
  */
 EOS_DECLARE_FUNC(EOS_UI_ENotificationLocation) EOS_UI_GetNotificationLocationPreference(EOS_HUI Handle)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_UI_ENotificationLocation::EOS_UNL_BottomLeft;
@@ -166,7 +166,7 @@ EOS_DECLARE_FUNC(EOS_UI_ENotificationLocation) EOS_UI_GetNotificationLocationPre
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_UI_AcknowledgeEventId(EOS_HUI Handle, const EOS_UI_AcknowledgeEventIdOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_EResult::EOS_Success;

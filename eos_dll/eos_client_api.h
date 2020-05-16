@@ -24,6 +24,34 @@
 class EOSSDK_Client
 {
 public:
+    /**
+     * Function prototype type definition for functions that allocate memory.
+     *
+     * Functions passed to EOS_Initialize to serve as memory allocators should return a pointer to the allocated memory.
+     *
+     * The returned pointer should have at least SizeInBytes available capacity and the memory address should be a multiple of Alignment.
+     * The SDK will always call the provided function with an Alignment that is a power of 2.
+     * Allocation failures should return a null pointer.
+     */
+    EOS_AllocateMemoryFunc _allocate_memory_func;
+
+    /**
+     * Function prototype type definition for functions that reallocate memory.
+     *
+     * Functions passed to EOS_Initialize to serve as memory reallocators should return a pointer to the reallocated memory.
+     * The returned pointer should have at least SizeInBytes available capacity and the memory address should be a multiple of alignment.
+     * The SDK will always call the provided function with an Alignment that is a power of 2.
+     * Reallocation failures should return a null pointer.
+     */
+    EOS_ReallocateMemoryFunc _reallocate_memory_func;
+
+    /**
+     * Function prototype type definition for functions that release memory.
+     *
+     * When the SDK is done with memory that has been allocated by a custom allocator passed to EOS_Initialize, it will call the corresponding memory release function.
+     */
+    EOS_ReleaseMemoryFunc _release_memory_func;
+
     bool _sdk_initialized;
 
     std::map<std::string, EOS_EpicAccountId> _epicuserids;

@@ -37,7 +37,7 @@ EOSSDK_Ecom::~EOSSDK_Ecom()
 
 void EOSSDK_Ecom::QueryOwnership(const EOS_Ecom_QueryOwnershipOptions* Options, void* ClientData, const EOS_Ecom_OnQueryOwnershipCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     pFrameResult_t res(new FrameResult);
@@ -100,42 +100,42 @@ void EOSSDK_Ecom::QueryOwnership(const EOS_Ecom_QueryOwnershipOptions* Options, 
 
 void EOSSDK_Ecom::QueryOwnershipToken(const EOS_Ecom_QueryOwnershipTokenOptions* Options, void* ClientData, const EOS_Ecom_OnQueryOwnershipTokenCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
 }
 
 void EOSSDK_Ecom::QueryEntitlements(const EOS_Ecom_QueryEntitlementsOptions* Options, void* ClientData, const EOS_Ecom_OnQueryEntitlementsCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
 }
 
 void EOSSDK_Ecom::QueryOffers(const EOS_Ecom_QueryOffersOptions* Options, void* ClientData, const EOS_Ecom_OnQueryOffersCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
 }
 
 void EOSSDK_Ecom::Checkout(const EOS_Ecom_CheckoutOptions* Options, void* ClientData, const EOS_Ecom_OnCheckoutCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
 }
 
 void EOSSDK_Ecom::RedeemEntitlements(const EOS_Ecom_RedeemEntitlementsOptions* Options, void* ClientData, const EOS_Ecom_OnRedeemEntitlementsCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
 }
 
 uint32_t EOSSDK_Ecom::GetEntitlementsCount(const EOS_Ecom_GetEntitlementsCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return 0;
@@ -143,7 +143,7 @@ uint32_t EOSSDK_Ecom::GetEntitlementsCount(const EOS_Ecom_GetEntitlementsCountOp
 
 uint32_t EOSSDK_Ecom::GetEntitlementsByNameCount(const EOS_Ecom_GetEntitlementsByNameCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return 0;
@@ -151,7 +151,7 @@ uint32_t EOSSDK_Ecom::GetEntitlementsByNameCount(const EOS_Ecom_GetEntitlementsB
 
 EOS_EResult EOSSDK_Ecom::CopyEntitlementByIndex(const EOS_Ecom_CopyEntitlementByIndexOptions* Options, EOS_Ecom_Entitlement** OutEntitlement)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return EOS_EResult::EOS_Success;
@@ -159,7 +159,7 @@ EOS_EResult EOSSDK_Ecom::CopyEntitlementByIndex(const EOS_Ecom_CopyEntitlementBy
 
 EOS_EResult EOSSDK_Ecom::CopyEntitlementByNameAndIndex(const EOS_Ecom_CopyEntitlementByNameAndIndexOptions* Options, EOS_Ecom_Entitlement** OutEntitlement)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return EOS_EResult::EOS_Success;
@@ -167,7 +167,7 @@ EOS_EResult EOSSDK_Ecom::CopyEntitlementByNameAndIndex(const EOS_Ecom_CopyEntitl
 
 EOS_EResult EOSSDK_Ecom::CopyEntitlementById(const EOS_Ecom_CopyEntitlementByIdOptions* Options, EOS_Ecom_Entitlement** OutEntitlement)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return EOS_EResult::EOS_Success;
@@ -175,7 +175,7 @@ EOS_EResult EOSSDK_Ecom::CopyEntitlementById(const EOS_Ecom_CopyEntitlementByIdO
 
 uint32_t EOSSDK_Ecom::GetOfferCount(const EOS_Ecom_GetOfferCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return 0;
@@ -183,7 +183,7 @@ uint32_t EOSSDK_Ecom::GetOfferCount(const EOS_Ecom_GetOfferCountOptions* Options
 
 EOS_EResult EOSSDK_Ecom::CopyOfferByIndex(const EOS_Ecom_CopyOfferByIndexOptions* Options, EOS_Ecom_CatalogOffer** OutOffer)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return EOS_EResult::EOS_Success;
@@ -191,7 +191,7 @@ EOS_EResult EOSSDK_Ecom::CopyOfferByIndex(const EOS_Ecom_CopyOfferByIndexOptions
 
 EOS_EResult EOSSDK_Ecom::CopyOfferById(const EOS_Ecom_CopyOfferByIdOptions* Options, EOS_Ecom_CatalogOffer** OutOffer)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return EOS_EResult::EOS_Success;
@@ -199,7 +199,7 @@ EOS_EResult EOSSDK_Ecom::CopyOfferById(const EOS_Ecom_CopyOfferByIdOptions* Opti
 
 uint32_t EOSSDK_Ecom::GetOfferItemCount(const EOS_Ecom_GetOfferItemCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return 0;
@@ -207,7 +207,7 @@ uint32_t EOSSDK_Ecom::GetOfferItemCount(const EOS_Ecom_GetOfferItemCountOptions*
 
 EOS_EResult EOSSDK_Ecom::CopyOfferItemByIndex(const EOS_Ecom_CopyOfferItemByIndexOptions* Options, EOS_Ecom_CatalogItem** OutItem)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return EOS_EResult::EOS_Success;
@@ -215,7 +215,7 @@ EOS_EResult EOSSDK_Ecom::CopyOfferItemByIndex(const EOS_Ecom_CopyOfferItemByInde
 
 EOS_EResult EOSSDK_Ecom::CopyItemById(const EOS_Ecom_CopyItemByIdOptions* Options, EOS_Ecom_CatalogItem** OutItem)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return EOS_EResult::EOS_Success;
@@ -223,7 +223,7 @@ EOS_EResult EOSSDK_Ecom::CopyItemById(const EOS_Ecom_CopyItemByIdOptions* Option
 
 uint32_t EOSSDK_Ecom::GetOfferImageInfoCount(const EOS_Ecom_GetOfferImageInfoCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return 0;
@@ -231,7 +231,7 @@ uint32_t EOSSDK_Ecom::GetOfferImageInfoCount(const EOS_Ecom_GetOfferImageInfoCou
 
 EOS_EResult EOSSDK_Ecom::CopyOfferImageInfoByIndex(const EOS_Ecom_CopyOfferImageInfoByIndexOptions* Options, EOS_Ecom_KeyImageInfo** OutImageInfo)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return EOS_EResult::EOS_Success;
@@ -239,7 +239,7 @@ EOS_EResult EOSSDK_Ecom::CopyOfferImageInfoByIndex(const EOS_Ecom_CopyOfferImage
 
 uint32_t EOSSDK_Ecom::GetItemImageInfoCount(const EOS_Ecom_GetItemImageInfoCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return 0;
@@ -247,7 +247,7 @@ uint32_t EOSSDK_Ecom::GetItemImageInfoCount(const EOS_Ecom_GetItemImageInfoCount
 
 EOS_EResult EOSSDK_Ecom::CopyItemImageInfoByIndex(const EOS_Ecom_CopyItemImageInfoByIndexOptions* Options, EOS_Ecom_KeyImageInfo** OutImageInfo)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return EOS_EResult::EOS_Success;
@@ -255,7 +255,7 @@ EOS_EResult EOSSDK_Ecom::CopyItemImageInfoByIndex(const EOS_Ecom_CopyItemImageIn
 
 uint32_t EOSSDK_Ecom::GetItemReleaseCount(const EOS_Ecom_GetItemReleaseCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return 0;
@@ -263,7 +263,7 @@ uint32_t EOSSDK_Ecom::GetItemReleaseCount(const EOS_Ecom_GetItemReleaseCountOpti
 
 EOS_EResult EOSSDK_Ecom::CopyItemReleaseByIndex(const EOS_Ecom_CopyItemReleaseByIndexOptions* Options, EOS_Ecom_CatalogRelease** OutRelease)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return EOS_EResult::EOS_Success;
@@ -271,7 +271,7 @@ EOS_EResult EOSSDK_Ecom::CopyItemReleaseByIndex(const EOS_Ecom_CopyItemReleaseBy
 
 uint32_t EOSSDK_Ecom::GetTransactionCount(const EOS_Ecom_GetTransactionCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
     
     return 0;
@@ -279,7 +279,7 @@ uint32_t EOSSDK_Ecom::GetTransactionCount(const EOS_Ecom_GetTransactionCountOpti
 
 EOS_EResult EOSSDK_Ecom::CopyTransactionByIndex(const EOS_Ecom_CopyTransactionByIndexOptions* Options, EOS_Ecom_HTransaction* OutTransaction)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return EOS_EResult::EOS_Success;
@@ -287,7 +287,7 @@ EOS_EResult EOSSDK_Ecom::CopyTransactionByIndex(const EOS_Ecom_CopyTransactionBy
 
 EOS_EResult EOSSDK_Ecom::CopyTransactionById(const EOS_Ecom_CopyTransactionByIdOptions* Options, EOS_Ecom_HTransaction* OutTransaction)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return EOS_EResult::EOS_Success;
@@ -295,7 +295,7 @@ EOS_EResult EOSSDK_Ecom::CopyTransactionById(const EOS_Ecom_CopyTransactionByIdO
 
 EOS_EResult EOSSDK_Ecom::Transaction_GetTransactionId(EOS_Ecom_HTransaction Handle, char* OutBuffer, int32_t* InOutBufferLength)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return EOS_EResult::EOS_Success;
@@ -303,7 +303,7 @@ EOS_EResult EOSSDK_Ecom::Transaction_GetTransactionId(EOS_Ecom_HTransaction Hand
 
 uint32_t EOSSDK_Ecom::Transaction_GetEntitlementsCount(EOS_Ecom_HTransaction Handle, const EOS_Ecom_Transaction_GetEntitlementsCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return 0;
@@ -311,7 +311,7 @@ uint32_t EOSSDK_Ecom::Transaction_GetEntitlementsCount(EOS_Ecom_HTransaction Han
 
 EOS_EResult EOSSDK_Ecom::Transaction_CopyEntitlementByIndex(EOS_Ecom_HTransaction Handle, const EOS_Ecom_Transaction_CopyEntitlementByIndexOptions* Options, EOS_Ecom_Entitlement** OutEntitlement)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return EOS_EResult::EOS_Success;

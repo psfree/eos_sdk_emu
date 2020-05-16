@@ -59,7 +59,7 @@ EOSSDK_SessionSearch::~EOSSDK_SessionSearch()
   */
 EOS_EResult EOSSDK_SessionSearch::SetSessionId(const EOS_SessionSearch_SetSessionIdOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::lock_guard<std::mutex> lg(_local_mutex);
 
     if (Options == nullptr || Options->SessionId == nullptr)
@@ -82,7 +82,7 @@ EOS_EResult EOSSDK_SessionSearch::SetSessionId(const EOS_SessionSearch_SetSessio
  */
 EOS_EResult EOSSDK_SessionSearch::SetTargetUserId(const EOS_SessionSearch_SetTargetUserIdOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::lock_guard<std::mutex> lg(_local_mutex);
 
     if (Options == nullptr || Options->TargetUserId == nullptr)
@@ -107,7 +107,7 @@ EOS_EResult EOSSDK_SessionSearch::SetTargetUserId(const EOS_SessionSearch_SetTar
  */
 EOS_EResult EOSSDK_SessionSearch::SetParameter(const EOS_SessionSearch_SetParameterOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::lock_guard<std::mutex> lg(_local_mutex);
 
     if (Options == nullptr || Options->Parameter == nullptr || Options->Parameter->Key == nullptr)
@@ -139,7 +139,7 @@ EOS_EResult EOSSDK_SessionSearch::SetParameter(const EOS_SessionSearch_SetParame
  */
 EOS_EResult EOSSDK_SessionSearch::RemoveParameter(const EOS_SessionSearch_RemoveParameterOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::lock_guard<std::mutex> lg(_local_mutex);
 
     if(Options == nullptr || Options->Key == nullptr)
@@ -169,7 +169,7 @@ EOS_EResult EOSSDK_SessionSearch::RemoveParameter(const EOS_SessionSearch_Remove
  */
 EOS_EResult EOSSDK_SessionSearch::SetMaxResults(const EOS_SessionSearch_SetMaxResultsOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::lock_guard<std::mutex> lg(_local_mutex);
 
     if(Options == nullptr)
@@ -194,7 +194,7 @@ EOS_EResult EOSSDK_SessionSearch::SetMaxResults(const EOS_SessionSearch_SetMaxRe
  */
 void EOSSDK_SessionSearch::Find(const EOS_SessionSearch_FindOptions* Options, void* ClientData, const EOS_SessionSearch_OnFindCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::lock_guard<std::mutex> lg(_local_mutex);
     
     pFrameResult_t res(new FrameResult);
@@ -238,7 +238,7 @@ void EOSSDK_SessionSearch::Find(const EOS_SessionSearch_FindOptions* Options, vo
  */
 uint32_t EOSSDK_SessionSearch::GetSearchResultCount(const EOS_SessionSearch_GetSearchResultCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::lock_guard<std::mutex> lg(_local_mutex);
     
     return _results.size();
@@ -260,7 +260,7 @@ uint32_t EOSSDK_SessionSearch::GetSearchResultCount(const EOS_SessionSearch_GetS
  */
 EOS_EResult EOSSDK_SessionSearch::CopySearchResultByIndex(const EOS_SessionSearch_CopySearchResultByIndexOptions* Options, EOS_HSessionDetails* OutSessionHandle)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::lock_guard<std::mutex> lg(_local_mutex);
 
     if (Options == nullptr || OutSessionHandle == nullptr || Options->SessionIndex >= _results.size())
@@ -281,7 +281,7 @@ EOS_EResult EOSSDK_SessionSearch::CopySearchResultByIndex(const EOS_SessionSearc
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_SessionSearch::send_sessions_search(Sessions_Search_pb* search)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
@@ -303,7 +303,7 @@ bool EOSSDK_SessionSearch::send_sessions_search(Sessions_Search_pb* search)
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_SessionSearch::on_sessions_search_response(Network_Message_pb const& msg, Sessions_Search_response_pb const& resp)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::lock_guard<std::mutex> lg(_local_mutex);
 
     if (_search_cb.get() != nullptr && resp.search_id() == _search_infos.search_id())

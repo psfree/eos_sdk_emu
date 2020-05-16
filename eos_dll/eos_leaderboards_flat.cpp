@@ -39,7 +39,7 @@ using namespace sdk;
   */
 EOS_DECLARE_FUNC(void) EOS_Leaderboards_QueryLeaderboardDefinitions(EOS_HLeaderboards Handle, const EOS_Leaderboards_QueryLeaderboardDefinitionsOptions* Options, void* ClientData, const EOS_Leaderboards_OnQueryLeaderboardDefinitionsCompleteCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
 }
@@ -56,7 +56,7 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_QueryLeaderboardDefinitions(EOS_HLeaderb
  */
 EOS_DECLARE_FUNC(uint32_t) EOS_Leaderboards_GetLeaderboardDefinitionCount(EOS_HLeaderboards Handle, const EOS_Leaderboards_GetLeaderboardDefinitionCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
     return 0;
@@ -76,7 +76,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Leaderboards_GetLeaderboardDefinitionCount(EOS_HL
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardDefinitionByIndex(EOS_HLeaderboards Handle, const EOS_Leaderboards_CopyLeaderboardDefinitionByIndexOptions* Options, EOS_Leaderboards_Definition** OutLeaderboardDefinition)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -96,7 +96,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardDefinitionByIndex(
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardDefinitionByLeaderboardId(EOS_HLeaderboards Handle, const EOS_Leaderboards_CopyLeaderboardDefinitionByLeaderboardIdOptions* Options, EOS_Leaderboards_Definition** OutLeaderboardDefinition)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -114,7 +114,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardDefinitionByLeader
  */
 EOS_DECLARE_FUNC(void) EOS_Leaderboards_QueryLeaderboardRanks(EOS_HLeaderboards Handle, const EOS_Leaderboards_QueryLeaderboardRanksOptions* Options, void* ClientData, const EOS_Leaderboards_OnQueryLeaderboardRanksCompleteCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
 }
@@ -131,7 +131,7 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_QueryLeaderboardRanks(EOS_HLeaderboards 
  */
 EOS_DECLARE_FUNC(uint32_t) EOS_Leaderboards_GetLeaderboardRecordCount(EOS_HLeaderboards Handle, const EOS_Leaderboards_GetLeaderboardRecordCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
     return 0;
@@ -151,7 +151,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Leaderboards_GetLeaderboardRecordCount(EOS_HLeade
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardRecordByIndex(EOS_HLeaderboards Handle, const EOS_Leaderboards_CopyLeaderboardRecordByIndexOptions* Options, EOS_Leaderboards_LeaderboardRecord** OutLeaderboardRecord)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -171,7 +171,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardRecordByIndex(EOS_
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardRecordByUserId(EOS_HLeaderboards Handle, const EOS_Leaderboards_CopyLeaderboardRecordByUserIdOptions* Options, EOS_Leaderboards_LeaderboardRecord** OutLeaderboardRecord)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -189,7 +189,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardRecordByUserId(EOS
  */
 EOS_DECLARE_FUNC(void) EOS_Leaderboards_QueryLeaderboardUserScores(EOS_HLeaderboards Handle, const EOS_Leaderboards_QueryLeaderboardUserScoresOptions* Options, void* ClientData, const EOS_Leaderboards_OnQueryLeaderboardUserScoresCompleteCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
 }
@@ -206,7 +206,7 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_QueryLeaderboardUserScores(EOS_HLeaderbo
  */
 EOS_DECLARE_FUNC(uint32_t) EOS_Leaderboards_GetLeaderboardUserScoreCount(EOS_HLeaderboards Handle, const EOS_Leaderboards_GetLeaderboardUserScoreCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
     return 0;
@@ -226,7 +226,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Leaderboards_GetLeaderboardUserScoreCount(EOS_HLe
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardUserScoreByIndex(EOS_HLeaderboards Handle, const EOS_Leaderboards_CopyLeaderboardUserScoreByIndexOptions* Options, EOS_Leaderboards_LeaderboardUserScore** OutLeaderboardUserScore)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -246,7 +246,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardUserScoreByIndex(E
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardUserScoreByUserId(EOS_HLeaderboards Handle, const EOS_Leaderboards_CopyLeaderboardUserScoreByUserIdOptions* Options, EOS_Leaderboards_LeaderboardUserScore** OutLeaderboardUserScore)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -264,7 +264,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardUserScoreByUserId(
  */
 EOS_DECLARE_FUNC(void) EOS_Leaderboards_LeaderboardDefinition_Release(EOS_Leaderboards_Definition* LeaderboardDefinition)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     EOS_Leaderboards_Definition_Release(LeaderboardDefinition);
 }
 
@@ -285,7 +285,7 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_Definition_Release(EOS_Leaderboards_Defi
  */
 EOS_DECLARE_FUNC(void) EOS_Leaderboards_LeaderboardUserScore_Release(EOS_Leaderboards_LeaderboardUserScore* LeaderboardUserScore)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
 }
 
@@ -301,6 +301,6 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_LeaderboardUserScore_Release(EOS_Leaderb
  */
 EOS_DECLARE_FUNC(void) EOS_Leaderboards_LeaderboardRecord_Release(EOS_Leaderboards_LeaderboardRecord* LeaderboardRecord)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
 }

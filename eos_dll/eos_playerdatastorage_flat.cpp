@@ -39,7 +39,7 @@ using namespace sdk;
   */
 EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_QueryFile(EOS_HPlayerDataStorage Handle, const EOS_PlayerDataStorage_QueryFileOptions* QueryFileOptions, void* ClientData, const EOS_PlayerDataStorage_OnQueryFileCompleteCallback CompletionCallback)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
 }
@@ -58,7 +58,7 @@ EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_QueryFile(EOS_HPlayerDataStorage Ha
  */
 EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_QueryFileList(EOS_HPlayerDataStorage Handle, const EOS_PlayerDataStorage_QueryFileListOptions* QueryFileListOptions, void* ClientData, const EOS_PlayerDataStorage_OnQueryFileListCompleteCallback CompletionCallback)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
 }
@@ -73,7 +73,7 @@ EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_QueryFileList(EOS_HPlayerDataStorag
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorage_CopyFileMetadataByFilename(EOS_HPlayerDataStorage Handle, const EOS_PlayerDataStorage_CopyFileMetadataByFilenameOptions* CopyFileMetadataOptions, EOS_PlayerDataStorage_FileMetadata** OutMetadata)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -90,7 +90,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorage_CopyFileMetadataByFilename(E
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorage_GetFileMetadataCount(EOS_HPlayerDataStorage Handle, const EOS_PlayerDataStorage_GetFileMetadataCountOptions* GetFileMetadataCountOptions, int32_t* OutFileMetadataCount)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -109,7 +109,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorage_GetFileMetadataCount(EOS_HPl
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorage_CopyFileMetadataAtIndex(EOS_HPlayerDataStorage Handle, const EOS_PlayerDataStorage_CopyFileMetadataAtIndexOptions* CopyFileMetadataOptions, EOS_PlayerDataStorage_FileMetadata** OutMetadata)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -126,7 +126,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorage_CopyFileMetadataAtIndex(EOS_
  */
 EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_DuplicateFile(EOS_HPlayerDataStorage Handle, const EOS_PlayerDataStorage_DuplicateFileOptions* DuplicateOptions, void* ClientData, const EOS_PlayerDataStorage_OnDuplicateFileCompleteCallback CompletionCallback)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
 }
@@ -140,7 +140,7 @@ EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_DuplicateFile(EOS_HPlayerDataStorag
  */
 EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_DeleteFile(EOS_HPlayerDataStorage Handle, const EOS_PlayerDataStorage_DeleteFileOptions* DeleteOptions, void* ClientData, const EOS_PlayerDataStorage_OnDeleteFileCompleteCallback CompletionCallback)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
 }
@@ -159,7 +159,7 @@ EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_DeleteFile(EOS_HPlayerDataStorage H
  */
 EOS_DECLARE_FUNC(EOS_HPlayerDataStorageFileTransferRequest) EOS_PlayerDataStorage_ReadFile(EOS_HPlayerDataStorage Handle, const EOS_PlayerDataStorage_ReadFileOptions* ReadOptions, void* ClientData, const EOS_PlayerDataStorage_OnReadFileCompleteCallback CompletionCallback)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
     return nullptr;
@@ -179,7 +179,7 @@ EOS_DECLARE_FUNC(EOS_HPlayerDataStorageFileTransferRequest) EOS_PlayerDataStorag
  */
 EOS_DECLARE_FUNC(EOS_HPlayerDataStorageFileTransferRequest) EOS_PlayerDataStorage_WriteFile(EOS_HPlayerDataStorage Handle, const EOS_PlayerDataStorage_WriteFileOptions* WriteOptions, void* ClientData, const EOS_PlayerDataStorage_OnWriteFileCompleteCallback CompletionCallback)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
     return nullptr;
@@ -196,7 +196,7 @@ EOS_DECLARE_FUNC(EOS_HPlayerDataStorageFileTransferRequest) EOS_PlayerDataStorag
   */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorageFileTransferRequest_GetFileRequestState(EOS_HPlayerDataStorageFileTransferRequest Handle)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -214,7 +214,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorageFileTransferRequest_GetFileRe
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorageFileTransferRequest_GetFilename(EOS_HPlayerDataStorageFileTransferRequest Handle, uint32_t FilenameStringBufferSizeBytes, char* OutStringBuffer, int32_t* OutStringLength)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -227,7 +227,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorageFileTransferRequest_GetFilena
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorageFileTransferRequest_CancelRequest(EOS_HPlayerDataStorageFileTransferRequest Handle)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -238,7 +238,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorageFileTransferRequest_CancelReq
  */
 EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_FileMetadata_Release(EOS_PlayerDataStorage_FileMetadata* FileMetadata)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 }
 
 /**
@@ -246,5 +246,5 @@ EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_FileMetadata_Release(EOS_PlayerData
  */
 EOS_DECLARE_FUNC(void) EOS_PlayerDataStorageFileTransferRequest_Release(EOS_HPlayerDataStorageFileTransferRequest PlayerDataStorageFileTransferHandle)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 }

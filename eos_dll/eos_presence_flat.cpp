@@ -175,7 +175,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetJoinInfo(EOS_HPresence
  */
 EOS_DECLARE_FUNC(void) EOS_Presence_Info_Release(EOS_Presence_Info* PresenceInfo)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     if (PresenceInfo == nullptr)
         return;
 
@@ -203,7 +203,7 @@ EOS_DECLARE_FUNC(void) EOS_Presence_Info_Release(EOS_Presence_Info* PresenceInfo
 */
 EOS_DECLARE_FUNC(void) EOS_PresenceModification_Release(EOS_HPresenceModification PresenceModificationHandle)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto pInst = reinterpret_cast<EOSSDK_PresenceModification*>(PresenceModificationHandle);
     delete pInst;
