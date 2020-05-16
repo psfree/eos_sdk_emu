@@ -77,7 +77,17 @@ private:
 
     std::map<Network_Message_pb::MessagesCase, std::map<channel_t, std::vector<IRunFrame*>>> _network_listeners;
 
-    std::mutex local_mutex;
+    // Lock message_mutex when accessing:
+    //  _pending_network_msgs
+    std::mutex message_mutex;
+    // Lock local_mutex when accessing:
+    //  _udp_addrs
+    //  _tcp_clients
+    //  _tcp_peers
+    //  _my_peer_ids
+    //  _network_listeners
+    //  _advertise
+    std::recursive_mutex local_mutex;
 
     void start_network();
     void stop_network();

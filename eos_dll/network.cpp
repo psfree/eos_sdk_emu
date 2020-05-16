@@ -142,6 +142,8 @@ void Network::stop_network()
 
 void Network::build_advertise_msg(Network_Message_pb& msg)
 {
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     Network_Advertise_pb* advertise = new Network_Advertise_pb;
     Network_Peer_pb* peer_pb = new Network_Peer_pb;
 
@@ -166,7 +168,8 @@ void Network::build_advertise_msg(Network_Message_pb& msg)
 
 std::pair<PortableAPI::tcp_socket*, std::vector<Network::peer_t>> Network::get_new_peer_ids(Network_Peer_pb const& peer_msg)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     std::pair<tcp_socket*, std::vector<peer_t>> peer_ids_to_add;
     peer_ids_to_add.first = nullptr;
     peer_ids_to_add.second.reserve(peer_msg.peer_ids_size());
@@ -188,6 +191,8 @@ std::pair<PortableAPI::tcp_socket*, std::vector<Network::peer_t>> Network::get_n
 
 void Network::do_advertise()
 {
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     auto now = std::chrono::steady_clock::now();
     if ((now - _last_advertise) < std::chrono::milliseconds(2000))
         return;
@@ -196,7 +201,6 @@ void Network::do_advertise()
 
     try
     {
-        std::lock_guard<std::mutex> lk(local_mutex);
         if (_advertise && !_my_peer_ids.empty())
         {
             Network_Message_pb msg;
@@ -219,7 +223,7 @@ void Network::do_advertise()
 
 void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_t> const& peer_ids, bool advertise)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
     _poll.add_socket(*cli); // Add the client to the poll
     _poll.set_events(*cli, Socket::poll_flags::in);
@@ -246,7 +250,8 @@ void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_
 
 void Network::remove_tcp_peer(tcp_buffer_t& tcp_buffer)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     //LOG(Log::LogLevel::DEBUG, "TCP Client %s gone: %s", client->socket.get_addr().to_string().c_str(), e.what());
     _poll.remove_socket(tcp_buffer.socket);
     // Remove the peer mappings
@@ -278,7 +283,7 @@ void Network::connect_to_peer(ipv4_addr &addr, peer_t const& peer_id)
             std::string data(std::move(msg.SerializeAsString()));
             buff += std::move(compress(data.data(), data.length()));
             *reinterpret_cast<uint16_t*>(&buff[0]) = Socket::net_swap(uint16_t(buff.length() - sizeof(uint16_t)));
-            max_message_size = std::max<uint64_t>(max_message_size, data.length()) + 2;
+            max_message_size = std::max<uint64_t>(max_message_size, data.length());
             max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buff.length());
 
             new_client.send(buff.c_str(), buff.length());
@@ -308,6 +313,8 @@ void Network::process_waiting_out_clients()
             {
                 if (msg.ParseFromArray(buffer.data(), len) && msg.has_network_advertise() && msg.network_advertise().has_accept())
                 {
+                    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
                     LOG(Log::LogLevel::DEBUG, "Connected to %s : %s", it->second.get_addr().to_string(true).c_str(), it->first.c_str());
                     it->second.set_nonblocking(false);
                     tcp_buffer_t new_buff({});
@@ -361,6 +368,8 @@ void Network::process_waiting_in_client(tcp_socket &new_client)
             msg.has_network_advertise() &&
             msg.network_advertise().has_peer())
         {
+            std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
             auto const& peer_msg = msg.network_advertise().peer();
             std::pair<tcp_socket*, std::vector<peer_t>> peer_ids_to_add = std::move(get_new_peer_ids(peer_msg));
 
@@ -381,8 +390,8 @@ void Network::process_waiting_in_client(tcp_socket &new_client)
 
 void Network::process_network_message(Network_Message_pb &msg)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
-    
+    std::lock_guard<std::mutex> lk(message_mutex);
+
     std::chrono::system_clock::time_point msg_time(std::chrono::milliseconds(msg.timestamp()));
     
     if ((std::chrono::system_clock::now() - msg_time) > std::chrono::milliseconds(1500))
@@ -422,7 +431,7 @@ void Network::process_udp()
                 if (msg.source_id() != peer_t())
                 {
                     {
-                        std::lock_guard<std::mutex> lk(local_mutex);
+                        std::lock_guard<std::recursive_mutex> lk(local_mutex);
                         _udp_addrs[msg.source_id()] = addr;
                     }
                     //LOG(Log::LogLevel::TRACE, "Received UDP message from: %s - %s", addr.to_string().c_str(), msg.source_id().c_str());
@@ -431,6 +440,8 @@ void Network::process_udp()
                         auto const& advertise = msg.network_advertise();
                         if (advertise.has_port())
                         {
+                            std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
                             if (!_my_peer_ids.empty() &&
                                 _my_peer_ids.count(msg.source_id()) == 0 &&
                                 _tcp_peers.count(msg.source_id()) == 0)
@@ -443,6 +454,8 @@ void Network::process_udp()
                         }
                         else if (advertise.has_peer())
                         {
+                            std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
                             std::pair<tcp_socket*, std::vector<peer_t>> peer_ids_to_add = std::move(get_new_peer_ids(advertise.peer()));
 
                             if (peer_ids_to_add.first != nullptr && !peer_ids_to_add.second.empty())
@@ -456,7 +469,6 @@ void Network::process_udp()
                         //LOG(Log::LogLevel::DEBUG, "Received UDP message from %s type %d", addr.to_string(true).c_str(), msg.messages_case());
                         process_network_message(msg);
                     }
-                        
                 }
                 else
                 {
@@ -490,6 +502,8 @@ void Network::process_tcp_listen()
 
 void Network::process_tcp_data(tcp_buffer_t& tcp_buffer)
 {
+    // Don't lock here, its already locked in network_thread when needed
+
     Network_Message_pb msg;
     size_t len;
 
@@ -569,29 +583,32 @@ void Network::network_thread()
             }
         }
         
-        for (auto it = _tcp_clients.begin(); it != _tcp_clients.end();)
-        {// Process the multiple tcp clients we have
-            auto reevents = _poll.get_revents(it->socket);
-            if ((reevents & Socket::poll_flags::hup) != Socket::poll_flags::none)
-            {
-                remove_tcp_peer(*it);
-                it = _tcp_clients.erase(it);
-            }
-            else if ((reevents & Socket::poll_flags::in_hup) != Socket::poll_flags::none)
-            {
-                try
-                {
-                    process_tcp_data(*it);
-                    ++it;
-                }
-                catch (std::exception & e)
+        {
+            std::lock_guard<std::recursive_mutex> lk(local_mutex);
+            for (auto it = _tcp_clients.begin(); it != _tcp_clients.end();)
+            {// Process the multiple tcp clients we have
+                auto reevents = _poll.get_revents(it->socket);
+                if ((reevents & Socket::poll_flags::hup) != Socket::poll_flags::none)
                 {
                     remove_tcp_peer(*it);
                     it = _tcp_clients.erase(it);
                 }
+                else if ((reevents & Socket::poll_flags::in_hup) != Socket::poll_flags::none)
+                {
+                    try
+                    {
+                        process_tcp_data(*it);
+                        ++it;
+                    }
+                    catch (std::exception & e)
+                    {
+                        remove_tcp_peer(*it);
+                        it = _tcp_clients.erase(it);
+                    }
+                }
+                else
+                    ++it;
             }
-            else
-                ++it;
         }
         
         // We might have found a peer while he didn't find us yet, so begin the connection procedure
@@ -601,45 +618,51 @@ void Network::network_thread()
 
 void Network::advertise_peer_id(peer_t const& peerid)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     _my_peer_ids.insert(peerid);
     _tcp_peers[peerid] = &_tcp_self_send;
 }
 
 void Network::remove_advertise_peer_id(peer_t const& peerid)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     _my_peer_ids.erase(peerid);
     _tcp_peers.erase(peerid);
 }
 
 void Network::advertise(bool doit)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
     _advertise = doit;
 }
 
 bool Network::is_advertising()
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     return _advertise;
 }
 
 void Network::set_default_channel(peer_t peerid, channel_t default_channel)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     _default_channels[peerid] = default_channel;
 }
 
 void Network::register_listener(IRunFrame* listener, channel_t channel, Network_Message_pb::MessagesCase type)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     _network_listeners[type][channel].push_back(listener);
 }
 
 void Network::unregister_listener(IRunFrame* listener, channel_t channel, Network_Message_pb::MessagesCase type)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     auto& listeners = _network_listeners[type][channel];
     listeners.erase(
         std::remove(listeners.begin(), listeners.end(), listener),
@@ -649,36 +672,39 @@ void Network::unregister_listener(IRunFrame* listener, channel_t channel, Networ
 bool Network::CBRunFrame(channel_t channel, Network_Message_pb::MessagesCase MessageFilter)
 {
     bool rerun = false;
-
     auto& channel_messages = _network_msgs[channel];
-    for (auto it = channel_messages.begin(); it != channel_messages.end(); )
     {
-        auto msg_case = it->messages_case();
-        if (msg_case != Network_Message_pb::MessagesCase::MESSAGES_NOT_SET)
+        std::lock_guard<std::recursive_mutex> lk(local_mutex);
+        for (auto it = channel_messages.begin(); it != channel_messages.end(); )
         {
-            if (MessageFilter == Network_Message_pb::MessagesCase::MESSAGES_NOT_SET || MessageFilter == msg_case)
+            auto msg_case = it->messages_case();
+            if (msg_case != Network_Message_pb::MessagesCase::MESSAGES_NOT_SET)
             {
-                auto& listeners = _network_listeners[msg_case][channel];
-                for (auto& item : listeners)
-                    item->RunNetwork(*it);
+                if (MessageFilter == Network_Message_pb::MessagesCase::MESSAGES_NOT_SET || MessageFilter == msg_case)
+                {
+                    auto& listeners = _network_listeners[msg_case][channel];
+                    for (auto& item : listeners)
+                        item->RunNetwork(*it);
 
-                it = channel_messages.erase(it);
+                    it = channel_messages.erase(it);
 
-                rerun = true;
+                    rerun = true;
+                }
+                else
+                {
+                    ++it;
+                }
             }
             else
-            {
-                ++it;
+            {// Don't care about invalid message
+                it = channel_messages.erase(it);
             }
-        }
-        else
-        {// Don't care about invalid message
-            it = channel_messages.erase(it);
         }
     }
 
     {
-        std::lock_guard<std::mutex> lk(local_mutex);
+        std::lock_guard<std::mutex> lk(message_mutex);
+
         auto& pending_channel_messages = _pending_network_msgs[channel];
         if (!pending_channel_messages.empty())
         {
@@ -692,6 +718,8 @@ bool Network::CBRunFrame(channel_t channel, Network_Message_pb::MessagesCase Mes
 
 bool Network::SendBroadcast(Network_Message_pb& msg)
 {
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     std::vector<ipv4_addr> broadcasts = std::move(get_broadcasts());
 
     assert((msg.source_id() != peer_t() && "Source id cannot be null"));
@@ -714,7 +742,7 @@ bool Network::SendBroadcast(Network_Message_pb& msg)
             try
             {
                 _udp_socket.sendto(brd, buffer.data(), buffer.length());
-                ////LOG(Log::LogLevel::TRACE, "Send broadcast");
+                //LOG(Log::LogLevel::TRACE, "Send broadcast");
             }
             catch (socket_exception & e)
             {
@@ -729,7 +757,7 @@ bool Network::SendBroadcast(Network_Message_pb& msg)
 
 std::set<Network::peer_t> Network::UDPSendToAllPeers(Network_Message_pb& msg)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
     assert((msg.source_id() != peer_t() && "Source id cannot be null"));
 
@@ -764,7 +792,7 @@ std::set<Network::peer_t> Network::UDPSendToAllPeers(Network_Message_pb& msg)
 
 bool Network::UDPSendTo(Network_Message_pb& msg)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
     assert((msg.source_id() != peer_t() && "Source id cannot be null"));
 
@@ -800,7 +828,8 @@ bool Network::UDPSendTo(Network_Message_pb& msg)
 
 std::set<Network::peer_t> Network::TCPSendToAllPeers(Network_Message_pb& msg)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     std::set<peer_t> peers_sent_to;
 
     assert((msg.source_id() != peer_t() && "Source id cannot be null"));
@@ -836,7 +865,7 @@ std::set<Network::peer_t> Network::TCPSendToAllPeers(Network_Message_pb& msg)
 
 bool Network::TCPSendTo(Network_Message_pb& msg)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
     assert((msg.source_id() != peer_t() && "Source id cannot be null"));
 
@@ -861,7 +890,7 @@ bool Network::TCPSendTo(Network_Message_pb& msg)
     try
     {
         it->second->send(buffer.c_str(), buffer.length());
-        ////LOG(Log::LogLevel::TRACE, "Sent message to %s", it->second.to_string().c_str());
+        //LOG(Log::LogLevel::TRACE, "Sent message to %s", it->second.to_string().c_str());
     }
     catch (socket_exception & e)
     {
