@@ -51,6 +51,7 @@ private:
     std::string _func_name;
 
 public:
+#ifdef _DEBUG
     Log(LogLevel lv, const char* func_name):
         _lv(lv),
         _func_name(func_name)
@@ -63,7 +64,6 @@ public:
         Log::L(_lv, "(%lx)%s - %s EXIT", *reinterpret_cast<uint32_t*>(&std::this_thread::get_id()), Log::loglevel_to_str(_lv), _func_name.c_str());
     }
 
-#ifdef _DEBUG
     static void set_loglevel(LogLevel lv);
 #else
     static void set_loglevel(LogLevel lv) {}
