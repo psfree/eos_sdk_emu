@@ -139,7 +139,4 @@ public:
 
     std::set<peer_t> TCPSendToAllPeers(Network_Message_pb& msg);
     bool TCPSendTo(Network_Message_pb& msg);
-
-    bool StartQueryServer(PortableAPI::ipv4_addr& addr);
-    void StopQueryServer();
 };
