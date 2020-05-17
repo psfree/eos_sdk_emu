@@ -97,7 +97,7 @@ EOS_EResult EOSSDK_P2P::SendPacket(const EOS_P2P_SendPacketOptions* Options)
 EOS_EResult EOSSDK_P2P::GetNextReceivedPacketSize(const EOS_P2P_GetNextReceivedPacketSizeOptions* Options, uint32_t* OutPacketSizeBytes)
 {
     TRACE_FUNC();
-    GLOBAL_LOCK();
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
     if (Options == nullptr || OutPacketSizeBytes == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -153,7 +153,7 @@ EOS_EResult EOSSDK_P2P::GetNextReceivedPacketSize(const EOS_P2P_GetNextReceivedP
 EOS_EResult EOSSDK_P2P::ReceivePacket(const EOS_P2P_ReceivePacketOptions* Options, EOS_ProductUserId* OutPeerId, EOS_P2P_SocketId* OutSocketId, uint8_t* OutChannel, void* OutData, uint32_t* OutBytesWritten)
 {
     //TRACE_FUNC();
-    GLOBAL_LOCK();
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
     
     if (Options == nullptr || OutPeerId == nullptr || OutSocketId == nullptr ||
         OutChannel == nullptr || OutData == nullptr || OutBytesWritten == nullptr)
@@ -543,8 +543,8 @@ bool EOSSDK_P2P::send_p2p_connetion_close(Network::peer_t const& peerid, P2P_Con
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_P2P::on_p2p_connection_request(Network_Message_pb const& msg, P2P_Connect_Request_pb const& req)
 {
-    GLOBAL_LOCK();
     TRACE_FUNC();
+    GLOBAL_LOCK();
 
     auto peer_id = GetProductUserId(msg.source_id());
     auto& conn = _p2p_connections[peer_id];
@@ -573,8 +573,8 @@ bool EOSSDK_P2P::on_p2p_connection_request(Network_Message_pb const& msg, P2P_Co
 
 bool EOSSDK_P2P::on_p2p_connection_response(Network_Message_pb const& msg, P2P_Connect_Response_pb const& resp)
 {
-    GLOBAL_LOCK();
     TRACE_FUNC();
+    GLOBAL_LOCK();
     
     if (resp.accepted())
     {
@@ -608,8 +608,8 @@ bool EOSSDK_P2P::on_p2p_connection_response(Network_Message_pb const& msg, P2P_C
 
 bool EOSSDK_P2P::on_p2p_data(Network_Message_pb const& msg, P2P_Data_Message_pb const& data)
 {
-    GLOBAL_LOCK();
     TRACE_FUNC();
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
     P2P_Data_Acknowledge_pb* ack = new P2P_Data_Acknowledge_pb;
     ack->set_channel(data.channel());
@@ -621,16 +621,16 @@ bool EOSSDK_P2P::on_p2p_data(Network_Message_pb const& msg, P2P_Data_Message_pb 
 
 bool EOSSDK_P2P::on_p2p_data_ack(Network_Message_pb const& msg, P2P_Data_Acknowledge_pb const& ack)
 {
-    GLOBAL_LOCK();
     TRACE_FUNC();
+    GLOBAL_LOCK();
 
     return true;
 }
 
 bool EOSSDK_P2P::on_p2p_connection_close(Network_Message_pb const& msg, P2P_Connection_Close_pb const& close)
 {
-    GLOBAL_LOCK();
     TRACE_FUNC();
+    GLOBAL_LOCK();
 
     std::vector<pFrameResult_t> notifs = std::move(GetCB_Manager().get_notifications(this, EOS_P2P_OnRemoteConnectionClosedInfo::k_iCallback));
     for (auto& notif : notifs)
