@@ -21,7 +21,7 @@
 #include "eos_client_api.h"
 
 template<typename T>
-T get_setting(nlohmann::json& settings, std::string const& key, bool& save, T default_val)
+T get_setting(nlohmann::json& settings, std::string const& key, T default_val)
 {
     T val;
     try
@@ -32,7 +32,6 @@ T get_setting(nlohmann::json& settings, std::string const& key, bool& save, T de
     {
         val = default_val;
         settings[key] = default_val;
-        save = true;
     }
     return val;
 }
@@ -63,9 +62,7 @@ void Settings::load_settings()
         LOG(Log::LogLevel::WARN, "Error while loading settings, building a default one");
     }
 
-    bool save_settings = false;
-
-    username       = get_setting(settings, "username"      , save_settings, std::string(u8"DefaultName"));
+    username       = get_setting(settings, "username"      , std::string(u8"DefaultName"));
     if (username.empty() || !utf8::is_valid(username.begin(), username.end()))
     {
         LOG(Log::LogLevel::WARN, "Invalid username, resetting to default name.");
@@ -75,21 +72,21 @@ void Settings::load_settings()
     settings["username"] = username;
 
     
-    userid = GetEpicUserId(get_setting(settings, "epicid", save_settings, std::string("")));
+    userid = GetEpicUserId(get_setting(settings, "epicid", std::string("")));
     while (!userid->IsValid())
         userid = GetEpicUserId(generate_epic_id_user_from_name(username));
 
     settings["epicid"] = userid->to_string();
 
-    language       = get_setting(settings, "language"      , save_settings, std::string("english"));
-    languages      = get_setting(settings, "languages"     , save_settings, std::string("english"));
-    gamename       = get_setting(settings, "gamename"      , save_settings, std::string("Unreal"));
-    unlock_dlcs    = get_setting(settings, "unlock_dlcs"   , save_settings, bool(true));
-    enable_overlay = get_setting(settings, "enable_overlay", save_settings, bool(true));
+    language       = get_setting(settings, "language"      , std::string("english"));
+    languages      = get_setting(settings, "languages"     , std::string("english"));
+    gamename       = get_setting(settings, "gamename"      , std::string("Unreal"));
+    unlock_dlcs    = get_setting(settings, "unlock_dlcs"   , bool(true));
+    enable_overlay = get_setting(settings, "enable_overlay", bool(true));
 
 #ifdef _DEBUG
     Log::LogLevel llvl;
-    switchstr(get_setting(settings, "debug_level", save_settings, std::string("OFF")))
+    switchstr(get_setting(settings, "debug_level", std::string("OFF")))
     {
         casestr("TRACE"): llvl = Log::LogLevel::TRACE; break;
         casestr("DEBUG"): llvl = Log::LogLevel::DEBUG; break;
@@ -117,7 +114,6 @@ void Settings::load_settings()
             if (tmp != savepath)
             {
                 clean_savepath = true;
-                save_settings = true;
             }
             if (!savepath.empty())
             {
@@ -126,7 +122,6 @@ void Settings::load_settings()
                     // Remove trailing '/' or '\'
                     savepath.pop_back();
                     clean_savepath = true;
-                    save_settings = true;
                 }
             }
         }
@@ -144,7 +139,6 @@ void Settings::load_settings()
     }
     catch (...)
     {
-        save_settings = true;
         savepath = std::move(get_userdata_path());
         settings["savepath"] = "appdata";
     }
@@ -158,6 +152,5 @@ void Settings::load_settings()
 
     create_folder(savepath);
 
-    if(save_settings)
-        save_json(config_path, settings);
+    save_json(config_path, settings);
 }
