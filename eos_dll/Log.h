@@ -86,6 +86,8 @@ public:
         }
     }
 
+    static const char* loglevel_to_str();
+
 #ifdef _DEBUG
     static void L(LogLevel lv, const char* format, ...);
 #endif

@@ -77,6 +77,11 @@ LOCAL_API bool _trace(const char* format, va_list argptr)
     return true;
 }
 
+const char* Log::loglevel_to_str()
+{
+    return loglevel_to_str(_log_level);
+}
+
 void Log::set_loglevel(LogLevel lv)
 {
     if (lv >= LogLevel::MIN && lv <= LogLevel::MAX)
