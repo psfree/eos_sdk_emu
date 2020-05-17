@@ -40,6 +40,7 @@ private:
     static constexpr const char* settings_file_name = "NemirtingasEpicEmu.json";
 
     std::string config_path;
+    std::string setting_savepath;
 
 public:
     EOS_EpicAccountId userid;
@@ -54,6 +55,7 @@ public:
     ~Settings();
 
     void load_settings();
+    void save_settings();
 };
 
 #endif

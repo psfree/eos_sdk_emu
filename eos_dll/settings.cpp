@@ -52,7 +52,7 @@ void Settings::load_settings()
     GLOBAL_LOCK();
 
     nlohmann::json settings;
-    std::string config_path = std::move(get_executable_path() + settings_file_name);
+    config_path = std::move(get_executable_path() + settings_file_name);
 
     Log::set_loglevel(Log::LogLevel::INFO);
     LOG(Log::LogLevel::INFO, "Configuration Path: %s", config_path.c_str());
@@ -143,6 +143,8 @@ void Settings::load_settings()
         settings["savepath"] = "appdata";
     }
 
+    setting_savepath = settings["savepath"].get_ref<std::string&>();
+
     savepath += PATH_SEPARATOR;
     savepath += emu_savepath;
     savepath += PATH_SEPARATOR;
@@ -151,6 +153,26 @@ void Settings::load_settings()
     savepath += gamename;
 
     create_folder(savepath);
+
+    save_settings();
+}
+
+void Settings::save_settings()
+{
+    nlohmann::json settings;
+    std::string config_path = std::move(get_executable_path() + settings_file_name);
+
+    LOG(Log::LogLevel::INFO, "Saving emu settings: %s", config_path.c_str());
+
+    settings["username"] = username;
+    settings["epicid"] = userid->to_string();
+    settings["language"] = language;
+    settings["languages"] = languages;
+    settings["gamename"] = gamename;
+    settings["unlock_dlcs"] = unlock_dlcs;
+    settings["enable_overlay"] = enable_overlay;
+    settings["debug_level"] = Log::loglevel_to_str();
+    settings["savepath"] = setting_savepath;
 
     save_json(config_path, settings);
 }
