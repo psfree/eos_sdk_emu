@@ -113,7 +113,7 @@ void EOSSDK_Connect::remove_session(EOS_ProductUserId session_id, std::string co
   */
 void EOSSDK_Connect::Login(const EOS_Connect_LoginOptions* Options, void* ClientData, const EOS_Connect_OnLoginCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     pFrameResult_t res(new FrameResult);
     EOS_Connect_LoginCallbackInfo& lci = res->CreateCallback<EOS_Connect_LoginCallbackInfo>((CallbackFunc)CompletionDelegate);
@@ -138,7 +138,7 @@ void EOSSDK_Connect::Login(const EOS_Connect_LoginOptions* Options, void* Client
  */
 void EOSSDK_Connect::CreateUser(const EOS_Connect_CreateUserOptions* Options, void* ClientData, const EOS_Connect_OnCreateUserCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     pFrameResult_t res(new FrameResult);
     EOS_Connect_CreateUserCallbackInfo& cuci = res->CreateCallback<EOS_Connect_CreateUserCallbackInfo>((CallbackFunc)CompletionDelegate);
@@ -162,7 +162,7 @@ void EOSSDK_Connect::CreateUser(const EOS_Connect_CreateUserOptions* Options, vo
  */
 void EOSSDK_Connect::LinkAccount(const EOS_Connect_LinkAccountOptions* Options, void* ClientData, const EOS_Connect_OnLinkAccountCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
 }
 
@@ -195,7 +195,7 @@ void EOSSDK_Connect::LinkAccount(const EOS_Connect_LinkAccountOptions* Options, 
  */
 void EOSSDK_Connect::CreateDeviceId(const EOS_Connect_CreateDeviceIdOptions* Options, void* ClientData, const EOS_Connect_OnCreateDeviceIdCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
 }
 
@@ -211,7 +211,7 @@ void EOSSDK_Connect::CreateDeviceId(const EOS_Connect_CreateDeviceIdOptions* Opt
  */
 void EOSSDK_Connect::DeleteDeviceId(const EOS_Connect_DeleteDeviceIdOptions* Options, void* ClientData, const EOS_Connect_OnDeleteDeviceIdCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
 }
 
@@ -225,7 +225,7 @@ void EOSSDK_Connect::DeleteDeviceId(const EOS_Connect_DeleteDeviceIdOptions* Opt
 void EOSSDK_Connect::QueryExternalAccountMappings(const EOS_Connect_QueryExternalAccountMappingsOptions* Options, void* ClientData, const EOS_Connect_OnQueryExternalAccountMappingsCallback
     CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     
     pFrameResult_t res(new FrameResult);
     EOS_Connect_QueryExternalAccountMappingsCallbackInfo& qeamci = res->CreateCallback<EOS_Connect_QueryExternalAccountMappingsCallbackInfo>((CallbackFunc)CompletionDelegate);
@@ -265,7 +265,7 @@ void EOSSDK_Connect::QueryExternalAccountMappings(const EOS_Connect_QueryExterna
  */
 void EOSSDK_Connect::QueryProductUserIdMappings(const EOS_Connect_QueryProductUserIdMappingsOptions* Options, void* ClientData, const EOS_Connect_OnQueryProductUserIdMappingsCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
 }
 
@@ -278,7 +278,7 @@ void EOSSDK_Connect::QueryProductUserIdMappings(const EOS_Connect_QueryProductUs
  */
 EOS_ProductUserId EOSSDK_Connect::GetExternalAccountMapping(const EOS_Connect_GetExternalAccountMappingsOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     if (Options == nullptr || Options->TargetExternalUserId == nullptr || Options->AccountIdType != EOS_EExternalAccountType::EOS_EAT_EPIC)
         return GetInvalidProductUserId();
@@ -311,7 +311,7 @@ EOS_ProductUserId EOSSDK_Connect::GetExternalAccountMapping(const EOS_Connect_Ge
  */
 EOS_EResult EOSSDK_Connect::GetProductUserIdMapping(const EOS_Connect_GetProductUserIdMappingOptions* Options, char* OutBuffer, int32_t* InOutBufferLength)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     if(Options == nullptr || Options->TargetProductUserId == nullptr || InOutBufferLength == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -343,7 +343,7 @@ EOS_EResult EOSSDK_Connect::GetProductUserIdMapping(const EOS_Connect_GetProduct
  */
 int32_t EOSSDK_Connect::GetLoggedInUsersCount()
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     return 1;
 }
@@ -357,7 +357,7 @@ int32_t EOSSDK_Connect::GetLoggedInUsersCount()
  */
 EOS_ProductUserId EOSSDK_Connect::GetLoggedInUserByIndex(int32_t Index)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     if (Index == 0)
         return product_id();
@@ -374,7 +374,7 @@ EOS_ProductUserId EOSSDK_Connect::GetLoggedInUserByIndex(int32_t Index)
  */
 EOS_ELoginStatus EOSSDK_Connect::GetLoginStatus(EOS_ProductUserId LocalUserId)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     if (LocalUserId == product_id())
         return (_myself.second.connected ? EOS_ELoginStatus::EOS_LS_LoggedIn : EOS_ELoginStatus::EOS_LS_NotLoggedIn);
@@ -397,7 +397,7 @@ EOS_ELoginStatus EOSSDK_Connect::GetLoginStatus(EOS_ProductUserId LocalUserId)
  */
 EOS_NotificationId EOSSDK_Connect::AddNotifyAuthExpiration(const EOS_Connect_AddNotifyAuthExpirationOptions* Options, void* ClientData, const EOS_Connect_OnAuthExpirationCallback Notification)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     pFrameResult_t res(new FrameResult);
@@ -417,7 +417,7 @@ EOS_NotificationId EOSSDK_Connect::AddNotifyAuthExpiration(const EOS_Connect_Add
  */
 void EOSSDK_Connect::RemoveNotifyAuthExpiration(EOS_NotificationId InId)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     GetCB_Manager().remove_notification(this, InId);
@@ -435,7 +435,7 @@ void EOSSDK_Connect::RemoveNotifyAuthExpiration(EOS_NotificationId InId)
  */
 EOS_NotificationId EOSSDK_Connect::AddNotifyLoginStatusChanged(const EOS_Connect_AddNotifyLoginStatusChangedOptions* Options, void* ClientData, const EOS_Connect_OnLoginStatusChangedCallback Notification)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     pFrameResult_t res(new FrameResult);
@@ -457,7 +457,7 @@ EOS_NotificationId EOSSDK_Connect::AddNotifyLoginStatusChanged(const EOS_Connect
  */
 void EOSSDK_Connect::RemoveNotifyLoginStatusChanged(EOS_NotificationId InId)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     GetCB_Manager().remove_notification(this, InId);
@@ -475,7 +475,7 @@ void EOSSDK_Connect::RemoveNotifyLoginStatusChanged(EOS_NotificationId InId)
  */
 uint32_t EOSSDK_Connect::GetProductUserExternalAccountCount(const EOS_Connect_GetProductUserExternalAccountCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return 0;
@@ -497,7 +497,7 @@ uint32_t EOSSDK_Connect::GetProductUserExternalAccountCount(const EOS_Connect_Ge
  */
 EOS_EResult EOSSDK_Connect::CopyProductUserExternalAccountByIndex(const EOS_Connect_CopyProductUserExternalAccountByIndexOptions* Options, EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return EOS_EResult::EOS_NotFound;
@@ -519,7 +519,7 @@ EOS_EResult EOSSDK_Connect::CopyProductUserExternalAccountByIndex(const EOS_Conn
  */
 EOS_EResult EOSSDK_Connect::CopyProductUserExternalAccountByAccountType(const EOS_Connect_CopyProductUserExternalAccountByAccountTypeOptions* Options, EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return EOS_EResult::EOS_NotFound;
@@ -541,7 +541,7 @@ EOS_EResult EOSSDK_Connect::CopyProductUserExternalAccountByAccountType(const EO
  */
 EOS_EResult EOSSDK_Connect::CopyProductUserExternalAccountByAccountId(const EOS_Connect_CopyProductUserExternalAccountByAccountIdOptions* Options, EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return EOS_EResult::EOS_NotFound;
@@ -563,7 +563,7 @@ EOS_EResult EOSSDK_Connect::CopyProductUserExternalAccountByAccountId(const EOS_
  */
 EOS_EResult EOSSDK_Connect::CopyProductUserInfo(const EOS_Connect_CopyProductUserInfoOptions* Options, EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return EOS_EResult::EOS_NotFound;
@@ -574,7 +574,7 @@ EOS_EResult EOSSDK_Connect::CopyProductUserInfo(const EOS_Connect_CopyProductUse
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Connect::send_connect_heartbeat(Connect_Heartbeat_pb* hb) const
 {
-    LOG(Log::LogLevel::TRACE, "");
+    //TRACE_FUNC();
     std::string const& user_id = product_id()->to_string();
 
     Network_Message_pb msg;
@@ -591,7 +591,7 @@ bool EOSSDK_Connect::send_connect_heartbeat(Connect_Heartbeat_pb* hb) const
 
 bool EOSSDK_Connect::send_connect_infos_request(Network::peer_t const& peerid, Connect_Request_Info_pb* req) const
 {
-    LOG(Log::LogLevel::TRACE, "");
+    //TRACE_FUNC();
     std::string const& user_id = product_id()->to_string();
 
     Network_Message_pb msg;
@@ -608,7 +608,7 @@ bool EOSSDK_Connect::send_connect_infos_request(Network::peer_t const& peerid, C
 
 bool EOSSDK_Connect::send_connect_infos(Network::peer_t const& peerid, Connect_Infos_pb* infos) const
 {
-    LOG(Log::LogLevel::TRACE, "");
+    //TRACE_FUNC();
     std::string const& user_id = product_id()->to_string();
 
     Network_Message_pb msg;
@@ -628,7 +628,7 @@ bool EOSSDK_Connect::send_connect_infos(Network::peer_t const& peerid, Connect_I
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Connect::on_connect_heartbeat(Network_Message_pb const& msg, Connect_Heartbeat_pb const& hb)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    //TRACE_FUNC();
     GLOBAL_LOCK();
 
     auto &user = _users[GetProductUserId(msg.source_id())];
@@ -641,7 +641,7 @@ bool EOSSDK_Connect::on_connect_heartbeat(Network_Message_pb const& msg, Connect
 
 bool EOSSDK_Connect::on_connect_infos_request(Network_Message_pb const& msg, Connect_Request_Info_pb const& req)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    //TRACE_FUNC();
     GLOBAL_LOCK();
 
     Connect_Infos_pb* infos = new Connect_Infos_pb;
@@ -653,7 +653,7 @@ bool EOSSDK_Connect::on_connect_infos_request(Network_Message_pb const& msg, Con
 
 bool EOSSDK_Connect::on_connect_infos(Network_Message_pb const& msg, Connect_Infos_pb const& infos)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    //TRACE_FUNC();
     GLOBAL_LOCK();
 
     auto& user = _users[GetProductUserId(msg.source_id())];
@@ -700,8 +700,8 @@ bool EOSSDK_Connect::CBRunFrame()
         if ((now - user.second.last_hearbeat) > alive_heartbeat)
         {
             LOG(Log::LogLevel::DEBUG, "User disconnected (pid=%s, uid=%s)", user.first->to_string().c_str(), user.second.infos.userid().c_str());
-            user.second.connected = false;
-            GetEOS_Presence().set_user_status(GetEpicUserId(user.second.infos.userid()), EOS_Presence_EStatus::EOS_PS_Offline);
+            //user.second.connected = false;
+            //GetEOS_Presence().set_user_status(GetEpicUserId(user.second.infos.userid()), EOS_Presence_EStatus::EOS_PS_Offline);
             continue;
         }
 

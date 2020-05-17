@@ -284,14 +284,15 @@ message Network_Message_pb {
     string source_id = 1;
     string dest_id = 2;
 	string gameid = 3;
+    int64 timestamp = 4;
     oneof messages {
-        Network_Advertise_pb network_advertise = 4;
-		Friends_Message_pb friends = 5;
-        Presence_Message_pb presence = 6;
-        UserInfo_Message_pb userinfo = 7;
-        Session_Message_pb session = 8;
-        P2P_Message_pb p2p = 9;
-        Connect_Message_pb connect = 10;
-        Sessions_Search_Message_pb sessions_search = 11;
+        Network_Advertise_pb network_advertise = 5;
+		Friends_Message_pb friends = 6;
+        Presence_Message_pb presence = 7;
+        UserInfo_Message_pb userinfo = 8;
+        Session_Message_pb session = 9;
+        P2P_Message_pb p2p = 10;
+        Connect_Message_pb connect = 11;
+        Sessions_Search_Message_pb sessions_search = 12;
     }
 }

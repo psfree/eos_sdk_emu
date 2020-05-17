@@ -47,7 +47,7 @@ EOSSDK_Friends::~EOSSDK_Friends()
   */
 void EOSSDK_Friends::QueryFriends(const EOS_Friends_QueryFriendsOptions* Options, void* ClientData, const EOS_Friends_OnQueryFriendsCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
     
     pFrameResult_t res(new FrameResult);
@@ -78,7 +78,7 @@ void EOSSDK_Friends::QueryFriends(const EOS_Friends_QueryFriendsOptions* Options
  */
 void EOSSDK_Friends::SendInvite(const EOS_Friends_SendInviteOptions* Options, void* ClientData, const EOS_Friends_OnSendInviteCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
     
 
@@ -93,7 +93,7 @@ void EOSSDK_Friends::SendInvite(const EOS_Friends_SendInviteOptions* Options, vo
  */
 void EOSSDK_Friends::AcceptInvite(const EOS_Friends_AcceptInviteOptions* Options, void* ClientData, const EOS_Friends_OnAcceptInviteCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
     
 
@@ -108,7 +108,7 @@ void EOSSDK_Friends::AcceptInvite(const EOS_Friends_AcceptInviteOptions* Options
  */
 void EOSSDK_Friends::RejectInvite(const EOS_Friends_RejectInviteOptions* Options, void* ClientData, const EOS_Friends_OnRejectInviteCallback CompletionDelegate)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
     
 
@@ -124,7 +124,7 @@ void EOSSDK_Friends::RejectInvite(const EOS_Friends_RejectInviteOptions* Options
  */
 int32_t EOSSDK_Friends::GetFriendsCount(const EOS_Friends_GetFriendsCountOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     return static_cast<int32_t>(_friends.size());
@@ -143,7 +143,7 @@ int32_t EOSSDK_Friends::GetFriendsCount(const EOS_Friends_GetFriendsCountOptions
  */
 EOS_EpicAccountId EOSSDK_Friends::GetFriendAtIndex(const EOS_Friends_GetFriendAtIndexOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     if (Options == nullptr || Options->Index >= _friends.size())
@@ -169,7 +169,7 @@ EOS_EpicAccountId EOSSDK_Friends::GetFriendAtIndex(const EOS_Friends_GetFriendAt
  */
 EOS_EFriendsStatus EOSSDK_Friends::GetStatus(const EOS_Friends_GetStatusOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     if (Options == nullptr || Options->TargetUserId == nullptr)
@@ -192,7 +192,7 @@ EOS_EFriendsStatus EOSSDK_Friends::GetStatus(const EOS_Friends_GetStatusOptions*
  */
 EOS_NotificationId EOSSDK_Friends::AddNotifyFriendsUpdate(const EOS_Friends_AddNotifyFriendsUpdateOptions* Options, void* ClientData, const EOS_Friends_OnFriendsUpdateCallback FriendsUpdateHandler)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     pFrameResult_t res(new FrameResult);
@@ -214,7 +214,7 @@ EOS_NotificationId EOSSDK_Friends::AddNotifyFriendsUpdate(const EOS_Friends_AddN
  */
 void EOSSDK_Friends::RemoveNotifyFriendsUpdate(EOS_NotificationId NotificationId)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     GetCB_Manager().remove_notification(this, NotificationId);
@@ -225,7 +225,7 @@ void EOSSDK_Friends::RemoveNotifyFriendsUpdate(EOS_NotificationId NotificationId
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Friends::send_friend_info_request(Network::peer_t const& peerid, Friend_Info_Request_pb* req)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
@@ -242,7 +242,7 @@ bool EOSSDK_Friends::send_friend_info_request(Network::peer_t const& peerid, Fri
 
 bool EOSSDK_Friends::send_friend_info(Network::peer_t const& peerid, Friend_Info_pb* infos)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
@@ -262,7 +262,7 @@ bool EOSSDK_Friends::send_friend_info(Network::peer_t const& peerid, Friend_Info
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Friends::on_friend_info_request(Network_Message_pb const& msg, Friend_Info_Request_pb const& req)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     Friend_Info_pb* infos = new Friend_Info_pb;
@@ -271,7 +271,7 @@ bool EOSSDK_Friends::on_friend_info_request(Network_Message_pb const& msg, Frien
 
 bool EOSSDK_Friends::on_friend_info(Network_Message_pb const& msg, Friend_Info_pb const& infos)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
     return true;
 }

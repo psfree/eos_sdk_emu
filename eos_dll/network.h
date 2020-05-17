@@ -19,6 +19,10 @@
 
 #pragma once
 
+#if defined(NETWORK_COMPRESS)
+#include <zstd.h>
+#endif
+
 #include "common_includes.h"
 #include "task.h"
 
@@ -42,6 +46,17 @@ private:
     static constexpr uint16_t network_port = 55789;
     static constexpr uint16_t max_network_port = (network_port + 10);
 
+#if defined(NETWORK_COMPRESS)
+    ZSTD_CCtx* _zstd_ccontext;
+    ZSTD_DCtx* _zstd_dcontext;
+
+    std::string compress(void const* data, size_t len);
+    std::string decompress(void const* data, size_t len);
+#else
+    std::string compress(void const* data, size_t len) { return std::string((char const*)data, (char const*)data + len); }
+    std::string decompress(void const* data, size_t len) { return std::string((char const*)data, (char const*)data + len); }
+#endif
+
     bool _advertise;
     std::chrono::steady_clock::time_point _last_advertise;
     std::set<peer_t> _my_peer_ids;
@@ -62,7 +77,17 @@ private:
 
     std::map<Network_Message_pb::MessagesCase, std::map<channel_t, std::vector<IRunFrame*>>> _network_listeners;
 
-    std::mutex local_mutex;
+    // Lock message_mutex when accessing:
+    //  _pending_network_msgs
+    std::mutex message_mutex;
+    // Lock local_mutex when accessing:
+    //  _udp_addrs
+    //  _tcp_clients
+    //  _tcp_peers
+    //  _my_peer_ids
+    //  _network_listeners
+    //  _advertise
+    std::recursive_mutex local_mutex;
 
     void start_network();
     void stop_network();
@@ -114,7 +139,4 @@ public:
 
     std::set<peer_t> TCPSendToAllPeers(Network_Message_pb& msg);
     bool TCPSendTo(Network_Message_pb& msg);
-
-    bool StartQueryServer(PortableAPI::ipv4_addr& addr);
-    void StopQueryServer();
 };

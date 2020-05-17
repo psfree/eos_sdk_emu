@@ -346,7 +346,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_CopySearchResultByIndex(EOS_HSes
 */
 EOS_DECLARE_FUNC(void) EOS_SessionModification_Release(EOS_HSessionModification SessionModificationHandle)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     if (SessionModificationHandle == nullptr)
         return;
@@ -365,7 +365,7 @@ EOS_DECLARE_FUNC(void) EOS_SessionModification_Release(EOS_HSessionModification 
  */
 EOS_DECLARE_FUNC(void) EOS_ActiveSession_Release(EOS_HActiveSession ActiveSessionHandle)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     if (ActiveSessionHandle == nullptr)
         return;
@@ -383,7 +383,7 @@ EOS_DECLARE_FUNC(void) EOS_ActiveSession_Release(EOS_HActiveSession ActiveSessio
  */
 EOS_DECLARE_FUNC(void) EOS_SessionDetails_Release(EOS_HSessionDetails SessionHandle)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     if (SessionHandle == nullptr)
         return;
@@ -401,7 +401,7 @@ EOS_DECLARE_FUNC(void) EOS_SessionDetails_Release(EOS_HSessionDetails SessionHan
  */
 EOS_DECLARE_FUNC(void) EOS_SessionSearch_Release(EOS_HSessionSearch SessionSearchHandle)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     if (SessionSearchHandle == nullptr)
         return;
@@ -419,7 +419,7 @@ EOS_DECLARE_FUNC(void) EOS_SessionSearch_Release(EOS_HSessionSearch SessionSearc
  */
 EOS_DECLARE_FUNC(void) EOS_SessionDetails_Attribute_Release(EOS_SessionDetails_Attribute* SessionAttribute)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     if (SessionAttribute == nullptr)
         return;
@@ -435,7 +435,7 @@ EOS_DECLARE_FUNC(void) EOS_SessionDetails_Attribute_Release(EOS_SessionDetails_A
 
 EOS_DECLARE_FUNC(void) EOS_SessionDetails_Info_Release(EOS_SessionDetails_Info* SessionInfo)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     if (SessionInfo == nullptr)
         return;
@@ -458,7 +458,7 @@ EOS_DECLARE_FUNC(void) EOS_SessionDetails_Info_Release(EOS_SessionDetails_Info* 
  */
 EOS_DECLARE_FUNC(void) EOS_ActiveSession_Info_Release(EOS_ActiveSession_Info* ActiveSessionInfo)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     if (ActiveSessionInfo == nullptr)
         return;

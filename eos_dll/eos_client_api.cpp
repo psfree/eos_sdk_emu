@@ -95,7 +95,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
     GLOBAL_LOCK();
 
     Settings::Inst();
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     auto &inst = EOSSDK_Client::Inst();
 
@@ -129,6 +129,10 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
             LOG(Log::LogLevel::DEBUG, "ProductName = %s", p->ProductName);
             LOG(Log::LogLevel::DEBUG, "ProductVersion = %s", p->ProductVersion);
 
+            inst._allocate_memory_func = p->AllocateMemoryFunction;
+            inst._reallocate_memory_func = p->ReallocateMemoryFunction;
+            inst._release_memory_func = p->ReleaseMemoryFunction;
+
             inst.api_version = p->ApiVersion;
             if (p->ProductName != nullptr)
                 inst.product_name = Options->ProductName;
@@ -152,7 +156,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Shutdown()
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     if (!EOSSDK_Client::Inst()._sdk_initialized)
@@ -171,7 +175,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Shutdown()
  */
 EOS_DECLARE_FUNC(const char*) EOS_EResult_ToString(EOS_EResult Result)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     switch (Result)
     {
@@ -357,7 +361,7 @@ EOS_DECLARE_FUNC(const char*) EOS_EResult_ToString(EOS_EResult Result)
  */
 EOS_DECLARE_FUNC(EOS_Bool) EOS_EResult_IsOperationComplete(EOS_EResult Result)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     return EOS_TRUE;
 }
@@ -372,7 +376,7 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_EResult_IsOperationComplete(EOS_EResult Result)
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_ByteArray_ToString(const uint8_t* ByteArray, const uint32_t Length, char* OutBuffer, uint32_t* InOutBufferLength)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     return EOS_EResult::EOS_Success;
 }
@@ -385,7 +389,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ByteArray_ToString(const uint8_t* ByteArray, c
  */
 EOS_DECLARE_FUNC(EOS_Bool) EOS_EpicAccountId_IsValid(EOS_EpicAccountId AccountId)
 {
-    //LOG(Log::LogLevel::TRACE, "");
+    //TRACE_FUNC();
     if (AccountId == nullptr)
         return EOS_FALSE;
 
@@ -409,7 +413,7 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_EpicAccountId_IsValid(EOS_EpicAccountId AccountId
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_EpicAccountId_ToString(EOS_EpicAccountId AccountId, char* OutBuffer, int32_t* InOutBufferLength)
 {
-    //LOG(Log::LogLevel::TRACE, "");
+    //TRACE_FUNC();
     if (AccountId == nullptr || !AccountId->IsValid())
         return EOS_EResult::EOS_InvalidUser;
 
@@ -424,7 +428,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_EpicAccountId_ToString(EOS_EpicAccountId Accou
  */
 EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_EpicAccountId_FromString(const char* AccountIdString)
 {
-    //LOG(Log::LogLevel::TRACE, "");
+    //TRACE_FUNC();
     if (AccountIdString == nullptr)
         return EOSSDK_Client::Inst().get_epicuserid(sdk::NULL_USER_ID);
 
@@ -439,7 +443,7 @@ EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_EpicAccountId_FromString(const char* Acc
  */
 EOS_DECLARE_FUNC(EOS_Bool) EOS_ProductUserId_IsValid(EOS_ProductUserId AccountId)
 {
-    //LOG(Log::LogLevel::TRACE, "");
+    //TRACE_FUNC();
     if (AccountId == nullptr)
         return EOS_FALSE;
 
@@ -463,7 +467,7 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_ProductUserId_IsValid(EOS_ProductUserId AccountId
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_ProductUserId_ToString(EOS_ProductUserId AccountId, char* OutBuffer, int32_t* InOutBufferLength)
 {
-    //LOG(Log::LogLevel::TRACE, "");
+    //TRACE_FUNC();
 
     if (AccountId == nullptr || !AccountId->IsValid())
         return EOS_EResult::EOS_InvalidUser;
@@ -479,7 +483,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ProductUserId_ToString(EOS_ProductUserId Accou
  */
 EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_ProductUserId_FromString(const char* AccountIdString)
 {
-    //LOG(Log::LogLevel::TRACE, "");
+    //TRACE_FUNC();
     if (AccountIdString == nullptr)
         return EOSSDK_Client::Inst().get_productuserid(sdk::NULL_USER_ID);
 
@@ -497,7 +501,7 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_ProductUserId_FromString(const char* Acc
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Logging_SetCallback(EOS_LogMessageFunc Callback)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     return EOS_EResult::EOS_Success;
 }
@@ -513,7 +517,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Logging_SetCallback(EOS_LogMessageFunc Callbac
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Logging_SetLogLevel(EOS_ELogCategory LogCategory, EOS_ELogLevel LogLevel)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
 
     return EOS_EResult::EOS_Success;
 }

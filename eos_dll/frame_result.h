@@ -77,12 +77,14 @@ struct FrameResult
     }
 
     template<typename T>
-    inline T& CreateCallback(CallbackFunc func, std::chrono::milliseconds ok_timeout = std::chrono::milliseconds(20))
+    inline T& CreateCallback(CallbackFunc func, std::chrono::milliseconds ok_timeout = std::chrono::milliseconds(100))
     {
         this->ok_timeout = ok_timeout;
-        T* cb = reinterpret_cast<T*>(new uint8_t[sizeof(T)]);
+        uint8_t* buff = new uint8_t[sizeof(T)];
+        T* cb = new (buff) T;
         SetCallback(func, cb);
-        return *reinterpret_cast<T*>(res.data);
+        res.data = buff;
+        return *cb;
     }
 };
 

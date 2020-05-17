@@ -38,7 +38,7 @@ namespace sdk
   */
 EOS_EResult EOSSDK_SessionModification::SetBucketId(const EOS_SessionModification_SetBucketIdOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::lock_guard<std::mutex> lg(_local_mutex);
     
     if (Options == nullptr || Options->BucketId == nullptr)
@@ -64,7 +64,7 @@ EOS_EResult EOSSDK_SessionModification::SetBucketId(const EOS_SessionModificatio
  */
 EOS_EResult EOSSDK_SessionModification::SetHostAddress(const EOS_SessionModification_SetHostAddressOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::lock_guard<std::mutex> lg(_local_mutex);
     
     if (Options == nullptr || Options->HostAddress == nullptr)
@@ -86,7 +86,7 @@ EOS_EResult EOSSDK_SessionModification::SetHostAddress(const EOS_SessionModifica
  */
 EOS_EResult EOSSDK_SessionModification::SetPermissionLevel(const EOS_SessionModification_SetPermissionLevelOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::lock_guard<std::mutex> lg(_local_mutex);
     
     if (Options == nullptr)
@@ -108,7 +108,7 @@ EOS_EResult EOSSDK_SessionModification::SetPermissionLevel(const EOS_SessionModi
  */
 EOS_EResult EOSSDK_SessionModification::SetJoinInProgressAllowed(const EOS_SessionModification_SetJoinInProgressAllowedOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::lock_guard<std::mutex> lg(_local_mutex);
     
     if (Options == nullptr)
@@ -130,7 +130,7 @@ EOS_EResult EOSSDK_SessionModification::SetJoinInProgressAllowed(const EOS_Sessi
  */
 EOS_EResult EOSSDK_SessionModification::SetMaxPlayers(const EOS_SessionModification_SetMaxPlayersOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::lock_guard<std::mutex> lg(_local_mutex);
     
     if (Options == nullptr)
@@ -152,7 +152,7 @@ EOS_EResult EOSSDK_SessionModification::SetMaxPlayers(const EOS_SessionModificat
  */
 EOS_EResult EOSSDK_SessionModification::SetInvitesAllowed(const EOS_SessionModification_SetInvitesAllowedOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::lock_guard<std::mutex> lg(_local_mutex);
     
     if (Options == nullptr)
@@ -176,7 +176,7 @@ EOS_EResult EOSSDK_SessionModification::SetInvitesAllowed(const EOS_SessionModif
  */
 EOS_EResult EOSSDK_SessionModification::AddAttribute(const EOS_SessionModification_AddAttributeOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::lock_guard<std::mutex> lg(_local_mutex);
     
     if (Options == nullptr || Options->SessionAttribute->Key == nullptr ||
@@ -208,7 +208,7 @@ EOS_EResult EOSSDK_SessionModification::AddAttribute(const EOS_SessionModificati
  */
 EOS_EResult EOSSDK_SessionModification::RemoveAttribute(const EOS_SessionModification_RemoveAttributeOptions* Options)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     std::lock_guard<std::mutex> lg(_local_mutex);
     
     if (Options == nullptr || Options->Key == nullptr)

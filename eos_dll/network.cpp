@@ -22,23 +22,53 @@
 
 using namespace PortableAPI;
 
+static uint64_t max_message_size = 0;
+static uint64_t max_compressed_message_size = 0;
 Network::Network():
     _udp_socket(),
     _tcp_self_recv({})
 {
     //LOG(Log::LogLevel::DEBUG, "");
+#if defined(NETWORK_COMPRESS)
+    _zstd_ccontext = ZSTD_createCCtx();
+    _zstd_dcontext = ZSTD_createDCtx();
+#endif
+
     _network_task.run(&Network::network_thread, this);
 }
 
 Network::~Network()
 {
-    //LOG(Log::LogLevel::DEBUG, "");
+    LOG(Log::LogLevel::DEBUG, "Shutting down Network, biggest message size was %llu, biggest compressed message size was %llu", max_message_size, max_compressed_message_size);
 
     _network_task.stop();
     _network_task.join();
 
+#if defined(NETWORK_COMPRESS)
+    ZSTD_freeCCtx(_zstd_ccontext);
+    ZSTD_freeDCtx(_zstd_dcontext);
+#endif
+
     //LOG(Log::LogLevel::DEBUG, "Network Thread Joined");
 }
+
+#if defined(NETWORK_COMPRESS)
+
+std::string Network::compress(void const* data, size_t len)
+{
+    std::string res(ZSTD_compressBound(len), '\0');
+    res.resize(ZSTD_compressCCtx(_zstd_ccontext, &res[0], res.length(), data, len, 20));
+    return res;
+}
+
+std::string Network::decompress(void const* data, size_t len)
+{
+    std::string res(3072, 0);
+    res.resize(ZSTD_decompressDCtx(_zstd_dcontext, &res[0], res.length(), data, len));
+    return res;
+}
+
+#endif
 
 void Network::start_network()
 {
@@ -64,7 +94,7 @@ void Network::start_network()
     }
     else
     {
-        //LOG(Log::LogLevel::INFO, "UDP socket started on port: %hu", port);
+        LOG(Log::LogLevel::INFO, "UDP socket started on port: %hu", port);
         std::uniform_int_distribution<int64_t> dis;
         std::mt19937_64& gen = get_gen();
         int x;
@@ -83,19 +113,19 @@ void Network::start_network()
             }
             catch (...)
             {
-                //LOG(Log::LogLevel::WARN, "Failed to start tcp socket on port %hu", x);
+                LOG(Log::LogLevel::WARN, "Failed to start tcp socket on port %hu", x);
             }
         }
         if (x == 100)
         {
-            //LOG(Log::LogLevel::ERR, "Failed to start tcp socket");
+            LOG(Log::LogLevel::ERR, "Failed to start tcp socket");
             _udp_socket.close();
             _network_task.stop();
         }
         else
         {
             _tcp_port = port;
-            //LOG(Log::LogLevel::INFO, "TCP socket started after %hu tries on port: %hu", x, port);
+            LOG(Log::LogLevel::INFO, "TCP socket started after %hu tries on port: %hu", x, port);
         }
     }
 }
@@ -112,6 +142,8 @@ void Network::stop_network()
 
 void Network::build_advertise_msg(Network_Message_pb& msg)
 {
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     Network_Advertise_pb* advertise = new Network_Advertise_pb;
     Network_Peer_pb* peer_pb = new Network_Peer_pb;
 
@@ -136,7 +168,8 @@ void Network::build_advertise_msg(Network_Message_pb& msg)
 
 std::pair<PortableAPI::tcp_socket*, std::vector<Network::peer_t>> Network::get_new_peer_ids(Network_Peer_pb const& peer_msg)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     std::pair<tcp_socket*, std::vector<peer_t>> peer_ids_to_add;
     peer_ids_to_add.first = nullptr;
     peer_ids_to_add.second.reserve(peer_msg.peer_ids_size());
@@ -158,6 +191,8 @@ std::pair<PortableAPI::tcp_socket*, std::vector<Network::peer_t>> Network::get_n
 
 void Network::do_advertise()
 {
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     auto now = std::chrono::steady_clock::now();
     if ((now - _last_advertise) < std::chrono::milliseconds(2000))
         return;
@@ -166,7 +201,6 @@ void Network::do_advertise()
 
     try
     {
-        std::lock_guard<std::mutex> lk(local_mutex);
         if (_advertise && !_my_peer_ids.empty())
         {
             Network_Message_pb msg;
@@ -189,7 +223,7 @@ void Network::do_advertise()
 
 void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_t> const& peer_ids, bool advertise)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
     _poll.add_socket(*cli); // Add the client to the poll
     _poll.set_events(*cli, Socket::poll_flags::in);
@@ -216,7 +250,8 @@ void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_
 
 void Network::remove_tcp_peer(tcp_buffer_t& tcp_buffer)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     //LOG(Log::LogLevel::DEBUG, "TCP Client %s gone: %s", client->socket.get_addr().to_string().c_str(), e.what());
     _poll.remove_socket(tcp_buffer.socket);
     // Remove the peer mappings
@@ -237,22 +272,28 @@ void Network::connect_to_peer(ipv4_addr &addr, peer_t const& peer_id)
     {
         if (_waiting_out_tcp_clients.count(peer_id) == 0)
         {
-            //LOG(Log::LogLevel::DEBUG, "Connecting to %s : %llu", addr.to_string(true).c_str(), peer_id);
+            LOG(Log::LogLevel::DEBUG, "Connecting to %s : %s", addr.to_string(true).c_str(), peer_id.c_str());
             tcp_socket new_client;
             new_client.connect(addr);
 
             Network_Message_pb msg;
             build_advertise_msg(msg);
 
-            std::string buff = std::move(msg.SerializeAsString());
+            std::string buff(sizeof(uint16_t), 0);
+            std::string data(std::move(msg.SerializeAsString()));
+            buff += std::move(compress(data.data(), data.length()));
+            *reinterpret_cast<uint16_t*>(&buff[0]) = Socket::net_swap(uint16_t(buff.length() - sizeof(uint16_t)));
+            max_message_size = std::max<uint64_t>(max_message_size, data.length());
+            max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buff.length());
+
             new_client.send(buff.c_str(), buff.length());
             new_client.set_nonblocking(true);
             _waiting_out_tcp_clients.emplace(peer_id, std::move(new_client));
         }
     }
-    catch (std::exception & e)
+    catch (std::exception &e)
     {
-        //LOG(Log::LogLevel::WARN, "Failed to TCP connect to %s: %s", addr.to_string().c_str(), e.what());
+        LOG(Log::LogLevel::WARN, "Failed to TCP connect to %s: %s", addr.to_string().c_str(), e.what());
     }
 }
 
@@ -272,6 +313,9 @@ void Network::process_waiting_out_clients()
             {
                 if (msg.ParseFromArray(buffer.data(), len) && msg.has_network_advertise() && msg.network_advertise().has_accept())
                 {
+                    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
+                    LOG(Log::LogLevel::DEBUG, "Connected to %s : %s", it->second.get_addr().to_string(true).c_str(), it->first.c_str());
                     it->second.set_nonblocking(false);
                     tcp_buffer_t new_buff({});
                     new_buff.socket = std::move(it->second);
@@ -292,7 +336,7 @@ void Network::process_waiting_out_clients()
         catch (std::exception &e)
         {
             // Error while reading, connection closed ?
-            //LOG(Log::LogLevel::WARN, "Failed peer pair: %s", e.what());
+            LOG(Log::LogLevel::WARN, "Failed peer pair: %s", e.what());
             it = _waiting_out_tcp_clients.erase(it);
         }
     }
@@ -307,16 +351,28 @@ void Network::process_waiting_in_client(tcp_socket &new_client)
     {
         std::array<uint8_t, 2048> buff;
         Network_Message_pb msg;
-        size_t len = new_client.recv(buff.data(), buff.size());
-        if (len > 0 &&
-            msg.ParseFromArray(buff.data(), len) &&
+        uint16_t message_size;
+        size_t len = 0;
+        while(len != sizeof(uint16_t))
+            len += new_client.recv(&message_size, sizeof(uint16_t) - len);
+
+        len = 0;
+        message_size = Socket::net_swap(message_size);
+        while (len != message_size)
+            len += new_client.recv(buff.data() + len, message_size - len);
+
+        std::string decompressed_data(std::move(decompress(buff.data(), len)));
+
+        if (msg.ParseFromArray(decompressed_data.data(), decompressed_data.length()) &&
             msg.source_id() != peer_t() &&
             msg.has_network_advertise() &&
             msg.network_advertise().has_peer())
         {
+            std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
             auto const& peer_msg = msg.network_advertise().peer();
             std::pair<tcp_socket*, std::vector<peer_t>> peer_ids_to_add = std::move(get_new_peer_ids(peer_msg));
-            
+
             if (!peer_ids_to_add.second.empty())
             {// We have peer ids to add
                 if (peer_ids_to_add.first == nullptr)
@@ -334,8 +390,16 @@ void Network::process_waiting_in_client(tcp_socket &new_client)
 
 void Network::process_network_message(Network_Message_pb &msg)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::mutex> lk(message_mutex);
+
+    std::chrono::system_clock::time_point msg_time(std::chrono::milliseconds(msg.timestamp()));
     
+    if ((std::chrono::system_clock::now() - msg_time) > std::chrono::milliseconds(1500))
+    {
+        LOG(Log::LogLevel::WARN, "Message dropped because it was too old");
+        return;
+    }
+
     if (msg.dest_id() == peer_t())
     {// If we received a message without a destination, then its a broadcast.
         // Add the message to all listeners queue
@@ -357,43 +421,63 @@ void Network::process_udp()
         std::array<uint8_t, 4096> buffer;
         Network_Message_pb msg;
         size_t len;
+        
         len = _udp_socket.recvfrom(addr, buffer.data(), buffer.size());
-        if (len > 0 && msg.ParseFromArray(buffer.data(), len) && msg.source_id() != peer_t())
+        if (len > 0)
         {
+            std::string buff = std::move(decompress(buffer.data(), len));
+            if (msg.ParseFromArray(buff.data(), buff.length()))
             {
-                std::lock_guard<std::mutex> lk(local_mutex);
-                _udp_addrs[msg.source_id()] = addr;
-            }
-            //LOG(Log::LogLevel::TRACE, "Received UDP message from: %s - %s", addr.to_string().c_str(), msg.source_id().c_str());
-            if (msg.has_network_advertise())
-            {
-                auto const& advertise = msg.network_advertise();
-                if (advertise.has_port())
+                if (msg.source_id() != peer_t())
                 {
-                    if (!_my_peer_ids.empty() &&
-                        _my_peer_ids.count(msg.source_id()) == 0 &&
-                        _tcp_peers.count(msg.source_id()) == 0)
                     {
-                        ipv4_addr peer_addr;
-                        peer_addr.set_ip(addr.get_ip());
-                        peer_addr.set_port(advertise.port().port());
-                        connect_to_peer(peer_addr, msg.source_id());
+                        std::lock_guard<std::recursive_mutex> lk(local_mutex);
+                        _udp_addrs[msg.source_id()] = addr;
+                    }
+                    //LOG(Log::LogLevel::TRACE, "Received UDP message from: %s - %s", addr.to_string().c_str(), msg.source_id().c_str());
+                    if (msg.has_network_advertise())
+                    {
+                        auto const& advertise = msg.network_advertise();
+                        if (advertise.has_port())
+                        {
+                            std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
+                            if (!_my_peer_ids.empty() &&
+                                _my_peer_ids.count(msg.source_id()) == 0 &&
+                                _tcp_peers.count(msg.source_id()) == 0)
+                            {
+                                ipv4_addr peer_addr;
+                                peer_addr.set_ip(addr.get_ip());
+                                peer_addr.set_port(advertise.port().port());
+                                connect_to_peer(peer_addr, msg.source_id());
+                            }
+                        }
+                        else if (advertise.has_peer())
+                        {
+                            std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
+                            std::pair<tcp_socket*, std::vector<peer_t>> peer_ids_to_add = std::move(get_new_peer_ids(advertise.peer()));
+
+                            if (peer_ids_to_add.first != nullptr && !peer_ids_to_add.second.empty())
+                            {// We have peer ids to add
+                                add_new_tcp_client(peer_ids_to_add.first, peer_ids_to_add.second, false);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //LOG(Log::LogLevel::DEBUG, "Received UDP message from %s type %d", addr.to_string(true).c_str(), msg.messages_case());
+                        process_network_message(msg);
                     }
                 }
-                else if (advertise.has_peer())
+                else
                 {
-                    std::pair<tcp_socket*, std::vector<peer_t>> peer_ids_to_add = std::move(get_new_peer_ids(advertise.peer()));
-
-                    if (peer_ids_to_add.first != nullptr && !peer_ids_to_add.second.empty())
-                    {// We have peer ids to add
-                        add_new_tcp_client(peer_ids_to_add.first, peer_ids_to_add.second, false);
-                    }
+                    LOG(Log::LogLevel::DEBUG, "Dropping UDP data: peer_id is null");
                 }
             }
             else
             {
-                LOG(Log::LogLevel::DEBUG, "Received UDP message from %s type %d", addr.to_string(true).c_str(), msg.messages_case());
-                process_network_message(msg);
+                LOG(Log::LogLevel::DEBUG, "Dropping UDP data: failed to pase protobuf");
             }
         }
     }
@@ -408,17 +492,18 @@ void Network::process_tcp_listen()
     try
     {
         tcp_socket new_client = std::move(_tcp_socket.accept());
-        //LOG(Log::LogLevel::DEBUG, "Accepted TCP client %s", new_client.get_addr().to_string().c_str());
         process_waiting_in_client(new_client);
     }
     catch (socket_exception & e)
     {
-        //LOG(Log::LogLevel::WARN, "Tcp socket exception: %s", e.what());
+        LOG(Log::LogLevel::WARN, "TCP Listen exception: %s", e.what());
     }
 }
 
 void Network::process_tcp_data(tcp_buffer_t& tcp_buffer)
 {
+    // Don't lock here, its already locked in network_thread when needed
+
     Network_Message_pb msg;
     size_t len;
 
@@ -442,7 +527,8 @@ void Network::process_tcp_data(tcp_buffer_t& tcp_buffer)
         if (tcp_buffer.received_size == tcp_buffer.next_packet_size)
         {// Message read, parse it now
             tcp_buffer.next_packet_size = 0;
-            if (msg.ParseFromArray(tcp_buffer.buffer.data(), tcp_buffer.received_size))
+            std::string buff = std::move(decompress(tcp_buffer.buffer.data(), tcp_buffer.received_size));
+            if (msg.ParseFromArray(buff.data(), buff.length()))
             {
                 //LOG(Log::LogLevel::DEBUG, "Received TCP message from %s type %d", tcp_buffer.socket.get_addr().to_string(true).c_str(), msg.messages_case());
                 process_network_message(msg);
@@ -497,29 +583,32 @@ void Network::network_thread()
             }
         }
         
-        for (auto it = _tcp_clients.begin(); it != _tcp_clients.end();)
-        {// Process the multiple tcp clients we have
-            auto reevents = _poll.get_revents(it->socket);
-            if ((reevents & Socket::poll_flags::hup) != Socket::poll_flags::none)
-            {
-                remove_tcp_peer(*it);
-                it = _tcp_clients.erase(it);
-            }
-            else if ((reevents & Socket::poll_flags::in_hup) != Socket::poll_flags::none)
-            {
-                try
-                {
-                    process_tcp_data(*it);
-                    ++it;
-                }
-                catch (std::exception & e)
+        {
+            std::lock_guard<std::recursive_mutex> lk(local_mutex);
+            for (auto it = _tcp_clients.begin(); it != _tcp_clients.end();)
+            {// Process the multiple tcp clients we have
+                auto reevents = _poll.get_revents(it->socket);
+                if ((reevents & Socket::poll_flags::hup) != Socket::poll_flags::none)
                 {
                     remove_tcp_peer(*it);
                     it = _tcp_clients.erase(it);
                 }
+                else if ((reevents & Socket::poll_flags::in_hup) != Socket::poll_flags::none)
+                {
+                    try
+                    {
+                        process_tcp_data(*it);
+                        ++it;
+                    }
+                    catch (std::exception & e)
+                    {
+                        remove_tcp_peer(*it);
+                        it = _tcp_clients.erase(it);
+                    }
+                }
+                else
+                    ++it;
             }
-            else
-                ++it;
         }
         
         // We might have found a peer while he didn't find us yet, so begin the connection procedure
@@ -529,45 +618,51 @@ void Network::network_thread()
 
 void Network::advertise_peer_id(peer_t const& peerid)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     _my_peer_ids.insert(peerid);
     _tcp_peers[peerid] = &_tcp_self_send;
 }
 
 void Network::remove_advertise_peer_id(peer_t const& peerid)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     _my_peer_ids.erase(peerid);
     _tcp_peers.erase(peerid);
 }
 
 void Network::advertise(bool doit)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
     _advertise = doit;
 }
 
 bool Network::is_advertising()
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     return _advertise;
 }
 
 void Network::set_default_channel(peer_t peerid, channel_t default_channel)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     _default_channels[peerid] = default_channel;
 }
 
 void Network::register_listener(IRunFrame* listener, channel_t channel, Network_Message_pb::MessagesCase type)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     _network_listeners[type][channel].push_back(listener);
 }
 
 void Network::unregister_listener(IRunFrame* listener, channel_t channel, Network_Message_pb::MessagesCase type)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     auto& listeners = _network_listeners[type][channel];
     listeners.erase(
         std::remove(listeners.begin(), listeners.end(), listener),
@@ -577,36 +672,39 @@ void Network::unregister_listener(IRunFrame* listener, channel_t channel, Networ
 bool Network::CBRunFrame(channel_t channel, Network_Message_pb::MessagesCase MessageFilter)
 {
     bool rerun = false;
-
     auto& channel_messages = _network_msgs[channel];
-    for (auto it = channel_messages.begin(); it != channel_messages.end(); )
     {
-        auto msg_case = it->messages_case();
-        if (msg_case != Network_Message_pb::MessagesCase::MESSAGES_NOT_SET)
+        std::lock_guard<std::recursive_mutex> lk(local_mutex);
+        for (auto it = channel_messages.begin(); it != channel_messages.end(); )
         {
-            if (MessageFilter == Network_Message_pb::MessagesCase::MESSAGES_NOT_SET || MessageFilter == msg_case)
+            auto msg_case = it->messages_case();
+            if (msg_case != Network_Message_pb::MessagesCase::MESSAGES_NOT_SET)
             {
-                auto& listeners = _network_listeners[msg_case][channel];
-                for (auto& item : listeners)
-                    item->RunNetwork(*it);
+                if (MessageFilter == Network_Message_pb::MessagesCase::MESSAGES_NOT_SET || MessageFilter == msg_case)
+                {
+                    auto& listeners = _network_listeners[msg_case][channel];
+                    for (auto& item : listeners)
+                        item->RunNetwork(*it);
 
-                it = channel_messages.erase(it);
+                    it = channel_messages.erase(it);
 
-                rerun = true;
+                    rerun = true;
+                }
+                else
+                {
+                    ++it;
+                }
             }
             else
-            {
-                ++it;
+            {// Don't care about invalid message
+                it = channel_messages.erase(it);
             }
-        }
-        else
-        {// Don't care about invalid message
-            it = channel_messages.erase(it);
         }
     }
 
     {
-        std::lock_guard<std::mutex> lk(local_mutex);
+        std::lock_guard<std::mutex> lk(message_mutex);
+
         auto& pending_channel_messages = _pending_network_msgs[channel];
         if (!pending_channel_messages.empty())
         {
@@ -620,6 +718,8 @@ bool Network::CBRunFrame(channel_t channel, Network_Message_pb::MessagesCase Mes
 
 bool Network::SendBroadcast(Network_Message_pb& msg)
 {
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     std::vector<ipv4_addr> broadcasts = std::move(get_broadcasts());
 
     assert((msg.source_id() != peer_t() && "Source id cannot be null"));
@@ -628,7 +728,12 @@ bool Network::SendBroadcast(Network_Message_pb& msg)
     //if (msg.appid() == 0)
     //    msg.set_appid(Settings::Inst().gameid.AppID());
 
-    std::string buffer = std::move(msg.SerializeAsString());
+    msg.set_timestamp(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+
+    std::string buffer(std::move(msg.SerializeAsString()));
+    max_message_size = std::max<uint64_t>(max_message_size, buffer.length());
+    buffer = std::move(compress(buffer.data(), buffer.length()));
+    max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buffer.length());
     for (auto& brd : broadcasts)
     {
         for (uint16_t port = network_port; port < max_network_port; ++port)
@@ -637,7 +742,7 @@ bool Network::SendBroadcast(Network_Message_pb& msg)
             try
             {
                 _udp_socket.sendto(brd, buffer.data(), buffer.length());
-                ////LOG(Log::LogLevel::TRACE, "Send broadcast");
+                //LOG(Log::LogLevel::TRACE, "Send broadcast");
             }
             catch (socket_exception & e)
             {
@@ -652,7 +757,7 @@ bool Network::SendBroadcast(Network_Message_pb& msg)
 
 std::set<Network::peer_t> Network::UDPSendToAllPeers(Network_Message_pb& msg)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
     assert((msg.source_id() != peer_t() && "Source id cannot be null"));
 
@@ -664,8 +769,12 @@ std::set<Network::peer_t> Network::UDPSendToAllPeers(Network_Message_pb& msg)
     std::for_each(_udp_addrs.begin(), _udp_addrs.end(), [&](std::pair<peer_t const, PortableAPI::ipv4_addr>& peer_infos)
     {
         msg.set_dest_id(peer_infos.first);
+        msg.set_timestamp(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 
-        std::string buffer = std::move(msg.SerializeAsString());
+        std::string buffer(std::move(msg.SerializeAsString()));
+        max_message_size = std::max<uint64_t>(max_message_size, buffer.length());
+        buffer = std::move(compress(buffer.data(), buffer.length()));
+        max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buffer.length());
         try
         {
             _udp_socket.sendto(peer_infos.second, buffer.c_str(), buffer.length());
@@ -683,7 +792,7 @@ std::set<Network::peer_t> Network::UDPSendToAllPeers(Network_Message_pb& msg)
 
 bool Network::UDPSendTo(Network_Message_pb& msg)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
     assert((msg.source_id() != peer_t() && "Source id cannot be null"));
 
@@ -697,7 +806,12 @@ bool Network::UDPSendTo(Network_Message_pb& msg)
     //if (msg.appid() == 0)
     //    msg.set_appid(Settings::Inst().gameid.AppID());
 
-    std::string buffer = std::move(msg.SerializeAsString());
+    msg.set_timestamp(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+
+    std::string buffer(std::move(msg.SerializeAsString()));
+    max_message_size = std::max<uint64_t>(max_message_size, buffer.length());
+    buffer = std::move(compress(buffer.data(), buffer.length()));
+    max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buffer.length());
     try
     {
         _udp_socket.sendto(it->second, buffer.c_str(), buffer.length());
@@ -714,7 +828,8 @@ bool Network::UDPSendTo(Network_Message_pb& msg)
 
 std::set<Network::peer_t> Network::TCPSendToAllPeers(Network_Message_pb& msg)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
     std::set<peer_t> peers_sent_to;
 
     assert((msg.source_id() != peer_t() && "Source id cannot be null"));
@@ -725,15 +840,19 @@ std::set<Network::peer_t> Network::TCPSendToAllPeers(Network_Message_pb& msg)
     std::for_each(_tcp_peers.begin(), _tcp_peers.end(), [&](std::pair<peer_t const, tcp_socket*>& client)
     {
         msg.set_dest_id(client.first);
+        msg.set_timestamp(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 
         std::string buffer(sizeof(uint16_t), 0);
-        buffer += std::move(msg.SerializeAsString());
+        std::string data(std::move(msg.SerializeAsString()));
+        buffer += std::move(compress(data.data(), data.length()));
         *reinterpret_cast<uint16_t*>(&buffer[0]) = Socket::net_swap(uint16_t(buffer.length() - sizeof(uint16_t)));
+        max_message_size = std::max<uint64_t>(max_message_size, data.length());
+        max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buffer.length());
         try
         {
             client.second->send(buffer.c_str(), buffer.length());
             peers_sent_to.insert(client.first);
-            ////LOG(Log::LogLevel::TRACE, "Sent message to %s", peer_infos.second.to_string().c_str());
+            //LOG(Log::LogLevel::TRACE, "Sent message to %s", peer_infos.second.to_string().c_str());
         }
         catch (socket_exception & e)
         {
@@ -746,7 +865,7 @@ std::set<Network::peer_t> Network::TCPSendToAllPeers(Network_Message_pb& msg)
 
 bool Network::TCPSendTo(Network_Message_pb& msg)
 {
-    std::lock_guard<std::mutex> lk(local_mutex);
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
     assert((msg.source_id() != peer_t() && "Source id cannot be null"));
 
@@ -760,13 +879,18 @@ bool Network::TCPSendTo(Network_Message_pb& msg)
     //if (msg.appid() == 0)
     //    msg.set_appid(Settings::Inst().gameid.AppID());
 
+    msg.set_timestamp(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+
     std::string buffer(sizeof(uint16_t), 0);
-    buffer += std::move(msg.SerializeAsString());
+    std::string data(std::move(msg.SerializeAsString()));
+    buffer += std::move(compress(data.data(), data.length()));
     *reinterpret_cast<uint16_t*>(&buffer[0]) = Socket::net_swap(uint16_t(buffer.length() - sizeof(uint16_t)));
+    max_message_size = std::max<uint64_t>(max_message_size, data.length());
+    max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buffer.length());
     try
     {
         it->second->send(buffer.c_str(), buffer.length());
-        ////LOG(Log::LogLevel::TRACE, "Sent message to %s", it->second.to_string().c_str());
+        //LOG(Log::LogLevel::TRACE, "Sent message to %s", it->second.to_string().c_str());
     }
     catch (socket_exception & e)
     {
