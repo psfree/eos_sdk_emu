@@ -50,26 +50,29 @@ void EOSSDK_Ecom::QueryOwnership(const EOS_Ecom_QueryOwnershipOptions* Options, 
     {
         case EOS_ECOM_QUERYOWNERSHIP_API_002:
         {
-            auto po = reinterpret_cast<const EOS_Ecom_QueryOwnershipOptions002*>(Options);
-            //po->CatalogNamespace;
+            auto opts = reinterpret_cast<const EOS_Ecom_QueryOwnershipOptions002*>(Options);
+            LOG(Log::LogLevel::DEBUG, "CatalogNamespace: %s", (opts->CatalogNamespace == nullptr ? "" : opts->CatalogNamespace));
         }
         case EOS_ECOM_QUERYOWNERSHIP_API_001:
         {
-            auto po = reinterpret_cast<const EOS_Ecom_QueryOwnershipOptions001*>(Options);
-            qoci.LocalUserId = po->LocalUserId;
+            auto opts = reinterpret_cast<const EOS_Ecom_QueryOwnershipOptions001*>(Options);
+            qoci.LocalUserId = opts->LocalUserId;
             
             qoci.ItemOwnershipCount = Options->CatalogItemIdCount;
+            LOG(Log::LogLevel::DEBUG, "CatalogItemIdCount: %u", opts->CatalogItemIdCount);
             if (qoci.ItemOwnershipCount > 0)
             {
                 EOS_Ecom_ItemOwnership* ownerships = new EOS_Ecom_ItemOwnership[qoci.ItemOwnershipCount];
                 for (int i = 0; i < Options->CatalogItemIdCount; ++i)
                 {
+                    LOG(Log::LogLevel::DEBUG, "CatalogItemIds[%u]: %s", i, (opts->CatalogItemIds[i] == nullptr ? "" : opts->CatalogItemIds[i]));
+
                     char* id;
-                    if (po->CatalogItemIds[i] != nullptr)
+                    if (opts->CatalogItemIds[i] != nullptr)
                     {
-                        size_t idlen = strlen(po->CatalogItemIds[i])+1;
+                        size_t idlen = strlen(opts->CatalogItemIds[i])+1;
                         id = new char[idlen];
-                        strncpy(id, po->CatalogItemIds[i], idlen);
+                        strncpy(id, opts->CatalogItemIds[i], idlen);
                         
                         LOG(Log::LogLevel::INFO, "Owning Catalog Item: %s", id);
                         ownerships[i].OwnershipStatus = EOS_EOwnershipStatus::EOS_OS_Owned;
@@ -103,6 +106,23 @@ void EOSSDK_Ecom::QueryOwnershipToken(const EOS_Ecom_QueryOwnershipTokenOptions*
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    switch (Options->ApiVersion)
+    {
+        case EOS_ECOM_QUERYOWNERSHIPTOKEN_API_002:
+        {
+            auto opts = reinterpret_cast<const EOS_Ecom_QueryOwnershipTokenOptions002*>(Options);
+            LOG(Log::LogLevel::DEBUG, "CatalogNamespace: %s", (opts->CatalogNamespace == nullptr ? "" : opts->CatalogNamespace));
+        }
+        case EOS_ECOM_QUERYOWNERSHIPTOKEN_API_001:
+        {
+            auto opts = reinterpret_cast<const EOS_Ecom_QueryOwnershipTokenOptions001*>(Options);
+            LOG(Log::LogLevel::DEBUG, "CatalogItemIdCount: %u", opts->CatalogItemIdCount);
+            for (int i = 0; i < opts->CatalogItemIdCount; ++i)
+            {
+                LOG(Log::LogLevel::DEBUG, "CatalogItemIds[%u]: %s", i, (opts->CatalogItemIds[i] == nullptr ? "" : opts->CatalogItemIds[i]));
+            }
+        }
+    }
 }
 
 void EOSSDK_Ecom::QueryEntitlements(const EOS_Ecom_QueryEntitlementsOptions* Options, void* ClientData, const EOS_Ecom_OnQueryEntitlementsCallback CompletionDelegate)
@@ -110,6 +130,19 @@ void EOSSDK_Ecom::QueryEntitlements(const EOS_Ecom_QueryEntitlementsOptions* Opt
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    switch (Options->ApiVersion)
+    {
+        case EOS_ECOM_QUERYENTITLEMENTS_API_002:
+        {
+            auto opts = reinterpret_cast<const EOS_Ecom_QueryEntitlementsOptions002*>(Options);
+            LOG(Log::LogLevel::DEBUG, "bIncludeRedeemed: %d", (int)opts->bIncludeRedeemed);
+            LOG(Log::LogLevel::DEBUG, "EntitlementNameCount: %u", opts->EntitlementNameCount);
+            for (int i = 0; i < opts->EntitlementNameCount; ++i)
+            {
+                LOG(Log::LogLevel::DEBUG, "EntitlementNames[%u]: %s", i, (opts->EntitlementNames[i] == nullptr ? "" : opts->EntitlementNames[i]));
+            }
+        }
+    }
 }
 
 void EOSSDK_Ecom::QueryOffers(const EOS_Ecom_QueryOffersOptions* Options, void* ClientData, const EOS_Ecom_OnQueryOffersCallback CompletionDelegate)
@@ -117,6 +150,14 @@ void EOSSDK_Ecom::QueryOffers(const EOS_Ecom_QueryOffersOptions* Options, void* 
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    switch (Options->ApiVersion)
+    {
+        case EOS_ECOM_QUERYOFFERS_API_001:
+        {
+            auto opts = reinterpret_cast<const EOS_Ecom_QueryOffersOptions001*>(Options);
+            LOG(Log::LogLevel::DEBUG, "OverrideCatalogNamespace: %s", (opts->OverrideCatalogNamespace == nullptr ? "" : opts->OverrideCatalogNamespace));
+        }
+    }
 }
 
 void EOSSDK_Ecom::Checkout(const EOS_Ecom_CheckoutOptions* Options, void* ClientData, const EOS_Ecom_OnCheckoutCallback CompletionDelegate)
@@ -124,13 +165,46 @@ void EOSSDK_Ecom::Checkout(const EOS_Ecom_CheckoutOptions* Options, void* Client
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    switch (Options->ApiVersion)
+    {
+        case EOS_ECOM_CHECKOUT_API_001:
+        {
+            auto opts = reinterpret_cast<const EOS_Ecom_CheckoutOptions001*>(Options);
+            LOG(Log::LogLevel::DEBUG, "EntryCount: %u", opts->EntryCount);
+            LOG(Log::LogLevel::DEBUG, "OverrideCatalogNamespace: %s", (opts->OverrideCatalogNamespace == nullptr ? "" : opts->OverrideCatalogNamespace));
+            for (int i = 0; i < opts->EntryCount; ++i)
+            {
+                auto pEntry = &opts->Entries[i];
+                switch (pEntry->ApiVersion)
+                {
+                    case EOS_ECOM_CHECKOUTENTRY_API_001:
+                    {
+                        auto entry = reinterpret_cast<const EOS_Ecom_CheckoutEntry001*>(pEntry);
+                        LOG(Log::LogLevel::DEBUG, "Entries[%u].OfferId: %s", i, (entry->OfferId == nullptr ? "" : entry->OfferId));
+                    }
+                }
+            }
+        }
+    }
 }
 
 void EOSSDK_Ecom::RedeemEntitlements(const EOS_Ecom_RedeemEntitlementsOptions* Options, void* ClientData, const EOS_Ecom_OnRedeemEntitlementsCallback CompletionDelegate)
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
-
+    
+    switch (Options->ApiVersion)
+    {
+        case EOS_ECOM_REDEEMENTITLEMENTS_API_001:
+        {
+            auto opts = reinterpret_cast<const EOS_Ecom_RedeemEntitlementsOptions001*>(Options);
+            LOG(Log::LogLevel::DEBUG, "EntitlementIdCount: %u", opts->EntitlementIdCount);
+            for (int i = 0; i < opts->EntitlementIdCount; ++i)
+            {
+                LOG(Log::LogLevel::DEBUG, "EntitlementIds[%u]: %s", i, (opts->EntitlementIds[i] == nullptr ? "" : opts->EntitlementIds[i]));
+            }
+        }
+    }
 }
 
 uint32_t EOSSDK_Ecom::GetEntitlementsCount(const EOS_Ecom_GetEntitlementsCountOptions* Options)

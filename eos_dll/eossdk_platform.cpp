@@ -538,6 +538,8 @@ EOS_EResult EOSSDK_Platform::SetOverrideCountryCode(const char* NewCountryCode)
     if (NewCountryCode == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
+    LOG(Log::LogLevel::DEBUG, "%s", NewCountryCode);
+
     _override_country_code = NewCountryCode;
 
     return EOS_EResult::EOS_Success;
@@ -560,6 +562,8 @@ EOS_EResult EOSSDK_Platform::SetOverrideLocaleCode(const char* NewLocaleCode)
 
     if (NewLocaleCode == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
+
+    LOG(Log::LogLevel::DEBUG, "%s", NewLocaleCode);
 
     _override_locale_code = NewLocaleCode;
 
