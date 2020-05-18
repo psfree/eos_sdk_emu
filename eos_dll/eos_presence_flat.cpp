@@ -33,60 +33,90 @@ using namespace sdk;
 
 EOS_DECLARE_FUNC(void) EOS_Presence_QueryPresence(EOS_HPresence Handle, const EOS_Presence_QueryPresenceOptions* Options, void* ClientData, const EOS_Presence_OnQueryPresenceCompleteCallback CompletionDelegate)
 {
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     pInst->QueryPresence(Options, ClientData, CompletionDelegate);
 }
 
 EOS_DECLARE_FUNC(EOS_Bool) EOS_Presence_HasPresence(EOS_HPresence Handle, const EOS_Presence_HasPresenceOptions* Options)
 {
+    if (Handle == nullptr)
+        return EOS_FALSE;
+
     auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     return pInst->HasPresence(Options);
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Presence_CopyPresence(EOS_HPresence Handle, const EOS_Presence_CopyPresenceOptions* Options, EOS_Presence_Info** OutPresence)
 {
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     return pInst->CopyPresence(Options, OutPresence);
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Presence_CreatePresenceModification(EOS_HPresence Handle, const EOS_Presence_CreatePresenceModificationOptions* Options, EOS_HPresenceModification* OutPresenceModificationHandle)
 {
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     return pInst->CreatePresenceModification(Options, OutPresenceModificationHandle);
 }
 
 EOS_DECLARE_FUNC(void) EOS_Presence_SetPresence(EOS_HPresence Handle, const EOS_Presence_SetPresenceOptions* Options, void* ClientData, const EOS_Presence_SetPresenceCompleteCallback CompletionDelegate)
 {
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     pInst->SetPresence(Options, ClientData, CompletionDelegate);
 }
 
 EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Presence_AddNotifyOnPresenceChanged(EOS_HPresence Handle, const EOS_Presence_AddNotifyOnPresenceChangedOptions* Options, void* ClientData, const EOS_Presence_OnPresenceChangedCallback NotificationHandler)
 {
+    if (Handle == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
     auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     return pInst->AddNotifyOnPresenceChanged(Options, ClientData, NotificationHandler);
 }
 
 EOS_DECLARE_FUNC(void) EOS_Presence_RemoveNotifyOnPresenceChanged(EOS_HPresence Handle, EOS_NotificationId NotificationId)
 {
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     pInst->RemoveNotifyOnPresenceChanged(NotificationId);
 }
 
 EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Presence_AddNotifyJoinGameAccepted(EOS_HPresence Handle, const EOS_Presence_AddNotifyJoinGameAcceptedOptions* Options, void* ClientData, const EOS_Presence_OnJoinGameAcceptedCallback NotificationFn)
 {
+    if (Handle == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
     auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     return pInst->AddNotifyJoinGameAccepted(Options, ClientData, NotificationFn);
 }
 
 EOS_DECLARE_FUNC(void) EOS_Presence_RemoveNotifyJoinGameAccepted(EOS_HPresence Handle, EOS_NotificationId InId)
 {
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     pInst->RemoveNotifyJoinGameAccepted(InId);
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Presence_GetJoinInfo(EOS_HPresence Handle, const EOS_Presence_GetJoinInfoOptions* Options, char* OutBuffer, int32_t* InOutBufferLength)
 {
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Presence*>(Handle);
     return pInst->GetJoinInfo(Options, OutBuffer, InOutBufferLength);
 }
@@ -99,6 +129,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Presence_GetJoinInfo(EOS_HPresence Handle, con
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetStatus(EOS_HPresenceModification Handle, const EOS_PresenceModification_SetStatusOptions* Options)
 {
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_PresenceModification*>(Handle);
     return pInst->SetStatus(Options);
 }
@@ -114,6 +147,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetStatus(EOS_HPresenceMo
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetRawRichText(EOS_HPresenceModification Handle, const EOS_PresenceModification_SetRawRichTextOptions* Options)
 {
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_PresenceModification*>(Handle);
     return pInst->SetRawRichText(Options);
 }
@@ -131,6 +167,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetRawRichText(EOS_HPrese
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetData(EOS_HPresenceModification Handle, const EOS_PresenceModification_SetDataOptions* Options)
 {
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_PresenceModification*>(Handle);
     return pInst->SetData(Options);
 }
@@ -148,6 +187,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetData(EOS_HPresenceModi
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_DeleteData(EOS_HPresenceModification Handle, const EOS_PresenceModification_DeleteDataOptions* Options)
 {
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_PresenceModification*>(Handle);
     return pInst->DeleteData(Options);
 }
@@ -163,6 +205,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_DeleteData(EOS_HPresenceM
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetJoinInfo(EOS_HPresenceModification Handle, const EOS_PresenceModification_SetJoinInfoOptions* Options)
 {
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_PresenceModification*>(Handle);
     return pInst->SetJoinInfo(Options);
 }

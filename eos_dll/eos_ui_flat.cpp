@@ -47,6 +47,9 @@ EOS_DECLARE_FUNC(void) EOS_UI_ShowFriends(EOS_HUI Handle, const EOS_UI_ShowFrien
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
 }
 
@@ -66,6 +69,9 @@ EOS_DECLARE_FUNC(void) EOS_UI_HideFriends(EOS_HUI Handle, const EOS_UI_HideFrien
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
 }
 
@@ -79,6 +85,9 @@ EOS_DECLARE_FUNC(void) EOS_UI_HideFriends(EOS_HUI Handle, const EOS_UI_HideFrien
 EOS_DECLARE_FUNC(EOS_Bool) EOS_UI_GetFriendsVisible(EOS_HUI Handle, const EOS_UI_GetFriendsVisibleOptions* Options)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_FALSE;
 
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_FALSE;
@@ -101,6 +110,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_UI_SetToggleFriendsKey(EOS_HUI Handle, const E
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -117,8 +129,11 @@ EOS_DECLARE_FUNC(EOS_UI_EKeyCombination) EOS_UI_GetToggleFriendsKey(EOS_HUI Hand
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_UI_EKeyCombination::EOS_UIK_ModifierShift | EOS_UI_EKeyCombination::EOS_UIK_F2;
+
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
-    return EOS_UI_EKeyCombination::EOS_UIK_ModifierShift | EOS_UI_EKeyCombination::EOS_UIK_Tab;
+    return EOS_UI_EKeyCombination::EOS_UIK_ModifierShift | EOS_UI_EKeyCombination::EOS_UIK_F2;
 }
 
 /**
@@ -130,6 +145,9 @@ EOS_DECLARE_FUNC(EOS_UI_EKeyCombination) EOS_UI_GetToggleFriendsKey(EOS_HUI Hand
 EOS_DECLARE_FUNC(EOS_Bool) EOS_UI_IsValidKeyCombination(EOS_HUI Handle, EOS_UI_EKeyCombination KeyCombination)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_FALSE;
 
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_TRUE;
@@ -148,6 +166,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_UI_SetDisplayPreference(EOS_HUI Handle, const 
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -160,6 +181,9 @@ EOS_DECLARE_FUNC(EOS_UI_ENotificationLocation) EOS_UI_GetNotificationLocationPre
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_UI_ENotificationLocation::EOS_UNL_TopRight;
+
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_UI_ENotificationLocation::EOS_UNL_BottomLeft;
 }
@@ -167,6 +191,9 @@ EOS_DECLARE_FUNC(EOS_UI_ENotificationLocation) EOS_UI_GetNotificationLocationPre
 EOS_DECLARE_FUNC(EOS_EResult) EOS_UI_AcknowledgeEventId(EOS_HUI Handle, const EOS_UI_AcknowledgeEventIdOptions* Options)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
 
     auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
     return EOS_EResult::EOS_Success;

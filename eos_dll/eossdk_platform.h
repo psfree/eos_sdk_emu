@@ -41,9 +41,9 @@
 
 namespace sdk
 {
-    class EOS_Platform
+    class EOSSDK_Platform
     {
-        EOS_Platform();
+        EOSSDK_Platform();
 
         bool _platform_init;
 
@@ -81,9 +81,9 @@ namespace sdk
         EOSSDK_Stats             *_stats;
         EOSSDK_Leaderboards      *_leaderboards;
 
-        ~EOS_Platform();
+        ~EOSSDK_Platform();
 
-        static EOS_Platform& Inst();
+        static EOSSDK_Platform& Inst();
         void Init(const EOS_Platform_Options* options);
 
         void Release();
@@ -103,10 +103,18 @@ namespace sdk
         EOS_HAchievements      GetAchievementsInterface();
         EOS_HStats             GetStatsInterface();
         EOS_HLeaderboards      GetLeaderboardsInterface();
+
+        EOS_EResult GetActiveCountryCode(EOS_EpicAccountId LocalUserId, char* OutBuffer, int32_t* InOutBufferLength);
+        EOS_EResult GetActiveLocaleCode(EOS_EpicAccountId LocalUserId, char* OutBuffer, int32_t* InOutBufferLength);
+        EOS_EResult GetOverrideCountryCode(char* OutBuffer, int32_t* InOutBufferLength);
+        EOS_EResult GetOverrideLocaleCode(char* OutBuffer, int32_t* InOutBufferLength);
+        EOS_EResult SetOverrideCountryCode(const char* NewCountryCode);
+        EOS_EResult SetOverrideLocaleCode(const char* NewLocaleCode);
+        EOS_EResult CheckForLauncherAndRestart();
     };
 }
 
-inline sdk::EOS_Platform&          GetEOS_Platform         () { return  sdk::EOS_Platform::Inst();            }
+inline sdk::EOSSDK_Platform&          GetEOS_Platform         () { return  sdk::EOSSDK_Platform::Inst();            }
 
 inline Callback_Manager&           GetCB_Manager           () { return *GetEOS_Platform()._cb_manager;        }
 inline Network&                    GetNetwork              () { return *GetEOS_Platform()._network;           }

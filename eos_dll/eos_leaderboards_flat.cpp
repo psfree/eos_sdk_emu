@@ -41,6 +41,9 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_QueryLeaderboardDefinitions(EOS_HLeaderb
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
 }
 
@@ -57,6 +60,9 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_QueryLeaderboardDefinitions(EOS_HLeaderb
 EOS_DECLARE_FUNC(uint32_t) EOS_Leaderboards_GetLeaderboardDefinitionCount(EOS_HLeaderboards Handle, const EOS_Leaderboards_GetLeaderboardDefinitionCountOptions* Options)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return 0;
 
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
     return 0;
@@ -78,6 +84,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardDefinitionByIndex(
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -98,6 +107,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardDefinitionByLeader
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -116,6 +128,9 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_QueryLeaderboardRanks(EOS_HLeaderboards 
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
 }
 
@@ -132,6 +147,9 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_QueryLeaderboardRanks(EOS_HLeaderboards 
 EOS_DECLARE_FUNC(uint32_t) EOS_Leaderboards_GetLeaderboardRecordCount(EOS_HLeaderboards Handle, const EOS_Leaderboards_GetLeaderboardRecordCountOptions* Options)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return 0;
 
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
     return 0;
@@ -153,6 +171,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardRecordByIndex(EOS_
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -173,6 +194,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardRecordByUserId(EOS
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -191,6 +215,9 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_QueryLeaderboardUserScores(EOS_HLeaderbo
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
 }
 
@@ -207,6 +234,9 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_QueryLeaderboardUserScores(EOS_HLeaderbo
 EOS_DECLARE_FUNC(uint32_t) EOS_Leaderboards_GetLeaderboardUserScoreCount(EOS_HLeaderboards Handle, const EOS_Leaderboards_GetLeaderboardUserScoreCountOptions* Options)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return 0;
 
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
     return 0;
@@ -228,6 +258,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardUserScoreByIndex(E
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -247,6 +280,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardUserScoreByIndex(E
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardUserScoreByUserId(EOS_HLeaderboards Handle, const EOS_Leaderboards_CopyLeaderboardUserScoreByUserIdOptions* Options, EOS_Leaderboards_LeaderboardUserScore** OutLeaderboardUserScore)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
 
     auto pInst = reinterpret_cast<EOSSDK_Leaderboards*>(Handle);
     return EOS_EResult::EOS_Success;

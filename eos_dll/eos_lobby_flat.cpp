@@ -47,6 +47,9 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_CreateLobby(EOS_HLobby Handle, const EOS_Lobby_
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
@@ -66,6 +69,9 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_DestroyLobby(EOS_HLobby Handle, const EOS_Lobby
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
@@ -82,6 +88,9 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_DestroyLobby(EOS_HLobby Handle, const EOS_Lobby
 EOS_DECLARE_FUNC(void) EOS_Lobby_JoinLobby(EOS_HLobby Handle, const EOS_Lobby_JoinLobbyOptions* Options, void* ClientData, const EOS_Lobby_OnJoinLobbyCallback CompletionDelegate)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
@@ -101,6 +110,9 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_JoinLobby(EOS_HLobby Handle, const EOS_Lobby_Jo
 EOS_DECLARE_FUNC(void) EOS_Lobby_LeaveLobby(EOS_HLobby Handle, const EOS_Lobby_LeaveLobbyOptions* Options, void* ClientData, const EOS_Lobby_OnLeaveLobbyCallback CompletionDelegate)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
@@ -122,6 +134,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_UpdateLobbyModification(EOS_HLobby Handl
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -142,6 +157,9 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_UpdateLobby(EOS_HLobby Handle, const EOS_Lobby_
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
@@ -160,6 +178,9 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_UpdateLobby(EOS_HLobby Handle, const EOS_Lobby_
 EOS_DECLARE_FUNC(void) EOS_Lobby_PromoteMember(EOS_HLobby Handle, const EOS_Lobby_PromoteMemberOptions* Options, void* ClientData, const EOS_Lobby_OnPromoteMemberCallback CompletionDelegate)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
@@ -180,6 +201,9 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_KickMember(EOS_HLobby Handle, const EOS_Lobby_K
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
@@ -197,6 +221,9 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyUpdateReceived(EOS_
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return 0;
 }
@@ -209,6 +236,9 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyUpdateReceived(EOS_
 EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifyLobbyUpdateReceived(EOS_HLobby Handle, EOS_NotificationId InId)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
@@ -227,6 +257,9 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyMemberUpdateReceive
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return 0;
 }
@@ -239,6 +272,9 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyMemberUpdateReceive
 EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifyLobbyMemberUpdateReceived(EOS_HLobby Handle, EOS_NotificationId InId)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
@@ -257,6 +293,9 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyMemberStatusReceive
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return 0;
 }
@@ -269,6 +308,9 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyMemberStatusReceive
 EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifyLobbyMemberStatusReceived(EOS_HLobby Handle, EOS_NotificationId InId)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
@@ -288,6 +330,9 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_SendInvite(EOS_HLobby Handle, const EOS_Lobby_S
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
@@ -306,6 +351,9 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_RejectInvite(EOS_HLobby Handle, const EOS_Lobby
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
@@ -321,6 +369,9 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_QueryInvites(EOS_HLobby Handle, const EOS_Lobby
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
@@ -334,6 +385,9 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_QueryInvites(EOS_HLobby Handle, const EOS_Lobby
 EOS_DECLARE_FUNC(uint32_t) EOS_Lobby_GetInviteCount(EOS_HLobby Handle, const EOS_Lobby_GetInviteCountOptions* Options)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return 0;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return 0;
@@ -354,6 +408,9 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Lobby_GetInviteCount(EOS_HLobby Handle, const EOS
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_GetInviteIdByIndex(EOS_HLobby Handle, const EOS_Lobby_GetInviteIdByIndexOptions* Options, char* OutBuffer, int32_t* InOutBufferLength)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -376,6 +433,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_CreateLobbySearch(EOS_HLobby Handle, con
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -394,6 +454,9 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyInviteReceived(EOS_
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return 0;
 }
@@ -406,6 +469,9 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyInviteReceived(EOS_
 EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifyLobbyInviteReceived(EOS_HLobby Handle, EOS_NotificationId InId)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
@@ -429,6 +495,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_CopyLobbyDetailsHandleByInviteId(EOS_HLo
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -448,6 +517,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_CopyLobbyDetailsHandleByInviteId(EOS_HLo
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_CopyLobbyDetailsHandle(EOS_HLobby Handle, const EOS_Lobby_CopyLobbyDetailsHandleOptions* Options, EOS_HLobbyDetails* OutLobbyDetailsHandle)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -472,6 +544,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_SetPermissionLevel(EOS_HLobb
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -488,6 +563,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_SetPermissionLevel(EOS_HLobb
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_SetMaxMembers(EOS_HLobbyModification Handle, const EOS_LobbyModification_SetMaxMembersOptions* Options)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -508,6 +586,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_AddAttribute(EOS_HLobbyModif
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -524,6 +605,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_AddAttribute(EOS_HLobbyModif
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_RemoveAttribute(EOS_HLobbyModification Handle, const EOS_LobbyModification_RemoveAttributeOptions* Options)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -543,6 +627,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_AddMemberAttribute(EOS_HLobb
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -559,6 +646,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_AddMemberAttribute(EOS_HLobb
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_RemoveMemberAttribute(EOS_HLobbyModification Handle, const EOS_LobbyModification_RemoveMemberAttributeOptions* Options)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -579,6 +669,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_RemoveMemberAttribute(EOS_HL
 EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_LobbyDetails_GetLobbyOwner(EOS_HLobbyDetails Handle, const EOS_LobbyDetails_GetLobbyOwnerOptions* Options)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return nullptr;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return nullptr;
@@ -603,6 +696,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyInfo(EOS_HLobbyDetails Handle
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -617,6 +713,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyInfo(EOS_HLobbyDetails Handle
 EOS_DECLARE_FUNC(uint32_t) EOS_LobbyDetails_GetAttributeCount(EOS_HLobbyDetails Handle, const EOS_LobbyDetails_GetAttributeCountOptions* Options)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return 0;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return 0;
@@ -641,6 +740,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyAttributeByIndex(EOS_HLobbyDe
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -664,6 +766,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyAttributeByKey(EOS_HLobbyDeta
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -678,6 +783,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyAttributeByKey(EOS_HLobbyDeta
 EOS_DECLARE_FUNC(uint32_t) EOS_LobbyDetails_GetMemberCount(EOS_HLobbyDetails Handle, const EOS_LobbyDetails_GetMemberCountOptions* Options)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return 0;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return 0;
@@ -697,6 +805,9 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_LobbyDetails_GetMemberByIndex(EOS_HLobby
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return nullptr;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return nullptr;
 }
@@ -714,6 +825,9 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_LobbyDetails_GetMemberByIndex(EOS_HLobby
 EOS_DECLARE_FUNC(uint32_t) EOS_LobbyDetails_GetMemberAttributeCount(EOS_HLobbyDetails Handle, const EOS_LobbyDetails_GetMemberAttributeCountOptions* Options)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return 0;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return 0;
@@ -738,6 +852,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyMemberAttributeByIndex(EOS_HL
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -760,6 +877,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyMemberAttributeByIndex(EOS_HL
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyMemberAttributeByKey(EOS_HLobbyDetails Handle, const EOS_LobbyDetails_CopyMemberAttributeByKeyOptions* Options, EOS_Lobby_Attribute** OutAttribute)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -786,6 +906,9 @@ EOS_DECLARE_FUNC(void) EOS_LobbySearch_Find(EOS_HLobbySearch Handle, const EOS_L
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
 }
 
@@ -801,6 +924,9 @@ EOS_DECLARE_FUNC(void) EOS_LobbySearch_Find(EOS_HLobbySearch Handle, const EOS_L
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_SetLobbyId(EOS_HLobbySearch Handle, const EOS_LobbySearch_SetLobbyIdOptions* Options)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -820,6 +946,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_SetTargetUserId(EOS_HLobbySearch H
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -829,6 +958,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_SetParameter(EOS_HLobbySearch Hand
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -837,6 +969,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_SetParameter(EOS_HLobbySearch Hand
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_RemoveParameter(EOS_HLobbySearch Handle, const EOS_LobbySearch_RemoveParameterOptions* Options)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -855,6 +990,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_SetMaxResults(EOS_HLobbySearch Han
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -869,6 +1007,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_SetMaxResults(EOS_HLobbySearch Han
 EOS_DECLARE_FUNC(uint32_t) EOS_LobbySearch_GetSearchResultCount(EOS_HLobbySearch Handle, const EOS_LobbySearch_GetSearchResultCountOptions* Options)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return 0;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return 0;
@@ -891,6 +1032,9 @@ EOS_DECLARE_FUNC(uint32_t) EOS_LobbySearch_GetSearchResultCount(EOS_HLobbySearch
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_CopySearchResultByIndex(EOS_HLobbySearch Handle, const EOS_LobbySearch_CopySearchResultByIndexOptions* Options, EOS_HLobbyDetails* OutLobbyDetailsHandle)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
 
     auto pInst = reinterpret_cast<EOSSDK_Lobby*>(Handle);
     return EOS_EResult::EOS_Success;

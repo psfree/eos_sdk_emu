@@ -31,18 +31,27 @@
 
 EOS_DECLARE_FUNC(void) EOS_UserInfo_QueryUserInfo(EOS_HUserInfo Handle, const EOS_UserInfo_QueryUserInfoOptions* Options, void* ClientData, const EOS_UserInfo_OnQueryUserInfoCallback CompletionDelegate)
 {
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<sdk::EOSSDK_UserInfo*>(Handle);
     pInst->QueryUserInfo(Options, ClientData, CompletionDelegate);
 }
 
 EOS_DECLARE_FUNC(void) EOS_UserInfo_QueryUserInfoByDisplayName(EOS_HUserInfo Handle, const EOS_UserInfo_QueryUserInfoByDisplayNameOptions* Options, void* ClientData, const EOS_UserInfo_OnQueryUserInfoByDisplayNameCallback CompletionDelegate)
 {
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<sdk::EOSSDK_UserInfo*>(Handle);
     pInst->QueryUserInfoByDisplayName(Options, ClientData, CompletionDelegate);
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyUserInfo(EOS_HUserInfo Handle, const EOS_UserInfo_CopyUserInfoOptions* Options, EOS_UserInfo** OutUserInfo)
 {
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<sdk::EOSSDK_UserInfo*>(Handle);
     return pInst->CopyUserInfo(Options, OutUserInfo);
 }
@@ -58,6 +67,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyUserInfo(EOS_HUserInfo Handle, co
  */
 EOS_DECLARE_FUNC(uint32_t) EOS_UserInfo_GetExternalUserInfoCount(EOS_HUserInfo Handle, const EOS_UserInfo_GetExternalUserInfoCountOptions* Options)
 {
+    if (Handle == nullptr)
+        return 0;
+
     auto pInst = reinterpret_cast<sdk::EOSSDK_UserInfo*>(Handle);
     return pInst->GetExternalUserInfoCount(Options);
 }
@@ -76,6 +88,9 @@ EOS_DECLARE_FUNC(uint32_t) EOS_UserInfo_GetExternalUserInfoCount(EOS_HUserInfo H
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyExternalUserInfoByIndex(EOS_HUserInfo Handle, const EOS_UserInfo_CopyExternalUserInfoByIndexOptions* Options, EOS_UserInfo_ExternalUserInfo** OutExternalUserInfo)
 {
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<sdk::EOSSDK_UserInfo*>(Handle);
     return pInst->CopyExternalUserInfoByIndex(Options, OutExternalUserInfo);
 }
@@ -94,6 +109,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyExternalUserInfoByIndex(EOS_HUser
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyExternalUserInfoByAccountType(EOS_HUserInfo Handle, const EOS_UserInfo_CopyExternalUserInfoByAccountTypeOptions* Options, EOS_UserInfo_ExternalUserInfo** OutExternalUserInfo)
 {
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<sdk::EOSSDK_UserInfo*>(Handle);
     return pInst->CopyExternalUserInfoByAccountType(Options, OutExternalUserInfo);
 }
@@ -112,6 +130,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyExternalUserInfoByAccountType(EOS
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyExternalUserInfoByAccountId(EOS_HUserInfo Handle, const EOS_UserInfo_CopyExternalUserInfoByAccountIdOptions* Options, EOS_UserInfo_ExternalUserInfo** OutExternalUserInfo)
 {
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<sdk::EOSSDK_UserInfo*>(Handle);
     return pInst->CopyExternalUserInfoByAccountId(Options, OutExternalUserInfo);
 }

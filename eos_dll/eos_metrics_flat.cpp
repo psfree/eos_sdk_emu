@@ -33,10 +33,11 @@ using namespace sdk;
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Metrics_BeginPlayerSession(EOS_HMetrics Handle, const EOS_Metrics_BeginPlayerSessionOptions* Options)
 {
-    TRACE_FUNC();
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
 
     auto pInst = reinterpret_cast<EOSSDK_Metrics*>(Handle);
-    return EOS_EResult::EOS_Success;
+    return pInst->BeginPlayerSession(Options);
 }
 
 /**
@@ -51,8 +52,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Metrics_BeginPlayerSession(EOS_HMetrics Handle
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Metrics_EndPlayerSession(EOS_HMetrics Handle, const EOS_Metrics_EndPlayerSessionOptions* Options)
 {
-    TRACE_FUNC();
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
 
     auto pInst = reinterpret_cast<EOSSDK_Metrics*>(Handle);
-    return EOS_EResult::EOS_Success;
+    return pInst->EndPlayerSession(Options);
 }

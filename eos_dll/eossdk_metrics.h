@@ -27,6 +27,12 @@ namespace sdk
         public IRunFrame
     {
     public:
+        EOSSDK_Metrics();
+        ~EOSSDK_Metrics();
+
+        EOS_EResult BeginPlayerSession(const EOS_Metrics_BeginPlayerSessionOptions* Options);
+        EOS_EResult EndPlayerSession(const EOS_Metrics_EndPlayerSessionOptions* Options);
+
         // RunFrame is always called when running callbacks
         virtual bool CBRunFrame();
         // RunNetwork is run if you register to a network message and we received that message

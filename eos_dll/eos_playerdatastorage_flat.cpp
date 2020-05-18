@@ -41,6 +41,11 @@ EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_QueryFile(EOS_HPlayerDataStorage Ha
 {
     TRACE_FUNC();
 
+
+    if (Handle == nullptr)
+        return;
+
+
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
 }
 
@@ -60,6 +65,9 @@ EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_QueryFileList(EOS_HPlayerDataStorag
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
 }
 
@@ -74,6 +82,9 @@ EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_QueryFileList(EOS_HPlayerDataStorag
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorage_CopyFileMetadataByFilename(EOS_HPlayerDataStorage Handle, const EOS_PlayerDataStorage_CopyFileMetadataByFilenameOptions* CopyFileMetadataOptions, EOS_PlayerDataStorage_FileMetadata** OutMetadata)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
 
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -91,6 +102,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorage_CopyFileMetadataByFilename(E
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorage_GetFileMetadataCount(EOS_HPlayerDataStorage Handle, const EOS_PlayerDataStorage_GetFileMetadataCountOptions* GetFileMetadataCountOptions, int32_t* OutFileMetadataCount)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
 
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -111,6 +125,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorage_CopyFileMetadataAtIndex(EOS_
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -128,6 +145,9 @@ EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_DuplicateFile(EOS_HPlayerDataStorag
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
 }
 
@@ -141,6 +161,9 @@ EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_DuplicateFile(EOS_HPlayerDataStorag
 EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_DeleteFile(EOS_HPlayerDataStorage Handle, const EOS_PlayerDataStorage_DeleteFileOptions* DeleteOptions, void* ClientData, const EOS_PlayerDataStorage_OnDeleteFileCompleteCallback CompletionCallback)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return;
 
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
 }
@@ -160,6 +183,9 @@ EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_DeleteFile(EOS_HPlayerDataStorage H
 EOS_DECLARE_FUNC(EOS_HPlayerDataStorageFileTransferRequest) EOS_PlayerDataStorage_ReadFile(EOS_HPlayerDataStorage Handle, const EOS_PlayerDataStorage_ReadFileOptions* ReadOptions, void* ClientData, const EOS_PlayerDataStorage_OnReadFileCompleteCallback CompletionCallback)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return nullptr;
 
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
     return nullptr;
@@ -181,6 +207,9 @@ EOS_DECLARE_FUNC(EOS_HPlayerDataStorageFileTransferRequest) EOS_PlayerDataStorag
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return nullptr;
+
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
     return nullptr;
 }
@@ -197,6 +226,9 @@ EOS_DECLARE_FUNC(EOS_HPlayerDataStorageFileTransferRequest) EOS_PlayerDataStorag
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorageFileTransferRequest_GetFileRequestState(EOS_HPlayerDataStorageFileTransferRequest Handle)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
 
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
     return EOS_EResult::EOS_Success;
@@ -216,6 +248,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorageFileTransferRequest_GetFilena
 {
     TRACE_FUNC();
 
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
     return EOS_EResult::EOS_Success;
 }
@@ -228,6 +263,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorageFileTransferRequest_GetFilena
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorageFileTransferRequest_CancelRequest(EOS_HPlayerDataStorageFileTransferRequest Handle)
 {
     TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
 
     auto pInst = reinterpret_cast<EOSSDK_PlayerDataStorage*>(Handle);
     return EOS_EResult::EOS_Success;

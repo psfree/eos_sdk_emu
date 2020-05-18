@@ -40,6 +40,9 @@ using namespace sdk;
   */
 EOS_DECLARE_FUNC(void) EOS_Auth_Login(EOS_HAuth Handle, const EOS_Auth_LoginOptions* Options, void* ClientData, const EOS_Auth_OnLoginCallback CompletionDelegate)
 {
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Auth*>(Handle);
     pInst->Login(Options, ClientData, CompletionDelegate);
 }
@@ -53,6 +56,9 @@ EOS_DECLARE_FUNC(void) EOS_Auth_Login(EOS_HAuth Handle, const EOS_Auth_LoginOpti
  */
 EOS_DECLARE_FUNC(void) EOS_Auth_Logout(EOS_HAuth Handle, const EOS_Auth_LogoutOptions* Options, void* ClientData, const EOS_Auth_OnLogoutCallback CompletionDelegate)
 {
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Auth*>(Handle);
     pInst->Logout(Options, ClientData, CompletionDelegate);
 }
@@ -67,6 +73,9 @@ EOS_DECLARE_FUNC(void) EOS_Auth_Logout(EOS_HAuth Handle, const EOS_Auth_LogoutOp
  */
 EOS_DECLARE_FUNC(void) EOS_Auth_DeletePersistentAuth(EOS_HAuth Handle, const EOS_Auth_DeletePersistentAuthOptions* Options, void* ClientData, const EOS_Auth_OnDeletePersistentAuthCallback CompletionDelegate)
 {
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Auth*>(Handle);
     pInst->DeletePersistentAuth(Options, ClientData, CompletionDelegate);
 }
@@ -81,6 +90,9 @@ EOS_DECLARE_FUNC(void) EOS_Auth_DeletePersistentAuth(EOS_HAuth Handle, const EOS
  */
 EOS_DECLARE_FUNC(void) EOS_Auth_VerifyUserAuth(EOS_HAuth Handle, const EOS_Auth_VerifyUserAuthOptions* Options, void* ClientData, const EOS_Auth_OnVerifyUserAuthCallback CompletionDelegate)
 {
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Auth*>(Handle);
     pInst->VerifyUserAuth(Options, ClientData, CompletionDelegate);
 }
@@ -92,6 +104,9 @@ EOS_DECLARE_FUNC(void) EOS_Auth_VerifyUserAuth(EOS_HAuth Handle, const EOS_Auth_
  */
 EOS_DECLARE_FUNC(int32_t) EOS_Auth_GetLoggedInAccountsCount(EOS_HAuth Handle)
 {
+    if (Handle == nullptr)
+        return 0;
+
     auto pInst = reinterpret_cast<EOSSDK_Auth*>(Handle);
     return pInst->GetLoggedInAccountsCount();
 }
@@ -105,6 +120,9 @@ EOS_DECLARE_FUNC(int32_t) EOS_Auth_GetLoggedInAccountsCount(EOS_HAuth Handle)
  */
 EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_Auth_GetLoggedInAccountByIndex(EOS_HAuth Handle, int32_t Index)
 {
+    if (Handle == nullptr)
+        return nullptr;
+
     auto pInst = reinterpret_cast<EOSSDK_Auth*>(Handle);
     return pInst->GetLoggedInAccountByIndex(Index);
 }
@@ -118,6 +136,9 @@ EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_Auth_GetLoggedInAccountByIndex(EOS_HAuth
  */
 EOS_DECLARE_FUNC(EOS_ELoginStatus) EOS_Auth_GetLoginStatus(EOS_HAuth Handle, EOS_EpicAccountId LocalUserId)
 {
+    if (Handle == nullptr)
+        return EOS_ELoginStatus::EOS_LS_NotLoggedIn;
+
     auto pInst = reinterpret_cast<EOSSDK_Auth*>(Handle);
     return pInst->GetLoginStatus(LocalUserId);
 }
@@ -138,6 +159,9 @@ EOS_DECLARE_FUNC(EOS_ELoginStatus) EOS_Auth_GetLoginStatus(EOS_HAuth Handle, EOS
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthToken(EOS_HAuth Handle, const EOS_Auth_CopyUserAuthTokenOptions* Options, EOS_EpicAccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken)
 {
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto pInst = reinterpret_cast<EOSSDK_Auth*>(Handle);
     return pInst->CopyUserAuthToken(Options, LocalUserId, OutUserAuthToken);
 }
@@ -154,6 +178,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthToken(EOS_HAuth Handle, const
  */
 EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Auth_AddNotifyLoginStatusChanged(EOS_HAuth Handle, const EOS_Auth_AddNotifyLoginStatusChangedOptions* Options, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification)
 {
+    if (Handle == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
     auto pInst = reinterpret_cast<EOSSDK_Auth*>(Handle);
     return pInst->AddNotifyLoginStatusChanged(Options, ClientData, Notification);
 }
@@ -165,6 +192,9 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Auth_AddNotifyLoginStatusChanged(EOS_HA
  */
 EOS_DECLARE_FUNC(void) EOS_Auth_RemoveNotifyLoginStatusChanged(EOS_HAuth Handle, EOS_NotificationId InId)
 {
+    if (Handle == nullptr)
+        return;
+
     auto pInst = reinterpret_cast<EOSSDK_Auth*>(Handle);
     pInst->RemoveNotifyLoginStatusChanged(InId);
 }
