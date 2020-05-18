@@ -41,6 +41,9 @@ void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, 
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    if (CompletionDelegate == nullptr)
+        return;
+
     if (Options != nullptr)
     {
         if (Options->ApiVersion >= EOS_AUTH_LOGIN_API_002)
@@ -72,6 +75,9 @@ void EOSSDK_Auth::Logout(const EOS_Auth_LogoutOptions* Options, void* ClientData
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    if (CompletionDelegate == nullptr)
+        return;
+
     if (Options != nullptr)
     {
         //if (Options->ApiVersion >= EOS_AUTH_LOGOUT_API_001)
@@ -92,12 +98,20 @@ void EOSSDK_Auth::DeletePersistentAuth(const EOS_Auth_DeletePersistentAuthOption
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
+
+    if (CompletionDelegate == nullptr)
+        return;
+
 }
 
 void EOSSDK_Auth::VerifyUserAuth(const EOS_Auth_VerifyUserAuthOptions* Options, void* ClientData, const EOS_Auth_OnVerifyUserAuthCallback CompletionDelegate)
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
+
+    if (CompletionDelegate == nullptr)
+        return;
+
 }
 
 int32_t EOSSDK_Auth::GetLoggedInAccountsCount()
@@ -178,6 +192,9 @@ EOS_NotificationId EOSSDK_Auth::AddNotifyLoginStatusChanged(const EOS_Auth_AddNo
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
+
+    if (Notification == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
 
     pFrameResult_t res(new FrameResult);
 

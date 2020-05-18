@@ -115,6 +115,9 @@ void EOSSDK_Connect::Login(const EOS_Connect_LoginOptions* Options, void* Client
 {
     TRACE_FUNC();
 
+    if (CompletionDelegate == nullptr)
+        return;
+
     pFrameResult_t res(new FrameResult);
     EOS_Connect_LoginCallbackInfo& lci = res->CreateCallback<EOS_Connect_LoginCallbackInfo>((CallbackFunc)CompletionDelegate);
 
@@ -140,6 +143,9 @@ void EOSSDK_Connect::CreateUser(const EOS_Connect_CreateUserOptions* Options, vo
 {
     TRACE_FUNC();
 
+    if (CompletionDelegate == nullptr)
+        return;
+
     pFrameResult_t res(new FrameResult);
     EOS_Connect_CreateUserCallbackInfo& cuci = res->CreateCallback<EOS_Connect_CreateUserCallbackInfo>((CallbackFunc)CompletionDelegate);
 
@@ -163,6 +169,9 @@ void EOSSDK_Connect::CreateUser(const EOS_Connect_CreateUserOptions* Options, vo
 void EOSSDK_Connect::LinkAccount(const EOS_Connect_LinkAccountOptions* Options, void* ClientData, const EOS_Connect_OnLinkAccountCallback CompletionDelegate)
 {
     TRACE_FUNC();
+
+    if (CompletionDelegate == nullptr)
+        return;
 
 }
 
@@ -197,6 +206,9 @@ void EOSSDK_Connect::CreateDeviceId(const EOS_Connect_CreateDeviceIdOptions* Opt
 {
     TRACE_FUNC();
 
+    if (CompletionDelegate == nullptr)
+        return;
+
 }
 
 /**
@@ -213,6 +225,9 @@ void EOSSDK_Connect::DeleteDeviceId(const EOS_Connect_DeleteDeviceIdOptions* Opt
 {
     TRACE_FUNC();
 
+    if (CompletionDelegate == nullptr)
+        return;
+
 }
 
 /**
@@ -225,6 +240,9 @@ void EOSSDK_Connect::DeleteDeviceId(const EOS_Connect_DeleteDeviceIdOptions* Opt
 void EOSSDK_Connect::QueryExternalAccountMappings(const EOS_Connect_QueryExternalAccountMappingsOptions* Options, void* ClientData, const EOS_Connect_OnQueryExternalAccountMappingsCallback
     CompletionDelegate)
 {
+    if (CompletionDelegate == nullptr)
+        return;
+
     TRACE_FUNC();
     
     pFrameResult_t res(new FrameResult);
@@ -266,6 +284,9 @@ void EOSSDK_Connect::QueryExternalAccountMappings(const EOS_Connect_QueryExterna
 void EOSSDK_Connect::QueryProductUserIdMappings(const EOS_Connect_QueryProductUserIdMappingsOptions* Options, void* ClientData, const EOS_Connect_OnQueryProductUserIdMappingsCallback CompletionDelegate)
 {
     TRACE_FUNC();
+
+    if (CompletionDelegate == nullptr)
+        return;
 
 }
 
@@ -400,6 +421,9 @@ EOS_NotificationId EOSSDK_Connect::AddNotifyAuthExpiration(const EOS_Connect_Add
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    if (Notification == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
     pFrameResult_t res(new FrameResult);
 
     EOS_Connect_AuthExpirationCallbackInfo& aeci = res->CreateCallback<EOS_Connect_AuthExpirationCallbackInfo>((CallbackFunc)Notification);
@@ -437,6 +461,9 @@ EOS_NotificationId EOSSDK_Connect::AddNotifyLoginStatusChanged(const EOS_Connect
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
+
+    if (Notification == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
 
     pFrameResult_t res(new FrameResult);
 

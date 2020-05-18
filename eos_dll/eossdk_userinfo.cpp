@@ -83,6 +83,9 @@ void EOSSDK_UserInfo::QueryUserInfo(const EOS_UserInfo_QueryUserInfoOptions* Opt
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    if (CompletionDelegate == nullptr)
+        return;
+
     pFrameResult_t res(new FrameResult);
     EOS_UserInfo_QueryUserInfoCallbackInfo& quici = res->CreateCallback<EOS_UserInfo_QueryUserInfoCallbackInfo>((CallbackFunc)CompletionDelegate);
     quici.ClientData = ClientData;
@@ -134,6 +137,9 @@ void EOSSDK_UserInfo::QueryUserInfoByDisplayName(const EOS_UserInfo_QueryUserInf
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
+
+    if (CompletionDelegate == nullptr)
+        return;
 
     pFrameResult_t res(new FrameResult);
     EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo& quibdnci = res->CreateCallback<EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo>((CallbackFunc)CompletionDelegate);

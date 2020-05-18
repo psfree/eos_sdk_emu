@@ -104,6 +104,9 @@ void EOSSDK_Presence::QueryPresence( const EOS_Presence_QueryPresenceOptions* Op
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    if (CompletionDelegate == nullptr)
+        return;
+
     pFrameResult_t res(new FrameResult);
     EOS_Presence_QueryPresenceCallbackInfo& qpci = res->CreateCallback<EOS_Presence_QueryPresenceCallbackInfo>((CallbackFunc)CompletionDelegate);
     qpci.ClientData = ClientData;
@@ -294,6 +297,9 @@ void EOSSDK_Presence::SetPresence( const EOS_Presence_SetPresenceOptions* Option
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    if (CompletionDelegate == nullptr)
+        return;
+
     pFrameResult_t res(new FrameResult);
     EOS_Presence_SetPresenceCallbackInfo& spci = res->CreateCallback<EOS_Presence_SetPresenceCallbackInfo>((CallbackFunc)CompletionDelegate);
     spci.ClientData = ClientData;
@@ -337,6 +343,9 @@ EOS_NotificationId EOSSDK_Presence::AddNotifyOnPresenceChanged( const EOS_Presen
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    if (NotificationHandler == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
     pFrameResult_t res(new FrameResult);
     EOS_Presence_PresenceChangedCallbackInfo& pcci = res->CreateCallback<EOS_Presence_PresenceChangedCallbackInfo>((CallbackFunc)NotificationHandler);
     pcci.ClientData = ClientData;
@@ -374,6 +383,9 @@ EOS_NotificationId EOSSDK_Presence::AddNotifyJoinGameAccepted( const EOS_Presenc
 {
      TRACE_FUNC();
      GLOBAL_LOCK();
+
+     if (NotificationFn == nullptr)
+         return EOS_INVALID_NOTIFICATIONID;
 
      pFrameResult_t res(new FrameResult);
      EOS_Presence_JoinGameAcceptedCallbackInfo& jgaci = res->CreateCallback<EOS_Presence_JoinGameAcceptedCallbackInfo>((CallbackFunc)NotificationFn);

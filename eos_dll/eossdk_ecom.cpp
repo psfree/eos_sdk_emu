@@ -40,6 +40,9 @@ void EOSSDK_Ecom::QueryOwnership(const EOS_Ecom_QueryOwnershipOptions* Options, 
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    if (CompletionDelegate == nullptr)
+        return;
+
     pFrameResult_t res(new FrameResult);
 
     EOS_Ecom_QueryOwnershipCallbackInfo& qoci = res->CreateCallback<EOS_Ecom_QueryOwnershipCallbackInfo>((CallbackFunc)CompletionDelegate);
@@ -106,6 +109,9 @@ void EOSSDK_Ecom::QueryOwnershipToken(const EOS_Ecom_QueryOwnershipTokenOptions*
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    if (CompletionDelegate == nullptr)
+        return;
+
     switch (Options->ApiVersion)
     {
         case EOS_ECOM_QUERYOWNERSHIPTOKEN_API_002:
@@ -130,6 +136,9 @@ void EOSSDK_Ecom::QueryEntitlements(const EOS_Ecom_QueryEntitlementsOptions* Opt
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    if (CompletionDelegate == nullptr)
+        return;
+
     switch (Options->ApiVersion)
     {
         case EOS_ECOM_QUERYENTITLEMENTS_API_002:
@@ -150,6 +159,9 @@ void EOSSDK_Ecom::QueryOffers(const EOS_Ecom_QueryOffersOptions* Options, void* 
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    if (CompletionDelegate == nullptr)
+        return;
+
     switch (Options->ApiVersion)
     {
         case EOS_ECOM_QUERYOFFERS_API_001:
@@ -164,6 +176,9 @@ void EOSSDK_Ecom::Checkout(const EOS_Ecom_CheckoutOptions* Options, void* Client
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
+
+    if (CompletionDelegate == nullptr)
+        return;
 
     switch (Options->ApiVersion)
     {
@@ -192,7 +207,10 @@ void EOSSDK_Ecom::RedeemEntitlements(const EOS_Ecom_RedeemEntitlementsOptions* O
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
-    
+
+    if (CompletionDelegate == nullptr)
+        return;
+
     switch (Options->ApiVersion)
     {
         case EOS_ECOM_REDEEMENTITLEMENTS_API_001:

@@ -49,7 +49,10 @@ void EOSSDK_Friends::QueryFriends(const EOS_Friends_QueryFriendsOptions* Options
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
-    
+
+    if (CompletionDelegate == nullptr)
+        return;
+
     pFrameResult_t res(new FrameResult);
 
     EOS_Friends_QueryFriendsCallbackInfo& qfci = res->CreateCallback<EOS_Friends_QueryFriendsCallbackInfo>((CallbackFunc)CompletionDelegate);
@@ -80,7 +83,10 @@ void EOSSDK_Friends::SendInvite(const EOS_Friends_SendInviteOptions* Options, vo
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
-    
+
+    if (CompletionDelegate == nullptr)
+        return;
+
 
 }
 
@@ -95,7 +101,10 @@ void EOSSDK_Friends::AcceptInvite(const EOS_Friends_AcceptInviteOptions* Options
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
-    
+
+    if (CompletionDelegate == nullptr)
+        return;
+
 
 }
 
@@ -110,7 +119,10 @@ void EOSSDK_Friends::RejectInvite(const EOS_Friends_RejectInviteOptions* Options
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
-    
+
+    if (CompletionDelegate == nullptr)
+        return;
+
 
 }
 
@@ -194,6 +206,9 @@ EOS_NotificationId EOSSDK_Friends::AddNotifyFriendsUpdate(const EOS_Friends_AddN
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
+
+    if (FriendsUpdateHandler == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
 
     pFrameResult_t res(new FrameResult);
     

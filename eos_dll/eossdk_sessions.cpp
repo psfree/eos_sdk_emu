@@ -351,6 +351,9 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    if (CompletionDelegate == nullptr)
+        return;
+
     pFrameResult_t res(new FrameResult);
 
     EOS_Sessions_UpdateSessionCallbackInfo& usci = res->CreateCallback<EOS_Sessions_UpdateSessionCallbackInfo>((CallbackFunc)CompletionDelegate);
@@ -461,6 +464,9 @@ void EOSSDK_Sessions::DestroySession(const EOS_Sessions_DestroySessionOptions* O
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    if (CompletionDelegate == nullptr)
+        return;
+
     pFrameResult_t res(new FrameResult);
 
     EOS_Sessions_DestroySessionCallbackInfo& dsci = res->CreateCallback<EOS_Sessions_DestroySessionCallbackInfo>((CallbackFunc)CompletionDelegate);
@@ -531,7 +537,10 @@ void EOSSDK_Sessions::JoinSession(const EOS_Sessions_JoinSessionOptions* Options
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
-    
+
+    if (CompletionDelegate == nullptr)
+        return;
+
     pFrameResult_t res(new FrameResult);
     EOS_Sessions_JoinSessionCallbackInfo& jsci = res->CreateCallback<EOS_Sessions_JoinSessionCallbackInfo>((CallbackFunc)CompletionDelegate);
     jsci.ClientData = ClientData;
@@ -584,6 +593,9 @@ void EOSSDK_Sessions::StartSession(const EOS_Sessions_StartSessionOptions* Optio
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
+
+    if (CompletionDelegate == nullptr)
+        return;
 
     pFrameResult_t res(new FrameResult);
     EOS_Sessions_StartSessionCallbackInfo& ssci = res->CreateCallback<EOS_Sessions_StartSessionCallbackInfo>((CallbackFunc)CompletionDelegate);
@@ -644,6 +656,9 @@ void EOSSDK_Sessions::EndSession(const EOS_Sessions_EndSessionOptions* Options, 
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    if (CompletionDelegate == nullptr)
+        return;
+
     pFrameResult_t res(new FrameResult);
     EOS_Sessions_EndSessionCallbackInfo& esci = res->CreateCallback<EOS_Sessions_EndSessionCallbackInfo>((CallbackFunc)CompletionDelegate);
 
@@ -688,7 +703,9 @@ void EOSSDK_Sessions::RegisterPlayers(const EOS_Sessions_RegisterPlayersOptions*
 {
     TRACE_FUNC();
 
-    
+    if (CompletionDelegate == nullptr)
+        return;
+
 }
 
 /**
@@ -708,6 +725,9 @@ void EOSSDK_Sessions::UnregisterPlayers(const EOS_Sessions_UnregisterPlayersOpti
 {
     TRACE_FUNC();
 
+    if (CompletionDelegate == nullptr)
+        return;
+
     
 }
 
@@ -725,6 +745,9 @@ void EOSSDK_Sessions::UnregisterPlayers(const EOS_Sessions_UnregisterPlayersOpti
 void EOSSDK_Sessions::SendInvite(const EOS_Sessions_SendInviteOptions* Options, void* ClientData, const EOS_Sessions_OnSendInviteCallback CompletionDelegate)
 {
     TRACE_FUNC();
+
+    if (CompletionDelegate == nullptr)
+        return;
 
     
 }
@@ -744,6 +767,9 @@ void EOSSDK_Sessions::RejectInvite(const EOS_Sessions_RejectInviteOptions* Optio
 {
     TRACE_FUNC();
 
+    if (CompletionDelegate == nullptr)
+        return;
+
     
 }
 
@@ -758,6 +784,9 @@ void EOSSDK_Sessions::RejectInvite(const EOS_Sessions_RejectInviteOptions* Optio
 void EOSSDK_Sessions::QueryInvites(const EOS_Sessions_QueryInvitesOptions* Options, void* ClientData, const EOS_Sessions_OnQueryInvitesCallback CompletionDelegate)
 {
     TRACE_FUNC();
+
+    if (CompletionDelegate == nullptr)
+        return;
 
     
 }
@@ -855,6 +884,9 @@ EOS_NotificationId EOSSDK_Sessions::AddNotifySessionInviteReceived(const EOS_Ses
 {
     TRACE_FUNC();
 
+    if (NotificationFn == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
     
     return 0;
 }
@@ -884,6 +916,9 @@ void EOSSDK_Sessions::RemoveNotifySessionInviteReceived(EOS_NotificationId InId)
 EOS_NotificationId EOSSDK_Sessions::AddNotifySessionInviteAccepted(const EOS_Sessions_AddNotifySessionInviteAcceptedOptions* Options, void* ClientData, const EOS_Sessions_OnSessionInviteAcceptedCallback NotificationFn)
 {
     TRACE_FUNC();
+
+    if (NotificationFn == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
 
     
     return 0;

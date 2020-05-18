@@ -209,6 +209,9 @@ EOS_NotificationId EOSSDK_P2P::AddNotifyPeerConnectionRequest(const EOS_P2P_AddN
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    if (ConnectionRequestHandler == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
     pFrameResult_t res(new FrameResult);
     
     EOS_P2P_OnIncomingConnectionRequestInfo& oicri = res->CreateCallback<EOS_P2P_OnIncomingConnectionRequestInfo>((CallbackFunc)ConnectionRequestHandler);
@@ -245,7 +248,10 @@ EOS_NotificationId EOSSDK_P2P::AddNotifyPeerConnectionClosed(const EOS_P2P_AddNo
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
-    
+
+    if (ConnectionClosedHandler == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
     pFrameResult_t res(new FrameResult);
 
     EOS_P2P_OnRemoteConnectionClosedInfo& orcci = res->CreateCallback<EOS_P2P_OnRemoteConnectionClosedInfo>((CallbackFunc)ConnectionClosedHandler);
@@ -404,6 +410,9 @@ void EOSSDK_P2P::QueryNATType(const EOS_P2P_QueryNATTypeOptions* Options, void* 
     TRACE_FUNC();
     LOG(Log::LogLevel::DEBUG, "TODO");
     GLOBAL_LOCK();
+
+    if (NATTypeQueriedHandler == nullptr)
+        return;
 
     pFrameResult_t res(new FrameResult);
     EOS_P2P_OnQueryNATTypeCompleteInfo& pqntci = res->CreateCallback<EOS_P2P_OnQueryNATTypeCompleteInfo>((CallbackFunc)NATTypeQueriedHandler, std::chrono::milliseconds(15000));
