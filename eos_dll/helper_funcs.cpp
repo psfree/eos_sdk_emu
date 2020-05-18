@@ -62,8 +62,8 @@ LOCAL_API static void randombytes(uint8_t* buf, size_t len)
     std::uniform_int_distribution<int64_t> dis;
     std::mt19937_64& gen = get_gen();
 
-    dis(gen); dis(gen); dis(gen);
-    dis(gen); dis(gen); dis(gen);
+    (void)dis(gen);
+    (void)dis(gen);
 
     // Make sure we can hold our buffer size as int64_t
     size_t rand_buf_len = len / sizeof(int64_t) + (len % sizeof(int64_t) ? 1 : 0);

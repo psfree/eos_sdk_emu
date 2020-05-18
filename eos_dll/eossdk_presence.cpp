@@ -434,7 +434,7 @@ EOS_EResult EOSSDK_Presence::GetJoinInfo( const EOS_Presence_GetJoinInfoOptions*
     size_t len = presence->joininfo().length() + 1;
     if (*InOutBufferLength < len)
     {
-        *InOutBufferLength = len;
+        *InOutBufferLength = static_cast<int32_t>(len);
         return EOS_EResult::EOS_LimitExceeded;
     }
 
@@ -496,7 +496,7 @@ bool EOSSDK_Presence::send_my_presence_info_to_all_peers()
 
     msg.set_source_id(user_id);
 
-    GetNetwork().TCPSendToAllPeers(msg).size();
+    (void)GetNetwork().TCPSendToAllPeers(msg).size();
     presence->release_presence_info();
     return true;
 }
@@ -636,7 +636,7 @@ void EOSSDK_Presence::FreeCallback(pFrameResult_t res)
 {
     GLOBAL_LOCK();
 
-    switch (res->res.m_iCallback)
+    //switch (res->res.m_iCallback)
     {
         /////////////////////////////
         //        Callbacks        //

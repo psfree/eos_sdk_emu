@@ -63,7 +63,7 @@ void EOSSDK_Ecom::QueryOwnership(const EOS_Ecom_QueryOwnershipOptions* Options, 
             if (qoci.ItemOwnershipCount > 0)
             {
                 EOS_Ecom_ItemOwnership* ownerships = new EOS_Ecom_ItemOwnership[qoci.ItemOwnershipCount];
-                for (int i = 0; i < Options->CatalogItemIdCount; ++i)
+                for (uint32_t i = 0; i < Options->CatalogItemIdCount; ++i)
                 {
                     LOG(Log::LogLevel::DEBUG, "CatalogItemIds[%u]: %s", i, (opts->CatalogItemIds[i] == nullptr ? "" : opts->CatalogItemIds[i]));
 
@@ -117,7 +117,7 @@ void EOSSDK_Ecom::QueryOwnershipToken(const EOS_Ecom_QueryOwnershipTokenOptions*
         {
             auto opts = reinterpret_cast<const EOS_Ecom_QueryOwnershipTokenOptions001*>(Options);
             LOG(Log::LogLevel::DEBUG, "CatalogItemIdCount: %u", opts->CatalogItemIdCount);
-            for (int i = 0; i < opts->CatalogItemIdCount; ++i)
+            for (uint32_t i = 0; i < opts->CatalogItemIdCount; ++i)
             {
                 LOG(Log::LogLevel::DEBUG, "CatalogItemIds[%u]: %s", i, (opts->CatalogItemIds[i] == nullptr ? "" : opts->CatalogItemIds[i]));
             }
@@ -137,7 +137,7 @@ void EOSSDK_Ecom::QueryEntitlements(const EOS_Ecom_QueryEntitlementsOptions* Opt
             auto opts = reinterpret_cast<const EOS_Ecom_QueryEntitlementsOptions002*>(Options);
             LOG(Log::LogLevel::DEBUG, "bIncludeRedeemed: %d", (int)opts->bIncludeRedeemed);
             LOG(Log::LogLevel::DEBUG, "EntitlementNameCount: %u", opts->EntitlementNameCount);
-            for (int i = 0; i < opts->EntitlementNameCount; ++i)
+            for (uint32_t i = 0; i < opts->EntitlementNameCount; ++i)
             {
                 LOG(Log::LogLevel::DEBUG, "EntitlementNames[%u]: %s", i, (opts->EntitlementNames[i] == nullptr ? "" : opts->EntitlementNames[i]));
             }
@@ -172,7 +172,7 @@ void EOSSDK_Ecom::Checkout(const EOS_Ecom_CheckoutOptions* Options, void* Client
             auto opts = reinterpret_cast<const EOS_Ecom_CheckoutOptions001*>(Options);
             LOG(Log::LogLevel::DEBUG, "EntryCount: %u", opts->EntryCount);
             LOG(Log::LogLevel::DEBUG, "OverrideCatalogNamespace: %s", (opts->OverrideCatalogNamespace == nullptr ? "" : opts->OverrideCatalogNamespace));
-            for (int i = 0; i < opts->EntryCount; ++i)
+            for (uint32_t i = 0; i < opts->EntryCount; ++i)
             {
                 auto pEntry = &opts->Entries[i];
                 switch (pEntry->ApiVersion)
@@ -199,7 +199,7 @@ void EOSSDK_Ecom::RedeemEntitlements(const EOS_Ecom_RedeemEntitlementsOptions* O
         {
             auto opts = reinterpret_cast<const EOS_Ecom_RedeemEntitlementsOptions001*>(Options);
             LOG(Log::LogLevel::DEBUG, "EntitlementIdCount: %u", opts->EntitlementIdCount);
-            for (int i = 0; i < opts->EntitlementIdCount; ++i)
+            for (uint32_t i = 0; i < opts->EntitlementIdCount; ++i)
             {
                 LOG(Log::LogLevel::DEBUG, "EntitlementIds[%u]: %s", i, (opts->EntitlementIds[i] == nullptr ? "" : opts->EntitlementIds[i]));
             }
@@ -425,7 +425,7 @@ void EOSSDK_Ecom::FreeCallback(pFrameResult_t res)
             EOS_Ecom_QueryOwnershipCallbackInfo& qoci = res->GetCallback<EOS_Ecom_QueryOwnershipCallbackInfo>();
             if (qoci.ItemOwnershipCount > 0)
             {
-                for (int i = 0; i < qoci.ItemOwnershipCount; ++i)
+                for (uint32_t i = 0; i < qoci.ItemOwnershipCount; ++i)
                     delete[]qoci.ItemOwnership[i].Id;
 
                 delete[] qoci.ItemOwnership;

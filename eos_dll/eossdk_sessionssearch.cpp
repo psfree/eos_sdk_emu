@@ -369,9 +369,9 @@ bool EOSSDK_SessionSearch::RunCallbacks(pFrameResult_t res)
 
 void EOSSDK_SessionSearch::FreeCallback(pFrameResult_t res)
 {
-    std::lock_guard<std::mutex> lg(_local_mutex);
+    std::lock_guard<std::mutex> lk(_local_mutex);
 
-    switch (res->res.m_iCallback)
+    //switch (res->res.m_iCallback)
     {
         /////////////////////////////
         //        Callbacks        //

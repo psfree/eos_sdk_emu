@@ -86,7 +86,7 @@ void EOSSDK_Metrics::FreeCallback(pFrameResult_t res)
 {
     GLOBAL_LOCK();
 
-    switch (res->res.m_iCallback)
+    //switch (res->res.m_iCallback)
     {
         /////////////////////////////
         //        Callbacks        //

@@ -37,12 +37,12 @@ EOS_EResult EOS_EpicAccountIdDetails::ToString(char* outBuffer, int32_t* outBuff
     size_t len = _idstr.length() + 1;
     if (*outBufferSize < len)
     {
-        *outBufferSize = len;
+        *outBufferSize = static_cast<int32_t>(len);
         return EOS_EResult::EOS_LimitExceeded;
     }
 
     strncpy(outBuffer, _idstr.c_str(), len);
-    *outBufferSize = len;
+    *outBufferSize = static_cast<int32_t>(len);
     return EOS_EResult::EOS_Success;
 }
 
@@ -145,12 +145,12 @@ EOS_EResult EOS_ProductUserIdDetails::ToString(char* outBuffer, int32_t* outBuff
     size_t len = _idstr.length() + 1;
     if (*outBufferSize < len)
     {
-        *outBufferSize = len;
+        *outBufferSize = static_cast<int32_t>(len);
         return EOS_EResult::EOS_LimitExceeded;
     }
 
     strncpy(outBuffer, _idstr.c_str(), len);
-    *outBufferSize = len;
+    *outBufferSize = static_cast<int32_t>(len);
     return EOS_EResult::EOS_Success;
 }
 

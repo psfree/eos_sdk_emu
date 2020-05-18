@@ -110,7 +110,7 @@ EOS_EResult EOSSDK_P2P::GetNextReceivedPacketSize(const EOS_P2P_GetNextReceivedP
             if (!in_msgs.second.empty())
             {
                 auto& front = in_msgs.second.front();
-                *OutPacketSizeBytes = front.data().length();
+                *OutPacketSizeBytes = static_cast<uint32_t>(front.data().length());
                 next_requested_channel = front.channel();
                 has_packet = true;
             }
@@ -123,7 +123,7 @@ EOS_EResult EOSSDK_P2P::GetNextReceivedPacketSize(const EOS_P2P_GetNextReceivedP
         auto& in_msgs = _p2p_in_messages[next_requested_channel];
         if (!in_msgs.empty())
         {
-            *OutPacketSizeBytes = in_msgs.front().data().length();
+            *OutPacketSizeBytes = static_cast<uint32_t>(in_msgs.front().data().length());
             has_packet = true;
         }
     }
@@ -184,7 +184,7 @@ EOS_EResult EOSSDK_P2P::ReceivePacket(const EOS_P2P_ReceivePacketOptions* Option
     auto& msg = queue->front();
 
     *OutPeerId = GetProductUserId(msg.user_id());
-    *OutBytesWritten = msg.data().copy(reinterpret_cast<char*>(OutData), Options->MaxDataSizeBytes);
+    *OutBytesWritten = static_cast<uint32_t>(msg.data().copy(reinterpret_cast<char*>(OutData), Options->MaxDataSizeBytes));
     msg.socket_name().copy(OutSocketId->SocketName, sizeof(EOS_P2P_SocketId::SocketName));
     OutSocketId->SocketName[32] = 0;
     *OutChannel = msg.channel();

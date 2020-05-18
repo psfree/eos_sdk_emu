@@ -108,7 +108,7 @@ message Session_Info_pb {
     bool join_in_progress_allowed = 10;
     bool invites_allowed = 11;
     map<string, Session_Attribute> attributes = 12;
-    bool started = 13;
+    int32 state = 13;
 }
 
 // Message sent to all members when the session is destroyed

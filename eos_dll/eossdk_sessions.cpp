@@ -404,6 +404,7 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
                     }
                     session.state = session_state_t::state_e::created;
                     session.infos = modif->_infos;
+                    session.infos.set_state(get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Pending));
                     *session.infos.add_players() = GetEOS_Connect().product_id()->to_string();
                     *session.infos.add_registered_players() = GetEOS_Connect().product_id()->to_string();
                     GetEOS_Connect().add_session(GetProductUserId(session.infos.sessionid()), session.infos.sessionname());
@@ -422,6 +423,7 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
                 else
                 {
                     modif->_infos.set_sessionid(session->infos.sessionid());
+                    modif->_infos.set_state(session->infos.state());
                     session->infos = modif->_infos;
                     {
                         std::string const& sess_id = session->infos.sessionid();
@@ -477,7 +479,7 @@ void EOSSDK_Sessions::DestroySession(const EOS_Sessions_DestroySessionOptions* O
             dsci.ResultCode = EOS_EResult::EOS_Success;
             if (it->second.state == session_state_t::state_e::created)
             {
-                //Session_Message_pb* session = new Session_Message_pb;
+                it->second.infos.set_state(get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Destroying));
                 //Session_Destroy_pb* destroy = new Session_Destroy_pb;
                 //
                 //destroy->set_sessionid(it->second.infos.sessionid());
@@ -598,10 +600,21 @@ void EOSSDK_Sessions::StartSession(const EOS_Sessions_StartSessionOptions* Optio
         if (session != nullptr)
         {
             ssci.ResultCode = EOS_EResult::EOS_Success;
-            if (!session->infos.started())
+            switch (session->infos.state())
             {
-                session->infos.set_started(true);
-                send_session_info(session);
+                case get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Destroying):
+                case get_enum_value(EOS_EOnlineSessionState::EOS_OSS_NoSession) :
+                case get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Ending)    :
+                case get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Creating)  :
+                case get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Starting)  :
+                case get_enum_value(EOS_EOnlineSessionState::EOS_OSS_InProgress):
+                    ssci.ResultCode = EOS_EResult::EOS_InvalidParameters;
+                    break;
+
+                case get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Ended)     :
+                case get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Pending)   :
+                    session->infos.set_state(get_enum_value(EOS_EOnlineSessionState::EOS_OSS_InProgress));
+                    send_session_info(session);
             }
         }
         else
@@ -646,7 +659,7 @@ void EOSSDK_Sessions::EndSession(const EOS_Sessions_EndSessionOptions* Options, 
         if (session != nullptr)
         {
             esci.ResultCode = EOS_EResult::EOS_Success;
-            session->infos.set_started(false);
+            session->infos.set_state(get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Ended));
         }
         else
         {

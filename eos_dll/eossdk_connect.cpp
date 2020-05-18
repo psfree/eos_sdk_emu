@@ -327,7 +327,7 @@ EOS_EResult EOSSDK_Connect::GetProductUserIdMapping(const EOS_Connect_GetProduct
 
     if (*InOutBufferLength < (Options->TargetProductUserId->to_string().length() + 1))
     {
-        *InOutBufferLength = Options->TargetProductUserId->to_string().length() + 1;
+        *InOutBufferLength = static_cast<int32_t>(Options->TargetProductUserId->to_string().length() + 1);
         return EOS_EResult::EOS_LimitExceeded;
     }
 
@@ -699,7 +699,7 @@ bool EOSSDK_Connect::CBRunFrame()
 
         if ((now - user.second.last_hearbeat) > alive_heartbeat)
         {
-            LOG(Log::LogLevel::DEBUG, "User disconnected (pid=%s, uid=%s)", user.first->to_string().c_str(), user.second.infos.userid().c_str());
+            //LOG(Log::LogLevel::DEBUG, "User disconnected (pid=%s, uid=%s)", user.first->to_string().c_str(), user.second.infos.userid().c_str());
             //user.second.connected = false;
             //GetEOS_Presence().set_user_status(GetEpicUserId(user.second.infos.userid()), EOS_Presence_EStatus::EOS_PS_Offline);
             continue;
@@ -745,7 +745,7 @@ void EOSSDK_Connect::FreeCallback(pFrameResult_t res)
 {
     GLOBAL_LOCK();
 
-    switch (res->res.m_iCallback)
+    //switch (res->res.m_iCallback)
     {
         /////////////////////////////
         //        Callbacks        //

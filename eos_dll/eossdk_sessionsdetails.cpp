@@ -147,7 +147,7 @@ EOS_EResult EOSSDK_SessionDetails::CopySessionAttributeByIndex(const EOS_Session
     TRACE_FUNC();
     std::lock_guard<std::mutex> lg(_local_mutex);
 
-    if (Options == nullptr || Options->AttrIndex >= _infos.attributes_size() || OutSessionAttribute == nullptr)
+    if (Options == nullptr || Options->AttrIndex >= static_cast<uint32_t>(_infos.attributes_size()) || OutSessionAttribute == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
     
     EOS_SessionDetails_Attribute* attr = new EOS_SessionDetails_Attribute;
