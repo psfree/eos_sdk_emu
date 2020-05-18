@@ -134,8 +134,12 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
             inst._release_memory_func = p->ReleaseMemoryFunction;
 
             inst.api_version = p->ApiVersion;
-            if (p->ProductName != nullptr)
-                inst.product_name = Options->ProductName;
+            if (p->ProductName != nullptr && *p->ProductName != 0)
+            {
+                //inst.product_name = Options->ProductName;
+                Settings::Inst().gamename = Options->ProductName;
+                Settings::Inst().save_settings();
+            }
             if (p->ProductVersion != nullptr)
                 inst.product_version = Options->ProductVersion;
         }

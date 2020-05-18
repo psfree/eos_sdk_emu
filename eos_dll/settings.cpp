@@ -46,6 +46,58 @@ Settings::~Settings()
 
 }
 
+void Settings::build_save_path()
+{
+    try
+    {// Emulator Savepath
+        savepath = setting_savepath;
+
+        bool clean_savepath = true;
+        while (clean_savepath)
+        {
+            clean_savepath = false;
+            std::string tmp = trim(savepath);
+            if (tmp != savepath)
+            {
+                clean_savepath = true;
+            }
+            if (!savepath.empty())
+            {
+                while (*savepath.rbegin() == '/' || *savepath.rbegin() == '\\')
+                {
+                    // Remove trailing '/' or '\'
+                    savepath.pop_back();
+                    clean_savepath = true;
+                }
+            }
+        }
+
+        setting_savepath = savepath;
+        if (savepath == "appdata")
+        {
+            savepath = std::move(get_userdata_path());
+        }
+        else
+        {
+            if (savepath.empty())
+                savepath = ".";
+            savepath = std::move(canonical_path(savepath));
+        }
+    }
+    catch (...)
+    {
+        savepath = std::move(get_userdata_path());
+        setting_savepath = "appdata";
+    }
+
+    savepath += PATH_SEPARATOR;
+    savepath += emu_savepath;
+    savepath += PATH_SEPARATOR;
+    savepath += userid->to_string();
+    savepath += PATH_SEPARATOR;
+    savepath += gamename;
+}
+
 void Settings::load_settings()
 {
     LOG(Log::LogLevel::DEBUG, "");
@@ -101,58 +153,15 @@ void Settings::load_settings()
     Log::set_loglevel(llvl);
 #endif
 
-
     try
-    {// Emulator Savepath
-        savepath = settings["savepath"].get<std::string>();
-
-        bool clean_savepath = true;
-        while (clean_savepath)
-        {
-            clean_savepath = false;
-            std::string tmp = trim(savepath);
-            if (tmp != savepath)
-            {
-                clean_savepath = true;
-            }
-            if (!savepath.empty())
-            {
-                while (*savepath.rbegin() == '/' || *savepath.rbegin() == '\\')
-                {
-                    // Remove trailing '/' or '\'
-                    savepath.pop_back();
-                    clean_savepath = true;
-                }
-            }
-        }
-        settings["savepath"] = savepath;
-        if (savepath == "appdata")
-        {
-            savepath = std::move(get_userdata_path());
-        }
-        else
-        {
-            if (savepath.empty())
-                savepath = ".";
-            savepath = std::move(canonical_path(savepath));
-        }
+    {
+        setting_savepath = settings["savepath"].get_ref<std::string&>();
     }
     catch (...)
     {
-        savepath = std::move(get_userdata_path());
-        settings["savepath"] = "appdata";
+        setting_savepath = "appdata";
     }
-
-    setting_savepath = settings["savepath"].get_ref<std::string&>();
-
-    savepath += PATH_SEPARATOR;
-    savepath += emu_savepath;
-    savepath += PATH_SEPARATOR;
-    savepath += userid->to_string();
-    savepath += PATH_SEPARATOR;
-    savepath += gamename;
-
-    create_folder(savepath);
+    build_save_path();
 
     save_settings();
 }
@@ -163,6 +172,8 @@ void Settings::save_settings()
     std::string config_path = std::move(get_executable_path() + settings_file_name);
 
     LOG(Log::LogLevel::INFO, "Saving emu settings: %s", config_path.c_str());
+
+    build_save_path();
 
     settings["username"] = username;
     settings["epicid"] = userid->to_string();
@@ -175,6 +186,8 @@ void Settings::save_settings()
     settings["debug_level"] = Log::loglevel_to_str();
 #endif
     settings["savepath"] = setting_savepath;
+
+    create_folder(savepath);
 
     save_json(config_path, settings);
 }

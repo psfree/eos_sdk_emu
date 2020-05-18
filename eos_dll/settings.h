@@ -42,6 +42,8 @@ private:
     std::string config_path;
     std::string setting_savepath;
 
+    void build_save_path();
+
 public:
     EOS_EpicAccountId userid;
     std::string username;

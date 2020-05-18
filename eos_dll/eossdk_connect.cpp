@@ -31,7 +31,7 @@ decltype(EOSSDK_Connect::user_infos_rate)      EOSSDK_Connect::user_infos_rate;
 
 EOSSDK_Connect::EOSSDK_Connect()
 {
-    _myself.first = GetProductUserId(generate_account_id_from_name(EOSSDK_Client::Inst().product_name + Settings::Inst().userid->to_string()));
+    _myself.first = GetProductUserId(generate_account_id_from_name(Settings::Inst().gamename + Settings::Inst().userid->to_string()));
     _myself.second.connected = false;
     _myself.second.infos.set_userid(Settings::Inst().userid->to_string());
     _myself.second.infos.set_displayname(Settings::Inst().username);
