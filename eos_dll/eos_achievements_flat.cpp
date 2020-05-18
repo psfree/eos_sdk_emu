@@ -298,7 +298,7 @@ EOS_DECLARE_FUNC(void) EOS_Achievements_RemoveNotifyAchievementsUnlocked(EOS_HAc
     TRACE_FUNC();
 
     if (Handle == nullptr)
-        return 0;
+        return;
 
     auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
 }
