@@ -77,15 +77,14 @@ void EOSSDK_Ecom::QueryOwnership(const EOS_Ecom_QueryOwnershipOptions* Options, 
                         id = new char[idlen];
                         strncpy(id, opts->CatalogItemIds[i], idlen);
                         
-                        LOG(Log::LogLevel::INFO, "Owning Catalog Item: %s", id);
-                        ownerships[i].OwnershipStatus = EOS_EOwnershipStatus::EOS_OS_Owned;
+                        ownerships[i].OwnershipStatus = (Settings::Inst().unlock_dlcs ? EOS_EOwnershipStatus::EOS_OS_Owned : EOS_EOwnershipStatus::EOS_OS_NotOwned);
                     }
                     else
                     {
                         id = new char[1];
                         *id = 0;
 
-                        LOG(Log::LogLevel::INFO, "Empty Catalog Item id, not owned");
+                        LOG(Log::LogLevel::WARN, "Empty Catalog Item id, not owned");
                         ownerships[i].OwnershipStatus = EOS_EOwnershipStatus::EOS_OS_NotOwned;
                     }
 
