@@ -117,6 +117,10 @@ namespace sdk
     {
         friend class sdk::EOSSDK_Sessions;
 
+        std::mutex _local_mutex;
+
+        Session_Info_pb _infos;        
+
     public:
         EOS_EResult CopyInfo(const EOS_ActiveSession_CopyInfoOptions* Options, EOS_ActiveSession_Info** OutActiveSessionInfo);
         uint32_t GetRegisteredPlayerCount(const EOS_ActiveSession_GetRegisteredPlayerCountOptions* Options);

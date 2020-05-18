@@ -440,11 +440,13 @@ EOS_DECLARE_FUNC(void) EOS_SessionDetails_Info_Release(EOS_SessionDetails_Info* 
     if (SessionInfo == nullptr)
         return;
 
+    // SessionDetails_Settings
+    delete[] SessionInfo->Settings->BucketId;
+    delete SessionInfo->Settings;
+
+    // SessionDetails_Info
     delete[] SessionInfo->HostAddress;
     delete[] SessionInfo->SessionId;
-    delete[] SessionInfo->Settings->BucketId;
-
-    delete SessionInfo->Settings;
     delete SessionInfo;
 }
 
@@ -463,8 +465,8 @@ EOS_DECLARE_FUNC(void) EOS_ActiveSession_Info_Release(EOS_ActiveSession_Info* Ac
     if (ActiveSessionInfo == nullptr)
         return;
 
-    delete[]ActiveSessionInfo->SessionName;
     EOS_SessionDetails_Info_Release(const_cast<EOS_SessionDetails_Info*>(ActiveSessionInfo->SessionDetails));
-
-    delete ActiveSessionInfo;
+    
+    // ActiveSession_Info
+    delete[]ActiveSessionInfo->SessionName;
 }
