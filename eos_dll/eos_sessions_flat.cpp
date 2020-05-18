@@ -469,4 +469,5 @@ EOS_DECLARE_FUNC(void) EOS_ActiveSession_Info_Release(EOS_ActiveSession_Info* Ac
     
     // ActiveSession_Info
     delete[]ActiveSessionInfo->SessionName;
+    delete ActiveSessionInfo;
 }
