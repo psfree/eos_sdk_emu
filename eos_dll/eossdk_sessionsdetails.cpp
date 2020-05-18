@@ -49,7 +49,7 @@ namespace sdk
 EOS_EResult EOSSDK_SessionDetails::CopyInfo(const EOS_SessionDetails_CopyInfoOptions* Options, EOS_SessionDetails_Info** OutSessionInfo)
 {
     TRACE_FUNC();
-    std::lock_guard<std::mutex> lg(_local_mutex);
+    std::lock_guard<std::mutex> lk(_local_mutex);
 
     if (Options == nullptr || OutSessionInfo == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -119,7 +119,7 @@ EOS_EResult EOSSDK_SessionDetails::CopyInfo(const EOS_SessionDetails_CopyInfoOpt
 uint32_t EOSSDK_SessionDetails::GetSessionAttributeCount(const EOS_SessionDetails_GetSessionAttributeCountOptions* Options)
 {
     TRACE_FUNC();
-    std::lock_guard<std::mutex> lg(_local_mutex);
+    std::lock_guard<std::mutex> lk(_local_mutex);
 
     if (Options == nullptr)
         return 0;
@@ -145,7 +145,7 @@ uint32_t EOSSDK_SessionDetails::GetSessionAttributeCount(const EOS_SessionDetail
 EOS_EResult EOSSDK_SessionDetails::CopySessionAttributeByIndex(const EOS_SessionDetails_CopySessionAttributeByIndexOptions* Options, EOS_SessionDetails_Attribute** OutSessionAttribute)
 {
     TRACE_FUNC();
-    std::lock_guard<std::mutex> lg(_local_mutex);
+    std::lock_guard<std::mutex> lk(_local_mutex);
 
     if (Options == nullptr || Options->AttrIndex >= static_cast<uint32_t>(_infos.attributes_size()) || OutSessionAttribute == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -225,7 +225,7 @@ EOS_EResult EOSSDK_SessionDetails::CopySessionAttributeByIndex(const EOS_Session
 EOS_EResult EOSSDK_SessionDetails::CopySessionAttributeByKey(const EOS_SessionDetails_CopySessionAttributeByKeyOptions* Options, EOS_SessionDetails_Attribute** OutSessionAttribute)
 {
     TRACE_FUNC();
-    std::lock_guard<std::mutex> lg(_local_mutex);
+    std::lock_guard<std::mutex> lk(_local_mutex);
 
     if (Options == nullptr || Options->AttrKey == nullptr || OutSessionAttribute == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
