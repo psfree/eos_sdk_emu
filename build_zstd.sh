@@ -49,16 +49,21 @@ BUILD_CMD="make -j${JOBS-2}"
 # EXTRA_CMAKE_ENV is set by setup_clang_win_env.sh to build for windows or macos
 # You must run setup_clang_macos_env.sh before calling this script if you build for windows or macos
 
+args=()
+args+=("$build_shared")
+args+=("$build_programs")
+args+=("$custom_arch_var")
+args+=("$build_type")
 
 rm -rf "extra/zstd/$OUT_DIR" &&
 mkdir  "extra/zstd/$OUT_DIR" &&
 cd     "extra/zstd/$OUT_DIR" &&
 
-echo "${CMAKE} -G \"${BUILD_TOOL}\" $EXTRA_CMAKE_ENV \"$build_shared\" \"$build_programs\" \"$custom_arch_var\" \"$build_type\" .." &&
-${CMAKE} -G "${BUILD_TOOL}" $EXTRA_CMAKE_ENV "$build_shared" "$build_programs" "$custom_arch_var" "$build_type" .. &&
+echo "${CMAKE} -G \"${BUILD_TOOL}\" $EXTRA_CMAKE_ENV \"${args[@]}\" .." &&
+${CMAKE} -G "${BUILD_TOOL}" $EXTRA_CMAKE_ENV "${args[@]}" .. &&
 # Workaround
 sed -ri 's/(list\(REMOVE_DUPLICATES \$\{flag_var\}\))/#\1/' ../zstd-src/build/cmake/CMakeModules/AddZstdCompilationFlags.cmake &&
-${CMAKE} -G "${BUILD_TOOL}" $EXTRA_CMAKE_ENV "$build_shared" "$build_programs" "$custom_arch_var" "$build_type" .. &&
+${CMAKE} -G "${BUILD_TOOL}" $EXTRA_CMAKE_ENV "${args[@]}" .. &&
 ####
 $BUILD_CMD || exit 1
 

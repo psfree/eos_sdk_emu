@@ -51,7 +51,7 @@ private:
     std::string _func_name;
 
 public:
-#ifdef _DEBUG
+#ifdef LIBRARY_DEBUG
     Log(LogLevel lv, const char* func_name):
         _lv(lv),
         _func_name(func_name)
@@ -88,12 +88,12 @@ public:
 
     static const char* loglevel_to_str();
 
-#ifdef _DEBUG
+#ifdef LIBRARY_DEBUG
     static void L(LogLevel lv, const char* format, ...);
 #endif
 };
 
-#ifdef _DEBUG
+#ifdef LIBRARY_DEBUG
     #if defined(WIN64) || defined(_WIN64) || defined(__MINGW64__)
         #define __WINDOWS_64__
         #define __64BITS__
@@ -133,7 +133,7 @@ public:
 
     #define LOG(lv, fmt, ...) Log::L(lv, "(%lx)%s - %s: " fmt, std::this_thread::get_id(), Log::loglevel_to_str(lv), __MY_FUNCTION__, ##__VA_ARGS__)
     #define TRACE_FUNC() Log __func_trace_log(Log::LogLevel::TRACE, __MY_FUNCTION__)
-#else //!_DEBUG
+#else //!LIBRARY_DEBUG
     #define LOG(...)
     #define TRACE_FUNC()
 #endif

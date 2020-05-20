@@ -198,10 +198,10 @@ build:windows:
     - echo "Building steamapi with ${JOBS} jobs"
     - export HOST_ARCH="x86"
     - ./build_epicapi.sh "Release" "win32" || exit 1
-#    - ./build_epicapi.sh "Debug" "win32" || exit 1
+    - ./build_epicapi.sh "Debug" "win32" || exit 1
     - export HOST_ARCH="x64"
     - ./build_epicapi.sh "Release" "win64" || exit 1
-#    - ./build_epicapi.sh "Debug" "win64" || exit 1
+    - ./build_epicapi.sh "Debug" "win64" || exit 1
   artifacts:
     paths:
       - release/

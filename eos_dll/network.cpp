@@ -147,19 +147,12 @@ void Network::build_advertise_msg(Network_Message_pb& msg)
     Network_Advertise_pb* advertise = new Network_Advertise_pb;
     Network_Peer_pb* peer_pb = new Network_Peer_pb;
 
-#ifdef _DEBUG
-    std::string log_buff("Advertising with peer ids: '");
-#endif
+    LOG(Log::LogLevel::DEBUG, "Advertising with peer ids: ");
     for (auto& id : _my_peer_ids)
     {
-#ifdef _DEBUG
-        log_buff += id + "' ";
-#endif
+        LOG(Log::LogLevel::DEBUG, "%s", id.c_str());
         peer_pb->add_peer_ids(id);
     }
-#ifdef _DEBUG
-    //LOG(Log::LogLevel::DEBUG, "%s", log_buff.c_str());
-#endif
 
     advertise->set_allocated_peer(peer_pb);
     msg.set_allocated_network_advertise(advertise);
@@ -229,12 +222,14 @@ void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_
     _poll.set_events(*cli, Socket::poll_flags::in);
     for (auto& peerid : peer_ids)
     {// Map all clients peerids to the socket
-        //LOG(Log::LogLevel::DEBUG, "Adding peer id %llu to client %s", peerid, cli->get_addr().to_string(true).c_str());
+        LOG(Log::LogLevel::DEBUG, "Adding peer id %s to client %s", peerid.c_str(), cli->get_addr().to_string(true).c_str());
         _tcp_peers[peerid] = &(*cli);
     }
 
     if (advertise)
     {
+        LOG(Log::LogLevel::DEBUG, "New peer: id %s %s", peer_ids.begin()->c_str(), cli->get_addr().to_string(true).c_str());
+
         Network_Message_pb msg;
         Network_Advertise_pb* adv = new Network_Advertise_pb;
         Network_Peer_Accept_pb* accept_peer = new Network_Peer_Accept_pb;

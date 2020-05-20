@@ -17,10 +17,14 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifdef _DEBUG
+#ifdef LIBRARY_DEBUG
 
 #include "Log.h"
 #include "common_includes.h"
+
+// D:\Jeux\Epic Games\SatisfactoryExperimental\FactoryGame\Binaries\Win64\FactoryGame-Win64-Shipping.exe
+// FactoryGame -AUTH_LOGIN=unused -AUTH_PASSWORD=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb -AUTH_TYPE=exchangecode -epicapp=CrabTest -epicenv=Prod -EpicPortal  -epicusername="a name" -epicuserid=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -epiclocale=fr
+// D:\Jeux\Epic Games\SatisfactoryExperimental\FactoryGame\Binaries\Win64
 
 decltype(Log::_log_level) Log::_log_level = Log::LogLevel::OFF;
 

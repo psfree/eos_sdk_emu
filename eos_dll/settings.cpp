@@ -136,7 +136,6 @@ void Settings::load_settings()
     unlock_dlcs    = get_setting(settings, "unlock_dlcs"   , bool(true));
     enable_overlay = get_setting(settings, "enable_overlay", bool(true));
 
-#ifdef _DEBUG
     Log::LogLevel llvl;
     switchstr(get_setting(settings, "debug_level", std::string("OFF")))
     {
@@ -151,7 +150,6 @@ void Settings::load_settings()
     }
     LOG(Log::LogLevel::INFO, "Setting log level to: %s", Log::loglevel_to_str(llvl));
     Log::set_loglevel(llvl);
-#endif
 
     try
     {

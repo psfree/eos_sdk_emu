@@ -35,8 +35,10 @@ if(WIN32) # Setup some variables for Windows build
 
   if(X64)
     set(EPIC_API EOSSDK-Win64-Shipping)
+	set(OUT_DIR win64)
   elseif(X86)
     set(EPIC_API EOSSDK-Win32-Shipping)
+	set(OUT_DIR win32)
   else()
     message(FATAL_ERROR "Arch unknown")
   endif()
@@ -57,11 +59,13 @@ elseif(APPLE)
     set(CMAKE_EXE_LINKER_FLAGS -m64)
     set(CMAKE_SHARED_LINKER_FLAGS -m64)
     set(CMAKE_STATIC_LINKER_FLAGS -m64)
+	set(OUT_DIR macosx64)
   elseif(X86)
     # Global flags for building steamapi (32bits)
     set(CMAKE_EXE_LINKER_FLAGS -m32)
     set(CMAKE_SHARED_LINKER_FLAGS -m32)
     set(CMAKE_STATIC_LINKER_FLAGS -m32)
+	set(OUT_DIR macosx32)
   else()
     message(FATAL_ERROR "Arch unknown")
   endif()
@@ -82,11 +86,13 @@ elseif(UNIX)
     set(CMAKE_EXE_LINKER_FLAGS -m64)
     set(CMAKE_SHARED_LINKER_FLAGS -m64)
     set(CMAKE_STATIC_LINKER_FLAGS -m64)
+	set(OUT_DIR linux64)
   elseif(X86)
     # Global flags for building steamapi (32bits)
     set(CMAKE_EXE_LINKER_FLAGS -m32)
     set(CMAKE_SHARED_LINKER_FLAGS -m32)
     set(CMAKE_STATIC_LINKER_FLAGS -m32)
+	set(OUT_DIR linux32)
   else()
     message(FATAL_ERROR "Arch unknown")
   endif()
@@ -135,44 +141,8 @@ set(ZSTD_INCLUDE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/zstd-src/lib/" C
 
 set(EOSSDK_INCLUDE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/eos_sdk/" CACHE PATH "Epic Online Service SDK include folder")
 
-if(X64)
-  if(APPLE)
-    set(Protobuf_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/macosx64" CACHE PATH "Protobuf build directory")
-    set(ZSTD_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/macosx64" CACHE PATH "zstd build directory")
-    #set(Glew_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/glew/macosx64" CACHE PATH "Glew build directory")
-    #set(Curl_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/curl/macosx64" CACHE PATH "cURL build directory")
-  elseif(UNIX)
-    set(Protobuf_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/linux64" CACHE PATH "Protobuf build directory")
-	set(ZSTD_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/linux64" CACHE PATH "zstd build directory")
-    #set(Glew_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/glew/linux64" CACHE PATH "Glew build directory")
-    #set(Curl_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/curl/linux64" CACHE PATH "cURL build directory")
-  elseif(WIN32)
-    set(Protobuf_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/win64" CACHE PATH "Protobuf build directory")
-	set(ZSTD_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/win64" CACHE PATH "zstd build directory")
-	#set(Glew_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/glew/win64" CACHE PATH "Glew build directory")
-	#set(Curl_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/curl/win64" CACHE PATH "cURL build directory")
-  endif()
-elseif(X86)
-  if(APPLE)
-    set(Protobuf_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/macosx32" CACHE PATH "Protobuf build directory")
-	set(ZSTD_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/macosx32" CACHE PATH "zstd build directory")
-	#set(Glew_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/glew/macosx32" CACHE PATH "Glew build directory")
-	#set(Curl_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/curl/macosx32" CACHE PATH "cURL build directory")
-  elseif(UNIX)
-    set(Protobuf_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/linux32" CACHE PATH "Protobuf build directory")
-	set(ZSTD_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/linux32" CACHE PATH "zstd build directory")
-	#set(Glew_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/glew/linux32" CACHE PATH "Glew build directory")
-	#set(Curl_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/curl/linux32" CACHE PATH "cURL build directory")
-  elseif(WIN32)
-    set(Protobuf_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/win32" CACHE PATH "Protobuf build directory")
-	set(ZSTD_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/win32" CACHE PATH "zstd build directory")
-	#set(Glew_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/glew/win32" CACHE PATH "Glew build directory")
-	#set(Curl_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/curl/win32" CACHE PATH "cURL build directory")
-  endif()
-endif()
-
-#set(CMAKE_INCLUDE_PATH "${Glew_INCLUDE_FOLDER};${Curl_INCLUDE_FOLDER};${ImGui_INCLUDE_FOLDER};${JSON_INCLUDE_FOLDER};${EOSSDK_INCLUDE_FOLDER};${GAMEPAD_INCLUDE_FOLDER};${CMAKE_INCLUDE_PATH}" CACHE PATH "Where to find prebuilt includes")
-#set(CMAKE_PREFIX_PATH "${ZSTD_BUILD_FOLDER};${Protobuf_BUILD_FOLDER};${Glew_BUILD_FOLDER};${Curl_BUILD_FOLDER};${CMAKE_PREFIX_PATH}" CACHE PATH "Where to find prebuilt dependencies")
+set(Protobuf_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/${OUT_DIR}" CACHE PATH "Protobuf build directory")
+set(ZSTD_BUILD_FOLDER     "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/${OUT_DIR}"     CACHE PATH "zstd build directory")
 
 set(CMAKE_INCLUDE_PATH "${ZSTD_INCLUDE_FOLDER};${JSON_INCLUDE_FOLDER};${EOSSDK_INCLUDE_FOLDER};${CMAKE_INCLUDE_PATH}" CACHE PATH "Where to find prebuilt includes")
 set(CMAKE_PREFIX_PATH "${ZSTD_BUILD_FOLDER};${Protobuf_BUILD_FOLDER};${CMAKE_PREFIX_PATH}" CACHE PATH "Where to find prebuilt dependencies")
@@ -365,7 +335,8 @@ target_compile_definitions(
   
   $<$<BOOL:${UNIX}>:GNUC>
 
-  $<$<STREQUAL:${CMAKE_BUILD_TYPE},Debug>:_DEBUG>
+  $<$<BOOL:${CICD_DEBUG}>:LIBRARY_DEBUG>
+  $<$<STREQUAL:${CMAKE_BUILD_TYPE},Debug>:LIBRARY_DEBUG>
   $<$<STREQUAL:${CMAKE_BUILD_TYPE},Release>:EMU_RELEASE_BUILD NDEBUG>
 )
 
@@ -382,13 +353,7 @@ target_compile_definitions(
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR})
 
 if(WIN32)
-  if(X64)
-    set(OUT_DIR win64)
-  else()
-    set(OUT_DIR win32)
-  endif()
-  
-  if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+  if(${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR CICD_DEBUG)
     install(
       TARGETS ${EPIC_API}
       RUNTIME DESTINATION debug/${OUT_DIR}
@@ -401,20 +366,6 @@ if(WIN32)
   endif()
 
 elseif(APPLE OR UNIX)
-  if(APPLE)
-    if(X64)
-      set(OUT_DIR macosx64)
-    else()
-      set(OUT_DIR macosx32)
-    endif()
-  elseif(UNIX)
-    if(X64)
-      set(OUT_DIR linux64)
-    else()
-      set(OUT_DIR linux32)
-    endif()
-  endif()
-	
   if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     install(
       TARGETS ${EPIC_API}
