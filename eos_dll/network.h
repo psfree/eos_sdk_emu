@@ -70,6 +70,7 @@ private:
     PortableAPI::tcp_socket _tcp_socket;
     std::list<tcp_buffer_t> _tcp_clients;
     std::map<peer_t, PortableAPI::tcp_socket> _waiting_out_tcp_clients;
+    std::map<peer_t, PortableAPI::tcp_socket> _waiting_connect_tcp_clients;
     std::map<peer_t, PortableAPI::tcp_socket> _waiting_in_tcp_clients;
     PortableAPI::tcp_socket _tcp_self_send;
     tcp_buffer_t _tcp_self_recv;

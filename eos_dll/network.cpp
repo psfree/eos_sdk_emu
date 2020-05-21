@@ -263,31 +263,46 @@ void Network::remove_tcp_peer(tcp_buffer_t& tcp_buffer)
 
 void Network::connect_to_peer(ipv4_addr &addr, peer_t const& peer_id)
 {
+    if (_waiting_out_tcp_clients.count(peer_id) != 0)
+        return;
+
+    auto it = _waiting_connect_tcp_clients.find(peer_id);
     try
     {
-        if (_waiting_out_tcp_clients.count(peer_id) == 0)
+        if (it == _waiting_connect_tcp_clients.end())
         {
             LOG(Log::LogLevel::DEBUG, "Connecting to %s : %s", addr.to_string(true).c_str(), peer_id.c_str());
-            tcp_socket new_client;
-            new_client.connect(addr);
-
-            Network_Message_pb msg;
-            build_advertise_msg(msg);
-
-            std::string buff(sizeof(uint16_t), 0);
-            std::string data(std::move(msg.SerializeAsString()));
-            buff += std::move(compress(data.data(), data.length()));
-            *reinterpret_cast<uint16_t*>(&buff[0]) = Socket::net_swap(uint16_t(buff.length() - sizeof(uint16_t)));
-            max_message_size = std::max<uint64_t>(max_message_size, data.length());
-            max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buff.length());
-
-            new_client.send(buff.c_str(), buff.length());
-            new_client.set_nonblocking(true);
-            _waiting_out_tcp_clients.emplace(peer_id, std::move(new_client));
+            
+            _waiting_connect_tcp_clients.emplace(peer_id, tcp_socket());
+            it = _waiting_connect_tcp_clients.find(peer_id);
+            it->second.set_nonblocking(true);
         }
+        it->second.connect(addr);
     }
+    catch (is_connected &e)
+    {
+        Network_Message_pb msg;
+        build_advertise_msg(msg);
+
+        std::string buff(sizeof(uint16_t), 0);
+        std::string data(std::move(msg.SerializeAsString()));
+        buff += std::move(compress(data.data(), data.length()));
+        *reinterpret_cast<uint16_t*>(&buff[0]) = Socket::net_swap(uint16_t(buff.length() - sizeof(uint16_t)));
+        max_message_size = std::max<uint64_t>(max_message_size, data.length());
+        max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buff.length());
+
+        it->second.send(buff.c_str(), buff.length());
+
+        _waiting_out_tcp_clients.emplace(peer_id, std::move(it->second));
+        _waiting_connect_tcp_clients.erase(it);
+    }
+    catch (would_block &e)
+    {}
+    catch(in_progress &e)
+    {}
     catch (std::exception &e)
     {
+        _waiting_connect_tcp_clients.erase(it);
         LOG(Log::LogLevel::WARN, "Failed to TCP connect to %s: %s", addr.to_string().c_str(), e.what());
     }
 }
@@ -342,7 +357,7 @@ void Network::process_waiting_in_client(tcp_socket &new_client)
     Poll p;
     p.add_socket(new_client);
     p.set_events(0, Socket::poll_flags::in);
-    if (p.poll(500) == 1)
+    if (p.poll(100) == 1)
     {
         std::array<uint8_t, 2048> buff;
         Network_Message_pb msg;
