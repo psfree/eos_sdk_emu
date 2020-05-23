@@ -59,7 +59,7 @@ void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, 
 
         pFrameResult_t res(new FrameResult);
 
-        EOS_Auth_LoginCallbackInfo &lci = res->CreateCallback<EOS_Auth_LoginCallbackInfo>((CallbackFunc)CompletionDelegate, std::chrono::milliseconds(10000));
+        EOS_Auth_LoginCallbackInfo &lci = res->CreateCallback<EOS_Auth_LoginCallbackInfo>((CallbackFunc)CompletionDelegate, std::chrono::milliseconds(1000));
         lci.ClientData = ClientData;
         lci.LocalUserId = Settings::Inst().userid;
         lci.ResultCode = EOS_EResult::EOS_Success;
@@ -144,10 +144,22 @@ EOS_ELoginStatus EOSSDK_Auth::GetLoginStatus(EOS_EpicAccountId LocalUserId)
     return EOS_ELoginStatus::EOS_LS_NotLoggedIn;
 }
 
+EOS_EResult EOSSDK_Auth::CopyUserAuthTokenOld(EOS_AccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken)
+{
+    TRACE_FUNC();
+    EOS_Auth_CopyUserAuthTokenOptions options;
+    options.ApiVersion = EOS_AUTH_COPYUSERAUTHTOKEN_API_001;
+
+    return CopyUserAuthToken(&options, LocalUserId, OutUserAuthToken);
+}
+
 EOS_EResult EOSSDK_Auth::CopyUserAuthToken(const EOS_Auth_CopyUserAuthTokenOptions* Options, EOS_EpicAccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken)
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
+
+    if (Options->ApiVersion > EOS_AUTH_COPYUSERAUTHTOKEN_API_LATEST)
+        return EOS_EResult::EOS_VersionMismatch;
 
     if (OutUserAuthToken == nullptr)
         return EOS_EResult::EOS_InvalidParameters;

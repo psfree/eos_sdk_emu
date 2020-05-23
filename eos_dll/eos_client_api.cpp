@@ -90,6 +90,14 @@ EOS_ProductUserId EOSSDK_Client::get_productuserid(std::string const& userid)
  * EOS_AlreadyConfigured is returned if the function has already been called.
  * EOS_InvalidParameters is returned if the provided options are invalid.
  */
+// I:\TetrisEffect\TetrisEffect\Binaries\Win64\TetrisEffect-Win64-Shipping.exe
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthToken();
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthTokenOld(EOS_HAuth Handle, EOS_AccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken);
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthTokenNew(EOS_HAuth Handle, const EOS_Auth_CopyUserAuthTokenOptions* Options, EOS_EpicAccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken);
+
+#include <detours/detours.h>
+
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Options)
 {
     GLOBAL_LOCK();
@@ -104,6 +112,22 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
 
     if (Options == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
+
+    //auto func = EOS_Auth_CopyUserAuthToken;
+    //DetourTransactionBegin();
+    //DetourAttach((void**)&func, EOS_Auth_CopyUserAuthTokenOld);
+    //DetourTransactionCommit();
+
+    mini_detour::transaction_begin();
+    if (Options->ApiVersion == 1)
+    {
+        mini_detour::replace_func((void*)EOS_Auth_CopyUserAuthToken, (void*)EOS_Auth_CopyUserAuthTokenOld);
+    }
+    else
+    {
+        mini_detour::replace_func((void*)EOS_Auth_CopyUserAuthToken, (void*)EOS_Auth_CopyUserAuthTokenNew);
+    }
+    mini_detour::transaction_commit();
 
     switch (Options->ApiVersion)
     {
@@ -391,6 +415,11 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ByteArray_ToString(const uint8_t* ByteArray, c
  * @param AccountId The account id to check for validity
  * @return EOS_TRUE if the EOS_EpicAccountId is valid, otherwise EOS_FALSE
  */
+EOS_DECLARE_FUNC(EOS_Bool) EOS_AccountId_IsValid(EOS_AccountId AccountId)
+{
+    return EOS_EpicAccountId_IsValid(AccountId);
+}
+
 EOS_DECLARE_FUNC(EOS_Bool) EOS_EpicAccountId_IsValid(EOS_EpicAccountId AccountId)
 {
     //TRACE_FUNC();
@@ -415,6 +444,11 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_EpicAccountId_IsValid(EOS_EpicAccountId AccountId
  *         EOS_InvalidUser - The AccountId is invalid and cannot be string-ified
  *         EOS_LimitExceeded - The OutBuffer is not large enough to receive the account ID string. InOutBufferLength contains the required minimum length to perform the operation successfully.
  */
+EOS_DECLARE_FUNC(EOS_EResult) EOS_AccountId_ToString(EOS_AccountId AccountId, char* OutBuffer, int32_t* InOutBufferLength)
+{
+    return EOS_EpicAccountId_ToString(AccountId, OutBuffer, InOutBufferLength);
+}
+
 EOS_DECLARE_FUNC(EOS_EResult) EOS_EpicAccountId_ToString(EOS_EpicAccountId AccountId, char* OutBuffer, int32_t* InOutBufferLength)
 {
     //TRACE_FUNC();
@@ -430,6 +464,11 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_EpicAccountId_ToString(EOS_EpicAccountId Accou
  * @param AccountIdString The string-ified account ID for which to retrieve the EOS_EpicAccountId
  * @return The EOS_EpicAccountId that corresponds to the AccountIdString
  */
+EOS_DECLARE_FUNC(EOS_AccountId) EOS_AccountId_FromString(const char* AccountIdString)
+{
+    return EOS_EpicAccountId_FromString(AccountIdString);
+}
+
 EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_EpicAccountId_FromString(const char* AccountIdString)
 {
     //TRACE_FUNC();
