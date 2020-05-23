@@ -110,6 +110,8 @@
 #include <ipv4/tcp_socket.h>
 #include <ipv4/udp_socket.h>
 
+#include <mini_detour/mini_detour.h>
+
 #include "os_funcs.h"
 #include "Log.h"
 #include "helper_funcs.h"
