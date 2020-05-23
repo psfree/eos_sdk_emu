@@ -88,8 +88,8 @@ protobuf:static:windows:
     - test -e extra/curl/win64/lib/libcurl.lib && build_x64_curl=0
     - test -e extra/glew/win32/lib/glew32.lib && build_x86_glew=0
     - test -e extra/glew/win64/lib/glew32.lib && build_x64_glew=0
-    - test -e extra/zstd/win32/lib/libzstd.a && build_x86_zstd=0
-    - test -e extra/zstd/win64/lib/libzstd.a && build_x64_zstd=0
+    - test -e extra/zstd/win32/lib/zstd_static.lib && build_x86_zstd=0
+    - test -e extra/zstd/win64/lib/zstd_static.lib && build_x64_zstd=0
     - test $build_x86_protobuf -eq 0 && test $build_x64_protobuf -eq 0 && test $build_x86_curl -eq 0 && test $build_x64_curl -eq 0 && test $build_x86_glew -eq 0 && test $build_x64_glew -eq 0 && test $build_x86_zstd -eq 0 && test $build_x64_zstd -eq 0 && exit 0
     - export JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
     - test -z "${JOBS}" && JOBS=2
