@@ -110,10 +110,18 @@ void EOSSDK_UserInfo::QueryUserInfo(const EOS_UserInfo_QueryUserInfoOptions* Opt
         }
         else
         {
-            _userinfos_queries[Options->TargetUserId].push_back(res);
+            if (user->first == GetEOS_Connect().product_id())
+            {
+                quici.ResultCode = EOS_EResult::EOS_Success;
+                res->done = true;
+            }
+            else
+            {
+                _userinfos_queries[Options->TargetUserId].push_back(res);
 
-            UserInfo_Info_Request_pb* request = new UserInfo_Info_Request_pb;
-            send_userinfo_request(user->first->to_string(), request);
+                UserInfo_Info_Request_pb* request = new UserInfo_Info_Request_pb;
+                send_userinfo_request(user->first->to_string(), request);
+            }
         }
     }
 
