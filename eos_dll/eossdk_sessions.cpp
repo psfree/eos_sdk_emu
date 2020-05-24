@@ -1081,7 +1081,7 @@ EOS_EResult EOSSDK_Sessions::IsUserInSession(const EOS_Sessions_IsUserInSessionO
     if (Options == nullptr || Options->TargetUserId == nullptr || Options->SessionName == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
-    if (Options->TargetUserId == GetEOS_Connect()._myself.first)
+    if (Options->TargetUserId == GetEOS_Connect().product_id())
     {
         auto session = get_session_by_name(Options->SessionName);
         if (session != nullptr)

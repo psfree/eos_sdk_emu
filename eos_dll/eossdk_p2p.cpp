@@ -216,7 +216,7 @@ EOS_NotificationId EOSSDK_P2P::AddNotifyPeerConnectionRequest(const EOS_P2P_AddN
     
     EOS_P2P_OnIncomingConnectionRequestInfo& oicri = res->CreateCallback<EOS_P2P_OnIncomingConnectionRequestInfo>((CallbackFunc)ConnectionRequestHandler);
     oicri.ClientData = ClientData;
-    oicri.LocalUserId = GetEOS_Connect()._myself.first;
+    oicri.LocalUserId = GetEOS_Connect().product_id();
     oicri.RemoteUserId = GetProductUserId(sdk::NULL_USER_ID);
     oicri.SocketId = new EOS_P2P_SocketId;
 
@@ -256,7 +256,7 @@ EOS_NotificationId EOSSDK_P2P::AddNotifyPeerConnectionClosed(const EOS_P2P_AddNo
 
     EOS_P2P_OnRemoteConnectionClosedInfo& orcci = res->CreateCallback<EOS_P2P_OnRemoteConnectionClosedInfo>((CallbackFunc)ConnectionClosedHandler);
     orcci.ClientData = ClientData;
-    orcci.LocalUserId = GetEOS_Connect()._myself.first;
+    orcci.LocalUserId = GetEOS_Connect().product_id();
     orcci.RemoteUserId = GetProductUserId(sdk::NULL_USER_ID);
     orcci.SocketId = new EOS_P2P_SocketId;
     orcci.Reason = EOS_EConnectionClosedReason::EOS_CCR_Unknown;
