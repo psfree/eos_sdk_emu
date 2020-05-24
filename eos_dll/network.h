@@ -36,8 +36,8 @@ public:
     {
         PortableAPI::tcp_socket socket;
         std::vector<uint8_t> buffer;
-        uint16_t next_packet_size;
-        uint16_t received_size;
+        uint32_t next_packet_size;
+        uint32_t received_size;
     };
 
     using tcp_client_iterator = typename std::list<tcp_buffer_t>::iterator;
@@ -71,7 +71,7 @@ private:
     std::list<tcp_buffer_t> _tcp_clients;
     std::map<peer_t, PortableAPI::tcp_socket> _waiting_out_tcp_clients;
     std::map<peer_t, PortableAPI::tcp_socket> _waiting_connect_tcp_clients;
-    std::map<peer_t, PortableAPI::tcp_socket> _waiting_in_tcp_clients;
+    std::list<tcp_buffer_t>                   _waiting_in_tcp_clients;
     PortableAPI::tcp_socket _tcp_self_send;
     tcp_buffer_t _tcp_self_recv;
     std::map<peer_t, PortableAPI::tcp_socket*> _tcp_peers;
@@ -102,7 +102,7 @@ private:
     void remove_tcp_peer(tcp_buffer_t& tcp_buffer);
     void connect_to_peer(PortableAPI::ipv4_addr& addr, peer_t const& peer_id);
     void process_waiting_out_clients();
-    void process_waiting_in_client(PortableAPI::tcp_socket& new_client);
+    void process_waiting_in_client();
 
     void process_network_message(Network_Message_pb& msg);
     void process_udp();
