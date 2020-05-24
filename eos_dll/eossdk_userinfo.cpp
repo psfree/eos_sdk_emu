@@ -103,25 +103,27 @@ void EOSSDK_UserInfo::QueryUserInfo(const EOS_UserInfo_QueryUserInfoOptions* Opt
         quici.TargetUserId = Options->TargetUserId;
 
         auto *user = GetEOS_Connect().get_user_by_userid(Options->TargetUserId);
-        if (user == nullptr || !user->second.connected)
+        if (user == nullptr)
         {
             quici.ResultCode = EOS_EResult::EOS_NotFound;
             res->done = true;
         }
+        else if (user->first == GetEOS_Connect().product_id())
+        {
+            quici.ResultCode = EOS_EResult::EOS_Success;
+            res->done = true;
+        }
+        else if(user->second.connected)
+        {
+            _userinfos_queries[Options->TargetUserId].push_back(res);
+
+            UserInfo_Info_Request_pb* request = new UserInfo_Info_Request_pb;
+            send_userinfo_request(user->first->to_string(), request);
+        }
         else
         {
-            if (user->first == GetEOS_Connect().product_id())
-            {
-                quici.ResultCode = EOS_EResult::EOS_Success;
-                res->done = true;
-            }
-            else
-            {
-                _userinfos_queries[Options->TargetUserId].push_back(res);
-
-                UserInfo_Info_Request_pb* request = new UserInfo_Info_Request_pb;
-                send_userinfo_request(user->first->to_string(), request);
-            }
+            quici.ResultCode = EOS_EResult::EOS_NotFound;
+            res->done = true;
         }
     }
 
