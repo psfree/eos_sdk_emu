@@ -65,8 +65,34 @@ constexpr int addr_size = sizeof(void*);
 constexpr int absolute_addr_size = addr_size;
 constexpr int relative_addr_size = sizeof(int32_t);
 #ifdef __64BITS__
-constexpr int absolute_jmp_size = absolute_addr_size + 6; // FF 25 00 00 00 00       JMP [RIP+6]
-                                                          // XX XX XX XX XX XX XX XX Address to jump to
+// I'm considering using the 6-14 bytes version,
+// same as the safe 14 bytes but can save 8 bytes on some cases
+// #define ABSOLUTE_JMP_VERSION 6
+#define ABSOLUTE_JMP_VERSION SAFE
+
+#if ABSOLUTE_JMP_VERSION == 6
+// 6 - 14 Bytes absolute jmp
+constexpr int absolute_jmp_size = 1 + sizeof(uint32_t) + // 68 XX XX XX XX          PUSH LOW 32 bits QWORD
+//                                OPTIONAL
+                                  4 + sizeof(uint32_t) + // C7 44 24 04 XX XX XX XX MOV DWORD PTR[rsp + 0x4], HIGH 32 bits QWORD
+                                  1;                     // C3                      RET
+#elif ABSOLUTE_JMP_VERSION == 13
+// 13 Bytes absolute jmp
+constexpr int absolute_jmp_size = 2 + absolute_addr_size + // 49 BB XX XX XX XX XX XX XX XX MOVABS R11, absolute addr
+                                  2 +                      // 41 53                         PUSH R11
+                                  1;                       // C3                            RET
+#else
+// Safe 14 Bytes absolute x64 jmp
+constexpr int absolute_jmp_size = 6 +                 // FF 25 00 00 00 00       JMP [RIP+6]
+                                  absolute_addr_size; // XX XX XX XX XX XX XX XX Address to jump to
+#endif
+
+// 16 Bytes absolute x64 jmp
+//constexpr int absolute_jmp_size = 1 +                      // 50                            PUSH RAX
+//                                  2 + absolute_addr_size + // 48 B8 XX XX XX XX XX XX XX XX REX.W MOVABS RAX, absolute addr
+//                                  2 +                      // 48 87 04 24                   REX.W XCHG RAX, [RSP]
+//                                  1;                       // C3                            RET
+
 #else
 constexpr int absolute_jmp_size = absolute_addr_size + 2; // PUSH XX XX XX XX
                                                           // RET
@@ -562,6 +588,33 @@ inline uint8_t* gen_relative_jmp(uint8_t* opcode_addr, uint8_t* dest)
 #ifdef __64BITS__
 inline uint8_t* gen_absolute_jmp(uint8_t* opcode_addr, uint8_t* dest)
 {
+#if ABSOLUTE_JMP_VERSION == 6
+    *opcode_addr++ = 0x68;                                                            // PUSH
+    *reinterpret_cast<uint32_t*>(opcode_addr) = (uint32_t)dest;                       // LOW 32 Bits QWORD
+    opcode_addr += sizeof(uint32_t);
+    if ((uint64_t)dest > std::numeric_limits<uint32_t>::max())
+    {
+        *opcode_addr++ = 0xC7;                                                        // MOV
+        *opcode_addr++ = 0x44;                                                        // DWORD PTR
+        *opcode_addr++ = 0x24;                                                        // [RSP...
+        *opcode_addr++ = 0x04;                                                        //  + 4]
+        *reinterpret_cast<uint32_t*>(opcode_addr) = (uint32_t)((uint64_t)dest >> 32); // HIGH 32 Bits QWORD
+        opcode_addr += sizeof(uint32_t);
+    }
+    *opcode_addr++ = 0xC3;                                                            // RET
+#elif ABSOLUTE_JMP_VERSION == 13
+    // 13 Bytes absolute jmp
+     Uses Volatile x64 register R11
+    *opcode_addr++ = 0x49; // MOVABS
+    *opcode_addr++ = 0xBB; // R11
+    *reinterpret_cast<void**>(opcode_addr) = (void*)dest; // Absolute Addr
+    opcode_addr += absolute_addr_size;
+    *opcode_addr++ = 0x41; // PUSH
+    *opcode_addr++ = 0x53; // R11
+    *opcode_addr++ = 0xC3; // RET
+#else
+    // Safe 14 Bytes absolute jmp
+    // Uses Extended JMP + RIP relative addressing
     *opcode_addr++ = 0xFF; // JMP
     *opcode_addr++ = 0x25; // RIP+6
     *opcode_addr++ = 0x00; //
@@ -569,7 +622,9 @@ inline uint8_t* gen_absolute_jmp(uint8_t* opcode_addr, uint8_t* dest)
     *opcode_addr++ = 0x00; //
     *opcode_addr++ = 0x00; //
     *reinterpret_cast<void**>(opcode_addr) = (void*)dest;
-    return opcode_addr + addr_size;
+    opcode_addr += absolute_addr_size;
+#endif
+    return opcode_addr;
 }
 
 #else
