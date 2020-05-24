@@ -42,6 +42,7 @@ namespace sdk
         int32_t GetLoggedInAccountsCount();
         EOS_EpicAccountId GetLoggedInAccountByIndex(int32_t Index);
         EOS_ELoginStatus GetLoginStatus(EOS_EpicAccountId LocalUserId);
+        EOS_EResult CopyUserAuthTokenOld(EOS_EpicAccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken);
         EOS_EResult CopyUserAuthToken(const EOS_Auth_CopyUserAuthTokenOptions* Options, EOS_EpicAccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken);
         EOS_NotificationId AddNotifyLoginStatusChanged(const EOS_Auth_AddNotifyLoginStatusChangedOptions* Options, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification);
         void RemoveNotifyLoginStatusChanged(EOS_NotificationId InId);

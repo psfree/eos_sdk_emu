@@ -157,7 +157,16 @@ EOS_DECLARE_FUNC(EOS_ELoginStatus) EOS_Auth_GetLoginStatus(EOS_HAuth Handle, EOS
  *         EOS_NotFound if the auth token is not found or expired.
  *
  */
-EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthToken(EOS_HAuth Handle, const EOS_Auth_CopyUserAuthTokenOptions* Options, EOS_EpicAccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken)
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthTokenOld(EOS_HAuth Handle, EOS_AccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken)
+{
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
+    auto pInst = reinterpret_cast<EOSSDK_Auth*>(Handle);
+    return pInst->CopyUserAuthTokenOld(LocalUserId, OutUserAuthToken);
+}
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthTokenNew(EOS_HAuth Handle, const EOS_Auth_CopyUserAuthTokenOptions* Options, EOS_EpicAccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken)
 {
     if (Handle == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -165,6 +174,22 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthToken(EOS_HAuth Handle, const
     auto pInst = reinterpret_cast<EOSSDK_Auth*>(Handle);
     return pInst->CopyUserAuthToken(Options, LocalUserId, OutUserAuthToken);
 }
+
+#ifdef _MSC_VER
+#pragma optimize("", off)
+#endif
+EOS_DECLARE_FUNC(EOS_EResult) CLANG_GCC_DONT_OPTIMIZE EOS_Auth_CopyUserAuthToken()
+{
+    // Build rewrittable opcodes, need 14 for x64 absolute jmp and 5 for x86 relative jmp
+    EOS_Auth_CopyUserAuthTokenOld(nullptr, nullptr, nullptr);
+    EOS_Auth_CopyUserAuthTokenOld(nullptr, nullptr, nullptr);
+    EOS_Auth_CopyUserAuthTokenOld(nullptr, nullptr, nullptr);
+    EOS_Auth_CopyUserAuthTokenOld(nullptr, nullptr, nullptr);
+    return EOS_EResult::EOS_NotImplemented;
+}
+#ifdef _MSC_VER
+#pragma optimize("", on)
+#endif
 
 /**
  * Register to receive login status updates.

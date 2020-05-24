@@ -21,6 +21,12 @@
 
 #include "common_includes.h"
 
+#if defined(__clang__) || defined(__GNUC__)
+    #define CLANG_GCC_DONT_OPTIMIZE __attribute__((optnone))
+#else
+    #define CLANG_GCC_DONT_OPTIMIZE
+#endif
+
 using global_lock_t = std::lock_guard<std::recursive_mutex>;
 LOCAL_API std::recursive_mutex& global_mutex();
 #define GLOBAL_LOCK() global_lock_t __global_lock(global_mutex())

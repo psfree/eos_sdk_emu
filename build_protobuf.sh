@@ -48,6 +48,18 @@ build_type="-DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
 BUILD_TOOL="Unix Makefiles"
 BUILD_CMD="make -j${JOBS-2}"
 
+args=()
+args+=("$build_type")
+args+=("$build_tests")
+args+=("$build_shared")
+args+=("$build_with_zlib")
+args+=("$custom_arch_var")
+
+if [ "$BUILD_TYPE" == "Debug" ] && [ "$OUT_DIR" == "win32" -o "$OUT_DIR" == "win64" ]; then
+  args[0]="-DCMAKE_BUILD_TYPE=Release"
+  args+=("-DCICD_DEBUG=ON")
+fi
+
 # EXTRA_CMAKE_ENV is set by setup_clang_win_env.sh to build for windows or macos
 # You must run setup_clang_macos_env.sh before calling this script if you build for windows or macos
 
@@ -56,7 +68,7 @@ mkdir  "extra/protobuf/$OUT_DIR" &&
 cd     "extra/protobuf/$OUT_DIR" &&
 
 echo "${CMAKE} -G \"${BUILD_TOOL}\" $EXTRA_CMAKE_ENV \"$build_tests\" \"$build_shared\" \"$build_with_zlib\" \"$custom_arch_var\" \"$build_type\" .." &&
-${CMAKE} -G "${BUILD_TOOL}" $EXTRA_CMAKE_ENV "$build_tests" "$build_shared" "$build_with_zlib" "$custom_arch_var" "$build_type" .. &&
+${CMAKE} -G "${BUILD_TOOL}" $EXTRA_CMAKE_ENV "${args[@]}" .. &&
 $BUILD_CMD || exit 1
 
 rm -rf protobuf-src CMakeFiles

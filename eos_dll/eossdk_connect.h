@@ -42,16 +42,13 @@ namespace sdk
     public:
         std::string _username; // This is used for leaderboards thing ?
 
-        std::pair<EOS_ProductUserId, user_state_t> _myself;
         nlohmann::fifo_map<EOS_ProductUserId, user_state_t> _users;
 
         EOSSDK_Connect();
         ~EOSSDK_Connect();
 
-        inline EOS_ProductUserId product_id() const
-        {
-            return _myself.first;
-        }
+        EOS_ProductUserId product_id();
+        std::pair<EOS_ProductUserId const, user_state_t>* get_myself();
         std::pair<EOS_ProductUserId const, user_state_t>* get_user_by_userid(EOS_EpicAccountId userid);
         std::pair<EOS_ProductUserId const, user_state_t>* get_user_by_productid(EOS_ProductUserId productid);
         std::pair<EOS_ProductUserId const, user_state_t>* get_user_by_name(std::string const& username);
@@ -60,9 +57,9 @@ namespace sdk
         void remove_session(EOS_ProductUserId session_id, std::string const& session_name);
 
         // Send Network messages
-        bool send_connect_heartbeat(Connect_Heartbeat_pb* hb) const;
-        bool send_connect_infos_request(Network::peer_t const& peerid, Connect_Request_Info_pb* req) const;
-        bool send_connect_infos(Network::peer_t const& peerid, Connect_Infos_pb* infos) const;
+        bool send_connect_heartbeat(Connect_Heartbeat_pb* hb);
+        bool send_connect_infos_request(Network::peer_t const& peerid, Connect_Request_Info_pb* req);
+        bool send_connect_infos(Network::peer_t const& peerid, Connect_Infos_pb* infos);
 
         // Receive Network messages
         bool on_connect_heartbeat(Network_Message_pb const& msg, Connect_Heartbeat_pb const& hb);

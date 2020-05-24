@@ -35,42 +35,6 @@ LOCAL_API std::chrono::microseconds get_uptime()
 
 #if defined(__WINDOWS__)
 
-#include "../overlay/Base_Hook.h"
-
-decltype(CreateProcessA)* _CreateProcessA = CreateProcessA;
-decltype(CreateProcessW)* _CreateProcessW = CreateProcessW;
-
-BOOL WINAPI MyCreateProcessA(
-    _In_opt_    LPCSTR lpApplicationName,
-    _Inout_opt_ LPSTR lpCommandLine,
-    _In_opt_    LPSECURITY_ATTRIBUTES lpProcessAttributes,
-    _In_opt_    LPSECURITY_ATTRIBUTES lpThreadAttributes,
-    _In_        BOOL bInheritHandles,
-    _In_        DWORD dwCreationFlags,
-    _In_opt_    LPVOID lpEnvironment,
-    _In_opt_    LPCSTR lpCurrentDirectory,
-    _In_        LPSTARTUPINFOA lpStartupInfo,
-    _Out_       LPPROCESS_INFORMATION lpProcessInformation)
-{
-    return _CreateProcessA(lpApplicationName, lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment, lpCurrentDirectory, lpStartupInfo, lpProcessInformation);
-}
-
-BOOL WINAPI MyCreateProcessW(
-    _In_opt_    LPCWSTR lpApplicationName,
-    _Inout_opt_ LPWSTR lpCommandLine,
-    _In_opt_    LPSECURITY_ATTRIBUTES lpProcessAttributes,
-    _In_opt_    LPSECURITY_ATTRIBUTES lpThreadAttributes,
-    _In_        BOOL bInheritHandles,
-    _In_        DWORD dwCreationFlags,
-    _In_opt_    LPVOID lpEnvironment,
-    _In_opt_    LPCWSTR lpCurrentDirectory,
-    _In_        LPSTARTUPINFOW lpStartupInfo,
-    _Out_       LPPROCESS_INFORMATION lpProcessInformation
-)
-{
-    return _CreateProcessW(lpApplicationName, lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment, lpCurrentDirectory, lpStartupInfo, lpProcessInformation);
-}
-
 static bool is_lan_ip(const sockaddr* addr, int namelen)
 {
     if (!namelen) return false;
@@ -187,25 +151,17 @@ HINTERNET WINAPI MyWinHttpOpenRequest(
     return _WinHttpOpenRequest(hConnect, pwszVerb, pwszObjectName, pwszVersion, pwszReferrer, ppwszAcceptTypes, dwFlags);
 }
 
-Base_Hook debug;
-
 void shared_library_load(void* hmodule)
 {
     ::hmodule = hmodule;
 
-    debug.BeginHook();
-
-    debug.HookFuncs(
-        std::make_pair<void**, void*>((void**)&_CreateProcessA, (void*)MyCreateProcessA),
-        std::make_pair<void**, void*>((void**)&_CreateProcessW, (void*)MyCreateProcessW),
-        std::make_pair<void**, void*>((void**)&_WinHttpOpenRequest, (void*)MyWinHttpOpenRequest),
-        std::make_pair<void**, void*>((void**)&_WinHttpConnect, (void*)MyWinHttpConnect),
-        std::make_pair<void**, void*>((void**)&_sendto, (void*)Mysendto),
-        std::make_pair<void**, void*>((void**)&_connect, (void*)Myconnect),
-        std::make_pair<void**, void*>((void**)&_WSAConnect, (void*)MyWSAConnect)
-    );
-
-    debug.EndHook();
+    mini_detour::transaction_begin();
+    mini_detour::detour_func((void**)&_sendto, &Mysendto);
+    mini_detour::detour_func((void**)&_connect, &Myconnect);
+    mini_detour::detour_func((void**)&_WSAConnect, &MyWSAConnect);
+    mini_detour::detour_func((void**)&_WinHttpConnect, &MyWinHttpConnect);
+    mini_detour::detour_func((void**)&_WinHttpOpenRequest, &MyWinHttpOpenRequest);
+    mini_detour::transaction_commit();
 
     std::fstream log("cmdline.txt", std::ios::out | std::ios::trunc);
     log << GetCommandLine();

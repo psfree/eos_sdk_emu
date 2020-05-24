@@ -180,7 +180,7 @@ void Settings::save_settings()
     settings["gamename"] = gamename;
     settings["unlock_dlcs"] = unlock_dlcs;
     settings["enable_overlay"] = enable_overlay;
-#ifdef _DEBUG
+#ifdef LIBRARY_DEBUG
     settings["debug_level"] = Log::loglevel_to_str();
 #endif
     settings["savepath"] = setting_savepath;
