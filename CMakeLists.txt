@@ -43,14 +43,14 @@ if(WIN32) # Setup some variables for Windows build
     message(FATAL_ERROR "Arch unknown")
   endif()
 
-  file(
-    GLOB
-    overlay_pf_sources
-	overlay/Base_Hook.cpp
-    #overlay/windows/*
-    #extra/ImGui/impls/*.cpp
-    #extra/ImGui/impls/windows/*
-  )
+  #file(
+  #  GLOB
+  #  overlay_pf_sources
+  #  overlay/Base_Hook.cpp
+  #  #overlay/windows/*
+  #  #extra/ImGui/impls/*.cpp
+  #  #extra/ImGui/impls/windows/*
+  #)
 
 elseif(APPLE)
   message(STATUS "CMake for APPLE is experimental")
