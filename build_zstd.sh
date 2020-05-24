@@ -55,11 +55,16 @@ args+=("$build_programs")
 args+=("$custom_arch_var")
 args+=("$build_type")
 
+if [ "$BUILD_TYPE" == "Debug" ] && [ "$OUT_DIR" == "win32" -o "$OUT_DIR" == "win64" ]; then
+  args[3]="-DCMAKE_BUILD_TYPE=Release"
+  args+=("-DCICD_DEBUG=ON")
+fi
+
 rm -rf "extra/zstd/$OUT_DIR" &&
 mkdir  "extra/zstd/$OUT_DIR" &&
 cd     "extra/zstd/$OUT_DIR" &&
 
-echo "${CMAKE} -G \"${BUILD_TOOL}\" $EXTRA_CMAKE_ENV \"${args[@]}\" .." &&
+echo "${CMAKE} -G \"${BUILD_TOOL}\" $EXTRA_CMAKE_ENV \"$build_shared\" \"$build_programs\" \"$custom_arch_var\" \"$build_type\" .." &&
 ${CMAKE} -G "${BUILD_TOOL}" $EXTRA_CMAKE_ENV "${args[@]}" .. &&
 # Workaround
 sed -ri 's/(list\(REMOVE_DUPLICATES \$\{flag_var\}\))/#\1/' ../zstd-src/build/cmake/CMakeModules/AddZstdCompilationFlags.cmake &&
@@ -67,6 +72,6 @@ ${CMAKE} -G "${BUILD_TOOL}" $EXTRA_CMAKE_ENV "${args[@]}" .. &&
 ####
 $BUILD_CMD || exit 1
 
-rm -rf protobuf-src CMakeFiles
+rm -rf zstd-src CMakeFiles
 
 exit 0
