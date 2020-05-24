@@ -129,6 +129,11 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
         mini_detour::replace_func((void**)&func, (void*)EOS_Auth_CopyUserAuthTokenNew);
     }
     mini_detour::transaction_commit();
+    if (func == EOS_Auth_CopyUserAuthToken)
+    {
+        LOG(Log::LogLevel::FATAL, "Couldn't replace our dummy EOS_Auth_CopyUserAuthToken, the function will not work and thus we terminate.");
+        throw std::exception();
+    }
 
     switch (Options->ApiVersion)
     {
