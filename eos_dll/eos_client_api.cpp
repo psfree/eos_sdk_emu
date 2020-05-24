@@ -96,8 +96,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthToken();
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthTokenOld(EOS_HAuth Handle, EOS_AccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken);
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthTokenNew(EOS_HAuth Handle, const EOS_Auth_CopyUserAuthTokenOptions* Options, EOS_EpicAccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken);
 
-#include <detours/detours.h>
-
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Options)
 {
     GLOBAL_LOCK();
@@ -118,14 +116,17 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
     //DetourAttach((void**)&func, EOS_Auth_CopyUserAuthTokenOld);
     //DetourTransactionCommit();
 
+    auto func = EOS_Auth_CopyUserAuthToken;
     mini_detour::transaction_begin();
     if (Options->ApiVersion == 1)
     {
-        mini_detour::replace_func((void*)EOS_Auth_CopyUserAuthToken, (void*)EOS_Auth_CopyUserAuthTokenOld);
+        LOG(Log::LogLevel::DEBUG, "Tryiing to replace EOS_Auth_CopyUserAuthToken(%p) with EOS_Auth_CopyUserAuthTokenOld(%p)", EOS_Auth_CopyUserAuthToken, EOS_Auth_CopyUserAuthTokenOld);
+        mini_detour::replace_func((void**)&func, (void*)EOS_Auth_CopyUserAuthTokenOld);
     }
     else
     {
-        mini_detour::replace_func((void*)EOS_Auth_CopyUserAuthToken, (void*)EOS_Auth_CopyUserAuthTokenNew);
+        LOG(Log::LogLevel::DEBUG, "Tryiing to replace EOS_Auth_CopyUserAuthToken(%p) with EOS_Auth_CopyUserAuthTokenNew(%p)", EOS_Auth_CopyUserAuthToken, EOS_Auth_CopyUserAuthTokenNew);
+        mini_detour::replace_func((void**)&func, (void*)EOS_Auth_CopyUserAuthTokenNew);
     }
     mini_detour::transaction_commit();
 
