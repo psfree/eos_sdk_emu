@@ -230,6 +230,12 @@ file(
   extra/utils/src/*.cpp
 )
 
+file(
+  GLOB
+  mini_detour_sources
+  extra/mini_detour/*.cpp
+)
+
 #file(
 #  GLOB
 #  gamepad_sources
@@ -245,6 +251,7 @@ add_library(
   ${emu_sources}
   ${net_PROTO_SRCS}
   
+  ${mini_detour_sources}
   ${socket_sources}
   ${utils_sources}
   ${gamepad_sources}

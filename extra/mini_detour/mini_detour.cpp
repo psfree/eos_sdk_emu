@@ -4,7 +4,7 @@
 #include <list>
 #include <cstdint>
 
-#include <iostream>
+#include "../../eos_dll/Log.h"
 
 #if defined(WIN64) || defined(_WIN64) || defined(__MINGW64__)
 #define __WINDOWS_64__
@@ -47,10 +47,14 @@
 #elif defined(__LINUX__)
 #include <sys/mman.h>
 #include <unistd.h>
+#include <errno.h>
 
 #elif defined(__APPLE__)
 #include <mach/mach_init.h>
 #include <mach/vm_map.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <errno.h>
 
 #endif
 
@@ -135,7 +139,7 @@ enum mem_protect_rights
     mem_rwx = PROT_WRITE | PROT_READ | PROT_EXEC,
 };
 
-inline size_t page_size()
+size_t page_size()
 {
     static size_t _page_size = 0;
     if (_page_size == 0)
@@ -145,19 +149,19 @@ inline size_t page_size()
     return _page_size;
 }
 
-inline bool mem_protect(void* addr, size_t size, size_t rights)
+bool mem_protect(void* addr, size_t size, size_t rights)
 {
     return mprotect(addr, size, rights) == 0;
 }
 
-inline void* memory_alloc(void* address_hint, size_t size, mem_protect_rights rights)
+void* memory_alloc(void* address_hint, size_t size, mem_protect_rights rights)
 {
     // TODO: Here find a way to allocate moemry near the address_hint.
     // Sometimes you get address too far for a relative jmp
     return mmap(address_hint, size, rights, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 }
 
-inline void memory_free(void* mem_addr, size_t size)
+void memory_free(void* mem_addr, size_t size)
 {
     munmap(mem_addr, size);
 }
@@ -178,7 +182,7 @@ enum mem_protect_rights
     mem_rwx = PAGE_EXECUTE_READWRITE,
 };
 
-inline size_t page_size()
+size_t page_size()
 {
     static size_t _page_size = 0;
     if (_page_size == 0)
@@ -190,13 +194,13 @@ inline size_t page_size()
     return _page_size;
 }
 
-inline bool mem_protect(void* addr, size_t size, size_t rights)
+bool mem_protect(void* addr, size_t size, size_t rights)
 {
     DWORD oldProtect;
     return VirtualProtect(addr, size, rights, &oldProtect) != FALSE;
 }
 
-inline void* memory_alloc(void* address_hint, size_t size, mem_protect_rights rights)
+void* memory_alloc(void* address_hint, size_t size, mem_protect_rights rights)
 {
     MEMORY_BASIC_INFORMATION mbi;
     ZeroMemory(&mbi, sizeof(mbi));
@@ -268,7 +272,7 @@ enum mem_protect_rights
     mem_rwx = PROT_WRITE | PROT_READ | PROT_EXEC,
 };
 
-inline size_t page_size()
+size_t page_size()
 {
     static size_t _page_size = 0;
     if (_page_size == 0)
@@ -278,12 +282,12 @@ inline size_t page_size()
     return _page_size;
 }
 
-inline bool mem_protect(void* addr, size_t size, size_t rights)
+bool mem_protect(void* addr, size_t size, size_t rights)
 {
     return mprotect(addr, size, rights) == 0;
 }
 
-inline void* memory_alloc(void* address_hint, size_t size, mem_protect_rights rights)
+void* memory_alloc(void* address_hint, size_t size, mem_protect_rights rights)
 {
     //vm_address_t address = (vm_address_t)address_hint;
     //vm_offset_t byteSize = (vm_offset_t)size;
@@ -293,14 +297,10 @@ inline void* memory_alloc(void* address_hint, size_t size, mem_protect_rights ri
     //                                    byteSize,
     //                                    VM_FLAGS_FIXED);
 
-#ifdef __64BITS__
     return mmap(address_hint, size, rights, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-#else
-    return mmap(address_hint, size, rights, MAP_PRIVATE | MAP_32BIT | MAP_ANONYMOUS, -1, 0);
-#endif
 }
 
-inline void memory_free(void* mem_addr, size_t size)
+void memory_free(void* mem_addr, size_t size)
 {
     munmap(mem_addr, size);
     //kern_return_t result = vm_deallocate((vm_map_t)mach_task_self(),
@@ -315,7 +315,7 @@ int flush_instruction_cache(void* pBase, size_t size)
 
 #endif
 
-inline size_t region_size()
+size_t region_size()
 {
     return page_size();
 }
@@ -349,9 +349,15 @@ bool is_opcode_terminating_function(uint8_t opcode)
 {
     switch (opcode)
     {
-        case LEAVE: case RET: case RETN_IMM16:
-        case RETF: case RETF_IMM16: case INTERRUPT:
-        case INT_IMM8: case INTO: case IRET:
+        case 0xc2: // RETN imm16
+        case 0xc3: // RETN
+        case 0xc9: // LEAVE
+        case 0xca: // RETF imm16
+        case 0xcb: // RETF
+        case 0xcc: // INT 3
+        case 0xcd: // INT imm8
+        case 0xce: // INTO eFlags
+        case 0xcf: // IRET Flags
             return true;
     }
     return false;
@@ -361,13 +367,13 @@ bool is_opcode_filler(uint8_t opcode)
 {
     switch (opcode)
     {
-        case NOP:
+        case 0x90: // NOP
             return true;
     }
     return false;
 }
 
-bool read_mod_reg_rm_opcode(uint8_t** ppCode)
+bool read_mod_reg_rm_opcode(uint8_t** ppCode, bool ignore_displacement)
 {
     uint8_t* pCode = *ppCode;
     // MOD-REG-R/M Byte
@@ -377,29 +383,55 @@ bool read_mod_reg_rm_opcode(uint8_t** ppCode)
     {
         case register_addressing_mode      : *ppCode += s_opcodes[*pCode].base_size; break; // register addressing mode [opcode] [R/M] [XX]
         case four_bytes_signed_displacement:
-            return false; // There is a relative displacement, can't move this opcode
-            //switch (pCode[1] & rm_mask)
+            //if (ignore_displacement)
+            {
+                LOG(Log::LogLevel::DEBUG, "Ignored four bytes signed displacement");
+                switch (pCode[1] & rm_mask)
+                {
+                    case sib_with_no_displacement: *ppCode += s_opcodes[*pCode].base_size + 5; break; // address mode byte + 4 bytes displacement
+                    default: *ppCode += s_opcodes[*pCode].base_size + 4; break; // 4 bytes displacement
+                }
+            }
+            //else
             //{
-            //    case sib_with_no_displacement: *ppCode += s_opcodes[*pCode].base_size + 5; break; // address mode byte + 4 bytes displacement
-            //    default                      : *ppCode += s_opcodes[*pCode].base_size + 4; break; // 4 bytes displacement
+            //    LOG(Log::LogLevel::DEBUG, "Failed on four bytes signed displacement");
+            //    return false; // There is a relative displacement, can't move this opcode
             //}
-            //break;
+            break;
 
         case one_byte_signed_displacement:
-            return false; // There is a displacement, can't move this opcode
-            //switch (pCode[1] & rm_mask)
+            //if (ignore_displacement)
+            {
+                LOG(Log::LogLevel::DEBUG, "Ignored one byte signed displacement");
+                switch (pCode[1] & rm_mask)
+                {
+                    case sib_with_no_displacement: *ppCode += s_opcodes[*pCode].base_size + 2; break; // address mode byte + 1 byte displacement
+                    default: *ppCode += s_opcodes[*pCode].base_size + 1; break; // 1 byte displacement
+                }
+            }
+            //else
             //{
-            //    case sib_with_no_displacement: *ppCode += s_opcodes[*pCode].base_size + 2; break; // address mode byte + 1 byte displacement
-            //    default: *ppCode += s_opcodes[*pCode].base_size + 1; break; // 1 byte displacement
+            //    LOG(Log::LogLevel::DEBUG, "Failed on one byte signed displacement");
+            //    return false; // There is a displacement, can't move this opcode
             //}
-            //break;
+            break;
 
         default:
             switch (pCode[1] & rm_mask)
             {
                 case displacement_only_addressing:
-                    return false; // There is a displacement, can't move this opcode
-                    //*ppCode += s_opcodes[*pCode].base_size + 4; break; // 4 bytes Displacement only addressing mode
+                    //if (ignore_displacement)
+                    {
+                        LOG(Log::LogLevel::DEBUG, "Ignored displacement only addressing");
+                        *ppCode += s_opcodes[*pCode].base_size + 4; break; // 4 bytes Displacement only addressing mode
+                    }
+                    //else
+                    //{
+                    //    LOG(Log::LogLevel::DEBUG, "Failed on displacement only addressing");
+                    //    return false; // There is a displacement, can't move this opcode
+                    //}
+                    break;
+                    
                 case sib_with_no_displacement         : *ppCode += s_opcodes[*pCode].base_size + 1; break; // SIB with no displacement
                 case register_indirect_addressing_mode: // Register indirect addressing mode
                 default: *ppCode += s_opcodes[*pCode].base_size;
@@ -418,30 +450,44 @@ int find_space_for_trampoline(uint8_t** func, int bytes_needed, bool ignore_jump
     uint8_t* pCode = *func;
     while (search) // Find opcodes size and try to find at least 5 bytes for our JMP
     {
-        const char* name = opcode_name(*pCode);
-        printf("%s %x\n", name, (int)*pCode);
-
         if (is_opcode_terminating_function(*pCode))
             break;
 
+        LOG(Log::LogLevel::DEBUG, "Opcode %s, base_size: %d, has_r_m: %d", s_opcodes[*pCode].desc, s_opcodes[*pCode].base_size, (int)s_opcodes[*pCode].has_r_m);
+
         if (s_opcodes[*pCode].has_r_m)
         {
-            search = read_mod_reg_rm_opcode(&pCode);
+            auto bkpCode = pCode;
+            search = read_mod_reg_rm_opcode(&pCode, ignore_jump);
+            LOG(Log::LogLevel::DEBUG, "Read %d bytes for opcode 0x%02X", pCode - bkpCode, (unsigned int)*bkpCode);
         }
         else if (s_opcodes[*pCode].base_size)
         {
             switch (*pCode)
             {
 #ifdef __64BITS__
-            case REX: case REX_B: case REX_X: case REX_XB: case REX_R: case REX_RB: case REX_RX: case REX_RXB:
-            case REX_W: case REX_WB: case REX_WX: case REX_WXB: case REX_WR: case REX_WRB: case REX_WRX: case REX_WRXB:
+            case 0x40: // REX
+            case 0x41: // REX.B
+            case 0x42: // REX.X
+            case 0x43: // REX.XB
+            case 0x44: // REX.R
+            case 0x45: // REX.RB
+            case 0x46: // REX.RX
+            case 0x47: // REX.RXB
+            case 0x48: // REX.W
+            case 0x49: // REX.WB
+            case 0x4a: // REX.WX
+            case 0x4b: // REX.WXB
+            case 0x4c: // REX.WR
+            case 0x4d: // REX.WRB
+            case 0x4e: // REX.WRX
+            case 0x4f: // REX.WRXB
                 pCode += s_opcodes[*pCode].base_size;
                 continue; // REX works only with the next opcode, don't stop searching after a REX
 #endif
-            case JMP:
-            case CALL:
+            case 0xe9: // JMP
+            case 0xe8: // CALL
                 // JMP or CALL is forbidden for trampolines
-
                 if (pCode == *func)
                 {// If jmp is the first opcode, we can override it
                     pCode += s_opcodes[*pCode].base_size;
@@ -454,7 +500,7 @@ int find_space_for_trampoline(uint8_t** func, int bytes_needed, bool ignore_jump
                     }
                 }
 
-            case LJMP: case SHORT_JMP:
+            case 0xeb: // SHORT JMP
                 search = false;
                 break;
 
@@ -484,7 +530,7 @@ int find_space_for_trampoline(uint8_t** func, int bytes_needed, bool ignore_jump
                 //    break;
 
             default:
-                //PRINT_DEBUG("Unknown opcode %02X\n", (int)*pCode);
+                LOG(Log::LogLevel::DEBUG, "Unknown opcode 0x%02X", (unsigned int)*pCode);
                 search = false;
             }
         }
@@ -508,7 +554,7 @@ int find_space_for_trampoline(uint8_t** func, int bytes_needed, bool ignore_jump
 
 inline uint8_t* gen_relative_jmp(uint8_t* opcode_addr, uint8_t* dest)
 {
-    *opcode_addr++ = JMP;
+    *opcode_addr++ = 0xe9; // JMP
     *reinterpret_cast<int32_t*>(opcode_addr) = (int32_t)(dest - (opcode_addr + relative_addr_size));
     return opcode_addr + addr_size;
 }
@@ -530,10 +576,10 @@ inline uint8_t* gen_absolute_jmp(uint8_t* opcode_addr, uint8_t* dest)
 
 inline uint8_t* gen_absolute_jmp(uint8_t* opcode_addr, uint8_t* dest)
 {
-    *opcode_addr++ = PUSH_D; // PUSH DWORD
-    *reinterpret_cast<void**>(opcode_addr) = (void*)dest; // XX XX XX XX
+    *opcode_addr++ = 0x68; // PUSH DWORD
+    *reinterpret_cast<void**>(opcode_addr) = (void*)dest; // XX XX XX XX <- The absolute address to return to
     opcode_addr += addr_size;
-    *opcode_addr++ = RET;  // RET (uses the last stack value)
+    *opcode_addr++ = 0xc3;  // RET (uses the last stack value)
     return opcode_addr;
 }
 
@@ -579,7 +625,6 @@ trampoline_t* get_free_trampoline(void* originalFuncAddr, bool limit_to_2gb)
 
     trampoline_t* res = nullptr;
     auto it = std::find_if(trampoline_regions.begin(), trampoline_regions.end(), [originalFuncAddr](trampoline_region_t& region) {
-        std::cout << "Testing trampoline %p" << region.trampolines_start << std::endl;
         if (region.numTrampolines == max_trampolines_in_region || // If the trampoline region is full
             std::abs((int64_t)region.trampolines_start - (int64_t)originalFuncAddr) > 0x7FFFFFFFul) // Or the trampoline address isn't in the relative jmp range (max-int32_t)
             return false; // Don't select it
@@ -693,13 +738,13 @@ int mini_detour::transaction_commit()
             // Write a  jump to the trampoline relative or absolute address
             if (trampoline->nOriginalBytes >= absolute_jmp_size)
             {
-                std::cout << "Rewritting with an absolute jump" << std::endl;
+                LOG(Log::LogLevel::DEBUG, "Attaching function %p with Absolute Jmp to %p", *ppOriginalFunc, trampoline->hookJump);
                 // We've got place for an absolute jump
                 gen_absolute_jmp(reinterpret_cast<uint8_t*>(*ppOriginalFunc), trampoline->hookJump);
             }
             else
             {
-                std::cout << "Rewritting with a relative jump" << std::endl;
+                LOG(Log::LogLevel::DEBUG, "Attaching function %p with Relative Jmp to %p", *ppOriginalFunc, trampoline->hookJump);
                 // The trampoline jump should be next to the original function for a relative jump
                 gen_relative_jmp(reinterpret_cast<uint8_t*>(*ppOriginalFunc), trampoline->hookJump);
             }
@@ -780,13 +825,20 @@ int hook_func(void** ppOriginalFunc, void* _hook, bool replace)
 
     // If we got less space than we need for a relative jump, the function is too short anyway.
     if (code_len < relative_jmp_size)
+    {
+        LOG(Log::LogLevel::DEBUG, "Didn't find enought space for code rewrite: %d/%d", code_len, relative_jmp_size);
         return -ENOSPC;
+    }
 
     // Allocate the trampoline or get the next free trampoline
     trampoline_t* trampoline = get_free_trampoline(*ppOriginalFunc, code_len < absolute_jmp_size);
     if (trampoline == nullptr)
+    {
+        LOG(Log::LogLevel::DEBUG, "Didn't find any free trampoline");
         return -EFAULT;
+    }
 
+    LOG(Log::LogLevel::DEBUG, "Found space for trampoline: %d/%d/%d", code_len, relative_jmp_size, absolute_jmp_size);
     uint8_t* pTrampolineCode = trampoline->trampolineBytes;
 
     void* trampoline_page = page_addr(trampoline, page_size());
@@ -799,17 +851,21 @@ int hook_func(void** ppOriginalFunc, void* _hook, bool replace)
     // Copy original opcodes
     trampoline->nOriginalBytes = code_len;
     std::copy(pOriginalFunc, pOriginalFunc + code_len, trampoline->originalBytes);
-    if (*pOriginalFunc == JMP)
+    if (*pOriginalFunc == 0xe9) // JMP
     {// The first opcode is a jmp, so compute the absolute address and make an absolute jmp instead
         uint8_t* func_abs_addr = relative_addr_to_absolute(*(int32_t*)(pOriginalFunc + 1), pOriginalFunc);
         gen_absolute_jmp(pTrampolineCode, func_abs_addr);
+
+        LOG(Log::LogLevel::DEBUG, "Making absolute address(%p) from relative address(%p)", pOriginalFunc, func_abs_addr);
     }
     else
     {
         std::copy(trampoline->originalBytes, trampoline->originalBytes + code_len, pTrampolineCode);
         pTrampolineCode += code_len;
         // Create the absolute jmp to original
-        pTrampolineCode = gen_absolute_jmp(pTrampolineCode, pOriginalFunc + code_len);
+        gen_absolute_jmp(pTrampolineCode, pOriginalFunc + code_len);
+
+        LOG(Log::LogLevel::DEBUG, "Making absolute jump to address(%p)", pOriginalFunc + code_len);
     }
 
     trampoline->originalAddr = pOriginalFunc;
@@ -824,12 +880,14 @@ int hook_func(void** ppOriginalFunc, void* _hook, bool replace)
 
 int mini_detour::detour_func(void** ppOriginalFunc, void* _hook)
 {
+    LOG(Log::LogLevel::DEBUG, "");
     return hook_func(ppOriginalFunc, _hook, false);
 }
 
-int mini_detour::replace_func(void* pOriginalFunc, void* _hook)
+int mini_detour::replace_func(void** ppOriginalFunc, void* _hook)
 {
-    return hook_func(&pOriginalFunc, _hook, true);
+    LOG(Log::LogLevel::DEBUG, "");
+    return hook_func(ppOriginalFunc, _hook, true);
 }
 
 /* ------ DOCUMENTATION ------
