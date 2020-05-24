@@ -31,14 +31,15 @@ decltype(EOSSDK_Connect::user_infos_rate)      EOSSDK_Connect::user_infos_rate;
 
 EOSSDK_Connect::EOSSDK_Connect()
 {
-    _myself.first = GetProductUserId(generate_account_id_from_name(Settings::Inst().gamename + Settings::Inst().userid->to_string()));
-    _myself.second.connected = false;
-    _myself.second.infos.set_userid(Settings::Inst().userid->to_string());
-    _myself.second.infos.set_displayname(Settings::Inst().username);
+    auto userProductId = GetProductUserId(generate_account_id_from_name(Settings::Inst().gamename + Settings::Inst().userid->to_string()));
+    auto& myself = _users[userProductId];
+    myself.connected = false;
+    myself.infos.set_userid(Settings::Inst().userid->to_string());
+    myself.infos.set_displayname(Settings::Inst().username);
 
-    LOG(Log::LogLevel::DEBUG, "Userid: %s, Productid: %s", Settings::Inst().userid->to_string().c_str(), _myself.first->to_string().c_str());
-    GetNetwork().set_default_channel(_myself.first->to_string(), 0);
-    GetNetwork().advertise_peer_id(_myself.first->to_string());
+    LOG(Log::LogLevel::DEBUG, "Userid: %s, Productid: %s", Settings::Inst().userid->to_string().c_str(), userProductId->to_string().c_str());
+    GetNetwork().set_default_channel(userProductId->to_string(), 0);
+    GetNetwork().advertise_peer_id(userProductId->to_string());
     GetNetwork().advertise(true);
 
     GetCB_Manager().register_callbacks(this);
@@ -55,6 +56,17 @@ EOSSDK_Connect::~EOSSDK_Connect()
     GetCB_Manager().remove_all_notifications(this);
 }
 
+EOS_ProductUserId EOSSDK_Connect::product_id()
+{
+    return get_myself()->first;
+}
+
+std::pair<EOS_ProductUserId const, user_state_t>* EOSSDK_Connect::get_myself()
+{
+    auto it = _users.begin();
+    return &(*it);
+}
+
 std::pair<EOS_ProductUserId const, user_state_t>* EOSSDK_Connect::get_user_by_userid(EOS_EpicAccountId userid)
 {
     auto it = std::find_if(_users.begin(), _users.end(), [&userid]( std::pair<EOS_ProductUserId const, user_state_t> &user )
@@ -62,7 +74,9 @@ std::pair<EOS_ProductUserId const, user_state_t>* EOSSDK_Connect::get_user_by_us
         return user.second.infos.userid() == userid->to_string();
     });
     if (it == _users.end())
+    {
         return nullptr;
+    }
 
     return &(*it);
 }
@@ -90,13 +104,13 @@ std::pair<EOS_ProductUserId const, user_state_t>* EOSSDK_Connect::get_user_by_na
 
 void EOSSDK_Connect::add_session(EOS_ProductUserId session_id, std::string const& session_name)
 {
-    auto& sessions = *_myself.second.infos.mutable_sessions();
+    auto& sessions = *get_myself()->second.infos.mutable_sessions();
     sessions[session_name] = session_id->to_string();
 }
 
 void EOSSDK_Connect::remove_session(EOS_ProductUserId session_id, std::string const& session_name)
 {
-    auto& sessions = *_myself.second.infos.mutable_sessions();
+    auto& sessions = *get_myself()->second.infos.mutable_sessions();
     auto it = sessions.find(session_name);
     if (it != sessions.end())
     {
@@ -129,7 +143,7 @@ void EOSSDK_Connect::Login(const EOS_Connect_LoginOptions* Options, void* Client
     res->done = true;
     GetCB_Manager().add_callback(this, res);
 
-    _myself.second.connected = true;
+    get_myself()->second.connected = true;
 }
 
 /**
@@ -156,7 +170,7 @@ void EOSSDK_Connect::CreateUser(const EOS_Connect_CreateUserOptions* Options, vo
     res->done = true;
     GetCB_Manager().add_callback(this, res);
 
-    _myself.second.connected = true;
+    get_myself()->second.connected = true;
 }
 
 /**
@@ -398,7 +412,7 @@ EOS_ELoginStatus EOSSDK_Connect::GetLoginStatus(EOS_ProductUserId LocalUserId)
     TRACE_FUNC();
 
     if (LocalUserId == product_id())
-        return (_myself.second.connected ? EOS_ELoginStatus::EOS_LS_LoggedIn : EOS_ELoginStatus::EOS_LS_NotLoggedIn);
+        return (get_myself()->second.connected ? EOS_ELoginStatus::EOS_LS_LoggedIn : EOS_ELoginStatus::EOS_LS_NotLoggedIn);
 
     return EOS_ELoginStatus::EOS_LS_NotLoggedIn;
 }
@@ -599,7 +613,7 @@ EOS_EResult EOSSDK_Connect::CopyProductUserInfo(const EOS_Connect_CopyProductUse
 ///////////////////////////////////////////////////////////////////////////////
 //                           Network Send messages                           //
 ///////////////////////////////////////////////////////////////////////////////
-bool EOSSDK_Connect::send_connect_heartbeat(Connect_Heartbeat_pb* hb) const
+bool EOSSDK_Connect::send_connect_heartbeat(Connect_Heartbeat_pb* hb)
 {
     //TRACE_FUNC();
     std::string const& user_id = product_id()->to_string();
@@ -616,7 +630,7 @@ bool EOSSDK_Connect::send_connect_heartbeat(Connect_Heartbeat_pb* hb) const
     return true;
 }
 
-bool EOSSDK_Connect::send_connect_infos_request(Network::peer_t const& peerid, Connect_Request_Info_pb* req) const
+bool EOSSDK_Connect::send_connect_infos_request(Network::peer_t const& peerid, Connect_Request_Info_pb* req)
 {
     //TRACE_FUNC();
     std::string const& user_id = product_id()->to_string();
@@ -633,7 +647,7 @@ bool EOSSDK_Connect::send_connect_infos_request(Network::peer_t const& peerid, C
     return GetNetwork().TCPSendTo(msg);
 }
 
-bool EOSSDK_Connect::send_connect_infos(Network::peer_t const& peerid, Connect_Infos_pb* infos) const
+bool EOSSDK_Connect::send_connect_infos(Network::peer_t const& peerid, Connect_Infos_pb* infos)
 {
     //TRACE_FUNC();
     std::string const& user_id = product_id()->to_string();
@@ -707,24 +721,26 @@ bool EOSSDK_Connect::CBRunFrame()
 {
     GLOBAL_LOCK();
 
-    if (!_myself.second.connected)
+    if (!get_myself()->second.connected)
         return true;
 
     auto now = std::chrono::steady_clock::now();
 
-    if ((now - _myself.second.last_hearbeat) > alive_heartbeat_rate)
+    if ((now - get_myself()->second.last_hearbeat) > alive_heartbeat_rate)
     {
         Connect_Heartbeat_pb* hb = new Connect_Heartbeat_pb;
         send_connect_heartbeat(hb);
-        _myself.second.last_hearbeat = now;
+        get_myself()->second.last_hearbeat = now;
     }
 
-    for (auto& user : _users)
+    auto user_it = _users.begin();
+    ++user_it;
+    for (; user_it != _users.end(); ++user_it)
     {
-        if (!user.second.connected)
+        if (!user_it->second.connected)
             continue;
 
-        if ((now - user.second.last_hearbeat) > alive_heartbeat)
+        if ((now - user_it->second.last_hearbeat) > alive_heartbeat)
         {
             //LOG(Log::LogLevel::DEBUG, "User disconnected (pid=%s, uid=%s)", user.first->to_string().c_str(), user.second.infos.userid().c_str());
             //user.second.connected = false;
@@ -732,11 +748,11 @@ bool EOSSDK_Connect::CBRunFrame()
             continue;
         }
 
-        if ((now - user.second.last_infos) > user_infos_rate)
+        if ((now - user_it->second.last_infos) > user_infos_rate)
         {
             Connect_Request_Info_pb* req = new Connect_Request_Info_pb;
-            send_connect_infos_request(user.first->to_string(), req);
-            user.second.last_infos = now;
+            send_connect_infos_request(user_it->first->to_string(), req);
+            user_it->second.last_infos = now;
         }
     }
 
