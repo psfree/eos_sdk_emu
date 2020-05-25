@@ -33,8 +33,6 @@ LOCAL_API std::chrono::microseconds get_uptime()
     return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - get_boottime());
 }
 
-#if defined(__WINDOWS__)
-
 static bool is_lan_ip(const sockaddr* addr, int namelen)
 {
     if (!namelen) return false;
@@ -74,9 +72,17 @@ static bool is_lan_ip(const sockaddr* addr, int namelen)
     return false;
 }
 
-int (WINAPI* _sendto)(SOCKET s, const char* buf, int len, int flags, const sockaddr* to, int tolen) = sendto;
-int (WINAPI* _connect)(SOCKET s, const sockaddr* addr, int namelen) = connect;
-int (WINAPI* _WSAConnect)(SOCKET s, const sockaddr* addr, int namelen, LPWSABUF lpCallerData, LPWSABUF lpCalleeData, LPQOS lpSQOS, LPQOS lpGQOS) = WSAConnect;
+#if defined(__WINDOWS__)
+
+#include <winhttp.h>
+
+#pragma comment(lib, "winhttp.lib")
+
+decltype(sendto)*             _sendto             = sendto;
+decltype(connect)*            _connect            = connect;
+decltype(WSAConnect)*         _WSAConnect         = WSAConnect;
+decltype(WinHttpOpenRequest)* _WinHttpOpenRequest = WinHttpOpenRequest;
+decltype(WinHttpConnect)*     _WinHttpConnect     = WinHttpConnect;
 
 static int WINAPI Mysendto(SOCKET s, const char* buf, int len, int flags, const sockaddr* to, int tolen)
 {
@@ -109,12 +115,6 @@ static int WINAPI MyWSAConnect(SOCKET s, const sockaddr* addr, int namelen, LPWS
         return SOCKET_ERROR;
     }
 }
-
-#include <winhttp.h>
-
-#pragma comment(lib, "winhttp.lib")
-decltype(WinHttpOpenRequest)* _WinHttpOpenRequest = WinHttpOpenRequest;
-decltype(WinHttpConnect)* _WinHttpConnect = WinHttpConnect;
 
 HINTERNET WINAPI MyWinHttpConnect(
     IN HINTERNET     hSession,
@@ -155,14 +155,6 @@ void shared_library_load(void* hmodule)
 {
     ::hmodule = hmodule;
 
-    mini_detour::transaction_begin();
-    mini_detour::detour_func((void**)&_sendto, &Mysendto);
-    mini_detour::detour_func((void**)&_connect, &Myconnect);
-    mini_detour::detour_func((void**)&_WSAConnect, &MyWSAConnect);
-    mini_detour::detour_func((void**)&_WinHttpConnect, &MyWinHttpConnect);
-    mini_detour::detour_func((void**)&_WinHttpOpenRequest, &MyWinHttpOpenRequest);
-    mini_detour::transaction_commit();
-
     std::fstream log("cmdline.txt", std::ios::out | std::ios::trunc);
     log << GetCommandLine();
 
@@ -172,6 +164,35 @@ void shared_library_load(void* hmodule)
 void shared_library_unload(void* hmodule)
 {
 
+}
+
+LOCAL_API void disable_online_networking()
+{
+    mini_detour::transaction_begin();
+
+    if (mini_detour::detour_func((void**)&_sendto           , &Mysendto))
+        LOG(Log::LogLevel::WARN, "Failed to hook sendto");
+    if(mini_detour::detour_func((void**)&_connect           , &Myconnect))
+        LOG(Log::LogLevel::WARN, "Failed to hook connect");
+    if(mini_detour::detour_func((void**)&_WSAConnect        , &MyWSAConnect))
+        LOG(Log::LogLevel::WARN, "Failed to hook wsaconnect");
+    if(mini_detour::detour_func((void**)&_WinHttpConnect    , &MyWinHttpConnect))
+        LOG(Log::LogLevel::WARN, "Failed to hook winhttpconnect");
+    if(mini_detour::detour_func((void**)&_WinHttpOpenRequest, &MyWinHttpOpenRequest))
+        LOG(Log::LogLevel::WARN, "Failed to hook winhttpopenrequest");
+
+    mini_detour::transaction_commit();
+}
+
+LOCAL_API void enable_online_networking()
+{
+    mini_detour::transaction_begin();
+    mini_detour::unhook_func((void**)&_sendto            , &sendto);
+    mini_detour::unhook_func((void**)&_connect           , &connect);
+    mini_detour::unhook_func((void**)&_WSAConnect        , &WSAConnect);
+    mini_detour::unhook_func((void**)&_WinHttpConnect    , &WinHttpConnect);
+    mini_detour::unhook_func((void**)&_WinHttpOpenRequest, &WinHttpOpenRequest);
+    mini_detour::transaction_commit();
 }
 
 LOCAL_API std::chrono::system_clock::time_point get_boottime()
@@ -627,6 +648,30 @@ LOCAL_API std::string get_userdata_path()
 
 #endif
 
+decltype(sendto)*  _sendto  = sendto;
+decltype(connect)* _connect = connect;
+
+static int Mysendto(int s, const char* buf, int len, int flags, const sockaddr* to, int tolen)
+{
+    if (is_lan_ip(to, tolen)) {
+        return _sendto(s, buf, len, flags, to, tolen);
+    }
+    else {
+        return len;
+    }
+}
+
+static int Myconnect(int s, const sockaddr* addr, int namelen)
+{
+    if (is_lan_ip(addr, namelen)) {
+        return _connect(s, addr, namelen);
+    }
+    else {
+        errno = ECONNREFUSED;
+        return -1;
+    }
+}
+
 void shared_library_load(void* hmodule)
 {
     ::hmodule = hmodule;
@@ -635,6 +680,24 @@ void shared_library_load(void* hmodule)
 void shared_library_unload(void* hmodule)
 {
 
+}
+
+LOCAL_API void disable_online_networking()
+{
+    mini_detour::transaction_begin();
+    if (mini_detour::detour_func((void**)&_sendto, &Mysendto))
+        LOG(Log::LogLevel::WARN, "Failed to hook sendto");
+    if (mini_detour::detour_func((void**)&_connect, &Myconnect))
+        LOG(Log::LogLevel::WARN, "Failed to hook connect");
+    mini_detour::transaction_commit();
+}
+
+LOCAL_API void enable_online_networking()
+{
+    mini_detour::transaction_begin();
+    mini_detour::unhook_func((void**)&_sendto, &sendto);
+    mini_detour::unhook_func((void**)&_connect, &connect);
+    mini_detour::transaction_commit();
 }
 
 LOCAL_API std::string process_path(std::string const& path)
