@@ -363,9 +363,14 @@ inline void* page_addr(void* addr, size_t page_size)
     return reinterpret_cast<void*>(reinterpret_cast<size_t>(addr)& (((size_t)-1) ^ (page_size - 1)));
 }
 
-inline uint8_t* relative_addr_to_absolute(int32_t rel_addr, uint8_t* code_addr)
+inline uint8_t* relative_addr_to_absolute(int32_t rel_addr, uint8_t* destination_addr)
 {
-    return code_addr + rel_addr + 5;
+    return destination_addr + rel_addr + 5;
+}
+
+inline intptr_t absolute_addr_to_relative(intptr_t opcode_addr, intptr_t destination_addr)
+{
+    return destination_addr - opcode_addr - 5;
 }
 
 ////////////////////////////////////////////////////
@@ -939,10 +944,47 @@ int mini_detour::detour_func(void** ppOriginalFunc, void* _hook)
     return hook_func(ppOriginalFunc, _hook, false);
 }
 
-int mini_detour::replace_func(void** ppOriginalFunc, void* _hook)
+int mini_detour::replace_func(void* pOriginalFunc, void* _hook)
 {
     LOG(Log::LogLevel::DEBUG, "");
-    return hook_func(ppOriginalFunc, _hook, true);
+    
+    if (pOriginalFunc == nullptr || _hook == nullptr)
+        return -EINVAL;
+
+    uint8_t* hook = reinterpret_cast<uint8_t*>(_hook);
+    // Try to find enought place for absolute jump
+    int code_len = find_space_for_trampoline((uint8_t**)&pOriginalFunc, absolute_jmp_size, true);
+
+    // If we got less space than we need for a relative jump, the function is too short anyway.
+    if (code_len < relative_jmp_size)
+    {
+        LOG(Log::LogLevel::DEBUG, "Didn't find enought space for code rewrite: %d/%d", code_len, relative_jmp_size);
+        return -ENOSPC;
+    }
+
+    LOG(Log::LogLevel::DEBUG, "Found space for replace: %d/%d/%d", code_len, relative_jmp_size, absolute_jmp_size);
+
+    void* replace_page = page_addr(pOriginalFunc, page_size());
+
+    // Enable write to the trampoline region
+    mem_protect(replace_page, page_size(), mem_protect_rights::mem_rwx);
+    if (code_len < absolute_jmp_size)
+    {// We can't make an absolute jump, try to build a relative one
+        intptr_t relative_addr = absolute_addr_to_relative((intptr_t)pOriginalFunc, (intptr_t)hook);
+        if (std::abs(relative_addr) > 0x7FFFFFFF)
+            return -ERANGE; // Relative jmp is too long
+
+        gen_relative_jmp((uint8_t*)pOriginalFunc, hook);
+    }
+    else
+    {// We have enought place for an absolute jmp
+        gen_absolute_jmp((uint8_t*)pOriginalFunc, hook);
+    }
+
+    // Disable trampoline region write
+    mem_protect(pOriginalFunc, page_size(), mem_protect_rights::mem_rx);
+
+    return 0;
 }
 
 /* ------ DOCUMENTATION ------

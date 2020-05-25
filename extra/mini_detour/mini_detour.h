@@ -24,7 +24,7 @@ namespace mini_detour
     int transaction_begin();
     int transaction_abort();
     int transaction_commit();
-    int replace_func(void** ppOriginalFunc, void* _hook); // Will replace the original opcodes without behind able to restore them. Usefull to fill dummy code
+    int replace_func(void* pOriginalFunc, void* _hook); // Will replace the original opcodes without behind able to restore them. Usefull to fill dummy code
     int detour_func(void** ppOriginalFunc, void* _hook); // Will save the original pointer to unhook later
     int unhook_func(void** ppOriginalFunc, void* _hook);
 };

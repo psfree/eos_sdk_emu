@@ -116,20 +116,19 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
     //DetourAttach((void**)&func, EOS_Auth_CopyUserAuthTokenOld);
     //DetourTransactionCommit();
 
-    auto func = EOS_Auth_CopyUserAuthToken;
-    mini_detour::transaction_begin();
+    int failed;
     if (Options->ApiVersion == 1)
     {
         LOG(Log::LogLevel::DEBUG, "Tryiing to replace EOS_Auth_CopyUserAuthToken(%p) with EOS_Auth_CopyUserAuthTokenOld(%p)", EOS_Auth_CopyUserAuthToken, EOS_Auth_CopyUserAuthTokenOld);
-        mini_detour::replace_func((void**)&func, (void*)EOS_Auth_CopyUserAuthTokenOld);
+        failed = mini_detour::replace_func((void*)EOS_Auth_CopyUserAuthToken, (void*)EOS_Auth_CopyUserAuthTokenOld);
     }
     else
     {
         LOG(Log::LogLevel::DEBUG, "Tryiing to replace EOS_Auth_CopyUserAuthToken(%p) with EOS_Auth_CopyUserAuthTokenNew(%p)", EOS_Auth_CopyUserAuthToken, EOS_Auth_CopyUserAuthTokenNew);
-        mini_detour::replace_func((void**)&func, (void*)EOS_Auth_CopyUserAuthTokenNew);
+        failed = mini_detour::replace_func((void*)EOS_Auth_CopyUserAuthToken, (void*)EOS_Auth_CopyUserAuthTokenNew);
     }
-    mini_detour::transaction_commit();
-    if (func == EOS_Auth_CopyUserAuthToken)
+
+    if (failed)
     {
         LOG(Log::LogLevel::FATAL, "Couldn't replace our dummy EOS_Auth_CopyUserAuthToken, the function will not work and thus we terminate.");
         throw std::exception();
