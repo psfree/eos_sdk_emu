@@ -53,6 +53,7 @@ public:
     std::string gamename;
     bool unlock_dlcs;
     bool enable_overlay;
+    bool disable_online_networking;
 
     ~Settings();
 

@@ -130,11 +130,12 @@ void Settings::load_settings()
 
     settings["epicid"] = userid->to_string();
 
-    language       = get_setting(settings, "language"      , std::string("english"));
-    languages      = get_setting(settings, "languages"     , std::string("english"));
-    gamename       = get_setting(settings, "gamename"      , std::string("Unreal"));
-    unlock_dlcs    = get_setting(settings, "unlock_dlcs"   , bool(true));
-    enable_overlay = get_setting(settings, "enable_overlay", bool(true));
+    language                  = get_setting(settings, "language"                 , std::string("english"));
+    languages                 = get_setting(settings, "languages"                , std::string("english"));
+    gamename                  = get_setting(settings, "gamename"                 , std::string("Unreal"));
+    unlock_dlcs               = get_setting(settings, "unlock_dlcs"              , bool(true));
+    enable_overlay            = get_setting(settings, "enable_overlay"           , bool(true));
+    disable_online_networking = get_setting(settings, "disable_online_networking", bool(false));
 
     Log::LogLevel llvl;
     switchstr(get_setting(settings, "debug_level", std::string("OFF")))
@@ -180,6 +181,7 @@ void Settings::save_settings()
     settings["gamename"] = gamename;
     settings["unlock_dlcs"] = unlock_dlcs;
     settings["enable_overlay"] = enable_overlay;
+    settings["disable_online_networking"] = disable_online_networking;
 #ifdef LIBRARY_DEBUG
     settings["debug_level"] = Log::loglevel_to_str();
 #endif
