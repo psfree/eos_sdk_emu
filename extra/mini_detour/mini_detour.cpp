@@ -644,15 +644,20 @@ trampoline_t* alloc_new_trampoline_region(void* hint_addr, bool limit_to_2gb)
 {
     trampoline_region_t region;
     trampoline_t* trampoline = nullptr;
-    uint8_t* addr = (uint8_t*)hint_addr;
+
+    int32_t increment = 100 * page_size();
 
     for (int i = 0; i < 100; ++i)
     {
-        trampoline = reinterpret_cast<trampoline_t*>(memory_alloc(addr, region_size(), mem_protect_rights::mem_rwx));
-        if (!limit_to_2gb || std::abs((int64_t)trampoline - (int64_t)addr) <= 0x7FFFFFFF)
+        trampoline = reinterpret_cast<trampoline_t*>(memory_alloc(hint_addr, region_size(), mem_protect_rights::mem_rwx));
+        if (!limit_to_2gb || std::abs((int64_t)trampoline - (int64_t)hint_addr) <= 0x7FFFFFFF)
             break;
 
-        addr += 0x100000;
+        if ((void*)trampoline > hint_addr)
+            hint_addr = reinterpret_cast<uint8_t*>(hint_addr) - increment;
+        else
+            hint_addr = reinterpret_cast<uint8_t*>(hint_addr) + increment;
+
         memory_free(trampoline, region_size());
         trampoline = nullptr;
     }
@@ -679,12 +684,13 @@ trampoline_t* get_free_trampoline(void* originalFuncAddr, bool limit_to_2gb)
         return nullptr;
 
     trampoline_t* res = nullptr;
-    auto it = std::find_if(trampoline_regions.begin(), trampoline_regions.end(), [originalFuncAddr](trampoline_region_t& region) {
+    auto it = std::find_if(trampoline_regions.begin(), trampoline_regions.end(), [originalFuncAddr, limit_to_2gb](trampoline_region_t& region)
+    {
         if (region.numTrampolines == max_trampolines_in_region || // If the trampoline region is full
-            std::abs((int64_t)region.trampolines_start - (int64_t)originalFuncAddr) > 0x7FFFFFFFul) // Or the trampoline address isn't in the relative jmp range (max-int32_t)
+            (limit_to_2gb && (std::abs((int64_t)region.trampolines_start - (int64_t)originalFuncAddr) > 0x7FFFFFFFul))) // Or the trampoline address isn't in the relative jmp range (max-int32_t)
             return false; // Don't select it
         return true; // We have a free trampoline to use
-        });
+    });
 
     if (it == trampoline_regions.end())
     {
@@ -852,11 +858,13 @@ int mini_detour::unhook_func(void** ppOriginalFunc, void* _hook)
 
     trampoline_t* trampoline = reinterpret_cast<trampoline_t*>(*ppOriginalFunc);
     void* page_start = page_addr(reinterpret_cast<void*>(trampoline), page_size());
-    auto it = std::find_if(trampoline_regions.begin(), trampoline_regions.end(), [page_start](trampoline_region_t& region) {
+    auto it = std::find_if(trampoline_regions.begin(), trampoline_regions.end(), [page_start](trampoline_region_t& region)
+    {
         if (is_page_inside_region(page_start, region))
             return true;
         return false;
-        });
+    });
+
     if (it != trampoline_regions.end())
     {
         cur_transaction.push_back({ false, ppOriginalFunc, trampoline });
