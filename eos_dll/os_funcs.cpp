@@ -53,7 +53,7 @@ static bool is_lan_ip(const sockaddr* addr, int namelen)
         if (ip[0] == 239) return true; //multicast
         if (ip[0] == 0) return true; //Current network
         if (ip[0] == 192 && (ip[1] == 18 || ip[1] == 19)) return true; //Used for benchmark testing of inter-network communications between two separate subnets.
-        if (ip[0] >= 224) return true; //ip multicast (224 - 239) future use (240.0.0.0–255.255.255.254) broadcast (255.255.255.255)
+        if (ip[0] >= 224) return true; //ip multicast (224 - 239) future use (240.0.0.0ï¿½255.255.255.254) broadcast (255.255.255.255)
     }
     else if (addr->sa_family == AF_INET6) {
         struct sockaddr_in6* addr_in6 = (struct sockaddr_in6*)addr;
@@ -702,64 +702,34 @@ LOCAL_API std::string get_module_path()
 
 LOCAL_API std::vector<ipv4_addr> get_broadcasts()
 {
-    /* Not sure how many platforms this will run on,
-     * so it's wrapped in __linux for now.
-     * Definitely won't work like this on Windows...
-     */
-
     std::vector<ipv4_addr> broadcasts;
 
-    static constexpr auto max_broadcasts = 32;
-    uint32_t sock = 0;
-
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-        return broadcasts;
-
-    /* Configure ifconf for the ioctl call. */
-    struct ifreq i_faces[max_broadcasts];
-    memset(i_faces, 0, sizeof(struct ifreq) * max_broadcasts);
-
-    struct ifconf ifconf;
-    ifconf.ifc_buf = (char*)i_faces;
-    ifconf.ifc_len = sizeof(i_faces);
-
-    if (ioctl(sock, SIOCGIFCONF, &ifconf) < 0)
+    ifaddrs* ifaces_list;
+    ifaddrs* pIface;
+    if (getifaddrs(&ifaces_list) == 0)
     {
-        close(sock);
-        return broadcasts;
-    }
-
-    /* ifconf.ifc_len is set by the ioctl() to the actual length used;
-     * on usage of the complete array the call should be repeated with
-     * a larger array, not done (640kB and 16 interfaces shall be
-     * enough, for everybody!)
-     */
-    int i, count = ifconf.ifc_len / sizeof(struct ifreq);
-
-    for (i = 0; i < count; ++i)
-    {
-        /* there are interfaces with are incapable of broadcast */
-        if (ioctl(sock, SIOCGIFBRDADDR, &i_faces[i]) < 0)
-            continue;
-
-        /* moot check: only AF_INET returned (backwards compat.) */
-        if (i_faces[i].ifr_broadaddr.sa_family != AF_INET)
-            continue;
-
-        struct sockaddr_in* sock4 = (struct sockaddr_in*) & i_faces[i].ifr_broadaddr;
-
-        if (sock4->sin_addr.s_addr == 0)
-            continue;
-
         ipv4_addr addr;
-        addr.set_ip(sock4->sin_addr.s_addr);
-        broadcasts.emplace_back(std::move(addr));
-
-        if (broadcasts.size() >= max_broadcasts)
-            break;
+        const sockaddr_in* sock_addr;
+        for (pIface = ifaces_list; pIface != nullptr; pIface = pIface->ifa_next)
+        {
+            if (pIface->ifa_addr->sa_family == AF_INET)
+            {
+                sock_addr = reinterpret_cast<const sockaddr_in*>(pIface->ifa_addr);
+                if (sock_addr->sin_addr.s_addr != 0 && pIface->ifa_netmask != nullptr && pIface->ifa_flags & IFF_BROADCAST)
+                {
+                    sock_addr = reinterpret_cast<const sockaddr_in*>(pIface->ifa_broadaddr);
+                    addr.set_addr(sock_addr->sin_addr);
+                    broadcasts.emplace_back(addr);
+                }
+            }
+            // IPV6
+            //else if (pIface->ifa_addr->sa_family == AF_INET6)
+            //{
+            //    const sockaddr_in6* addr = reinterpret_cast<const sockaddr_in6*>(pIface->ifa_addr);));
+            //}
+        }
+        freeifaddrs(ifaces_list);
     }
-
-    close(sock);
 
     return broadcasts;
 }
