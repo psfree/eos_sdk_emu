@@ -170,15 +170,15 @@ LOCAL_API void disable_online_networking()
 {
     mini_detour::transaction_begin();
 
-    if (mini_detour::detour_func((void**)&_sendto           , &Mysendto))
+    if (mini_detour::detour_func((void**)&_sendto           , (void*)&Mysendto))
         LOG(Log::LogLevel::WARN, "Failed to hook sendto");
-    if(mini_detour::detour_func((void**)&_connect           , &Myconnect))
+    if(mini_detour::detour_func((void**)&_connect           , (void*)&Myconnect))
         LOG(Log::LogLevel::WARN, "Failed to hook connect");
-    if(mini_detour::detour_func((void**)&_WSAConnect        , &MyWSAConnect))
+    if(mini_detour::detour_func((void**)&_WSAConnect        , (void*)&MyWSAConnect))
         LOG(Log::LogLevel::WARN, "Failed to hook wsaconnect");
-    if(mini_detour::detour_func((void**)&_WinHttpConnect    , &MyWinHttpConnect))
+    if(mini_detour::detour_func((void**)&_WinHttpConnect    , (void*)&MyWinHttpConnect))
         LOG(Log::LogLevel::WARN, "Failed to hook winhttpconnect");
-    if(mini_detour::detour_func((void**)&_WinHttpOpenRequest, &MyWinHttpOpenRequest))
+    if(mini_detour::detour_func((void**)&_WinHttpOpenRequest, (void*)&MyWinHttpOpenRequest))
         LOG(Log::LogLevel::WARN, "Failed to hook winhttpopenrequest");
 
     mini_detour::transaction_commit();
@@ -685,9 +685,9 @@ void shared_library_unload(void* hmodule)
 LOCAL_API void disable_online_networking()
 {
     mini_detour::transaction_begin();
-    if (mini_detour::detour_func((void**)&_sendto, &Mysendto))
+    if (mini_detour::detour_func((void**)&_sendto, (void*)&Mysendto))
         LOG(Log::LogLevel::WARN, "Failed to hook sendto");
-    if (mini_detour::detour_func((void**)&_connect, &Myconnect))
+    if (mini_detour::detour_func((void**)&_connect, (void*)&Myconnect))
         LOG(Log::LogLevel::WARN, "Failed to hook connect");
     mini_detour::transaction_commit();
 }
@@ -695,8 +695,8 @@ LOCAL_API void disable_online_networking()
 LOCAL_API void enable_online_networking()
 {
     mini_detour::transaction_begin();
-    mini_detour::unhook_func((void**)&_sendto, &sendto);
-    mini_detour::unhook_func((void**)&_connect, &connect);
+    mini_detour::unhook_func((void**)&_sendto , (void*)&sendto);
+    mini_detour::unhook_func((void**)&_connect, (void*)&connect);
     mini_detour::transaction_commit();
 }
 
