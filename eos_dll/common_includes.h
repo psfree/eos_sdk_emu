@@ -77,6 +77,7 @@
 // SDK includes
 #include <eos_sdk.h>
 #include <eos_logging.h>
+#include <eos_version.h>
 
 // SDK Struct implementations
 #include "eos_epicaccountiddetails.h"

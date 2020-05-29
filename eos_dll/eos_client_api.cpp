@@ -569,3 +569,17 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Logging_SetLogLevel(EOS_ELogCategory LogCatego
 
     return EOS_EResult::EOS_Success;
 }
+
+EOS_DECLARE_FUNC(const char*) EOS_GetVersion(void)
+{
+    std::map<std::string, const char*> versions{
+        { "1.0.0", "1.0.0-5464091"  },
+        { "1.1.0", "1.1.0-6537116"  },
+        { "1.2.0", "1.2.0-9765216"  },
+        { "1.3.1", "1.3.1-11123224" },
+        { "1.5.0", "1.5.0-12496671" },
+        { "1.6.0", "1.6.0-13289764" },
+    };
+    
+    return versions[EOS_VERSION_STRING];
+}
