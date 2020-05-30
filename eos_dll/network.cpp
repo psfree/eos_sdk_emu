@@ -151,7 +151,7 @@ void Network::build_advertise_msg(Network_Message_pb& msg)
     LOG(Log::LogLevel::DEBUG, "Advertising with peer ids: ");
     for (auto& id : _my_peer_ids)
     {
-        LOG(Log::LogLevel::DEBUG, "%llu", id.c_str());
+        LOG(Log::LogLevel::DEBUG, "%s", id.c_str());
         peer_pb->add_peer_ids(id);
     }
 
