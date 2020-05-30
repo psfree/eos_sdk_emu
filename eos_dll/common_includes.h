@@ -29,6 +29,7 @@
     #include <Windows.h>
     #include <shlobj.h>   // (shell32.lib) Infos about current user folders
     #include <PathCch.h>  // (pathcch.lib)  Canonicalize path
+    #include <WinSock2.h> // Include before iphlpapi to enable winsock2 functions
     #include <iphlpapi.h> // (iphlpapi.lib) Infos about ethernet interfaces
 
 #elif defined(__LINUX__) || defined(__APPLE__)
@@ -46,6 +47,7 @@
     #include <dirent.h> // go open directories
     #include <dlfcn.h>  // dlopen (like dll for linux)
     #include <net/if.h>
+    #include <ifaddrs.h>// getifaddrs
 
     #include <limits.h> // PATH_MAX
     #include <unistd.h>

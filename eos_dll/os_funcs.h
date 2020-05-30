@@ -52,6 +52,10 @@ std::ostream &operator<<(std::ostream &stream,
 LOCAL_API std::chrono::system_clock::time_point get_boottime();
 LOCAL_API std::chrono::microseconds get_uptime();
 
+// Try to disable all online networking
+LOCAL_API void disable_online_networking();
+LOCAL_API void enable_online_networking();
+
 // Get User env variable
 LOCAL_API std::string get_env_var(std::string const& var);
 // User appdata full path

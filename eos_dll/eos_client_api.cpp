@@ -111,10 +111,10 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
     if (Options == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
-    //auto func = EOS_Auth_CopyUserAuthToken;
-    //DetourTransactionBegin();
-    //DetourAttach((void**)&func, EOS_Auth_CopyUserAuthTokenOld);
-    //DetourTransactionCommit();
+    if (Settings::Inst().disable_online_networking)
+    {
+        disable_online_networking();
+    }
 
     int failed;
     if (Options->ApiVersion == 1)

@@ -33,8 +33,6 @@ LOCAL_API std::chrono::microseconds get_uptime()
     return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - get_boottime());
 }
 
-#if defined(__WINDOWS__)
-
 static bool is_lan_ip(const sockaddr* addr, int namelen)
 {
     if (!namelen) return false;
@@ -53,7 +51,7 @@ static bool is_lan_ip(const sockaddr* addr, int namelen)
         if (ip[0] == 239) return true; //multicast
         if (ip[0] == 0) return true; //Current network
         if (ip[0] == 192 && (ip[1] == 18 || ip[1] == 19)) return true; //Used for benchmark testing of inter-network communications between two separate subnets.
-        if (ip[0] >= 224) return true; //ip multicast (224 - 239) future use (240.0.0.0–255.255.255.254) broadcast (255.255.255.255)
+        if (ip[0] >= 224) return true; //ip multicast (224 - 239) future use (240.0.0.0ï¿½255.255.255.254) broadcast (255.255.255.255)
     }
     else if (addr->sa_family == AF_INET6) {
         struct sockaddr_in6* addr_in6 = (struct sockaddr_in6*)addr;
@@ -74,9 +72,17 @@ static bool is_lan_ip(const sockaddr* addr, int namelen)
     return false;
 }
 
-int (WINAPI* _sendto)(SOCKET s, const char* buf, int len, int flags, const sockaddr* to, int tolen) = sendto;
-int (WINAPI* _connect)(SOCKET s, const sockaddr* addr, int namelen) = connect;
-int (WINAPI* _WSAConnect)(SOCKET s, const sockaddr* addr, int namelen, LPWSABUF lpCallerData, LPWSABUF lpCalleeData, LPQOS lpSQOS, LPQOS lpGQOS) = WSAConnect;
+#if defined(__WINDOWS__)
+
+#include <winhttp.h>
+
+#pragma comment(lib, "winhttp.lib")
+
+decltype(sendto)*             _sendto             = sendto;
+decltype(connect)*            _connect            = connect;
+decltype(WSAConnect)*         _WSAConnect         = WSAConnect;
+decltype(WinHttpOpenRequest)* _WinHttpOpenRequest = WinHttpOpenRequest;
+decltype(WinHttpConnect)*     _WinHttpConnect     = WinHttpConnect;
 
 static int WINAPI Mysendto(SOCKET s, const char* buf, int len, int flags, const sockaddr* to, int tolen)
 {
@@ -109,12 +115,6 @@ static int WINAPI MyWSAConnect(SOCKET s, const sockaddr* addr, int namelen, LPWS
         return SOCKET_ERROR;
     }
 }
-
-#include <winhttp.h>
-
-#pragma comment(lib, "winhttp.lib")
-decltype(WinHttpOpenRequest)* _WinHttpOpenRequest = WinHttpOpenRequest;
-decltype(WinHttpConnect)* _WinHttpConnect = WinHttpConnect;
 
 HINTERNET WINAPI MyWinHttpConnect(
     IN HINTERNET     hSession,
@@ -155,14 +155,6 @@ void shared_library_load(void* hmodule)
 {
     ::hmodule = hmodule;
 
-    mini_detour::transaction_begin();
-    mini_detour::detour_func((void**)&_sendto, &Mysendto);
-    mini_detour::detour_func((void**)&_connect, &Myconnect);
-    mini_detour::detour_func((void**)&_WSAConnect, &MyWSAConnect);
-    mini_detour::detour_func((void**)&_WinHttpConnect, &MyWinHttpConnect);
-    mini_detour::detour_func((void**)&_WinHttpOpenRequest, &MyWinHttpOpenRequest);
-    mini_detour::transaction_commit();
-
     std::fstream log("cmdline.txt", std::ios::out | std::ios::trunc);
     log << GetCommandLine();
 
@@ -172,6 +164,35 @@ void shared_library_load(void* hmodule)
 void shared_library_unload(void* hmodule)
 {
 
+}
+
+LOCAL_API void disable_online_networking()
+{
+    mini_detour::transaction_begin();
+
+    if (mini_detour::detour_func((void**)&_sendto           , (void*)&Mysendto))
+        LOG(Log::LogLevel::WARN, "Failed to hook sendto");
+    if(mini_detour::detour_func((void**)&_connect           , (void*)&Myconnect))
+        LOG(Log::LogLevel::WARN, "Failed to hook connect");
+    if(mini_detour::detour_func((void**)&_WSAConnect        , (void*)&MyWSAConnect))
+        LOG(Log::LogLevel::WARN, "Failed to hook wsaconnect");
+    if(mini_detour::detour_func((void**)&_WinHttpConnect    , (void*)&MyWinHttpConnect))
+        LOG(Log::LogLevel::WARN, "Failed to hook winhttpconnect");
+    if(mini_detour::detour_func((void**)&_WinHttpOpenRequest, (void*)&MyWinHttpOpenRequest))
+        LOG(Log::LogLevel::WARN, "Failed to hook winhttpopenrequest");
+
+    mini_detour::transaction_commit();
+}
+
+LOCAL_API void enable_online_networking()
+{
+    mini_detour::transaction_begin();
+    mini_detour::unhook_func((void**)&_sendto            , &sendto);
+    mini_detour::unhook_func((void**)&_connect           , &connect);
+    mini_detour::unhook_func((void**)&_WSAConnect        , &WSAConnect);
+    mini_detour::unhook_func((void**)&_WinHttpConnect    , &WinHttpConnect);
+    mini_detour::unhook_func((void**)&_WinHttpOpenRequest, &WinHttpOpenRequest);
+    mini_detour::transaction_commit();
 }
 
 LOCAL_API std::chrono::system_clock::time_point get_boottime()
@@ -627,6 +648,30 @@ LOCAL_API std::string get_userdata_path()
 
 #endif
 
+decltype(sendto)*  _sendto  = sendto;
+decltype(connect)* _connect = connect;
+
+static int Mysendto(int s, const char* buf, int len, int flags, const sockaddr* to, int tolen)
+{
+    if (is_lan_ip(to, tolen)) {
+        return _sendto(s, buf, len, flags, to, tolen);
+    }
+    else {
+        return len;
+    }
+}
+
+static int Myconnect(int s, const sockaddr* addr, int namelen)
+{
+    if (is_lan_ip(addr, namelen)) {
+        return _connect(s, addr, namelen);
+    }
+    else {
+        errno = ECONNREFUSED;
+        return -1;
+    }
+}
+
 void shared_library_load(void* hmodule)
 {
     ::hmodule = hmodule;
@@ -635,6 +680,24 @@ void shared_library_load(void* hmodule)
 void shared_library_unload(void* hmodule)
 {
 
+}
+
+LOCAL_API void disable_online_networking()
+{
+    mini_detour::transaction_begin();
+    if (mini_detour::detour_func((void**)&_sendto, (void*)&Mysendto))
+        LOG(Log::LogLevel::WARN, "Failed to hook sendto");
+    if (mini_detour::detour_func((void**)&_connect, (void*)&Myconnect))
+        LOG(Log::LogLevel::WARN, "Failed to hook connect");
+    mini_detour::transaction_commit();
+}
+
+LOCAL_API void enable_online_networking()
+{
+    mini_detour::transaction_begin();
+    mini_detour::unhook_func((void**)&_sendto , (void*)&sendto);
+    mini_detour::unhook_func((void**)&_connect, (void*)&connect);
+    mini_detour::transaction_commit();
 }
 
 LOCAL_API std::string process_path(std::string const& path)
@@ -702,64 +765,34 @@ LOCAL_API std::string get_module_path()
 
 LOCAL_API std::vector<ipv4_addr> get_broadcasts()
 {
-    /* Not sure how many platforms this will run on,
-     * so it's wrapped in __linux for now.
-     * Definitely won't work like this on Windows...
-     */
-
     std::vector<ipv4_addr> broadcasts;
 
-    static constexpr auto max_broadcasts = 32;
-    uint32_t sock = 0;
-
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-        return broadcasts;
-
-    /* Configure ifconf for the ioctl call. */
-    struct ifreq i_faces[max_broadcasts];
-    memset(i_faces, 0, sizeof(struct ifreq) * max_broadcasts);
-
-    struct ifconf ifconf;
-    ifconf.ifc_buf = (char*)i_faces;
-    ifconf.ifc_len = sizeof(i_faces);
-
-    if (ioctl(sock, SIOCGIFCONF, &ifconf) < 0)
+    ifaddrs* ifaces_list;
+    ifaddrs* pIface;
+    if (getifaddrs(&ifaces_list) == 0)
     {
-        close(sock);
-        return broadcasts;
-    }
-
-    /* ifconf.ifc_len is set by the ioctl() to the actual length used;
-     * on usage of the complete array the call should be repeated with
-     * a larger array, not done (640kB and 16 interfaces shall be
-     * enough, for everybody!)
-     */
-    int i, count = ifconf.ifc_len / sizeof(struct ifreq);
-
-    for (i = 0; i < count; ++i)
-    {
-        /* there are interfaces with are incapable of broadcast */
-        if (ioctl(sock, SIOCGIFBRDADDR, &i_faces[i]) < 0)
-            continue;
-
-        /* moot check: only AF_INET returned (backwards compat.) */
-        if (i_faces[i].ifr_broadaddr.sa_family != AF_INET)
-            continue;
-
-        struct sockaddr_in* sock4 = (struct sockaddr_in*) & i_faces[i].ifr_broadaddr;
-
-        if (sock4->sin_addr.s_addr == 0)
-            continue;
-
         ipv4_addr addr;
-        addr.set_ip(sock4->sin_addr.s_addr);
-        broadcasts.emplace_back(std::move(addr));
-
-        if (broadcasts.size() >= max_broadcasts)
-            break;
+        const sockaddr_in* sock_addr;
+        for (pIface = ifaces_list; pIface != nullptr; pIface = pIface->ifa_next)
+        {
+            if (pIface->ifa_addr->sa_family == AF_INET)
+            {
+                sock_addr = reinterpret_cast<const sockaddr_in*>(pIface->ifa_addr);
+                if (sock_addr->sin_addr.s_addr != 0 && pIface->ifa_netmask != nullptr && pIface->ifa_flags & IFF_BROADCAST)
+                {
+                    sock_addr = reinterpret_cast<const sockaddr_in*>(pIface->ifa_broadaddr);
+                    addr.set_addr(sock_addr->sin_addr);
+                    broadcasts.emplace_back(addr);
+                }
+            }
+            // IPV6
+            //else if (pIface->ifa_addr->sa_family == AF_INET6)
+            //{
+            //    const sockaddr_in6* addr = reinterpret_cast<const sockaddr_in6*>(pIface->ifa_addr);));
+            //}
+        }
+        freeifaddrs(ifaces_list);
     }
-
-    close(sock);
 
     return broadcasts;
 }
