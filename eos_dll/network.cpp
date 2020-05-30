@@ -281,13 +281,19 @@ void Network::connect_to_peer(ipv4_addr &addr, peer_t const& peer_id)
     }
     catch (is_connected &e)
     {
+        LOG(Log::LogLevel::DEBUG, "Connected to %s : %s, sending my peer infos", addr.to_string(true).c_str(), peer_id.c_str());
+
         Network_Message_pb msg;
         build_advertise_msg(msg);
 
-        std::string buff(sizeof(uint16_t), 0);
+        // Useful if you change the max packet size, you won't have to change all code
+        using next_packet_size_t = decltype(tcp_buffer_t::next_packet_size);
+        next_packet_size_t next_packet_size;
+
+        std::string buff(sizeof(next_packet_size_t), 0);
         std::string data(std::move(msg.SerializeAsString()));
         buff += std::move(compress(data.data(), data.length()));
-        *reinterpret_cast<uint16_t*>(&buff[0]) = Socket::net_swap(uint16_t(buff.length() - sizeof(uint16_t)));
+        *reinterpret_cast<next_packet_size_t*>(&buff[0]) = Socket::net_swap(next_packet_size_t(buff.length() - sizeof(next_packet_size_t)));
         max_message_size = std::max<uint64_t>(max_message_size, data.length());
         max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buff.length());
 
@@ -352,48 +358,68 @@ void Network::process_waiting_out_clients()
     }
 }
 
-void Network::process_waiting_in_client(tcp_socket &new_client)
+void Network::process_waiting_in_client()
 {
-    Poll p;
-    p.add_socket(new_client);
-    p.set_events(0, Socket::poll_flags::in);
-    if (p.poll(100) == 1)
+    std::array<uint8_t, 2048> buff;
+    Network_Message_pb msg;
+    for (auto it = _waiting_in_tcp_clients.begin(); it != _waiting_in_tcp_clients.end(); )
     {
-        std::array<uint8_t, 2048> buff;
-        Network_Message_pb msg;
-        uint16_t message_size;
-        size_t len = 0;
-        while(len != sizeof(uint16_t))
-            len += new_client.recv(&message_size, sizeof(uint16_t) - len);
-
-        len = 0;
-        message_size = Socket::net_swap(message_size);
-        while (len != message_size)
-            len += new_client.recv(buff.data() + len, message_size - len);
-
-        std::string decompressed_data(std::move(decompress(buff.data(), len)));
-
-        if (msg.ParseFromArray(decompressed_data.data(), decompressed_data.length()) &&
-            msg.source_id() != peer_t() &&
-            msg.has_network_advertise() &&
-            msg.network_advertise().has_peer())
+        try
         {
-            std::lock_guard<std::recursive_mutex> lk(local_mutex);
-
-            auto const& peer_msg = msg.network_advertise().peer();
-            std::pair<tcp_socket*, std::vector<peer_t>> peer_ids_to_add = std::move(get_new_peer_ids(peer_msg));
-
-            if (!peer_ids_to_add.second.empty())
-            {// We have peer ids to add
-                if (peer_ids_to_add.first == nullptr)
-                {// Didn't find a matching peer id, its a new peer
-                    tcp_buffer_t new_buff({});
-                    new_buff.socket = std::move(new_client);
-                    _tcp_clients.emplace_back(std::move(new_buff));
-                    peer_ids_to_add.first = &(_tcp_clients.rbegin()->socket);
+            if (it->next_packet_size == 0)
+            {
+                unsigned long count = 0;
+                it->socket.ioctlsocket(Socket::cmd_name::fionread, &count);
+                if (count >= sizeof(tcp_buffer_t::next_packet_size))
+                {// Wait until we have at least the size of the next message
+                    it->socket.recv(&it->next_packet_size, sizeof(tcp_buffer_t::next_packet_size));
+                    it->next_packet_size = Socket::net_swap(it->next_packet_size); // Re-order the size
+                    if (it->buffer.size() < it->next_packet_size)
+                        it->buffer.resize(it->next_packet_size);
                 }
-                add_new_tcp_client(peer_ids_to_add.first, peer_ids_to_add.second, true);
             }
+            if (it->next_packet_size > 0)
+            {
+                it->received_size = it->socket.recv(it->buffer.data() + it->received_size, it->next_packet_size - it->received_size);
+                assert((it->received_size <= it->next_packet_size && "received tcp buffer is bigger than what we're waiting for"));
+                if (it->received_size == it->next_packet_size)
+                {// Message read, parse it now
+                    it->next_packet_size = 0;
+                    std::string buff = std::move(decompress(it->buffer.data(), it->received_size));
+                    if (msg.ParseFromArray(buff.data(), buff.length()) &&
+                        msg.has_network_advertise() && 
+                        msg.network_advertise().has_peer())
+                    {
+                        std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
+                        it->buffer.clear();
+                        it->received_size = 0;
+                        it->socket.set_nonblocking(false);
+
+                        auto const& peer_msg = msg.network_advertise().peer();
+                        std::pair<tcp_socket*, std::vector<peer_t>> peer_ids_to_add = std::move(get_new_peer_ids(peer_msg));
+
+                        if (!peer_ids_to_add.second.empty())
+                        {// We have peer ids to add
+                            if (peer_ids_to_add.first == nullptr)
+                            {// Didn't find a matching peer id, its a new peer
+                                _tcp_clients.emplace_back(std::move(*it));
+                                peer_ids_to_add.first = &(_tcp_clients.rbegin()->socket);
+                            }
+                            add_new_tcp_client(peer_ids_to_add.first, peer_ids_to_add.second, true);
+                        }
+                    }
+                    it = _waiting_in_tcp_clients.erase(it);
+                    continue;
+                }
+            }
+            ++it;
+        }
+        catch (std::exception &e)
+        {
+            // Error while reading, connection closed ?
+            LOG(Log::LogLevel::WARN, "Failed peer pair: %s", e.what());
+            it = _waiting_in_tcp_clients.erase(it);
         }
     }
 }
@@ -501,8 +527,10 @@ void Network::process_tcp_listen()
 {
     try
     {
-        tcp_socket new_client = std::move(_tcp_socket.accept());
-        process_waiting_in_client(new_client);
+        tcp_buffer_t tcp_buff({});
+        tcp_buff.socket = std::move(_tcp_socket.accept());
+        tcp_buff.socket.set_nonblocking(true);
+        _waiting_in_tcp_clients.emplace_back(std::move(tcp_buff));
     }
     catch (socket_exception & e)
     {
@@ -621,6 +649,7 @@ void Network::network_thread()
             }
         }
         
+        process_waiting_in_client();
         // We might have found a peer while he didn't find us yet, so begin the connection procedure
         process_waiting_out_clients();
     }
@@ -852,10 +881,14 @@ std::set<Network::peer_t> Network::TCPSendToAllPeers(Network_Message_pb& msg)
         msg.set_dest_id(client.first);
         msg.set_timestamp(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 
-        std::string buffer(sizeof(uint16_t), 0);
+        // Useful if you change the max packet size, you won't have to change all code
+        using next_packet_size_t = decltype(tcp_buffer_t::next_packet_size);
+        next_packet_size_t next_packet_size;
+
+        std::string buffer(sizeof(next_packet_size_t), 0);
         std::string data(std::move(msg.SerializeAsString()));
         buffer += std::move(compress(data.data(), data.length()));
-        *reinterpret_cast<uint16_t*>(&buffer[0]) = Socket::net_swap(uint16_t(buffer.length() - sizeof(uint16_t)));
+        *reinterpret_cast<next_packet_size_t*>(&buffer[0]) = Socket::net_swap(next_packet_size_t(buffer.length() - sizeof(next_packet_size_t)));
         max_message_size = std::max<uint64_t>(max_message_size, data.length());
         max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buffer.length());
         try
@@ -891,10 +924,14 @@ bool Network::TCPSendTo(Network_Message_pb& msg)
 
     msg.set_timestamp(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 
-    std::string buffer(sizeof(uint16_t), 0);
+    // Useful if you change the max packet size, you won't have to change all code
+    using next_packet_size_t = decltype(tcp_buffer_t::next_packet_size);
+    next_packet_size_t next_packet_size;
+
+    std::string buffer(sizeof(next_packet_size_t), 0);
     std::string data(std::move(msg.SerializeAsString()));
     buffer += std::move(compress(data.data(), data.length()));
-    *reinterpret_cast<uint16_t*>(&buffer[0]) = Socket::net_swap(uint16_t(buffer.length() - sizeof(uint16_t)));
+    *reinterpret_cast<next_packet_size_t*>(&buffer[0]) = Socket::net_swap(next_packet_size_t(buffer.length() - sizeof(next_packet_size_t)));
     max_message_size = std::max<uint64_t>(max_message_size, data.length());
     max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buffer.length());
     try
