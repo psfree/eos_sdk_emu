@@ -438,11 +438,11 @@ void Network::process_network_message(Network_Message_pb &msg)
 
     std::chrono::system_clock::time_point msg_time(std::chrono::milliseconds(msg.timestamp()));
     
-    if ((std::chrono::system_clock::now() - msg_time) > std::chrono::milliseconds(1500))
-    {
-        LOG(Log::LogLevel::WARN, "Message dropped because it was too old");
-        return;
-    }
+    //if ((std::chrono::system_clock::now() - msg_time) > std::chrono::milliseconds(1500))
+    //{
+    //    LOG(Log::LogLevel::WARN, "Message dropped because it was too old");
+    //    return;
+    //}
 
     if (msg.dest_id() == peer_t())
     {// If we received a message without a destination, then its a broadcast.
