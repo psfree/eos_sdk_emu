@@ -27,7 +27,7 @@ namespace sdk
     class EOSSDK_UserInfo :
         public IRunFrame
     {
-        static constexpr auto userinfo_query_timeout = std::chrono::milliseconds(1000);
+        static constexpr auto userinfo_query_timeout = std::chrono::milliseconds(20000);
 
         std::map<EOS_EpicAccountId, UserInfo_Info_pb> _userinfos;
         std::map<EOS_EpicAccountId, std::list<pFrameResult_t>> _userinfos_queries;

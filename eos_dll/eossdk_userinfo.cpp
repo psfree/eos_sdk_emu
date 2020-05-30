@@ -86,6 +86,8 @@ void EOSSDK_UserInfo::QueryUserInfo(const EOS_UserInfo_QueryUserInfoOptions* Opt
     if (CompletionDelegate == nullptr)
         return;
 
+    LOG(Log::LogLevel::DEBUG, "Query infos of %s", Options->TargetUserId->to_string().c_str());
+
     pFrameResult_t res(new FrameResult);
     EOS_UserInfo_QueryUserInfoCallbackInfo& quici = res->CreateCallback<EOS_UserInfo_QueryUserInfoCallbackInfo>((CallbackFunc)CompletionDelegate);
     quici.ClientData = ClientData;
@@ -151,6 +153,8 @@ void EOSSDK_UserInfo::QueryUserInfoByDisplayName(const EOS_UserInfo_QueryUserInf
     if (CompletionDelegate == nullptr)
         return;
 
+    LOG(Log::LogLevel::DEBUG, "Query infos of %s", Options->DisplayName);
+
     pFrameResult_t res(new FrameResult);
     EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo& quibdnci = res->CreateCallback<EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo>((CallbackFunc)CompletionDelegate);
     quibdnci.ClientData = ClientData;
@@ -207,6 +211,8 @@ EOS_EResult EOSSDK_UserInfo::CopyUserInfo(const EOS_UserInfo_CopyUserInfoOptions
 
     if (OutUserInfo == nullptr || Options == nullptr || Options->TargetUserId == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
+
+    LOG(Log::LogLevel::DEBUG, "Copy infos of %s", Options->TargetUserId->to_string().c_str());
 
     UserInfo_Info_pb* userinfo = get_userinfo(Options->TargetUserId);
 
@@ -358,13 +364,17 @@ bool EOSSDK_UserInfo::on_userinfo(Network_Message_pb const& msg, UserInfo_Info_p
 {
     GLOBAL_LOCK();
 
-    _userinfos[GetEpicUserId(msg.source_id())] = infos;
-    auto it = _userinfos_queries.find(GetEpicUserId(msg.source_id()));
-    if (it != _userinfos_queries.end())
+    auto user = GetEOS_Connect().get_user_by_productid(GetProductUserId(msg.source_id()));
+    if (user != nullptr)
     {
-        auto result_it = it->second.begin();
-        switch ((*result_it)->res.m_iCallback)
+        EOS_EpicAccountId user_id = GetEpicUserId(user->second.infos.userid());
+        _userinfos[user_id] = infos;
+        auto it = _userinfos_queries.find(user_id);
+        if (it != _userinfos_queries.end())
         {
+            auto result_it = it->second.begin();
+            switch ((*result_it)->res.m_iCallback)
+            {
             case EOS_UserInfo_QueryUserInfoCallbackInfo::k_iCallback:
             {
                 EOS_UserInfo_QueryUserInfoCallbackInfo& quici = (*result_it)->GetCallback<EOS_UserInfo_QueryUserInfoCallbackInfo>();
@@ -377,11 +387,12 @@ bool EOSSDK_UserInfo::on_userinfo(Network_Message_pb const& msg, UserInfo_Info_p
                 quibdnci.ResultCode = EOS_EResult::EOS_Success;
             }
             break;
+            }
+
+            (*result_it)->done = true;
+
+            it->second.erase(result_it);
         }
-
-        (*result_it)->done = true;
-
-        it->second.erase(result_it);
     }
 
     return true;
