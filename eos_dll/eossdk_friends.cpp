@@ -61,9 +61,12 @@ void EOSSDK_Friends::QueryFriends(const EOS_Friends_QueryFriendsOptions* Options
     qfci.ResultCode = EOS_EResult::EOS_Success;
 
     _friends.clear();
-    for (auto const& user : GetEOS_Connect()._users)
+
+    auto users = GetEOS_Connect()._users;
+    for (auto user_it = ++users.begin(); user_it != users.end(); ++user_it)
     {
-        _friends[GetEpicUserId(user.second.infos.userid())];
+        if(!user_it->second.infos.userid().empty())
+            _friends[GetEpicUserId(user_it->second.infos.userid())];
     }
 
     res->done = true;
