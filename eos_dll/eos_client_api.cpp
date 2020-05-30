@@ -131,7 +131,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
     if (failed)
     {
         LOG(Log::LogLevel::FATAL, "Couldn't replace our dummy EOS_Auth_CopyUserAuthToken, the function will not work and thus we terminate.");
-        throw std::exception();
+        abort();
     }
 
     switch (Options->ApiVersion)
