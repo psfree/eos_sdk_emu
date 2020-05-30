@@ -63,7 +63,8 @@ std::string Network::compress(void const* data, size_t len)
 
 std::string Network::decompress(void const* data, size_t len)
 {
-    std::string res(3072, 0);
+    std::string res(65535, 0);
+
     res.resize(ZSTD_decompressDCtx(_zstd_dcontext, &res[0], res.length(), data, len));
     return res;
 }
@@ -150,7 +151,7 @@ void Network::build_advertise_msg(Network_Message_pb& msg)
     LOG(Log::LogLevel::DEBUG, "Advertising with peer ids: ");
     for (auto& id : _my_peer_ids)
     {
-        LOG(Log::LogLevel::DEBUG, "%s", id.c_str());
+        LOG(Log::LogLevel::DEBUG, "%llu", id.c_str());
         peer_pb->add_peer_ids(id);
     }
 
@@ -247,7 +248,7 @@ void Network::remove_tcp_peer(tcp_buffer_t& tcp_buffer)
 {
     std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
-    //LOG(Log::LogLevel::DEBUG, "TCP Client %s gone: %s", client->socket.get_addr().to_string().c_str(), e.what());
+    LOG(Log::LogLevel::DEBUG, "TCP Client %s gone", tcp_buffer.socket.get_addr().to_string().c_str());
     _poll.remove_socket(tcp_buffer.socket);
     // Remove the peer mappings
     for (auto it = _tcp_peers.begin(); it != _tcp_peers.end();)
@@ -266,6 +267,7 @@ void Network::connect_to_peer(ipv4_addr &addr, peer_t const& peer_id)
     if (_waiting_out_tcp_clients.count(peer_id) != 0)
         return;
 
+    bool connected = false;
     auto it = _waiting_connect_tcp_clients.find(peer_id);
     try
     {
@@ -278,11 +280,24 @@ void Network::connect_to_peer(ipv4_addr &addr, peer_t const& peer_id)
             it->second.set_nonblocking(true);
         }
         it->second.connect(addr);
+        connected = true;
     }
     catch (is_connected &e)
     {
-        LOG(Log::LogLevel::DEBUG, "Connected to %s : %s, sending my peer infos", addr.to_string(true).c_str(), peer_id.c_str());
+        connected = true;
+    }
+    catch (would_block &e)
+    {}
+    catch(in_progress &e)
+    {}
+    catch (std::exception &e)
+    {
+        _waiting_connect_tcp_clients.erase(it);
+        LOG(Log::LogLevel::WARN, "Failed to TCP connect to %s: %s", addr.to_string().c_str(), e.what());
+    }
 
+    if (connected)
+    {
         Network_Message_pb msg;
         build_advertise_msg(msg);
 
@@ -299,17 +314,10 @@ void Network::connect_to_peer(ipv4_addr &addr, peer_t const& peer_id)
 
         it->second.send(buff.c_str(), buff.length());
 
+        LOG(Log::LogLevel::DEBUG, "Connected to %s : %s", it->second.get_addr().to_string(true).c_str(), peer_id.c_str());
+
         _waiting_out_tcp_clients.emplace(peer_id, std::move(it->second));
         _waiting_connect_tcp_clients.erase(it);
-    }
-    catch (would_block &e)
-    {}
-    catch(in_progress &e)
-    {}
-    catch (std::exception &e)
-    {
-        _waiting_connect_tcp_clients.erase(it);
-        LOG(Log::LogLevel::WARN, "Failed to TCP connect to %s: %s", addr.to_string().c_str(), e.what());
     }
 }
 
@@ -331,7 +339,7 @@ void Network::process_waiting_out_clients()
                 {
                     std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
-                    LOG(Log::LogLevel::DEBUG, "Connected to %s : %s", it->second.get_addr().to_string(true).c_str(), it->first.c_str());
+                    LOG(Log::LogLevel::DEBUG, "Paired with %s : %s", it->second.get_addr().to_string(true).c_str(), it->first.c_str());
                     it->second.set_nonblocking(false);
                     tcp_buffer_t new_buff({});
                     new_buff.socket = std::move(it->second);
