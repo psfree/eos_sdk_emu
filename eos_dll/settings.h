@@ -36,7 +36,7 @@ private:
     static constexpr const char* settings_file_name = "NemirtingasEpicEmu.json";
 
     std::string config_path;
-    std::string settings_savepath; // The savepath writted in the json config file
+    std::string settings_savepath; // The savepath written in the json config file
 
     void build_save_path();
 
