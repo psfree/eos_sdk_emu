@@ -130,6 +130,17 @@ message Session_Join_Response_pb {
     int32 reason = 3;
 }
 
+// Session invite request
+message Session_Invite_pb {
+    string sessionname = 1;
+    Session_Info_pb infos = 2;
+}
+
+message Session_Invite_Response_pb {
+    string sessionid = 1;
+    bool accepted = 2;
+}
+
 // Base Sessions related message
 message Session_Message_pb {
     oneof message {
@@ -138,6 +149,8 @@ message Session_Message_pb {
         Session_Destroy_pb session_destroy = 3;
         Session_Join_Request_pb session_join_request = 4;
         Session_Join_Response_pb session_join_response = 5;
+        Session_Invite_pb session_invite = 6;
+        Session_Invite_Response_pb session_invite_response = 7;
 	}
 }
 
