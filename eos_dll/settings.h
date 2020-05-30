@@ -30,17 +30,13 @@ class Settings
     Settings& operator=(Settings const&) = delete;
     Settings& operator=(Settings&&) = delete;
 public:
-    static Settings& Inst()
-    {
-        static Settings inst;
-        return inst;
-    }
+    static Settings& Inst();
 
 private:
     static constexpr const char* settings_file_name = "NemirtingasEpicEmu.json";
 
     std::string config_path;
-    std::string setting_savepath;
+    std::string settings_savepath; // The savepath writted in the json config file
 
     void build_save_path();
 

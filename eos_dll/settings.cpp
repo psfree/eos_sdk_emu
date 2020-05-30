@@ -46,11 +46,17 @@ Settings::~Settings()
 
 }
 
+Settings& Settings::Inst()
+{
+    static Settings inst;
+    return inst;
+}
+
 void Settings::build_save_path()
 {
     try
     {// Emulator Savepath
-        savepath = setting_savepath;
+        savepath = settings_savepath;
 
         bool clean_savepath = true;
         while (clean_savepath)
@@ -72,7 +78,7 @@ void Settings::build_save_path()
             }
         }
 
-        setting_savepath = savepath;
+        settings_savepath = savepath;
         if (savepath == "appdata")
         {
             savepath = std::move(get_userdata_path());
@@ -87,7 +93,7 @@ void Settings::build_save_path()
     catch (...)
     {
         savepath = std::move(get_userdata_path());
-        setting_savepath = "appdata";
+        settings_savepath = "appdata";
     }
 
     savepath += PATH_SEPARATOR;
@@ -137,6 +143,7 @@ void Settings::load_settings()
     enable_overlay            = get_setting(settings, "enable_overlay"           , bool(true));
     disable_online_networking = get_setting(settings, "disable_online_networking", bool(false));
 
+#ifdef LIBRARY_DEBUG
     Log::LogLevel llvl;
     switchstr(get_setting(settings, "debug_level", std::string("OFF")))
     {
@@ -151,25 +158,22 @@ void Settings::load_settings()
     }
     LOG(Log::LogLevel::INFO, "Setting log level to: %s", Log::loglevel_to_str(llvl));
     Log::set_loglevel(llvl);
+#endif
 
     try
     {
-        setting_savepath = settings["savepath"].get_ref<std::string&>();
+        settings_savepath = settings["savepath"].get_ref<std::string&>();
     }
     catch (...)
     {
-        setting_savepath = "appdata";
+        settings_savepath = "appdata";
     }
-    build_save_path();
-
     save_settings();
 }
 
 void Settings::save_settings()
 {
     nlohmann::json settings;
-    std::string config_path = std::move(get_executable_path() + settings_file_name);
-
     LOG(Log::LogLevel::INFO, "Saving emu settings: %s", config_path.c_str());
 
     build_save_path();
@@ -185,7 +189,7 @@ void Settings::save_settings()
 #ifdef LIBRARY_DEBUG
     settings["debug_level"] = Log::loglevel_to_str();
 #endif
-    settings["savepath"] = setting_savepath;
+    settings["savepath"] = settings_savepath;
 
     create_folder(savepath);
 
