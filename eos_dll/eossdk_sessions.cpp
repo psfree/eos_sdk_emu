@@ -703,6 +703,7 @@ void EOSSDK_Sessions::EndSession(const EOS_Sessions_EndSessionOptions* Options, 
 void EOSSDK_Sessions::RegisterPlayers(const EOS_Sessions_RegisterPlayersOptions* Options, void* ClientData, const EOS_Sessions_OnRegisterPlayersCallback CompletionDelegate)
 {
     TRACE_FUNC();
+    GLOBAL_LOCK();
 
     if (CompletionDelegate == nullptr)
         return;
@@ -778,6 +779,7 @@ void EOSSDK_Sessions::RegisterPlayers(const EOS_Sessions_RegisterPlayersOptions*
 void EOSSDK_Sessions::UnregisterPlayers(const EOS_Sessions_UnregisterPlayersOptions* Options, void* ClientData, const EOS_Sessions_OnUnregisterPlayersCallback CompletionDelegate)
 {
     TRACE_FUNC();
+    GLOBAL_LOCK();
 
     if (CompletionDelegate == nullptr)
         return;
@@ -799,11 +801,40 @@ void EOSSDK_Sessions::UnregisterPlayers(const EOS_Sessions_UnregisterPlayersOpti
 void EOSSDK_Sessions::SendInvite(const EOS_Sessions_SendInviteOptions* Options, void* ClientData, const EOS_Sessions_OnSendInviteCallback CompletionDelegate)
 {
     TRACE_FUNC();
+    GLOBAL_LOCK();
 
     if (CompletionDelegate == nullptr)
         return;
 
-    
+    pFrameResult_t res(new FrameResult);
+
+    EOS_Sessions_SendInviteCallbackInfo& sici = res->CreateCallback<EOS_Sessions_SendInviteCallbackInfo>((CallbackFunc)CompletionDelegate);
+
+    sici.ClientData = ClientData;
+
+    if (Options == nullptr || Options->SessionName == nullptr || Options->TargetUserId == nullptr)
+    {
+        sici.ResultCode = EOS_EResult::EOS_InvalidParameters;
+    }
+    else
+    {
+        auto session = get_session_by_name(Options->SessionName);
+        if (session == nullptr || GetEOS_Connect().get_user_by_productid(Options->TargetUserId) == nullptr)
+        {
+            sici.ResultCode = EOS_EResult::EOS_NotFound;
+        }
+        else
+        {
+            Session_Invite_pb* invite = new Session_Invite_pb;
+            invite->set_sessionname(Options->SessionName);
+            *invite->mutable_infos() = session->infos;
+            send_session_invite(Options->TargetUserId->to_string(), invite);
+            sici.ResultCode = EOS_EResult::EOS_Success;
+        }
+    }
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
 }
 
 /**
@@ -820,6 +851,7 @@ void EOSSDK_Sessions::SendInvite(const EOS_Sessions_SendInviteOptions* Options, 
 void EOSSDK_Sessions::RejectInvite(const EOS_Sessions_RejectInviteOptions* Options, void* ClientData, const EOS_Sessions_OnRejectInviteCallback CompletionDelegate)
 {
     TRACE_FUNC();
+    GLOBAL_LOCK();
 
     if (CompletionDelegate == nullptr)
         return;
@@ -838,11 +870,28 @@ void EOSSDK_Sessions::RejectInvite(const EOS_Sessions_RejectInviteOptions* Optio
 void EOSSDK_Sessions::QueryInvites(const EOS_Sessions_QueryInvitesOptions* Options, void* ClientData, const EOS_Sessions_OnQueryInvitesCallback CompletionDelegate)
 {
     TRACE_FUNC();
+    GLOBAL_LOCK();
 
     if (CompletionDelegate == nullptr)
         return;
 
-    
+    pFrameResult_t res(new FrameResult);
+
+    EOS_Sessions_QueryInvitesCallbackInfo& qici = res->CreateCallback<EOS_Sessions_QueryInvitesCallbackInfo>((CallbackFunc)CompletionDelegate);
+    qici.LocalUserId = GetEOS_Connect().get_myself()->first;
+    qici.ClientData = ClientData;
+
+    if (Options == nullptr || Options->LocalUserId == nullptr)
+    {
+        qici.ResultCode = EOS_EResult::EOS_InvalidParameters;
+    }
+    else
+    {
+        qici.ResultCode = EOS_EResult::EOS_Success;
+    }
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
 }
 
 /**
@@ -855,9 +904,12 @@ void EOSSDK_Sessions::QueryInvites(const EOS_Sessions_QueryInvitesOptions* Optio
 uint32_t EOSSDK_Sessions::GetInviteCount(const EOS_Sessions_GetInviteCountOptions* Options)
 {
     TRACE_FUNC();
+    GLOBAL_LOCK();
 
-    
-    return 0;
+    if (Options == nullptr || Options->LocalUserId != GetEOS_Connect().get_myself()->first)
+        return 0;
+
+    return _session_invites.size();
 }
 
 /**
@@ -875,8 +927,21 @@ uint32_t EOSSDK_Sessions::GetInviteCount(const EOS_Sessions_GetInviteCountOption
 EOS_EResult EOSSDK_Sessions::GetInviteIdByIndex(const EOS_Sessions_GetInviteIdByIndexOptions* Options, char* OutBuffer, int32_t* InOutBufferLength)
 {
     TRACE_FUNC();
+    GLOBAL_LOCK();
 
+    if (Options == nullptr || Options->LocalUserId != GetEOS_Connect().get_myself()->first ||
+        Options->Index >= _session_invites.size() ||
+        OutBuffer == nullptr || InOutBufferLength == nullptr)
+    {
+        return EOS_EResult::EOS_InvalidParameters;
+    }
     
+    auto it = _session_invites.begin();
+    std::advance(it, Options->Index);
+
+    strncpy(OutBuffer, it->invite_id.c_str(), *InOutBufferLength);
+    *InOutBufferLength = std::min<int32_t>(it->invite_id.length() + 1, *InOutBufferLength);
+
     return EOS_EResult::EOS_Success;
 }
 
@@ -919,6 +984,7 @@ EOS_EResult EOSSDK_Sessions::CreateSessionSearch(const EOS_Sessions_CreateSessio
 EOS_EResult EOSSDK_Sessions::CopyActiveSessionHandle(const EOS_Sessions_CopyActiveSessionHandleOptions* Options, EOS_HActiveSession* OutSessionHandle)
 {
     TRACE_FUNC();
+    GLOBAL_LOCK();
 
     if (Options->SessionName == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -949,12 +1015,19 @@ EOS_EResult EOSSDK_Sessions::CopyActiveSessionHandle(const EOS_Sessions_CopyActi
 EOS_NotificationId EOSSDK_Sessions::AddNotifySessionInviteReceived(const EOS_Sessions_AddNotifySessionInviteReceivedOptions* Options, void* ClientData, const EOS_Sessions_OnSessionInviteReceivedCallback NotificationFn)
 {
     TRACE_FUNC();
-
+    
     if (NotificationFn == nullptr)
         return EOS_INVALID_NOTIFICATIONID;
 
+    pFrameResult_t res(new FrameResult);
     
-    return 0;
+    EOS_Sessions_SessionInviteReceivedCallbackInfo& sirci = res->CreateCallback<EOS_Sessions_SessionInviteReceivedCallbackInfo>((CallbackFunc)NotificationFn);
+
+    sirci.ClientData = ClientData;
+    sirci.LocalUserId = GetEOS_Connect().get_myself()->first;
+    sirci.InviteId = new char[65];
+
+    return GetCB_Manager().add_notification(this, res);
 }
 
 /**
@@ -966,7 +1039,7 @@ void EOSSDK_Sessions::RemoveNotifySessionInviteReceived(EOS_NotificationId InId)
 {
     TRACE_FUNC();
 
-    
+    GetCB_Manager().remove_notification(this, InId);
 }
 
 /**
@@ -986,8 +1059,15 @@ EOS_NotificationId EOSSDK_Sessions::AddNotifySessionInviteAccepted(const EOS_Ses
     if (NotificationFn == nullptr)
         return EOS_INVALID_NOTIFICATIONID;
 
-    
-    return 0;
+    pFrameResult_t res(new FrameResult);
+
+    EOS_Sessions_SessionInviteAcceptedCallbackInfo& siaci = res->CreateCallback<EOS_Sessions_SessionInviteAcceptedCallbackInfo>((CallbackFunc)NotificationFn);
+
+    siaci.ClientData = ClientData;
+    siaci.LocalUserId = GetEOS_Connect().get_myself()->first;
+    siaci.SessionId = new char[65];
+
+    return GetCB_Manager().add_notification(this, res);
 }
 
 /**
@@ -999,7 +1079,7 @@ void EOSSDK_Sessions::RemoveNotifySessionInviteAccepted(EOS_NotificationId InId)
 {
     TRACE_FUNC();
 
-    
+    GetCB_Manager().remove_notification(this, InId);
 }
 
 /**
@@ -1020,8 +1100,24 @@ void EOSSDK_Sessions::RemoveNotifySessionInviteAccepted(EOS_NotificationId InId)
 EOS_EResult EOSSDK_Sessions::CopySessionHandleByInviteId(const EOS_Sessions_CopySessionHandleByInviteIdOptions* Options, EOS_HSessionDetails* OutSessionHandle)
 {
     TRACE_FUNC();
-
+    GLOBAL_LOCK();
     
+    if (Options == nullptr || Options->InviteId == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
+    auto it = std::find_if(_session_invites.begin(), _session_invites.end(), [Options](session_invite_t const& invite)
+    {
+        return invite.invite_id == Options->InviteId;
+    });
+
+    if (it == _session_invites.end())
+        return EOS_EResult::EOS_NotFound;
+    
+    EOSSDK_SessionDetails* details = new EOSSDK_SessionDetails;
+
+    details->_infos = it->infos;
+    *OutSessionHandle = reinterpret_cast<EOS_HSessionDetails>(details);
+
     return EOS_EResult::EOS_Success;
 }
 
@@ -1043,6 +1139,7 @@ EOS_EResult EOSSDK_Sessions::CopySessionHandleByInviteId(const EOS_Sessions_Copy
 EOS_EResult EOSSDK_Sessions::CopySessionHandleForPresence(const EOS_Sessions_CopySessionHandleForPresenceOptions* Options, EOS_HSessionDetails* OutSessionHandle)
 {
     TRACE_FUNC();
+    GLOBAL_LOCK();
 
     if (Options == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -1077,6 +1174,7 @@ EOS_EResult EOSSDK_Sessions::CopySessionHandleForPresence(const EOS_Sessions_Cop
 EOS_EResult EOSSDK_Sessions::IsUserInSession(const EOS_Sessions_IsUserInSessionOptions* Options)
 {
     TRACE_FUNC();
+    GLOBAL_LOCK();
 
     if (Options == nullptr || Options->TargetUserId == nullptr || Options->SessionName == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
@@ -1130,7 +1228,7 @@ EOS_EResult EOSSDK_Sessions::IsUserInSession(const EOS_Sessions_IsUserInSessionO
 EOS_EResult EOSSDK_Sessions::DumpSessionState(const EOS_Sessions_DumpSessionStateOptions* Options)
 {
     TRACE_FUNC();
-
+    GLOBAL_LOCK();
 
     return EOS_EResult::EOS_Success;
 }
@@ -1266,6 +1364,41 @@ bool EOSSDK_Sessions::send_session_join_response(Network::peer_t const& peerid, 
 
     return GetNetwork().TCPSendTo(msg);
 }
+
+bool EOSSDK_Sessions::send_session_invite(Network::peer_t const& peerid, Session_Invite_pb* invite)
+{
+    TRACE_FUNC();
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+
+    Network_Message_pb msg;
+    Session_Message_pb* session = new Session_Message_pb;
+
+    session->set_allocated_session_invite(invite);
+    msg.set_allocated_session(session);
+
+    msg.set_source_id(user_id);
+    msg.set_dest_id(peerid);
+
+    return GetNetwork().TCPSendTo(msg);
+}
+
+bool EOSSDK_Sessions::send_session_invite_response(Network::peer_t const& peerid, Session_Invite_Response_pb* resp)
+{
+    TRACE_FUNC();
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+
+    Network_Message_pb msg;
+    Session_Message_pb* session = new Session_Message_pb;
+
+    session->set_allocated_session_invite_response(resp);
+    msg.set_allocated_session(session);
+
+    msg.set_source_id(user_id);
+    msg.set_dest_id(peerid);
+
+    return GetNetwork().TCPSendTo(msg);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //                          Network Receive messages                         //
@@ -1430,6 +1563,50 @@ bool EOSSDK_Sessions::on_session_join_response(Network_Message_pb const& msg, Se
     return true;
 }
 
+bool EOSSDK_Sessions::on_session_invite(Network_Message_pb const& msg, Session_Invite_pb const& invite)
+{
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+
+    std::vector<pFrameResult_t> notifs = std::move(GetCB_Manager().get_notifications(this, EOS_Sessions_SessionInviteReceivedCallbackInfo::k_iCallback));
+    for (auto& notif : notifs)
+    {
+        EOS_Sessions_SessionInviteReceivedCallbackInfo& sirci = notif->GetCallback<EOS_Sessions_SessionInviteReceivedCallbackInfo>();
+        
+        auto invite_id(generate_account_id());
+        strncpy(const_cast<char*>(sirci.InviteId), invite_id.c_str(), 65);
+        sirci.TargetUserId = GetProductUserId(msg.source_id());
+
+        session_invite_t invite_infos;
+        invite_infos.infos = invite.infos();
+        invite_infos.invite_id = std::move(invite_id);
+        invite_infos.peer_id = sirci.TargetUserId;
+        _session_invites.emplace_back(std::move(invite_infos));
+        notif->res.cb_func(notif->res.data);
+    }
+
+    return true;
+}
+
+bool EOSSDK_Sessions::on_session_invite_response(Network_Message_pb const& msg, Session_Invite_Response_pb const& resp)
+{
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+
+    std::vector<pFrameResult_t> notifs = std::move(GetCB_Manager().get_notifications(this, EOS_Sessions_SessionInviteAcceptedCallbackInfo::k_iCallback));
+    for (auto& notif : notifs)
+    {
+        EOS_Sessions_SessionInviteAcceptedCallbackInfo& siacbi = notif->GetCallback<EOS_Sessions_SessionInviteAcceptedCallbackInfo>();
+
+        siacbi.TargetUserId = GetProductUserId(msg.source_id());
+        strncpy(const_cast<char*>(siacbi.SessionId), resp.sessionid().c_str(), 65);
+
+        notif->res.cb_func(notif->res.data);
+    }
+
+    return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                 IRunFrame                                 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -1451,11 +1628,13 @@ bool EOSSDK_Sessions::RunNetwork(Network_Message_pb const& msg)
 
             switch (session.message_case())
             {
-                case Session_Message_pb::MessageCase::kSessionsRequest    : return on_session_info_request(msg, session.sessions_request());
-                case Session_Message_pb::MessageCase::kSessionInfo        : return on_session_info(msg, session.session_info());
-                case Session_Message_pb::MessageCase::kSessionDestroy     : return on_session_destroy(msg, session.session_destroy());
-                case Session_Message_pb::MessageCase::kSessionJoinRequest : return on_session_join_request(msg, session.session_join_request());
-                case Session_Message_pb::MessageCase::kSessionJoinResponse: return on_session_join_response(msg, session.session_join_response());
+                case Session_Message_pb::MessageCase::kSessionsRequest      : return on_session_info_request(msg, session.sessions_request());
+                case Session_Message_pb::MessageCase::kSessionInfo          : return on_session_info(msg, session.session_info());
+                case Session_Message_pb::MessageCase::kSessionDestroy       : return on_session_destroy(msg, session.session_destroy());
+                case Session_Message_pb::MessageCase::kSessionJoinRequest   : return on_session_join_request(msg, session.session_join_request());
+                case Session_Message_pb::MessageCase::kSessionJoinResponse  : return on_session_join_response(msg, session.session_join_response());
+                case Session_Message_pb::MessageCase::kSessionInvite        : return on_session_invite(msg, session.session_invite());
+                case Session_Message_pb::MessageCase::kSessionInviteResponse: return on_session_invite_response(msg, session.session_invite_response());
                 default: LOG(Log::LogLevel::WARN, "Unhandled network message %d", session.message_case());
             }
         }
@@ -1525,12 +1704,21 @@ void EOSSDK_Sessions::FreeCallback(pFrameResult_t res)
         /////////////////////////////
         //      Notifications      //
         /////////////////////////////
-        //case notification_type::k_iCallback:
-        //{
-        //    notification_type& callback = res->GetCallback<notification_type>();
-        //    // Free resources
-        //}
-        //break;
+        case EOS_Sessions_SessionInviteReceivedCallbackInfo::k_iCallback:
+        {
+            EOS_Sessions_SessionInviteReceivedCallbackInfo& callback = res->GetCallback<EOS_Sessions_SessionInviteReceivedCallbackInfo>();
+            // Free resources
+            delete[]callback.InviteId;
+        }
+        break;
+        case EOS_Sessions_SessionInviteAcceptedCallbackInfo::k_iCallback:
+        {
+            EOS_Sessions_SessionInviteAcceptedCallbackInfo& callback = res->GetCallback<EOS_Sessions_SessionInviteAcceptedCallbackInfo>();
+            // Free resources
+            delete[]callback.SessionId;
+        }
+        break;
+        
     }
 }
 

@@ -138,12 +138,20 @@ namespace sdk
         Session_Info_pb infos;
     };
 
+    struct session_invite_t
+    {
+        std::string invite_id;
+        EOS_ProductUserId peer_id;
+        Session_Info_pb infos;
+    };
+
     class EOSSDK_Sessions :
         public IRunFrame
     {
 
         static constexpr auto join_timeout = std::chrono::milliseconds(5000);
         std::map<std::string, pFrameResult_t> _sessions_join;
+        std::list<session_invite_t> _session_invites;
 
     public:
         EOSSDK_Sessions();
@@ -169,6 +177,8 @@ namespace sdk
         bool send_sessions_search_response(Network::peer_t const& peerid, Sessions_Search_response_pb* resp);
         bool send_session_join_request(session_state_t* session);
         bool send_session_join_response(Network::peer_t const& peerid, Session_Join_Response_pb* resp);
+        bool send_session_invite(Network::peer_t const& peerid, Session_Invite_pb* invite);
+        bool send_session_invite_response(Network::peer_t const& peerid, Session_Invite_Response_pb* invite);
 
         // Receive Network messages
         bool on_session_info_request(Network_Message_pb const& msg, Session_Info_Request_pb const& req);
@@ -177,6 +187,8 @@ namespace sdk
         bool on_sessions_search(Network_Message_pb const& msg, Sessions_Search_pb const& search);
         bool on_session_join_request(Network_Message_pb const& msg, Session_Join_Request_pb const& req);
         bool on_session_join_response(Network_Message_pb const& msg, Session_Join_Response_pb const& resp);
+        bool on_session_invite(Network_Message_pb const& msg, Session_Invite_pb const& invite);
+        bool on_session_invite_response(Network_Message_pb const& msg, Session_Invite_Response_pb const& resp);
 
         virtual bool CBRunFrame();
         virtual bool RunNetwork(Network_Message_pb const& msg);
