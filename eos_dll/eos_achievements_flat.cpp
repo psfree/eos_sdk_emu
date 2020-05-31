@@ -69,6 +69,52 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Achievements_GetAchievementDefinitionCount(EOS_HA
 }
 
 /**
+ * Fetches an achievement definition from a given index.
+ *
+ * @param Options Structure containing the index being accessed
+ * @param OutDefinition The achievement definition for the given index, if it exists and is valid, use EOS_Achievements_Definition_Release when finished
+ *
+ * @see EOS_Achievements_DefinitionV2_Release
+ *
+ * @return EOS_Success if the information is available and passed out in OutDefinition
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the achievement definition is not found
+ */
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionV2ByIndex(EOS_HAchievements Handle, const EOS_Achievements_CopyAchievementDefinitionV2ByIndexOptions* Options, EOS_Achievements_DefinitionV2** OutDefinition)
+{
+    TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
+    return EOS_EResult::EOS_NotFound;
+}
+
+/**
+ * Fetches an achievement definition from a given achievement ID.
+ *
+ * @param Options Structure containing the achievement ID being accessed
+ * @param OutDefinition The achievement definition for the given achievement ID, if it exists and is valid, use EOS_Achievements_Definition_Release when finished
+ *
+ * @see EOS_Achievements_DefinitionV2_Release
+ *
+ * @return EOS_Success if the information is available and passed out in OutDefinition
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the achievement definition is not found
+ */
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionV2ByAchievementId(EOS_HAchievements Handle, const EOS_Achievements_CopyAchievementDefinitionV2ByAchievementIdOptions* Options, EOS_Achievements_DefinitionV2** OutDefinition)
+{
+    TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
+    auto pInst = reinterpret_cast<EOSSDK_Achievements*>(Handle);
+    return EOS_EResult::EOS_NotFound;
+}
+
+/**
  * Query for a list of achievements for a specific player, including progress towards completion for each achievement.
  *
  * @param Options Structure containing information about the player whose achievements we're retrieving.
