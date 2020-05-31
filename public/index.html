@@ -1,17 +1,64 @@
 <html>
   <head>
+    <style>
+	  a:link {
+	    text-decoration: none;
+		color: gray;
+	  }
+	  a:visited {
+	    text-decoration: none;
+		color: gray;
+	  }
+	  a:hover {
+	    text-decoration: underline;
+		color: gold;
+	  }
+	  a:active {
+	    text-decoration: underline;
+		color: gold;
+	  }
+	</style>
   </head>
-  <body>
-    <h3>Downloads</h3>
-    <div>
-      <a href="X_LATEST_BUILD_URL_X">Latest Build From Git</a>
-    </div>
-    <div>
-      <a href="https://gitlab.com/Nemirtingas/nemirtingas_epic_emu/releases">Releases</a>
-    </div>
-    <h3>Source repository</h3>
-    <div>
-      <a href="https://gitlab.com/Nemirtingas/nemirtingas_epic_emu/">Sources</a>
-    </div>
+  <body style="text-align: center; background-color: black; color: white;">
+    <div style="display: inline-block; text-align: left; width: 1280px">
+	  <div style="text-align: center;">
+	    <a href="https://gitlab.com/Nemirtingas/nemirtingas_epic_emu/">
+	      <img src="eos_logo.png" style="width: 256px; height: 256px; display: inline-block;"/>
+		</a>
+	  </div>
+	  <div style="display: inline">
+	    <h3>Downloads</h3>
+        <a href="X_LATEST_BUILD_URL_X">Latest Build From Git</a>
+      </div>
+      <div>
+        <a href="https://gitlab.com/Nemirtingas/nemirtingas_epic_emu/-/releases">Releases</a>
+      </div>
+      <div>
+	    <h3>Source repository</h3>
+        <a href="https://gitlab.com/Nemirtingas/nemirtingas_epic_emu/">Sources</a>
+      </div>
+	  <div>
+        <h3 style="text-align: center">How To</h3>
+		<div>
+			To use it, you will need to do 2 things:<br/>
+				Find the api library for your OS, basically:<br/>
+				<ul>
+					<li>Linux: libEOSSDK-Linux-Shipping.so</li>
+					<li>MacOSX: libEOSSDK-Mac-Shipping.dylib</li>
+					<li>Windows: EOSSDK-Win32-Shipping.dll or EOSSDK-Win64-Shipping.dll</li>
+				</ul>
+			<br/>
+			Make a backup and replace it with mine.<br/>
+			Create the emulator settings next to your game's executable. Some games use a launcher (not the epic game launcher, an intermediate launcher) to start the game, so you must find what is the final executable, not the launcher.<br/>
+			For example, on Satisfactory, there is a FactoryGame.exe, thats the launcher, the game is located in FactoryGame/Binaries/Win64, thats where you must create the emulator config.<br/>
+			<br/>
+			<br/>
+			An example config file can be found here: <a href="https://gitlab.com/Nemirtingas/nemirtingas_epic_emu/-/blob/master/examples/NemirtingasEpicEmu.json">NemirtingasEpicEmu.json</a><br/>
+			<br/>
+			If you don't provide an epicid or if your currently configured epicid is invalid, it will be regenerated with your username as seed.<br/>
+			If you want to have an unique epicid, remove the epicid from the .json and setup your username. The generated id will be identical for the same username.
+        </div>
+	  </div>
+	</div>
   </body>
 </html>
