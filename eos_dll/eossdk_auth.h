@@ -26,6 +26,8 @@ namespace sdk
     class EOSSDK_Auth :
         public IRunFrame
     {
+        bool _logged_in;
+
     public:
         EOSSDK_Auth();
         ~EOSSDK_Auth();

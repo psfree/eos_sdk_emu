@@ -25,7 +25,8 @@
 namespace sdk
 {
 
-EOSSDK_Auth::EOSSDK_Auth()
+EOSSDK_Auth::EOSSDK_Auth():
+    _logged_in(false)
 {
     GetCB_Manager().register_callbacks(this);
 }
@@ -67,6 +68,8 @@ void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, 
         res->done = true;
 
         GetCB_Manager().add_callback(this, res);
+
+        _logged_in = true;
     }
 }
 
@@ -119,7 +122,7 @@ int32_t EOSSDK_Auth::GetLoggedInAccountsCount()
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    return 1;
+    return (_logged_in ? 1 : 0);
 }
 
 EOS_EpicAccountId EOSSDK_Auth::GetLoggedInAccountByIndex(int32_t Index)
