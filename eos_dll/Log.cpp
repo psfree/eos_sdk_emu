@@ -22,36 +22,30 @@
 #include "Log.h"
 #include "common_includes.h"
 
-// D:\Jeux\Epic Games\SatisfactoryExperimental\FactoryGame\Binaries\Win64\FactoryGame-Win64-Shipping.exe
-// FactoryGame -AUTH_LOGIN=unused -AUTH_PASSWORD=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb -AUTH_TYPE=exchangecode -epicapp=CrabTest -epicenv=Prod -EpicPortal  -epicusername="a name" -epicuserid=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -epiclocale=fr
-// D:\Jeux\Epic Games\SatisfactoryExperimental\FactoryGame\Binaries\Win64
-
 decltype(Log::_log_level) Log::_log_level = Log::LogLevel::OFF;
 
 LOCAL_API bool _trace(const char* format, va_list argptr)
 {
-    //va_list argptr;
-    //va_start(argptr, format);
-
+    static std::ofstream log_file("nemirtingassteamemu.log", std::ios::trunc | std::ios::out);
     std::string fmt = format;
     if (*fmt.rbegin() != '\n')
         fmt += '\n';
 
+    va_list argptr2;
+    va_copy(argptr2, argptr);
+
+    int len = vsnprintf(nullptr, 0, fmt.c_str(), argptr);
+    char* buffer = new char[++len];
+
+    vsnprintf(buffer, len, fmt.c_str(), argptr2);
+    fprintf(stderr, buffer);
+    va_end(argptr);
+    va_end(argptr2);
+
 #if defined(__WINDOWS__)
     if (IsDebuggerPresent())
     {
-        va_list argptr2;
-        va_copy(argptr2, argptr);
-        int len = vsnprintf(nullptr, 0, fmt.c_str(), argptr);
-
-        char* buffer = new char[++len];
-        vsnprintf(buffer, len, fmt.c_str(), argptr2);
-
-        va_end(argptr);
-        va_end(argptr2);
-
         OutputDebugString(buffer);
-        delete[]buffer;
     }
     else
     {
@@ -61,23 +55,14 @@ LOCAL_API bool _trace(const char* format, va_list argptr)
             AllocConsole();
             freopen("CONOUT$", "w", stdout);
         }
-        va_list argptr2;
-        va_copy(argptr2, argptr);
-        int len = vsnprintf(nullptr, 0, fmt.c_str(), argptr);
-
-        char* buffer = new char[++len];
-        vsnprintf(buffer, len, fmt.c_str(), argptr2);
-
-        va_end(argptr);
-        va_end(argptr2);
-
-        std::cout << buffer;
     }
 #endif
-    {
-        //vfprintf(stderr, fmt.c_str(), argptr);
-    }
 
+    log_file << buffer;
+    log_file.flush();
+    std::cout << buffer;
+
+    delete[]buffer;
     return true;
 }
 
