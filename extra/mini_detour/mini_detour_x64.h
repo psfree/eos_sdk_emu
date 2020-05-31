@@ -187,22 +187,22 @@ struct
     {false, 0, "0xad"}, // 0xad
     {false, 0, "0xae"}, // 0xae
     {false, 0, "0xaf"}, // 0xaf
-    {false, 0, "0xb0"}, // 0xb0
-    {false, 0, "0xb1"}, // 0xb1
-    {false, 0, "0xb2"}, // 0xb2
-    {false, 0, "0xb3"}, // 0xb3
-    {false, 0, "0xb4"}, // 0xb4
-    {false, 0, "0xb5"}, // 0xb5
-    {false, 0, "0xb6"}, // 0xb6
-    {false, 0, "0xb7"}, // 0xb7
-    {false, 0, "0xb8"}, // 0xb8
-    {false, 0, "0xb9"}, // 0xb9
-    {false, 0, "0xba"}, // 0xba
-    {false, 0, "0xbb"}, // 0xbb
-    {false, 0, "0xbc"}, // 0xbc
-    {false, 0, "0xbd"}, // 0xbd
-    {false, 0, "0xbe"}, // 0xbe
-    {false, 0, "0xbf"}, // 0xbf
+    {false, 2, "MOV     al          imm8"}    , // 0xb0
+    {false, 2, "MOV     cl          imm8"}    , // 0xb1
+    {false, 2, "MOV     dl          imm8"}    , // 0xb2
+    {false, 2, "MOV     bl          imm8"}    , // 0xb3
+    {false, 2, "MOV     ah          imm8"}    , // 0xb4
+    {false, 2, "MOV     ch          imm8"}    , // 0xb5
+    {false, 2, "MOV     dh          imm8"}    , // 0xb6
+    {false, 2, "MOV     bh          imm8"}    , // 0xb7
+    {false, 5, "MOV     eax         imm32"}   , // 0xb8
+    {false, 5, "MOV     ecx         imm32"}   , // 0xb9
+    {false, 5, "MOV     edx         imm32"}   , // 0xba
+    {false, 5, "MOV     ebx         imm32"}   , // 0xbb
+    {false, 5, "MOV     esp         imm32"}   , // 0xbc
+    {false, 5, "MOV     ebp         imm32"}   , // 0xbd
+    {false, 5, "MOV     esi         imm32"}   , // 0xbe
+    {false, 5, "MOV     edi         imm32"}   , // 0xbf
     {false, 0, "0xc0"}, // 0xc0
     {false, 0, "0xc1"}, // 0xc1
     {false, 3, "RETN    imm16"}                    , // 0xc2
