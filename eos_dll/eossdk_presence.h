@@ -32,7 +32,7 @@ namespace sdk
 
         Presence_Info_pb infos;
 
-        std::recursive_mutex local_mutex;
+        std::mutex _local_mutex;
 
     public:
         EOS_EResult SetStatus(const EOS_PresenceModification_SetStatusOptions* Options);

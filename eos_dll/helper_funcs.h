@@ -31,9 +31,6 @@ using global_lock_t = std::lock_guard<std::recursive_mutex>;
 LOCAL_API std::recursive_mutex& global_mutex();
 #define GLOBAL_LOCK() global_lock_t __global_lock(global_mutex())
 
-using local_lock_t = std::lock_guard<std::recursive_mutex>;
-#define LOCAL_LOCK() local_lock_t __local_lock(this->local_mutex)
-
 LOCAL_API std::random_device& get_rd();
 LOCAL_API std::mt19937_64& get_gen();
 
