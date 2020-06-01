@@ -394,14 +394,73 @@ bool is_opcode_terminating_function(uint8_t opcode)
     return false;
 }
 
-bool is_opcode_filler(uint8_t opcode)
+int is_opcode_filler(uint8_t* pCode)
 {
-    switch (opcode)
+    if (pCode[0] == 0x90)
     {
-        case 0x90: // NOP
-            return true;
+        return 1;
     }
-    return false;
+    if (pCode[0] == 0x66 && pCode[1] == 0x90)
+    {
+        return 2;
+    }
+    if (pCode[0] == 0x0F && pCode[1] == 0x1F && pCode[2] == 0x00)
+    {
+        return 3;
+    }
+    if (pCode[0] == 0x0F && pCode[1] == 0x1F && pCode[2] == 0x40 &&
+        pCode[3] == 0x00)
+    {
+        return 4;
+    }
+    if (pCode[0] == 0x0F && pCode[1] == 0x1F && pCode[2] == 0x44 &&
+        pCode[3] == 0x00 && pCode[4] == 0x00) {
+        return 5;
+    }
+    if (pCode[0] == 0x66 && pCode[1] == 0x0F && pCode[2] == 0x1F &&
+        pCode[3] == 0x44 && pCode[4] == 0x00 && pCode[5] == 0x00)
+    {
+        return 6;
+    }
+    if (pCode[0] == 0x0F && pCode[1] == 0x1F && pCode[2] == 0x80 &&
+        pCode[3] == 0x00 && pCode[4] == 0x00 && pCode[5] == 0x00 &&
+        pCode[6] == 0x00)
+    {
+        return 7;
+    }
+    if (pCode[0] == 0x0F && pCode[1] == 0x1F && pCode[2] == 0x84 &&
+        pCode[3] == 0x00 && pCode[4] == 0x00 && pCode[5] == 0x00 &&
+        pCode[6] == 0x00 && pCode[7] == 0x00)
+    {
+        return 8;
+    }
+    if (pCode[0] == 0x66 && pCode[1] == 0x0F && pCode[2] == 0x1F &&
+        pCode[3] == 0x84 && pCode[4] == 0x00 && pCode[5] == 0x00 &&
+        pCode[6] == 0x00 && pCode[7] == 0x00 && pCode[8] == 0x00)
+    {
+        return 9;
+    }
+    if (pCode[0] == 0x66 && pCode[1] == 0x66 && pCode[2] == 0x0F &&
+        pCode[3] == 0x1F && pCode[4] == 0x84 && pCode[5] == 0x00 &&
+        pCode[6] == 0x00 && pCode[7] == 0x00 && pCode[8] == 0x00 &&
+        pCode[9] == 0x00)
+    {
+        return 10;
+    }
+    if (pCode[0] == 0x66 && pCode[1] == 0x66 && pCode[2] == 0x66 &&
+        pCode[3] == 0x0F && pCode[4] == 0x1F && pCode[5] == 0x84 &&
+        pCode[6] == 0x00 && pCode[7] == 0x00 && pCode[8] == 0x00 &&
+        pCode[9] == 0x00 && pCode[10] == 0x00)
+    {
+        return 11;
+    }
+    // int 3.
+    if (pCode[0] == 0xcc)
+    {
+        return 1;
+    }
+
+    return 0;
 }
 
 bool read_mod_reg_rm_opcode(uint8_t** ppCode, bool ignore_displacement)
@@ -484,93 +543,101 @@ int find_space_for_trampoline(uint8_t** func, int bytes_needed, bool ignore_jump
         if (is_opcode_terminating_function(*pCode))
             break;
 
-        LOG(Log::LogLevel::DEBUG, "Opcode %s, base_size: %d, has_r_m: %d", s_opcodes[*pCode].desc, s_opcodes[*pCode].base_size, (int)s_opcodes[*pCode].has_r_m);
-
-        if (s_opcodes[*pCode].has_r_m)
+        code_len = is_opcode_filler(pCode);
+        if (code_len)
         {
-            auto bkpCode = pCode;
-            search = read_mod_reg_rm_opcode(&pCode, ignore_jump);
-            LOG(Log::LogLevel::DEBUG, "Read %d bytes for opcode 0x%02X", pCode - bkpCode, (unsigned int)*bkpCode);
+            pCode += code_len;
         }
-        else if (s_opcodes[*pCode].base_size)
+        else // Not filler
         {
-            switch (*pCode)
+            LOG(Log::LogLevel::DEBUG, "Opcode %s, base_size: %d, has_r_m: %d", s_opcodes[*pCode].desc, s_opcodes[*pCode].base_size, (int)s_opcodes[*pCode].has_r_m);
+
+            if (s_opcodes[*pCode].has_r_m)
             {
-#ifdef __64BITS__
-            case 0x40: // REX
-            case 0x41: // REX.B
-            case 0x42: // REX.X
-            case 0x43: // REX.XB
-            case 0x44: // REX.R
-            case 0x45: // REX.RB
-            case 0x46: // REX.RX
-            case 0x47: // REX.RXB
-            case 0x48: // REX.W
-            case 0x49: // REX.WB
-            case 0x4a: // REX.WX
-            case 0x4b: // REX.WXB
-            case 0x4c: // REX.WR
-            case 0x4d: // REX.WRB
-            case 0x4e: // REX.WRX
-            case 0x4f: // REX.WRXB
-                pCode += s_opcodes[*pCode].base_size;
-                continue; // REX works only with the next opcode, don't stop searching after a REX
-#endif
-            case 0xe9: // JMP
-            case 0xe8: // CALL
-                // JMP or CALL is forbidden for trampolines
-                if (pCode == *func)
-                {// If jmp is the first opcode, we can override it
-                    pCode += s_opcodes[*pCode].base_size;
-                }
-                else
+                auto bkpCode = pCode;
+                search = read_mod_reg_rm_opcode(&pCode, ignore_jump);
+                LOG(Log::LogLevel::DEBUG, "Read %d bytes for opcode 0x%02X", pCode - bkpCode, (unsigned int)*bkpCode);
+            }
+            else if (s_opcodes[*pCode].base_size)
+            {
+                switch (*pCode)
                 {
-                    if (ignore_jump)
-                    {
+#ifdef __64BITS__
+                    case 0x40: // REX
+                    case 0x41: // REX.B
+                    case 0x42: // REX.X
+                    case 0x43: // REX.XB
+                    case 0x44: // REX.R
+                    case 0x45: // REX.RB
+                    case 0x46: // REX.RX
+                    case 0x47: // REX.RXB
+                    case 0x48: // REX.W
+                    case 0x49: // REX.WB
+                    case 0x4a: // REX.WX
+                    case 0x4b: // REX.WXB
+                    case 0x4c: // REX.WR
+                    case 0x4d: // REX.WRB
+                    case 0x4e: // REX.WRX
+                    case 0x4f: // REX.WRXB
                         pCode += s_opcodes[*pCode].base_size;
-                    }
+                        continue; // REX works only with the next opcode, don't stop searching after a REX
+#endif
+                    case 0xe9: // JMP
+                    case 0xe8: // CALL
+                        // JMP or CALL is forbidden for trampolines
+                        if (pCode == *func)
+                        {// If jmp is the first opcode, we can override it
+                            pCode += s_opcodes[*pCode].base_size;
+                        }
+                        else
+                        {
+                            if (ignore_jump)
+                            {
+                                pCode += s_opcodes[*pCode].base_size;
+                            }
+                        }
+
+                    case 0xeb: // SHORT JMP
+                        search = false;
+                        break;
+
+                    default:
+                        pCode += s_opcodes[*pCode].base_size;
                 }
-
-            case 0xeb: // SHORT JMP
-                search = false;
-                break;
-
-            default:
-                pCode += s_opcodes[*pCode].base_size;
             }
-        }
-        else
-        {
-            switch (*pCode)
+            else
             {
-                //case EXTENDED:
-                //    //std::cerr << "IMPORT_JUMP is not handled" << std::endl;
-                //    if (pCode[1] == 0x25) // This is an imported function
-                //    { // Get the true function call
-                //        //pCode = (uint8_t*)*(pCode+2);
-                //        //startCode = pCode;
-                //        // For now disable this case
-                //        if (!ignore_jump)
-                //            search = false;
-                //    }
-                //    else
-                //    {
-                //        if (!ignore_jump)
-                //            search = false;
-                //    }
-                //    break;
+                switch (*pCode)
+                {
+                    case 0xff: // Extended
+                    {
+                        if (pCode[1] == 0x25) // This is an imported function
+                        {   // Get the true function call
+                        #ifdef __64BITS__
+                            pCode = *(uint8_t**)(pCode + 6 + *(int32_t*)(pCode + 2));
+                        #else
+                            pCode = *(uint8_t**)(*(uint8_t**)(pCode + 2));
+                        #endif
 
-            default:
-                LOG(Log::LogLevel::DEBUG, "Unknown opcode 0x%02X", (unsigned int)*pCode);
-                search = false;
+                            *func = pCode;
+                            // For now disable this case
+                            //if (!ignore_jump)
+                            //    search = false;
+                        }
+                        else
+                        {
+                            if (!ignore_jump)
+                                search = false;
+                        }
+                    }
+                    break;
+
+                    default:
+                        LOG(Log::LogLevel::DEBUG, "Unknown opcode 0x%02X", (unsigned int)*pCode);
+                        search = false;
+                }
             }
-        }
-
-        while (is_opcode_filler(*pCode))
-        {// Eat filler opcodes like NOP
-            ++pCode;
-        }
-
+        } // Not filler
         if ((pCode - *func) >= bytes_needed && search)
         {
             search = false;
