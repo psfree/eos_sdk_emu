@@ -784,7 +784,59 @@ void EOSSDK_Sessions::UnregisterPlayers(const EOS_Sessions_UnregisterPlayersOpti
     if (CompletionDelegate == nullptr)
         return;
 
-    
+    pFrameResult_t res(new FrameResult);
+
+    EOS_Sessions_UnregisterPlayersCallbackInfo& upci = res->CreateCallback<EOS_Sessions_UnregisterPlayersCallbackInfo>((CallbackFunc)CompletionDelegate);
+    upci.ClientData = ClientData;
+
+    if (Options->SessionName == nullptr || Options->PlayersToUnregister == nullptr || Options->PlayersToUnregisterCount == 0)
+    {
+        upci.ResultCode = EOS_EResult::EOS_InvalidParameters;
+    }
+    else
+    {
+        session_state_t* session = get_session_by_name(Options->SessionName);
+        if (session == nullptr)
+        {
+            upci.ResultCode = EOS_EResult::EOS_NotFound;
+        }
+        else
+        {
+            if (is_player_registered(GetEOS_Connect().product_id()->to_string(), session))
+            {
+                auto registered_players = session->infos.registered_players_size();
+                for (uint32_t i = 0; i < Options->PlayersToUnregisterCount; ++i)
+                {
+                    unregister_player_from_session(Options->PlayersToUnregister[i]->to_string(), session);
+                }
+                if (registered_players == session->infos.registered_players_size())
+                {
+                    upci.ResultCode = EOS_EResult::EOS_NoChange;
+                }
+                else
+                {
+                    upci.ResultCode = EOS_EResult::EOS_Success;
+
+                    Network_Message_pb msg;
+                    Session_Message_pb* session_pb = new Session_Message_pb;
+
+                    session_pb->set_allocated_session_info(&session->infos);
+                    msg.set_allocated_session(session_pb);
+
+                    send_to_all_members(msg, session);
+
+                    session_pb->release_session_info();
+                }
+            }
+            else
+            {
+                upci.ResultCode = EOS_EResult::EOS_Sessions_NotAllowed;
+            }
+        }
+    }
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
 }
 
 /**
