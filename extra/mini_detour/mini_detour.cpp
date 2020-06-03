@@ -51,12 +51,15 @@
 
 #elif defined(__APPLE__)
 #include <mach/mach_init.h>
-#include <mach/vm_map.h>
-#include <sys/mman.h>
+#include <mach/mach_vm.h>
+#include <mach/vm_prot.h>
 #include <unistd.h>
 #include <errno.h>
 
 #endif
+
+
+inline void* page_addr(void* addr, size_t page_size);
 
 //------------------------------------------------------------------------------//
 // Helper funcs
@@ -180,16 +183,17 @@ bool mem_protect(void* addr, size_t size, size_t rights)
     return mprotect(addr, size, rights) == 0;
 }
 
+void memory_free(void* mem_addr, size_t size)
+{
+    if (mem_addr != nullptr)
+        munmap(mem_addr, size);
+}
+
 void* memory_alloc(void* address_hint, size_t size, mem_protect_rights rights)
 {
     // TODO: Here find a way to allocate moemry near the address_hint.
     // Sometimes you get address too far for a relative jmp
     return mmap(address_hint, size, rights, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-}
-
-void memory_free(void* mem_addr, size_t size)
-{
-    munmap(mem_addr, size);
 }
 
 int flush_instruction_cache(void* pBase, size_t size)
@@ -224,6 +228,12 @@ bool mem_protect(void* addr, size_t size, size_t rights)
 {
     DWORD oldProtect;
     return VirtualProtect(addr, size, rights, &oldProtect) != FALSE;
+}
+
+void memory_free(void* mem_addr, size_t size)
+{
+    if (mem_addr != nullptr)
+        VirtualFree(mem_addr, 0, MEM_RELEASE);
 }
 
 void* memory_alloc(void* address_hint, size_t size, mem_protect_rights rights)
@@ -277,11 +287,6 @@ void* memory_alloc(void* address_hint, size_t size, mem_protect_rights rights)
     return nullptr;
 }
 
-void memory_free(void* mem_addr, size_t size)
-{
-    VirtualFree(mem_addr, 0, MEM_RELEASE);
-}
-
 int flush_instruction_cache(void* pBase, size_t size)
 {
     return FlushInstructionCache(GetCurrentProcess(), pBase, size);
@@ -290,12 +295,12 @@ int flush_instruction_cache(void* pBase, size_t size)
 #elif defined(__APPLE__)
 enum mem_protect_rights
 {
-    mem_r = PROT_READ,
-    mem_w = PROT_WRITE,
-    mem_x = PROT_EXEC,
-    mem_rw = PROT_WRITE | PROT_READ,
-    mem_rx = PROT_WRITE | PROT_EXEC,
-    mem_rwx = PROT_WRITE | PROT_READ | PROT_EXEC,
+    mem_r = VM_PROT_READ,
+    mem_w = VM_PROT_WRITE,
+    mem_x = VM_PROT_EXECUTE,
+    mem_rw = VM_PROT_WRITE | VM_PROT_READ,
+    mem_rx = VM_PROT_WRITE | VM_PROT_EXECUTE,
+    mem_rwx = VM_PROT_WRITE | VM_PROT_READ | VM_PROT_EXECUTE,
 };
 
 size_t page_size()
@@ -310,28 +315,24 @@ size_t page_size()
 
 bool mem_protect(void* addr, size_t size, size_t rights)
 {
-    return mprotect(addr, size, rights) == 0;
-}
-
-void* memory_alloc(void* address_hint, size_t size, mem_protect_rights rights)
-{
-    //vm_address_t address = (vm_address_t)address_hint;
-    //vm_offset_t byteSize = (vm_offset_t)size;
-
-    //kern_return_t result = vm_allocate((vm_map_t)mach_task_self(),
-    //                                    &address,
-    //                                    byteSize,
-    //                                    VM_FLAGS_FIXED);
-
-    return mmap(address_hint, size, rights, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    return mach_vm_protect(mach_task_self(), (mach_vm_address_t)addr, size, FALSE, rights) == KERN_SUCCESS;
 }
 
 void memory_free(void* mem_addr, size_t size)
 {
-    munmap(mem_addr, size);
-    //kern_return_t result = vm_deallocate((vm_map_t)mach_task_self(),
-    //                                    &address,
-    //
+    if (mem_addr != nullptr)
+        mach_vm_deallocate(mach_task_self(), (mach_vm_address_t)mem_addr, size);
+}
+
+
+void* memory_alloc(void* address_hint, size_t size, mem_protect_rights rights)
+{
+    mach_vm_address_t address = (mach_vm_address_t)page_addr(address_hint, page_size());
+
+    if (mach_vm_allocate(mach_task_self(), &address, (mach_vm_size_t)size, VM_FLAGS_FIXED) == KERN_SUCCESS)
+        return (void*)address;
+
+    return nullptr;
 }
 
 int flush_instruction_cache(void* pBase, size_t size)
@@ -341,12 +342,15 @@ int flush_instruction_cache(void* pBase, size_t size)
 
 #endif
 
-size_t region_size()
+inline size_t region_size()
 {
     return page_size();
 }
 
-static uint8_t max_trampolines_in_region = region_size() / sizeof(trampoline_t);
+inline size_t max_trampolines_in_region()
+{
+    return region_size() / sizeof(trampoline_t);
+}
 
 inline void* library_address_by_handle(void* library)
 {
@@ -634,6 +638,8 @@ int find_space_for_trampoline(uint8_t** func, int bytes_needed, bool ignore_jump
 
                     default:
                         LOG(Log::LogLevel::DEBUG, "Unknown opcode 0x%02X", (unsigned int)*pCode);
+                        LOG(Log::LogLevel::DEBUG, "Next opcodes: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
+                            pCode[1], pCode[2], pCode[3], pCode[4], pCode[5], pCode[6], pCode[7], pCode[8]);
                         search = false;
                 }
             }
@@ -717,18 +723,13 @@ trampoline_t* alloc_new_trampoline_region(void* hint_addr, bool limit_to_2gb)
     trampoline_region_t region;
     trampoline_t* trampoline = nullptr;
 
-    int32_t increment = 100 * page_size();
-
-    for (int i = 0; i < 100; ++i)
+    for (int i = 0; i < 10000000; ++i)
     {
         trampoline = reinterpret_cast<trampoline_t*>(memory_alloc(hint_addr, region_size(), mem_protect_rights::mem_rwx));
         if (!limit_to_2gb || std::abs((int64_t)trampoline - (int64_t)hint_addr) <= 0x7FFFFFFF)
             break;
 
-        if ((void*)trampoline > hint_addr)
-            hint_addr = reinterpret_cast<uint8_t*>(hint_addr) - increment;
-        else
-            hint_addr = reinterpret_cast<uint8_t*>(hint_addr) + increment;
+        hint_addr = reinterpret_cast<uint8_t*>(hint_addr) - page_size();
 
         memory_free(trampoline, region_size());
         trampoline = nullptr;
@@ -758,7 +759,7 @@ trampoline_t* get_free_trampoline(void* originalFuncAddr, bool limit_to_2gb)
     trampoline_t* res = nullptr;
     auto it = std::find_if(trampoline_regions.begin(), trampoline_regions.end(), [originalFuncAddr, limit_to_2gb](trampoline_region_t& region)
     {
-        if (region.numTrampolines == max_trampolines_in_region || // If the trampoline region is full
+        if (region.numTrampolines == max_trampolines_in_region() || // If the trampoline region is full
             (limit_to_2gb && (std::abs((int64_t)region.trampolines_start - (int64_t)originalFuncAddr) > 0x7FFFFFFFul))) // Or the trampoline address isn't in the relative jmp range (max-int32_t)
             return false; // Don't select it
         return true; // We have a free trampoline to use
@@ -774,7 +775,7 @@ trampoline_t* get_free_trampoline(void* originalFuncAddr, bool limit_to_2gb)
     res = it->next_free_trampoline;
 
     trampoline_t* next_new_trampoline = res + 1;
-    if (it->numTrampolines != max_trampolines_in_region)
+    if (it->numTrampolines != max_trampolines_in_region())
     {
         while (next_new_trampoline->nOriginalBytes != 0)
         {
