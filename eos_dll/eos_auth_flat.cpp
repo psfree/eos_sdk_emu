@@ -201,14 +201,39 @@ EOS_DECLARE_FUNC(EOS_EResult) CLANG_GCC_DONT_OPTIMIZE EOS_Auth_CopyUserAuthToken
  *
  * @return handle representing the registered callback
  */
-EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Auth_AddNotifyLoginStatusChanged(EOS_HAuth Handle, const EOS_Auth_AddNotifyLoginStatusChangedOptions* Options, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification)
+EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Auth_AddNotifyLoginStatusChangedOld(EOS_HAuth Handle, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification)
 {
     if (Handle == nullptr)
         return EOS_INVALID_NOTIFICATIONID;
 
     auto pInst = reinterpret_cast<EOSSDK_Auth*>(Handle);
-    return pInst->AddNotifyLoginStatusChanged(Options, ClientData, Notification);
+    return pInst->AddNotifyLoginStatusChangedOld(ClientData, Notification);
 }
+
+EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Auth_AddNotifyLoginStatusChangedNew(EOS_HAuth Handle, const EOS_Auth_AddNotifyLoginStatusChangedOptions* Options, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification)
+{
+    if (Handle == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
+    auto pInst = reinterpret_cast<EOSSDK_Auth*>(Handle);
+    return pInst->AddNotifyLoginStatusChangedNew(Options, ClientData, Notification);
+}
+
+#ifdef _MSC_VER
+#pragma optimize("", off)
+#endif
+EOS_DECLARE_FUNC(EOS_NotificationId) CLANG_GCC_DONT_OPTIMIZE EOS_Auth_AddNotifyLoginStatusChanged()
+{
+    // Build rewrittable opcodes, need 14 for x64 absolute jmp and 5 for x86 relative jmp
+    EOS_Auth_AddNotifyLoginStatusChangedOld(nullptr, nullptr, nullptr);
+    EOS_Auth_AddNotifyLoginStatusChangedOld(nullptr, nullptr, nullptr);
+    EOS_Auth_AddNotifyLoginStatusChangedOld(nullptr, nullptr, nullptr);
+    EOS_Auth_AddNotifyLoginStatusChangedOld(nullptr, nullptr, nullptr);
+    return EOS_INVALID_NOTIFICATIONID;
+}
+#ifdef _MSC_VER
+#pragma optimize("", on)
+#endif
 
 /**
  * Unregister from receiving login status updates.

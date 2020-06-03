@@ -142,7 +142,7 @@ EOS_ELoginStatus EOSSDK_Auth::GetLoginStatus(EOS_EpicAccountId LocalUserId)
     GLOBAL_LOCK();
 
     if (LocalUserId == Settings::Inst().userid)
-        return EOS_ELoginStatus::EOS_LS_LoggedIn;
+        return (_logged_in ? EOS_ELoginStatus::EOS_LS_LoggedIn : EOS_ELoginStatus::EOS_LS_NotLoggedIn);
 
     return EOS_ELoginStatus::EOS_LS_NotLoggedIn;
 }
@@ -203,7 +203,16 @@ EOS_EResult EOSSDK_Auth::CopyUserAuthToken(const EOS_Auth_CopyUserAuthTokenOptio
     return EOS_EResult::EOS_NotFound;
 }
 
-EOS_NotificationId EOSSDK_Auth::AddNotifyLoginStatusChanged(const EOS_Auth_AddNotifyLoginStatusChangedOptions* Options, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification)
+EOS_NotificationId EOSSDK_Auth::AddNotifyLoginStatusChangedOld(void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification)
+{
+    TRACE_FUNC();
+    EOS_Auth_AddNotifyLoginStatusChangedOptions options;
+    options.ApiVersion = EOS_AUTH_ADDNOTIFYLOGINSTATUSCHANGED_API_001;
+
+    return AddNotifyLoginStatusChangedNew(&options, ClientData, Notification);
+}
+
+EOS_NotificationId EOSSDK_Auth::AddNotifyLoginStatusChangedNew(const EOS_Auth_AddNotifyLoginStatusChangedOptions* Options, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification)
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
@@ -215,9 +224,6 @@ EOS_NotificationId EOSSDK_Auth::AddNotifyLoginStatusChanged(const EOS_Auth_AddNo
 
     EOS_Auth_LoginStatusChangedCallbackInfo& lscci = res->CreateCallback<EOS_Auth_LoginStatusChangedCallbackInfo>((CallbackFunc)Notification);
     lscci.ClientData = ClientData;
-    lscci.CurrentStatus = EOS_ELoginStatus::EOS_LS_LoggedIn;
-    lscci.PrevStatus = EOS_ELoginStatus::EOS_LS_LoggedIn;
-    lscci.LocalUserId = Settings::Inst().userid;
 
     return GetCB_Manager().add_notification(this, res);
 }
