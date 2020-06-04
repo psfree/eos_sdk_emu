@@ -9,8 +9,6 @@
  * All Lobby Interface calls take a handle of type EOS_HLobby as the first parameter.
  * This handle can be retrieved from a EOS_HPlatform handle by using the EOS_Platform_GetLobbyInterface function.
  *
- * NOTE: At this time, this feature is only available for products that are part of the Epic Games store.
- *
  * @see EOS_Platform_GetLobbyInterface
  */
 

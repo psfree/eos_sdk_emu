@@ -46,7 +46,12 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_EResult_IsOperationComplete(EOS_EResult Result);
  */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_ByteArray_ToString(const uint8_t* ByteArray, const uint32_t Length, char* OutBuffer, uint32_t* InOutBufferLength);
 
-/** A handle to a user's Epic account ID (store related account ecosystem) */
+/**
+ * A handle to a user's Epic account ID
+ * This id is associated with a specific login associated with Epic Account Services
+ *
+ * @see EOS_Auth_Login
+ */
 typedef struct EOS_EpicAccountIdDetails* EOS_EpicAccountId;
 
 /** 
@@ -85,7 +90,13 @@ EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_EpicAccountId_FromString(const char* Acc
 /** A character buffer of this size is large enough to fit a successful output of EOS_EpicAccountId_ToString */
 #define EOS_EPICACCOUNTID_MAX_LENGTH 128
 
-/** A handle to a user's Epic account ID (game service related account ecosystem) */
+/**
+ * A handle to a user's product user id (game services related ecosystem)
+ * This id is associated with any of the external account providers (of which Epic Account Services is one)
+ *
+ * @see EOS_Connect_Login
+ * @see EOS_EExternalCredentialType
+ */
 typedef struct EOS_ProductUserIdDetails* EOS_ProductUserId;
 
 /**

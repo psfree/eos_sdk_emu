@@ -30,7 +30,7 @@ enum { k_iAchievementsCallbacks = 1000 };
 #define EOS_Achievements_CopyAchievementDefinitionV2ByAchievementIdOptions EOS_Achievements_CopyAchievementDefinitionV2ByAchievementIdOptions002
 #define EOS_Achievements_AddNotifyAchievementsUnlockedV2Options            EOS_Achievements_AddNotifyAchievementsUnlockedV2Options002
 
-#include "eos_achievements_types1.6.0.h"
+#include "eos_achievements_types1.6.1.h"
 
 #define EOS_ACHIEVEMENTS_QUERYDEFINITIONS_API_LATEST                       EOS_ACHIEVEMENTS_QUERYDEFINITIONS_API_001
 #define EOS_ACHIEVEMENTS_STATTHRESHOLD_API_LATEST                          EOS_ACHIEVEMENTS_STATTHRESHOLD_API_001

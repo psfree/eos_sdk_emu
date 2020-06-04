@@ -8,7 +8,7 @@
 #define EOS_PageResult EOS_PageResult001
 #define EOS_DeviceInfo EOS_DeviceInfo001
 
-#include "eos_common1.6.0.h"
+#include "eos_common1.6.1.h"
 #include "eos_common1.3.1.h"
 
 using EOS_AccountId = EOS_EpicAccountId;

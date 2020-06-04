@@ -328,7 +328,7 @@ EOS_STRUCT(EOS_Achievements_AddNotifyAchievementsUnlockedV2Options002, (
 ));
 
 /**
- * Output parameters for the EOS_Achievements_OnAchievementsUnlockedCallback Function.
+ * Output parameters for the EOS_Achievements_OnAchievementsUnlockedCallbackV2 Function.
  */
 EOS_STRUCT(EOS_Achievements_OnAchievementsUnlockedCallbackV2Info, (
 	enum { k_iCallback = k_iAchievementsCallbacks + 5 };

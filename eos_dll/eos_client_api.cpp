@@ -584,6 +584,7 @@ EOS_DECLARE_FUNC(const char*) EOS_GetVersion(void)
         { "1.3.1", "1.3.1-11123224" },
         { "1.5.0", "1.5.0-12496671" },
         { "1.6.0", "1.6.0-13289764" },
+        { "1.6.1", "1.6.1-13568552" },
     };
     
     return versions[EOS_VERSION_STRING];
