@@ -24,7 +24,7 @@ protobuf:static:linux:
     - build_x64_curl=0
     - build_x86_glew=0
     - build_x64_glew=0
-    - build_x86_zstd=1
+    - build_x86_zstd=0
     - build_x64_zstd=1
     - test -e extra/protobuf/linux32/bin/protoc && test -e extra/protobuf/linux32/lib/libprotobuf.a && build_x86_protobuf=0
     - test -e extra/protobuf/linux64/bin/protoc && test -e extra/protobuf/linux64/lib/libprotobuf.a && build_x64_protobuf=0
@@ -126,9 +126,9 @@ protobuf:static:macosx:
 
   script:
     # don't rebuild every time
-    - build_x86_protobuf=1
+    - build_x86_protobuf=0
     - build_x64_protobuf=1
-    - build_x86_zstd=1
+    - build_x86_zstd=0
     - build_x64_zstd=1
     - test -e extra/protobuf/macosx32/bin/protoc && test -e extra/protobuf/macosx32/lib/libprotobuf.a && build_x86_protobuf=0
     - test -e extra/protobuf/macosx64/bin/protoc && test -e extra/protobuf/macosx64/lib/libprotobuf.a && build_x64_protobuf=0
@@ -164,16 +164,17 @@ build:linux:
     - protobuf:static:linux
 
   before_script:
-    - dpkg --add-architecture i386
+    #- dpkg --add-architecture i386
     - apt update
-    - apt -y install gcc g++ gcc-multilib g++-multilib build-essential cmake git wget curl libcurl4-openssl-dev libssl-dev libssl-dev:i386 zlib1g zlib1g-dev libudev-dev libudev-dev:i386 libgl1-mesa-dev libgl1-mesa-dev:i386
+    #- apt -y install gcc g++ gcc-multilib g++-multilib build-essential cmake git wget curl libcurl4-openssl-dev libssl-dev libssl-dev:i386 zlib1g zlib1g-dev libudev-dev libudev-dev:i386 libgl1-mesa-dev libgl1-mesa-dev:i386
+    - apt -y install gcc g++ build-essential cmake git wget curl libcurl4-openssl-dev libssl-dev zlib1g zlib1g-dev libudev-dev libgl1-mesa-dev
 
   script:
     - JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
     - test -z "${JOBS}" && JOBS=2
     - echo "Building epic api with ${JOBS} jobs"
-    - ./build_epicapi.sh "Release" "linux32" || exit 1
-    - ./build_epicapi.sh "Debug"   "linux32" || exit 1
+    #- ./build_epicapi.sh "Release" "linux32" || exit 1
+    #- ./build_epicapi.sh "Debug"   "linux32" || exit 1
     - ./build_epicapi.sh "Release" "linux64" || exit 1
     - ./build_epicapi.sh "Debug"   "linux64" || exit 1
     - exit 0
@@ -220,9 +221,9 @@ build:macosx:
     - JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
     - test -z "${JOBS}" && JOBS=2
     - echo "Building steamapi with ${JOBS} jobs"
-    - export OSXCROSS_HOST="i386-apple-${OSXCROSS_TARGET}"
-    - ./build_epicapi.sh "Release" "macosx32" || exit 1
-    - ./build_epicapi.sh "Debug"   "macosx32" || exit 1
+    #- export OSXCROSS_HOST="i386-apple-${OSXCROSS_TARGET}"
+    #- ./build_epicapi.sh "Release" "macosx32" || exit 1
+    #- ./build_epicapi.sh "Debug"   "macosx32" || exit 1
     - export OSXCROSS_HOST="x86_64-apple-${OSXCROSS_TARGET}"
     - ./build_epicapi.sh "Release" "macosx64" || exit 1
     - ./build_epicapi.sh "Debug"   "macosx64" || exit 1
