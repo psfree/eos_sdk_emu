@@ -52,9 +52,6 @@ private:
 
     std::string compress(void const* data, size_t len);
     std::string decompress(void const* data, size_t len);
-#else
-    std::string compress(void const* data, size_t len) { return std::string((char const*)data, (char const*)data + len); }
-    std::string decompress(void const* data, size_t len) { return std::string((char const*)data, (char const*)data + len); }
 #endif
 
     bool _advertise;
