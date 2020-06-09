@@ -242,11 +242,30 @@ void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_
 
     _poll.add_socket(*cli); // Add the client to the poll
     _poll.set_events(*cli, Socket::poll_flags::in);
+
+    Network_Message_pb msg;
+    Network_Advertise_pb adv;
+    Network_Peer_Connect_pb conn;
+
+    adv.set_allocated_peer_connect(&conn);
+    msg.set_allocated_network_advertise(&adv);
+
     for (auto& peerid : peer_ids)
     {// Map all clients peerids to the socket
-        LOG(Log::LogLevel::DEBUG, "Adding peer id %s to client %s", peerid.c_str(), cli->get_addr().to_string(true).c_str());
-        _tcp_peers[peerid] = &(*cli);
+        LOG(Log::LogLevel::DEBUG, "Adding peer id %llu to client %s", peerid, cli->get_addr().to_string(true).c_str());
+        _tcp_peers[peerid] = cli;
+
+        msg.set_source_id(peerid);
+
+        for (auto& messages : _pending_network_msgs)
+        {
+            messages.second.emplace_back(msg);
+        }
     }
+
+    adv.release_peer_connect();
+    msg.release_network_advertise();
+
 
     if (advertise)
     {
@@ -272,15 +291,32 @@ void Network::remove_tcp_peer(tcp_buffer_t& tcp_buffer)
     LOG(Log::LogLevel::DEBUG, "TCP Client %s gone", tcp_buffer.socket.get_addr().to_string().c_str());
     _poll.remove_socket(tcp_buffer.socket);
     // Remove the peer mappings
+
+    Network_Message_pb msg;
+    Network_Advertise_pb adv;
+    Network_Peer_Disconnect_pb disc;
+
+    adv.set_allocated_peer_disconnect(&disc);
+    msg.set_allocated_network_advertise(&adv);
+
     for (auto it = _tcp_peers.begin(); it != _tcp_peers.end();)
     {
         if (it->second == &(tcp_buffer.socket))
         {
+            msg.set_source_id(it->first);
             it = _tcp_peers.erase(it);
+
+            for (auto& messages : _pending_network_msgs)
+            {
+                messages.second.emplace_back(msg);
+            }
         }
         else
             ++it;
     }
+
+    adv.release_peer_disconnect();
+    msg.release_network_advertise();
 }
 
 void Network::connect_to_peer(ipv4_addr &addr, peer_t const& peer_id)
