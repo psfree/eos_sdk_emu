@@ -1,6 +1,7 @@
 {
+  "disable_online_networking": false,
   "enable_overlay": true,
-  "epicid": "0x0123456789abcdef0123456789abcdef",
+  "epicid": "0123456789abcdef0123456789abcdef",
   "gamename": "Unreal",
   "language": "english",
   "languages": "english",
