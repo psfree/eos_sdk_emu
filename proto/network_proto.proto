@@ -281,7 +281,12 @@ message Network_Peer_pb {
 }
 
 message Network_Peer_Accept_pb {
+}
 
+message Network_Peer_Connect_pb {
+}
+
+message Network_Peer_Disconnect_pb {
 }
 
 message Network_Advertise_pb {
@@ -289,6 +294,8 @@ message Network_Advertise_pb {
         Network_Port_pb port = 1;
         Network_Peer_pb peer = 2;
         Network_Peer_Accept_pb accept = 3;
+        Network_Peer_Connect_pb peer_connect = 4;
+		Network_Peer_Disconnect_pb peer_disconnect = 5;
 	}
 }
 
