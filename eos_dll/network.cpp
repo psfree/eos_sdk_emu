@@ -252,7 +252,7 @@ void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_
 
     for (auto& peerid : peer_ids)
     {// Map all clients peerids to the socket
-        LOG(Log::LogLevel::DEBUG, "Adding peer id %llu to client %s", peerid, cli->get_addr().to_string(true).c_str());
+        LOG(Log::LogLevel::DEBUG, "Adding peer id %s to client %s", peerid.c_str(), cli->get_addr().to_string(true).c_str());
         _tcp_peers[peerid] = cli;
 
         msg.set_source_id(peerid);
