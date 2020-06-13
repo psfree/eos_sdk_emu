@@ -496,10 +496,10 @@ void Network::process_udp()
             #if defined(NETWORK_COMPRESS)
                 std::string buff(std::move(decompress(buffer.data(), len)));
                 message = buff.data();
-                message_size = len;
+                message_size = buff.length();
             #else
                 message = buffer.data();
-                message_size = len;
+                message_size = buffer.length();
             #endif
 
             if (msg.ParseFromArray(message, message_size))
