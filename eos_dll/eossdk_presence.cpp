@@ -30,6 +30,7 @@ decltype(EOSSDK_Presence::presence_query_timeout) EOSSDK_Presence::presence_quer
 EOSSDK_Presence::EOSSDK_Presence()
 {
     GetCB_Manager().register_callbacks(this);
+
     GetNetwork().register_listener(this, 0, Network_Message_pb::MessagesCase::kPresence);
 }
 
@@ -519,6 +520,41 @@ bool EOSSDK_Presence::send_my_presence_info_to_all_peers()
 ///////////////////////////////////////////////////////////////////////////////
 //                          Network Receive messages                         //
 ///////////////////////////////////////////////////////////////////////////////
+bool EOSSDK_Presence::on_peer_connect(Network_Message_pb const& msg, Network_Peer_Connect_pb const& peer)
+{
+    //TRACE_FUNC();
+    GLOBAL_LOCK();
+
+    EOS_ProductUserId product_id = GetProductUserId(msg.source_id());
+    std::pair<const EOS_ProductUserId, user_state_t>* pUser = GetEOS_Connect().get_user_by_productid(product_id);
+    if (pUser != nullptr && pUser->second.authentified)
+    {
+        EOS_EpicAccountId account_id = GetEpicUserId(pUser->second.infos.userid());
+        if(account_id->IsValid())
+            set_user_status(account_id, EOS_Presence_EStatus::EOS_PS_Online);
+    }
+
+    return true;
+}
+
+bool EOSSDK_Presence::on_peer_disconnect(Network_Message_pb const& msg, Network_Peer_Disconnect_pb const& peer)
+{
+    //TRACE_FUNC();
+    GLOBAL_LOCK();
+
+    EOS_ProductUserId product_id = GetProductUserId(msg.source_id());
+    std::pair<const EOS_ProductUserId, user_state_t>* pUser = GetEOS_Connect().get_user_by_productid(product_id);
+    if (pUser != nullptr && pUser->second.authentified)
+    {
+        EOS_EpicAccountId account_id = GetEpicUserId(pUser->second.infos.userid());
+        if (account_id->IsValid())
+            set_user_status(account_id, EOS_Presence_EStatus::EOS_PS_Offline);
+    }
+
+    return true;
+}
+
+
 bool EOSSDK_Presence::on_presence_request(Network_Message_pb const& msg, Presence_Info_Request_pb const& req)
 {
     TRACE_FUNC();
@@ -600,7 +636,7 @@ bool EOSSDK_Presence::on_presence_infos(Network_Message_pb const& msg, Presence_
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Presence::CBRunFrame()
 {
-    GLOBAL_LOCK();
+    //GLOBAL_LOCK();
     return true;
 }
 
@@ -610,7 +646,6 @@ bool EOSSDK_Presence::RunNetwork(Network_Message_pb const& msg)
         return true;
 
     Presence_Message_pb const& pres = msg.presence();
-
     switch (pres.message_case())
     {
         case Presence_Message_pb::MessageCase::kPresenceInfoRequest: return on_presence_request(msg, pres.presence_info_request());
