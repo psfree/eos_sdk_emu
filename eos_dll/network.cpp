@@ -259,9 +259,9 @@ void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_
 
         msg.set_source_id(peerid);
 
-        for (auto& messages : _pending_network_msgs)
+        for (auto& channel : _default_channels)
         {
-            messages.second.emplace_back(msg);
+            _pending_network_msgs[channel.second].emplace_back(msg);
         }
     }
 
@@ -306,9 +306,9 @@ void Network::remove_tcp_peer(tcp_buffer_t& tcp_buffer)
             msg.set_source_id(it->first);
             it = _tcp_peers.erase(it);
 
-            for (auto& messages : _pending_network_msgs)
+            for (auto& channel : _default_channels)
             {
-                messages.second.emplace_back(msg);
+                _pending_network_msgs[channel.second].emplace_back(msg);
             }
         }
         else
