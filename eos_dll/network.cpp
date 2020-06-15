@@ -435,35 +435,31 @@ void Network::process_waiting_in_client()
     {
         try
         {
-            if (it->next_packet_size == 0)
+            unsigned long count = 0;
+            it->socket.ioctlsocket(Socket::cmd_name::fionread, &count);
+            if (count > 0)
             {
-                unsigned long count = 0;
-                it->socket.ioctlsocket(Socket::cmd_name::fionread, &count);
-                if (count >= sizeof(tcp_buffer_t::next_packet_size))
-                {// Wait until we have at least the size of the next message
-                    it->socket.recv(&it->next_packet_size, sizeof(tcp_buffer_t::next_packet_size));
-                    it->next_packet_size = Socket::net_swap(it->next_packet_size); // Re-order the size
-                    if (it->buffer.size() < it->next_packet_size)
-                        it->buffer.resize(it->next_packet_size);
+                if (it->next_packet_size == 0 && count > sizeof(tcp_buffer_t::next_packet_size))
+                {
+                    it->socket.recv(&it->next_packet_size, sizeof(it->next_packet_size));
+                    it->next_packet_size = Socket::net_swap(it->next_packet_size);
+                    count -= sizeof(it->next_packet_size);
                 }
-            }
-            if (it->next_packet_size > 0)
-            {
-                it->received_size = it->socket.recv(it->buffer.data() + it->received_size, it->next_packet_size - it->received_size);
-                assert((it->received_size <= it->next_packet_size && "received tcp buffer is bigger than what we're waiting for"));
-                if (it->received_size == it->next_packet_size)
-                {// Message read, parse it now
-                    it->next_packet_size = 0;
+                if (it->next_packet_size > 0 && count >= it->next_packet_size)
+                {
+                    it->buffer.resize(it->next_packet_size);
+                    it->socket.recv(it->buffer.data(), it->next_packet_size);
+                    
                     const void* message;
                     int message_size;
 
                 #if defined(NETWORK_COMPRESS)
-                    std::string buff = std::move(decompress(it->buffer.data(), it->received_size));
+                    std::string buff = std::move(decompress(it->buffer.data(), it->buffer.size()));
                     message = buff.data();
                     message_size = buff.length();
                 #else
                     message = it->buffer.data();
-                    message_size = it->received_size;
+                    message_size = it->buffer.size();
                 #endif
                     
                     if (msg.ParseFromArray(message, message_size) &&
@@ -473,7 +469,6 @@ void Network::process_waiting_in_client()
                         std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
                         it->buffer.clear();
-                        it->received_size = 0;
                         it->socket.set_nonblocking(false);
 
                         auto const& peer_msg = msg.network_advertise().peer();
@@ -493,6 +488,7 @@ void Network::process_waiting_in_client()
                     continue;
                 }
             }
+            
             ++it;
         }
         catch (std::exception &e)
@@ -635,30 +631,27 @@ void Network::process_tcp_data(tcp_buffer_t& tcp_buffer)
     Network_Message_pb msg;
     size_t len;
 
-    if (tcp_buffer.next_packet_size == 0)
+    unsigned long count = 0;
+    tcp_buffer.socket.ioctlsocket(Socket::cmd_name::fionread, &count);
+    if (count > 0)
     {
-        unsigned long count = 0;
-        tcp_buffer.socket.ioctlsocket(Socket::cmd_name::fionread, &count);
-        if (count >= sizeof(tcp_buffer_t::next_packet_size))
-        {// Wait until we have at least the size of the next message
-            tcp_buffer.socket.recv(&tcp_buffer.next_packet_size, sizeof(tcp_buffer_t::next_packet_size));
-            tcp_buffer.next_packet_size = Socket::net_swap(tcp_buffer.next_packet_size); // Re-order the size
-            if(tcp_buffer.buffer.size() < tcp_buffer.next_packet_size)
-                tcp_buffer.buffer.resize(tcp_buffer.next_packet_size);
-        }
-    }
-    if (tcp_buffer.next_packet_size > 0)
-    {
-        len = tcp_buffer.socket.recv(tcp_buffer.buffer.data() + tcp_buffer.received_size, tcp_buffer.next_packet_size - tcp_buffer.received_size);
-        tcp_buffer.received_size += len;
-        assert((tcp_buffer.received_size <= tcp_buffer.next_packet_size && "received tcp buffer is bigger than what we're waiting for"));
-        if (tcp_buffer.received_size == tcp_buffer.next_packet_size)
-        {// Message read, parse it now
-            tcp_buffer.next_packet_size = 0;
-            const void* message;
-            int message_size;
+        size_t buff_len = tcp_buffer.buffer.size();
+        tcp_buffer.buffer.resize(buff_len + count); // We grow to the current size + stream size
+
+        len = tcp_buffer.socket.recv(tcp_buffer.buffer.data() + buff_len, count);
+
+        while(tcp_buffer.buffer.size() >= sizeof(tcp_buffer.next_packet_size))
+        {
+            tcp_buffer.next_packet_size = *reinterpret_cast<uint32_t*>(&tcp_buffer.buffer[0]);
+            tcp_buffer.next_packet_size = Socket::net_swap(tcp_buffer.next_packet_size);
+            tcp_buffer.buffer.erase(tcp_buffer.buffer.begin(), tcp_buffer.buffer.begin() + sizeof(tcp_buffer.next_packet_size));
+
+            if (tcp_buffer.next_packet_size > 0 && tcp_buffer.buffer.size() >= tcp_buffer.next_packet_size)
+            {
+                const void* message;
+                int message_size;
             #if defined(NETWORK_COMPRESS)
-                std::string buff = std::move(decompress(tcp_buffer.buffer.data(), tcp_buffer.received_size));
+                std::string buff = std::move(decompress(tcp_buffer.buffer.data(), tcp_buffer.next_packet_size));
                 message = buff.data();
                 message_size = buff.length();
             #else
@@ -666,13 +659,14 @@ void Network::process_tcp_data(tcp_buffer_t& tcp_buffer)
                 message_size = tcp_buffer.received_size;
             #endif
 
-            if (msg.ParseFromArray(message, message_size))
-            {
-                //LOG(Log::LogLevel::DEBUG, "Received TCP message from %s type %d", tcp_buffer.socket.get_addr().to_string(true).c_str(), msg.messages_case());
-                process_network_message(msg);
+                if (msg.ParseFromArray(message, message_size))
+                {
+                    //LOG(Log::LogLevel::DEBUG, "Received TCP message from %s type %d", tcp_buffer.socket.get_addr().to_string(true).c_str(), msg.messages_case());
+                    process_network_message(msg);
+                }
+                tcp_buffer.buffer.erase(tcp_buffer.buffer.begin(), tcp_buffer.buffer.begin() + tcp_buffer.next_packet_size);
+                tcp_buffer.next_packet_size = 0;
             }
-            tcp_buffer.buffer.erase(tcp_buffer.buffer.begin(), tcp_buffer.buffer.begin() + tcp_buffer.received_size);
-            tcp_buffer.received_size = 0;
         }
     }
 }

@@ -37,7 +37,6 @@ public:
         PortableAPI::tcp_socket socket;
         std::vector<uint8_t> buffer;
         uint32_t next_packet_size;
-        uint32_t received_size;
     };
 
     using tcp_client_iterator = typename std::list<tcp_buffer_t>::iterator;
