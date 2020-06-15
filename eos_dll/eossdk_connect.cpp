@@ -655,7 +655,7 @@ bool EOSSDK_Connect::send_connect_infos(Network::peer_t const& peerid, Connect_I
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Connect::on_peer_connect(Network_Message_pb const& msg, Network_Peer_Connect_pb const& peer)
 {
-    //TRACE_FUNC();
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     EOS_ProductUserId product_id = GetProductUserId(msg.source_id());
@@ -669,7 +669,7 @@ bool EOSSDK_Connect::on_peer_connect(Network_Message_pb const& msg, Network_Peer
 
 bool EOSSDK_Connect::on_peer_disconnect(Network_Message_pb const& msg, Network_Peer_Disconnect_pb const& peer)
 {
-    //TRACE_FUNC();
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     // Presence need to know when a user disconnects
