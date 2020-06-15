@@ -40,6 +40,8 @@ EOSSDK_Presence::~EOSSDK_Presence()
 
     GetCB_Manager().remove_all_notifications(this);
     GetCB_Manager().unregister_callbacks(this);
+
+    GetCB_Manager().remove_all_notifications(this);
 }
 
 void EOSSDK_Presence::setup_myself()

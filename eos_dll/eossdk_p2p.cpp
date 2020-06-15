@@ -38,6 +38,8 @@ EOSSDK_P2P::~EOSSDK_P2P()
     GetNetwork().unregister_listener(this, 0, Network_Message_pb::MessagesCase::kP2P);
 
     GetCB_Manager().unregister_callbacks(this);
+
+    GetCB_Manager().remove_all_notifications(this);
 }
 
 /**
