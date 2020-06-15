@@ -130,13 +130,13 @@ void EOSSDK_Platform::Init(const EOS_Platform_Options* options)
             }
         }
 
-        _metrics           = new EOSSDK_Metrics;
         _auth              = new EOSSDK_Auth;
-        _connect           = new EOSSDK_Connect;
-        _ecom              = new EOSSDK_Ecom;
-        _ui                = new EOSSDK_UI;
         _friends           = new EOSSDK_Friends;
         _presence          = new EOSSDK_Presence;
+        _connect           = new EOSSDK_Connect;
+        _metrics           = new EOSSDK_Metrics;
+        _ecom              = new EOSSDK_Ecom;
+        _ui                = new EOSSDK_UI;
         _sessions          = new EOSSDK_Sessions;
         _lobby             = new EOSSDK_Lobby;
         _userinfo          = new EOSSDK_UserInfo;
