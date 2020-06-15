@@ -44,6 +44,8 @@ EOSSDK_Client& EOSSDK_Client::Inst()
 EOS_EpicAccountId EOSSDK_Client::get_epicuserid(std::string const& userid)
 {
     EOS_EpicAccountId res;
+    if (userid.empty())
+        return GetInvalidEpicUserId();
 
     auto it = _epicuserids.find(userid);
     if (it == _epicuserids.end())
@@ -62,6 +64,8 @@ EOS_EpicAccountId EOSSDK_Client::get_epicuserid(std::string const& userid)
 EOS_ProductUserId EOSSDK_Client::get_productuserid(std::string const& userid)
 {
     EOS_ProductUserId res;
+    if (userid.empty())
+        return GetInvalidProductUserId();
 
     auto it = _productuserids.find(userid);
     if (it == _productuserids.end())
