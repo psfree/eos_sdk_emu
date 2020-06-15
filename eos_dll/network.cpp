@@ -31,7 +31,7 @@ Network::Network():
     //LOG(Log::LogLevel::DEBUG, "");
 #if defined(NETWORK_COMPRESS)
     _zstd_ccontext = ZSTD_createCCtx();
-    _zstd_dcontext = ZSTD_createDCtx();
+    _zstd_dstream = ZSTD_createDStream();
 #endif
 
     _network_task.run(&Network::network_thread, this);
@@ -50,7 +50,7 @@ Network::~Network()
 
 #if defined(NETWORK_COMPRESS)
     ZSTD_freeCCtx(_zstd_ccontext);
-    ZSTD_freeDCtx(_zstd_dcontext);
+    ZSTD_freeDStream(_zstd_dstream);
 #endif
 
     //LOG(Log::LogLevel::DEBUG, "Network Thread Joined");
@@ -61,15 +61,31 @@ Network::~Network()
 std::string Network::compress(void const* data, size_t len)
 {
     std::string res(ZSTD_compressBound(len), '\0');
-    res.resize(ZSTD_compressCCtx(_zstd_ccontext, &res[0], res.length(), data, len, 20));
+    res.resize(ZSTD_compressCCtx(_zstd_ccontext, &res[0], res.length(), data, len, 3));
     return res;
 }
 
 std::string Network::decompress(void const* data, size_t len)
 {
-    std::string res(65535, 0);
+    static size_t decompress_block_size = ZSTD_DStreamOutSize();
+    static std::string res;
 
-    res.resize(ZSTD_decompressDCtx(_zstd_dcontext, &res[0], res.length(), data, len));
+    ZSTD_inBuffer inbuff{ data, len, 0 };
+    ZSTD_outBuffer outbuff{ const_cast<char*>(res.data()), res.length(), 0 };
+
+    res.resize(decompress_block_size);
+    while (inbuff.pos < inbuff.size)
+    {
+        ZSTD_decompressStream(_zstd_dstream, &outbuff, &inbuff);
+        if ((outbuff.size - outbuff.pos) <= decompress_block_size)
+        {
+            res.resize(res.length() + decompress_block_size * 2);
+            outbuff.size = res.length();
+            outbuff.dst = const_cast<char*>(res.data());
+        }
+    }
+
+    res.resize(outbuff.pos);
     return res;
 }
 
@@ -80,6 +96,7 @@ void Network::start_network()
     ipv4_addr addr;
     uint16_t port;
     addr.set_addr(ipv4_addr::any_addr);
+
     for (port = network_port; port < max_network_port; ++port)
     {
         addr.set_port(port);
@@ -225,11 +242,30 @@ void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_
 
     _poll.add_socket(*cli); // Add the client to the poll
     _poll.set_events(*cli, Socket::poll_flags::in);
+
+    Network_Message_pb msg;
+    Network_Advertise_pb adv;
+    Network_Peer_Connect_pb conn;
+
+    adv.set_allocated_peer_connect(&conn);
+    msg.set_allocated_network_advertise(&adv);
+
     for (auto& peerid : peer_ids)
     {// Map all clients peerids to the socket
         LOG(Log::LogLevel::DEBUG, "Adding peer id %s to client %s", peerid.c_str(), cli->get_addr().to_string(true).c_str());
-        _tcp_peers[peerid] = &(*cli);
+        _tcp_peers[peerid] = cli;
+
+        msg.set_source_id(peerid);
+
+        for (auto& messages : _pending_network_msgs)
+        {
+            messages.second.emplace_back(msg);
+        }
     }
+
+    adv.release_peer_connect();
+    msg.release_network_advertise();
+
 
     if (advertise)
     {
@@ -255,15 +291,32 @@ void Network::remove_tcp_peer(tcp_buffer_t& tcp_buffer)
     LOG(Log::LogLevel::DEBUG, "TCP Client %s gone", tcp_buffer.socket.get_addr().to_string().c_str());
     _poll.remove_socket(tcp_buffer.socket);
     // Remove the peer mappings
+
+    Network_Message_pb msg;
+    Network_Advertise_pb adv;
+    Network_Peer_Disconnect_pb disc;
+
+    adv.set_allocated_peer_disconnect(&disc);
+    msg.set_allocated_network_advertise(&adv);
+
     for (auto it = _tcp_peers.begin(); it != _tcp_peers.end();)
     {
         if (it->second == &(tcp_buffer.socket))
         {
+            msg.set_source_id(it->first);
             it = _tcp_peers.erase(it);
+
+            for (auto& messages : _pending_network_msgs)
+            {
+                messages.second.emplace_back(msg);
+            }
         }
         else
             ++it;
     }
+
+    adv.release_peer_disconnect();
+    msg.release_network_advertise();
 }
 
 void Network::connect_to_peer(ipv4_addr &addr, peer_t const& peer_id)
@@ -350,14 +403,12 @@ void Network::process_waiting_out_clients()
                     std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
                     LOG(Log::LogLevel::DEBUG, "Paired with %s : %s", it->second.get_addr().to_string(true).c_str(), it->first.c_str());
-                    it->second.set_nonblocking(false);
-                    tcp_buffer_t new_buff({});
+                    tcp_buffer_t new_buff{};
                     new_buff.socket = std::move(it->second);
+                    new_buff.socket.set_nonblocking(false);
                     _tcp_clients.emplace_back(std::move(new_buff));
-                    auto new_client_it = _tcp_clients.rbegin();
-                    _tcp_peers[it->first] = &(new_client_it->socket);
-                    _poll.add_socket(new_client_it->socket);   
-                    _poll.set_events(new_client_it->socket, Socket::poll_flags::in);
+
+                    add_new_tcp_client(&(_tcp_clients.rbegin()->socket), std::vector<peer_t>{it->first}, false);
                 }
                 // Dropping outgoing connection if we don't accept it
                 it = _waiting_out_tcp_clients.erase(it);
@@ -519,7 +570,6 @@ void Network::process_udp()
                             std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
                             if (!_my_peer_ids.empty() &&
-                                _my_peer_ids.count(msg.source_id()) == 0 &&
                                 _tcp_peers.count(msg.source_id()) == 0)
                             {
                                 ipv4_addr peer_addr;

@@ -47,8 +47,8 @@ private:
     static constexpr uint16_t max_network_port = (network_port + 10);
 
 #if defined(NETWORK_COMPRESS)
-    ZSTD_CCtx* _zstd_ccontext;
-    ZSTD_DCtx* _zstd_dcontext;
+    ZSTD_CCtx   * _zstd_ccontext;
+    ZSTD_DStream* _zstd_dstream;
 
     std::string compress(void const* data, size_t len);
     std::string decompress(void const* data, size_t len);
