@@ -514,7 +514,16 @@ bool EOSSDK_Presence::send_my_presence_info_to_all_peers()
 
     msg.set_source_id(user_id);
 
-    (void)GetNetwork().TCPSendToAllPeers(msg).size();
+    auto& users = GetEOS_Connect()._users;
+    for (auto user_it = ++users.begin(); user_it != users.end(); ++user_it)
+    {
+        if (user_it->second.authentified)
+        {
+            msg.set_dest_id(user_it->first->to_string());
+            GetNetwork().TCPSendTo(msg);
+        }
+    }
+    
     presence->release_presence_info();
     return true;
 }
