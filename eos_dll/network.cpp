@@ -207,16 +207,18 @@ std::pair<PortableAPI::tcp_socket*, std::vector<Network::peer_t>> Network::get_n
 void Network::do_advertise()
 {
     std::lock_guard<std::recursive_mutex> lk(local_mutex);
+    if (!_advertise)
+        return;
 
     auto now = std::chrono::steady_clock::now();
     if ((now - _last_advertise) < std::chrono::milliseconds(2000))
         return;
 
     _last_advertise = now;
-
+    
     try
     {
-        if (_advertise && !_my_peer_ids.empty())
+        if (!_my_peer_ids.empty())
         {
             Network_Message_pb msg;
             Network_Advertise_pb* network = new Network_Advertise_pb;
@@ -266,8 +268,6 @@ void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_
     adv.release_peer_connect();
     msg.release_network_advertise();
 
-
-    if (advertise)
     {
         LOG(Log::LogLevel::DEBUG, "New peer: id %s %s", peer_ids.begin()->c_str(), cli->get_addr().to_string(true).c_str());
 
@@ -564,29 +564,29 @@ void Network::process_udp()
                     //LOG(Log::LogLevel::TRACE, "Received UDP message from: %s - %s", addr.to_string().c_str(), msg.source_id().c_str());
                     if (msg.has_network_advertise())
                     {
-                        auto const& advertise = msg.network_advertise();
-                        if (advertise.has_port())
+                        std::lock_guard<std::recursive_mutex> lk(local_mutex);
+                        if (_advertise)
                         {
-                            std::lock_guard<std::recursive_mutex> lk(local_mutex);
-
-                            if (!_my_peer_ids.empty() &&
-                                _tcp_peers.count(msg.source_id()) == 0)
+                            auto const& advertise = msg.network_advertise();
+                            if (advertise.has_port())
                             {
-                                ipv4_addr peer_addr;
-                                peer_addr.set_ip(addr.get_ip());
-                                peer_addr.set_port(advertise.port().port());
-                                connect_to_peer(peer_addr, msg.source_id());
+                                if (!_my_peer_ids.empty() &&
+                                    _tcp_peers.count(msg.source_id()) == 0)
+                                {
+                                    ipv4_addr peer_addr;
+                                    peer_addr.set_ip(addr.get_ip());
+                                    peer_addr.set_port(advertise.port().port());
+                                    connect_to_peer(peer_addr, msg.source_id());
+                                }
                             }
-                        }
-                        else if (advertise.has_peer())
-                        {
-                            std::lock_guard<std::recursive_mutex> lk(local_mutex);
+                            else if (advertise.has_peer())
+                            {
+                                std::pair<tcp_socket*, std::vector<peer_t>> peer_ids_to_add = std::move(get_new_peer_ids(advertise.peer()));
 
-                            std::pair<tcp_socket*, std::vector<peer_t>> peer_ids_to_add = std::move(get_new_peer_ids(advertise.peer()));
-
-                            if (peer_ids_to_add.first != nullptr && !peer_ids_to_add.second.empty())
-                            {// We have peer ids to add
-                                add_new_tcp_client(peer_ids_to_add.first, peer_ids_to_add.second, false);
+                                if (peer_ids_to_add.first != nullptr && !peer_ids_to_add.second.empty())
+                                {// We have peer ids to add
+                                    add_new_tcp_client(peer_ids_to_add.first, peer_ids_to_add.second, false);
+                                }
                             }
                         }
                     }
