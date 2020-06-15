@@ -89,7 +89,8 @@ static int WINAPI Mysendto(SOCKET s, const char* buf, int len, int flags, const 
     if (is_lan_ip(to, tolen)) {
         return _sendto(s, buf, len, flags, to, tolen);
     }
-    else {
+    else
+    {
         return len;
     }
 }
@@ -99,7 +100,8 @@ static int WINAPI Myconnect(SOCKET s, const sockaddr* addr, int namelen)
     if (is_lan_ip(addr, namelen)) {
         return _connect(s, addr, namelen);
     }
-    else {
+    else
+    {
         WSASetLastError(WSAECONNREFUSED);
         return SOCKET_ERROR;
     }
@@ -107,10 +109,12 @@ static int WINAPI Myconnect(SOCKET s, const sockaddr* addr, int namelen)
 
 static int WINAPI MyWSAConnect(SOCKET s, const sockaddr* addr, int namelen, LPWSABUF lpCallerData, LPWSABUF lpCalleeData, LPQOS lpSQOS, LPQOS lpGQOS)
 {
-    if (is_lan_ip(addr, namelen)) {
+    if (is_lan_ip(addr, namelen))
+    {
         return _WSAConnect(s, addr, namelen, lpCallerData, lpCalleeData, lpSQOS, lpGQOS);
     }
-    else {
+    else
+    {
         WSASetLastError(WSAECONNREFUSED);
         return SOCKET_ERROR;
     }
@@ -130,7 +134,8 @@ HINTERNET WINAPI MyWinHttpConnect(
     if ((InetPtonW(AF_INET, pswzServerName, &(ip4.sin_addr)) && is_lan_ip((sockaddr*)&ip4, sizeof(ip4))) || (InetPtonW(AF_INET6, pswzServerName, &(ip6.sin6_addr)) && is_lan_ip((sockaddr*)&ip6, sizeof(ip6)))) {
         return _WinHttpConnect(hSession, pswzServerName, nServerPort, dwReserved);
     }
-    else {
+    else
+    {
         return _WinHttpConnect(hSession, L"127.1.33.7", nServerPort, dwReserved);
     }
 }
@@ -144,7 +149,8 @@ HINTERNET WINAPI MyWinHttpOpenRequest(
     IN LPCWSTR* ppwszAcceptTypes,
     IN DWORD     dwFlags
 ) {
-    if (dwFlags & WINHTTP_FLAG_SECURE) {
+    if (dwFlags & WINHTTP_FLAG_SECURE)
+    {
         dwFlags &= ~(WINHTTP_FLAG_SECURE);
     }
 
@@ -324,7 +330,7 @@ LOCAL_API std::vector<ipv4_addr> get_broadcasts()
     ipv4_addr addr, netmask;
     addr.set_addr(ipv4_addr::broadcast_addr);
 
-    broadcasts.push_back(addr);
+    broadcasts.emplace_back(addr);
 
     if (pAdapterInfo == nullptr)
         return broadcasts;
@@ -356,7 +362,7 @@ LOCAL_API std::vector<ipv4_addr> get_broadcasts()
             if (ip != 0)
             {
                 addr.set_ip(ip | (~mask));
-                broadcasts.push_back(addr);
+                broadcasts.emplace_back(addr);
             }
 
             pAdapter = pAdapter->Next;
@@ -766,12 +772,15 @@ LOCAL_API std::string get_module_path()
 LOCAL_API std::vector<ipv4_addr> get_broadcasts()
 {
     std::vector<ipv4_addr> broadcasts;
+    ipv4_addr addr;
+
+    addr.set_addr(ipv4_addr::broadcast_addr);
+    broadcasts.emplace_back(addr);
 
     ifaddrs* ifaces_list;
     ifaddrs* pIface;
     if (getifaddrs(&ifaces_list) == 0)
     {
-        ipv4_addr addr;
         const sockaddr_in* sock_addr;
         for (pIface = ifaces_list; pIface != nullptr; pIface = pIface->ifa_next)
         {
