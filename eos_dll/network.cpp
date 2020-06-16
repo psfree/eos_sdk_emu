@@ -18,18 +18,25 @@
  */
 
 #include "network.h"
-#include "eossdk_platform.h"
 
 using namespace PortableAPI;
 
-static uint64_t max_message_size = 0;
-static uint64_t max_compressed_message_size = 0;
+namespace std
+{
+    inline std::string to_string(std::string const& str)
+    {
+        return str;
+    }
+}
+
 Network::Network():
     _udp_socket(),
     _tcp_self_recv({})
 {
     //LOG(Log::LogLevel::DEBUG, "");
 #if defined(NETWORK_COMPRESS)
+    max_message_size = 0;
+    max_compressed_message_size = 0;
     _zstd_ccontext = ZSTD_createCCtx();
     _zstd_dstream = ZSTD_createDStream();
 #endif
@@ -61,7 +68,7 @@ Network::~Network()
 std::string Network::compress(void const* data, size_t len)
 {
     std::string res(ZSTD_compressBound(len), '\0');
-    res.resize(ZSTD_compressCCtx(_zstd_ccontext, &res[0], res.length(), data, len, 3));
+    res.resize(ZSTD_compressCCtx(_zstd_ccontext, &res[0], res.length(), data, len, ZSTD_CLEVEL_DEFAULT));
     return res;
 }
 
@@ -70,21 +77,29 @@ std::string Network::decompress(void const* data, size_t len)
     static size_t decompress_block_size = ZSTD_DStreamOutSize();
     static std::string res;
 
+    res.resize(decompress_block_size);
     ZSTD_inBuffer inbuff{ data, len, 0 };
     ZSTD_outBuffer outbuff{ const_cast<char*>(res.data()), res.length(), 0 };
 
-    res.resize(decompress_block_size);
     while (inbuff.pos < inbuff.size)
     {
-        ZSTD_decompressStream(_zstd_dstream, &outbuff, &inbuff);
-        if ((outbuff.size - outbuff.pos) <= decompress_block_size)
+        size_t x = 0;
+        x = ZSTD_decompressStream(_zstd_dstream, &outbuff, &inbuff);
+        if (ZSTD_isError(x))
         {
-            res.resize(res.length() + decompress_block_size * 2);
+            auto str_error = ZSTD_getErrorName(x);
+            LOG(Log::LogLevel::WARN, "Decompression error: %s", str_error);
+            return std::string((char*)data, ((char*)data) + len);
+        }
+        if (inbuff.pos == res.size())
+        {
+            res.resize(res.length() + decompress_block_size);
             outbuff.size = res.length();
             outbuff.dst = const_cast<char*>(res.data());
         }
     }
 
+    ZSTD_initDStream(_zstd_dstream);
     res.resize(outbuff.pos);
     return res;
 }
@@ -162,6 +177,11 @@ void Network::stop_network()
     _udp_addrs.clear();
 }
 
+inline Network::next_packet_size_t Network::make_next_packet_size(std::string const& buff) const
+{
+    return Socket::net_swap(next_packet_size_t(buff.length() - sizeof(next_packet_size_t)));
+}
+
 void Network::build_advertise_msg(Network_Message_pb& msg)
 {
     std::lock_guard<std::recursive_mutex> lk(local_mutex);
@@ -172,7 +192,7 @@ void Network::build_advertise_msg(Network_Message_pb& msg)
     LOG(Log::LogLevel::DEBUG, "Advertising with peer ids: ");
     for (auto& id : _my_peer_ids)
     {
-        LOG(Log::LogLevel::DEBUG, "%s", id.c_str());
+        LOG(Log::LogLevel::DEBUG, "%s", std::to_string(id).c_str());
         peer_pb->add_peer_ids(id);
     }
 
@@ -238,7 +258,7 @@ void Network::do_advertise()
     }
 }
 
-void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_t> const& peer_ids, bool advertise)
+void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_t> const& peer_ids, bool advertise_peer)
 {
     std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
@@ -254,7 +274,7 @@ void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_
 
     for (auto& peerid : peer_ids)
     {// Map all clients peerids to the socket
-        LOG(Log::LogLevel::DEBUG, "Adding peer id %s to client %s", peerid.c_str(), cli->get_addr().to_string(true).c_str());
+        LOG(Log::LogLevel::DEBUG, "Adding peer id %s to client %s", std::to_string(peerid).c_str(), cli->get_addr().to_string(true).c_str());
         _tcp_peers[peerid] = cli;
 
         msg.set_source_id(peerid);
@@ -267,9 +287,10 @@ void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_
 
     adv.release_peer_connect();
     msg.release_network_advertise();
-
+    
+    if(advertise_peer)
     {
-        LOG(Log::LogLevel::DEBUG, "New peer: id %s %s", peer_ids.begin()->c_str(), cli->get_addr().to_string(true).c_str());
+        LOG(Log::LogLevel::DEBUG, "New peer: id %s %s", std::to_string(*peer_ids.begin()).c_str(), cli->get_addr().to_string(true).c_str());
 
         Network_Message_pb msg;
         Network_Advertise_pb* adv = new Network_Advertise_pb;
@@ -278,7 +299,20 @@ void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_
         adv->set_allocated_accept(accept_peer);
         msg.set_allocated_network_advertise(adv);
 
-        std::string buff = std::move(msg.SerializeAsString());
+        std::string buff(sizeof(next_packet_size_t), 0);
+        // Don't compress the accept message, its only 4 bytes long
+    //#if defined(NETWORK_COMPRESS)
+    //    std::string data;
+    //    msg.SerializeToString(&data);
+    //    buff += std::move(compress(data.data(), data.length()));
+    //    
+    //    max_message_size = std::max<uint64_t>(max_message_size, data.length());
+    //    max_compressed_message_size = std::max<uint64_t>(max_compressed_message_size, buff.length());
+    //#else
+        buff += std::move(msg.SerializeAsString());
+    //#endif
+
+        *reinterpret_cast<next_packet_size_t*>(&buff[0]) = make_next_packet_size(buff);
 
         cli->send(buff.data(), buff.length());
     }
@@ -330,7 +364,7 @@ void Network::connect_to_peer(ipv4_addr &addr, peer_t const& peer_id)
     {
         if (it == _waiting_connect_tcp_clients.end())
         {
-            LOG(Log::LogLevel::DEBUG, "Connecting to %s : %s", addr.to_string(true).c_str(), peer_id.c_str());
+            LOG(Log::LogLevel::DEBUG, "Connecting to %s : %s", addr.to_string(true).c_str(), std::to_string(peer_id).c_str());
             
             _waiting_connect_tcp_clients.emplace(peer_id, tcp_socket());
             it = _waiting_connect_tcp_clients.find(peer_id);
@@ -358,14 +392,11 @@ void Network::connect_to_peer(ipv4_addr &addr, peer_t const& peer_id)
         Network_Message_pb msg;
         build_advertise_msg(msg);
 
-        // Useful if you change the max packet size, you won't have to change all code
-        using next_packet_size_t = decltype(tcp_buffer_t::next_packet_size);
-        next_packet_size_t next_packet_size;
-
         std::string buff(sizeof(next_packet_size_t), 0);
         
     #if defined(NETWORK_COMPRESS)
-        std::string data(std::move(msg.SerializeAsString()));
+        std::string data;
+        msg.SerializeToString(&data);
         buff += std::move(compress(data.data(), data.length()));
 
         max_message_size = std::max<uint64_t>(max_message_size, data.length());
@@ -373,13 +404,15 @@ void Network::connect_to_peer(ipv4_addr &addr, peer_t const& peer_id)
     #else
         buff += std::move(msg.SerializeAsString());
     #endif
-        *reinterpret_cast<next_packet_size_t*>(&buff[0]) = Socket::net_swap(next_packet_size_t(buff.length() - sizeof(next_packet_size_t)));
+        *reinterpret_cast<next_packet_size_t*>(&buff[0]) = make_next_packet_size(buff);
 
         it->second.send(buff.data(), buff.length());
 
-        LOG(Log::LogLevel::DEBUG, "Connected to %s : %s", it->second.get_addr().to_string(true).c_str(), peer_id.c_str());
+        LOG(Log::LogLevel::DEBUG, "Connected to %s : %s", it->second.get_addr().to_string(true).c_str(), std::to_string(peer_id).c_str());
 
-        _waiting_out_tcp_clients.emplace(peer_id, std::move(it->second));
+        tcp_buffer_t tcp_buffer{};
+        tcp_buffer.socket = std::move(it->second);
+        _waiting_out_tcp_clients.emplace(peer_id, std::move(tcp_buffer));
         _waiting_connect_tcp_clients.erase(it);
     }
 }
@@ -389,34 +422,58 @@ void Network::process_waiting_out_clients()
     if (_waiting_out_tcp_clients.empty())
         return;
 
-    std::array<uint8_t, 2048> buffer;
     Network_Message_pb msg;
-    size_t len;
     for (auto it = _waiting_out_tcp_clients.begin(); it != _waiting_out_tcp_clients.end(); )
     {
         try
         {
-            if ((len = it->second.recv(buffer.data(), buffer.size())) > 0)
+            unsigned long count = 0;
+            it->second.socket.ioctlsocket(Socket::cmd_name::fionread, &count);
+            if (count > 0)
             {
-                if (msg.ParseFromArray(buffer.data(), len) && msg.has_network_advertise() && msg.network_advertise().has_accept())
+                if (it->second.next_packet_size == 0 && count > sizeof(next_packet_size_t))
                 {
-                    std::lock_guard<std::recursive_mutex> lk(local_mutex);
-
-                    LOG(Log::LogLevel::DEBUG, "Paired with %s : %s", it->second.get_addr().to_string(true).c_str(), it->first.c_str());
-                    tcp_buffer_t new_buff{};
-                    new_buff.socket = std::move(it->second);
-                    new_buff.socket.set_nonblocking(false);
-                    _tcp_clients.emplace_back(std::move(new_buff));
-
-                    add_new_tcp_client(&(_tcp_clients.rbegin()->socket), std::vector<peer_t>{it->first}, false);
+                    it->second.socket.recv(&it->second.next_packet_size, sizeof(next_packet_size_t));
+                    it->second.next_packet_size = Socket::net_swap(it->second.next_packet_size);
+                    count -= sizeof(next_packet_size_t);
                 }
-                // Dropping outgoing connection if we don't accept it
-                it = _waiting_out_tcp_clients.erase(it);
+                if (it->second.next_packet_size > 0 && count >= it->second.next_packet_size)
+                {
+                    it->second.buffer.resize(it->second.next_packet_size);
+                    it->second.socket.recv(it->second.buffer.data(), it->second.next_packet_size);
+
+                    const void* message;
+                    int message_size;
+
+                    // Don't compress the accept message, its only 4 bytes long
+                //#if defined(NETWORK_COMPRESS)
+                //    std::string buff = std::move(decompress(it->second.buffer.data(), it->second.buffer.size()));
+                //    message = buff.data();
+                //    message_size = buff.length();
+                //#else
+                    message = it->second.buffer.data();
+                    message_size = it->second.buffer.size();
+                //#endif
+                    
+                    if (msg.ParseFromArray(message, message_size) &&
+                        msg.has_network_advertise() && 
+                        msg.network_advertise().has_accept())
+                    {
+                        std::lock_guard<std::recursive_mutex> lk(local_mutex);
+
+                        it->second.next_packet_size = 0;
+                        it->second.buffer.clear();
+                        it->second.socket.set_nonblocking(false);
+
+                        _tcp_clients.emplace_back(std::move(it->second));
+                        add_new_tcp_client(&(_tcp_clients.rbegin()->socket), std::vector<peer_t>{it->first}, false);
+                    }
+                    it = _waiting_out_tcp_clients.erase(it);
+                    continue;
+                }
             }
-            else
-            {// Don't have data to read
-                ++it;
-            }
+            
+            ++it;
         }
         catch (std::exception &e)
         {
@@ -429,7 +486,6 @@ void Network::process_waiting_out_clients()
 
 void Network::process_waiting_in_client()
 {
-    std::array<uint8_t, 2048> buff;
     Network_Message_pb msg;
     for (auto it = _waiting_in_tcp_clients.begin(); it != _waiting_in_tcp_clients.end(); )
     {
@@ -439,22 +495,22 @@ void Network::process_waiting_in_client()
             it->socket.ioctlsocket(Socket::cmd_name::fionread, &count);
             if (count > 0)
             {
-                if (it->next_packet_size == 0 && count > sizeof(tcp_buffer_t::next_packet_size))
+                if (it->next_packet_size == 0 && count > sizeof(next_packet_size_t))
                 {
-                    it->socket.recv(&it->next_packet_size, sizeof(it->next_packet_size));
+                    it->socket.recv(&it->next_packet_size, sizeof(next_packet_size_t));
                     it->next_packet_size = Socket::net_swap(it->next_packet_size);
-                    count -= sizeof(it->next_packet_size);
+                    count -= sizeof(next_packet_size_t);
                 }
                 if (it->next_packet_size > 0 && count >= it->next_packet_size)
                 {
                     it->buffer.resize(it->next_packet_size);
                     it->socket.recv(it->buffer.data(), it->next_packet_size);
-                    
+
                     const void* message;
                     int message_size;
 
                 #if defined(NETWORK_COMPRESS)
-                    std::string buff = std::move(decompress(it->buffer.data(), it->buffer.size()));
+                    std::string buff = std::move(decompress(it->buffer.data(), it->next_packet_size));
                     message = buff.data();
                     message_size = buff.length();
                 #else
@@ -468,6 +524,7 @@ void Network::process_waiting_in_client()
                     {
                         std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
+                        it->next_packet_size = 0;
                         it->buffer.clear();
                         it->socket.set_nonblocking(false);
 
@@ -553,14 +610,12 @@ void Network::process_udp()
             {
                 if (msg.source_id() != peer_t())
                 {
-                    {
-                        std::lock_guard<std::recursive_mutex> lk(local_mutex);
-                        _udp_addrs[msg.source_id()] = addr;
-                    }
+                    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+                    _udp_addrs[msg.source_id()] = addr;
+
                     //LOG(Log::LogLevel::TRACE, "Received UDP message from: %s - %s", addr.to_string().c_str(), msg.source_id().c_str());
                     if (msg.has_network_advertise())
                     {
-                        std::lock_guard<std::recursive_mutex> lk(local_mutex);
                         if (_advertise)
                         {
                             auto const& advertise = msg.network_advertise();
@@ -627,7 +682,6 @@ void Network::process_tcp_listen()
 void Network::process_tcp_data(tcp_buffer_t& tcp_buffer)
 {
     // Don't lock here, its already locked in network_thread when needed
-
     Network_Message_pb msg;
     size_t len;
 
@@ -640,11 +694,14 @@ void Network::process_tcp_data(tcp_buffer_t& tcp_buffer)
 
         len = tcp_buffer.socket.recv(tcp_buffer.buffer.data() + buff_len, count);
 
-        while(tcp_buffer.buffer.size() >= sizeof(tcp_buffer.next_packet_size))
+        while(tcp_buffer.buffer.size() > 0)
         {
-            tcp_buffer.next_packet_size = *reinterpret_cast<uint32_t*>(&tcp_buffer.buffer[0]);
-            tcp_buffer.next_packet_size = Socket::net_swap(tcp_buffer.next_packet_size);
-            tcp_buffer.buffer.erase(tcp_buffer.buffer.begin(), tcp_buffer.buffer.begin() + sizeof(tcp_buffer.next_packet_size));
+            if (tcp_buffer.next_packet_size == 0 && tcp_buffer.buffer.size() >= sizeof(next_packet_size_t))
+            {
+                tcp_buffer.next_packet_size = *reinterpret_cast<next_packet_size_t*>(&tcp_buffer.buffer[0]);
+                tcp_buffer.next_packet_size = Socket::net_swap(tcp_buffer.next_packet_size);
+                tcp_buffer.buffer.erase(tcp_buffer.buffer.begin(), tcp_buffer.buffer.begin() + sizeof(tcp_buffer.next_packet_size));
+            }
 
             if (tcp_buffer.next_packet_size > 0 && tcp_buffer.buffer.size() >= tcp_buffer.next_packet_size)
             {
@@ -666,6 +723,10 @@ void Network::process_tcp_data(tcp_buffer_t& tcp_buffer)
                 }
                 tcp_buffer.buffer.erase(tcp_buffer.buffer.begin(), tcp_buffer.buffer.begin() + tcp_buffer.next_packet_size);
                 tcp_buffer.next_packet_size = 0;
+            }
+            else
+            {
+                break;
             }
         }
     }
@@ -863,7 +924,8 @@ bool Network::SendBroadcast(Network_Message_pb& msg)
 
     msg.set_timestamp(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 
-    std::string buffer(std::move(msg.SerializeAsString()));
+    std::string buffer;
+    msg.SerializeToString(&buffer);
 #if defined(NETWORK_COMPRESS)
     max_message_size = std::max<uint64_t>(max_message_size, buffer.length());
 
@@ -908,7 +970,8 @@ std::set<Network::peer_t> Network::UDPSendToAllPeers(Network_Message_pb& msg)
         msg.set_dest_id(peer_infos.first);
         msg.set_timestamp(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 
-        std::string buffer(std::move(msg.SerializeAsString()));
+        std::string buffer;
+        msg.SerializeToString(&buffer);
 
     #if defined(NETWORK_COMPRESS)
         buffer = std::move(compress(buffer.data(), buffer.length()));
@@ -950,7 +1013,8 @@ bool Network::UDPSendTo(Network_Message_pb& msg)
 
     msg.set_timestamp(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 
-    std::string buffer(std::move(msg.SerializeAsString()));
+    std::string buffer;
+    msg.SerializeToString(&buffer);
 
 #if defined(NETWORK_COMPRESS)
     max_message_size = std::max<uint64_t>(max_message_size, buffer.length());
@@ -962,7 +1026,7 @@ bool Network::UDPSendTo(Network_Message_pb& msg)
     try
     {
         _udp_socket.sendto(it->second, buffer.data(), buffer.length());
-        LOG(Log::LogLevel::DEBUG, "Sent message to peer_id: %s, addr: %s", msg.dest_id().c_str(), it->second.to_string().c_str());
+        LOG(Log::LogLevel::DEBUG, "Sent message to peer_id: %s, addr: %s", std::to_string(msg.dest_id()).c_str(), it->second.to_string().c_str());
     }
     catch (socket_exception & e)
     {
@@ -989,14 +1053,11 @@ std::set<Network::peer_t> Network::TCPSendToAllPeers(Network_Message_pb& msg)
         msg.set_dest_id(client.first);
         msg.set_timestamp(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 
-        // Useful if you change the max packet size, you won't have to change all code
-        using next_packet_size_t = decltype(tcp_buffer_t::next_packet_size);
-        next_packet_size_t next_packet_size;
-
         std::string buffer(sizeof(next_packet_size_t), 0);
 
     #if defined(NETWORK_COMPRESS)
-        std::string data(std::move(msg.SerializeAsString()));
+        std::string data;
+        msg.SerializeToString(&data);
 
         max_message_size = std::max<uint64_t>(max_message_size, data.length());
 
@@ -1006,7 +1067,7 @@ std::set<Network::peer_t> Network::TCPSendToAllPeers(Network_Message_pb& msg)
         buffer += std::move(msg.SerializeAsString());
     #endif
 
-        *reinterpret_cast<next_packet_size_t*>(&buffer[0]) = Socket::net_swap(next_packet_size_t(buffer.length() - sizeof(next_packet_size_t)));
+        *reinterpret_cast<next_packet_size_t*>(&buffer[0]) = make_next_packet_size(buffer);
 
         try
         {
@@ -1041,14 +1102,11 @@ bool Network::TCPSendTo(Network_Message_pb& msg)
 
     msg.set_timestamp(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 
-    // Useful if you change the max packet size, you won't have to change all code
-    using next_packet_size_t = decltype(tcp_buffer_t::next_packet_size);
-    next_packet_size_t next_packet_size;
-
     std::string buffer(sizeof(next_packet_size_t), 0);
 
 #if defined(NETWORK_COMPRESS)
-    std::string data(std::move(msg.SerializeAsString()));
+    std::string data;
+    msg.SerializeToString(&data);
 
     max_message_size = std::max<uint64_t>(max_message_size, data.length());
 
@@ -1058,7 +1116,7 @@ bool Network::TCPSendTo(Network_Message_pb& msg)
     buffer += std::move(msg.SerializeAsString());
 #endif
 
-    *reinterpret_cast<next_packet_size_t*>(&buffer[0]) = Socket::net_swap(next_packet_size_t(buffer.length() - sizeof(next_packet_size_t)));
+    *reinterpret_cast<next_packet_size_t*>(&buffer[0]) = make_next_packet_size(buffer);
 
     try
     {
