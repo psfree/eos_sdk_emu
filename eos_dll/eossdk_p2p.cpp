@@ -417,16 +417,17 @@ void EOSSDK_P2P::QueryNATType(const EOS_P2P_QueryNATTypeOptions* Options, void* 
         return;
 
     pFrameResult_t res(new FrameResult);
-    EOS_P2P_OnQueryNATTypeCompleteInfo& pqntci = res->CreateCallback<EOS_P2P_OnQueryNATTypeCompleteInfo>((CallbackFunc)NATTypeQueriedHandler, std::chrono::milliseconds(15000));
+    EOS_P2P_OnQueryNATTypeCompleteInfo& pqntci = res->CreateCallback<EOS_P2P_OnQueryNATTypeCompleteInfo>((CallbackFunc)NATTypeQueriedHandler, std::chrono::milliseconds(5000));
     pqntci.ClientData = ClientData;
-    pqntci.NATType = EOS_ENATType::EOS_NAT_Moderate;
 
     if (Options == nullptr)
     {
+        pqntci.NATType = EOS_ENATType::EOS_NAT_Unknown;
         pqntci.ResultCode = EOS_EResult::EOS_InvalidParameters;
     }
     else
     {
+        pqntci.NATType = EOS_ENATType::EOS_NAT_Open;
         pqntci.ResultCode = EOS_EResult::EOS_Success;
     }
     
