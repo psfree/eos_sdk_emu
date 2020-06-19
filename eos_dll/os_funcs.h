@@ -65,7 +65,13 @@ LOCAL_API std::string get_executable_path();
 // .dll, .so or .dylib full path
 LOCAL_API std::string get_module_path();
 
-LOCAL_API std::vector<PortableAPI::ipv4_addr> get_broadcasts();
+struct iface_ip_t
+{
+    uint32_t ip;   // Host ordered
+    uint32_t mask; // Host ordered
+};
+LOCAL_API std::vector<iface_ip_t> const& get_ifaces_ip();
+LOCAL_API std::vector<PortableAPI::ipv4_addr> const& get_broadcasts();
 
 // Filesystem related functions
 LOCAL_API std::string process_path(std::string const& path);
