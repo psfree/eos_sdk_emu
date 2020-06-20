@@ -96,6 +96,31 @@ EOS_ProductUserId EOSSDK_Client::get_productuserid(std::string const& userid)
  * EOS_InvalidParameters is returned if the provided options are invalid.
  */
 // I:\TetrisEffect\TetrisEffect\Binaries\Win64\TetrisEffect-Win64-Shipping.exe
+static bool set_eos_compat(int32_t compat_version)
+{
+    int failed = false;
+#if ! defined(__WINDOWS_32__)
+    if (compat_version == 1)
+    {
+        LOG(Log::LogLevel::DEBUG, "Tryiing to replace EOS_Auth_CopyUserAuthToken(%p) with EOS_Auth_CopyUserAuthTokenOld(%p)", EOS_Auth_CopyUserAuthToken, EOS_Auth_CopyUserAuthTokenOld);
+        if (mini_detour::replace_func((void*)EOS_Auth_CopyUserAuthToken, (void*)EOS_Auth_CopyUserAuthTokenOld) ||
+            mini_detour::replace_func((void*)EOS_Auth_AddNotifyLoginStatusChanged, (void*)EOS_Auth_AddNotifyLoginStatusChangedOld))
+        {
+            failed = true;
+        }
+    }
+    else
+    {
+        LOG(Log::LogLevel::DEBUG, "Tryiing to replace EOS_Auth_CopyUserAuthToken(%p) with EOS_Auth_CopyUserAuthTokenNew(%p)", EOS_Auth_CopyUserAuthToken, EOS_Auth_CopyUserAuthTokenNew);
+        if (mini_detour::replace_func((void*)EOS_Auth_CopyUserAuthToken, (void*)EOS_Auth_CopyUserAuthTokenNew) ||
+            mini_detour::replace_func((void*)EOS_Auth_AddNotifyLoginStatusChanged, (void*)EOS_Auth_AddNotifyLoginStatusChangedNew))
+        {
+            failed = true;
+        }
+    }
+#endif
+    return failed;
+}
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Options)
 {
@@ -117,27 +142,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
         disable_online_networking();
     }
 
-    int failed = false;
-    if (Options->ApiVersion == 1)
-    {
-        LOG(Log::LogLevel::DEBUG, "Tryiing to replace EOS_Auth_CopyUserAuthToken(%p) with EOS_Auth_CopyUserAuthTokenOld(%p)", EOS_Auth_CopyUserAuthToken, EOS_Auth_CopyUserAuthTokenOld);
-        if (mini_detour::replace_func((void*)EOS_Auth_CopyUserAuthToken, (void*)EOS_Auth_CopyUserAuthTokenOld) ||
-            mini_detour::replace_func((void*)EOS_Auth_AddNotifyLoginStatusChanged, (void*)EOS_Auth_AddNotifyLoginStatusChangedOld))
-        {
-            failed = true;
-        }
-    }
-    else
-    {
-        LOG(Log::LogLevel::DEBUG, "Tryiing to replace EOS_Auth_CopyUserAuthToken(%p) with EOS_Auth_CopyUserAuthTokenNew(%p)", EOS_Auth_CopyUserAuthToken, EOS_Auth_CopyUserAuthTokenNew);
-        if (mini_detour::replace_func((void*)EOS_Auth_CopyUserAuthToken, (void*)EOS_Auth_CopyUserAuthTokenNew) ||
-            mini_detour::replace_func((void*)EOS_Auth_AddNotifyLoginStatusChanged, (void*)EOS_Auth_AddNotifyLoginStatusChangedNew))
-        {
-            failed = true;
-        }
-    }
-
-    if (failed)
+    if (set_eos_compat(Options->ApiVersion))
     {
         LOG(Log::LogLevel::FATAL, "Couldn't replace our dummy EOS_Auth_CopyUserAuthToken, the function will not work and thus we terminate.");
         abort();

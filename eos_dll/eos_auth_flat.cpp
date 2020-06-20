@@ -178,6 +178,11 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthTokenNew(EOS_HAuth Handle, co
 #ifdef _MSC_VER
 #pragma optimize("", off)
 #endif
+
+#if defined(__WINDOWS_32__)
+#pragma comment(linker, "/export:_EOS_Auth_CopyUserAuthToken@16=_EOS_Auth_CopyUserAuthTokenNew@16")
+#pragma comment(linker, "/export:_EOS_Auth_CopyUserAuthToken@12=_EOS_Auth_CopyUserAuthTokenOld@12")
+#else
 EOS_DECLARE_FUNC(EOS_EResult) CLANG_GCC_DONT_OPTIMIZE EOS_Auth_CopyUserAuthToken()
 {
     // Build rewrittable opcodes, need 14 for x64 absolute jmp and 5 for x86 relative jmp
@@ -187,6 +192,7 @@ EOS_DECLARE_FUNC(EOS_EResult) CLANG_GCC_DONT_OPTIMIZE EOS_Auth_CopyUserAuthToken
     EOS_Auth_CopyUserAuthTokenOld(nullptr, nullptr, nullptr);
     return EOS_EResult::EOS_NotImplemented;
 }
+#endif
 #ifdef _MSC_VER
 #pragma optimize("", on)
 #endif
@@ -222,6 +228,10 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Auth_AddNotifyLoginStatusChangedNew(EOS
 #ifdef _MSC_VER
 #pragma optimize("", off)
 #endif
+#if defined(__WINDOWS_32__)
+#pragma comment(linker, "/export:_EOS_Auth_AddNotifyLoginStatusChanged@16=_EOS_Auth_AddNotifyLoginStatusChangedNew@16")
+#pragma comment(linker, "/export:_EOS_Auth_AddNotifyLoginStatusChanged@12=_EOS_Auth_AddNotifyLoginStatusChangedOld@12")
+#else
 EOS_DECLARE_FUNC(EOS_NotificationId) CLANG_GCC_DONT_OPTIMIZE EOS_Auth_AddNotifyLoginStatusChanged()
 {
     // Build rewrittable opcodes, need 14 for x64 absolute jmp and 5 for x86 relative jmp
@@ -231,6 +241,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) CLANG_GCC_DONT_OPTIMIZE EOS_Auth_AddNotifyL
     EOS_Auth_AddNotifyLoginStatusChangedOld(nullptr, nullptr, nullptr);
     return EOS_INVALID_NOTIFICATIONID;
 }
+#endif
 #ifdef _MSC_VER
 #pragma optimize("", on)
 #endif

@@ -21,7 +21,7 @@
 
 #include "common_includes.h"
 
-using CallbackFunc = void(*)(void*);
+using CallbackFunc = void(EOS_CALL *)(void*);
 
 struct CallbackMessage_t
 {
