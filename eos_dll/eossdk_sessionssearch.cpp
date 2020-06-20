@@ -44,6 +44,13 @@ EOSSDK_SessionSearch::~EOSSDK_SessionSearch()
     GetCB_Manager().unregister_callbacks(this);
 }
 
+bool EOSSDK_SessionSearch::released()
+{
+    std::lock_guard<std::mutex> lk(_local_mutex);
+    bool res = _released;
+    return res;
+}
+
 /**
  * Class responsible for the creation, setup, and execution of a search query.
  * Search parameters are defined, the query is executed and the search results are returned within this object

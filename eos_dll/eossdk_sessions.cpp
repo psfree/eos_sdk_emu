@@ -1675,7 +1675,7 @@ bool EOSSDK_Sessions::CBRunFrame()
 
     for (auto it = _session_searchs.begin(); it != _session_searchs.end();)
     {
-        if ((*it)->_released)
+        if ((*it)->released())
         {
             delete *it;
             it = _session_searchs.erase(it);

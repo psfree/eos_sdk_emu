@@ -77,6 +77,8 @@ namespace sdk
         EOSSDK_SessionSearch();
         ~EOSSDK_SessionSearch();
 
+        bool released();
+
         // Send Network messages
         bool send_sessions_search(Sessions_Search_pb *search);
 
