@@ -66,6 +66,8 @@ namespace sdk
         bool send_my_presence_info_to_all_peers();
 
         // Receive Network messages
+        bool on_peer_connect(Network_Message_pb const& msg, Network_Peer_Connect_pb const& peer);
+        bool on_peer_disconnect(Network_Message_pb const& msg, Network_Peer_Disconnect_pb const& peer);
         bool on_presence_request(Network_Message_pb const& msg, Presence_Info_Request_pb const& req);
         bool on_presence_infos(Network_Message_pb const& msg, Presence_Info_pb const& infos);
 

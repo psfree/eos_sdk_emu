@@ -25,8 +25,6 @@
 namespace sdk
 {
 
-decltype(EOSSDK_Connect::alive_heartbeat_rate) EOSSDK_Connect::alive_heartbeat_rate;
-decltype(EOSSDK_Connect::alive_heartbeat)      EOSSDK_Connect::alive_heartbeat;
 decltype(EOSSDK_Connect::user_infos_rate)      EOSSDK_Connect::user_infos_rate;
 
 EOSSDK_Connect::EOSSDK_Connect()
@@ -40,16 +38,21 @@ EOSSDK_Connect::EOSSDK_Connect()
     LOG(Log::LogLevel::DEBUG, "Userid: %s, Productid: %s", Settings::Inst().userid->to_string().c_str(), userProductId->to_string().c_str());
     GetNetwork().set_default_channel(userProductId->to_string(), 0);
     GetNetwork().advertise_peer_id(userProductId->to_string());
-    GetNetwork().advertise(true);
 
     GetCB_Manager().register_callbacks(this);
     GetCB_Manager().register_frame(this);
+
+    GetNetwork().register_listener(this, 0, Network_Message_pb::MessagesCase::kNetworkAdvertise);
     GetNetwork().register_listener(this, 0, Network_Message_pb::MessagesCase::kConnect);
+
+    GetNetwork().advertise(true);
 }
 
 EOSSDK_Connect::~EOSSDK_Connect()
 {
     GetNetwork().unregister_listener(this, 0, Network_Message_pb::MessagesCase::kConnect);
+    GetNetwork().unregister_listener(this, 0, Network_Message_pb::MessagesCase::kNetworkAdvertise);
+
     GetCB_Manager().unregister_frame(this);
     GetCB_Manager().unregister_callbacks(this);
 
@@ -613,23 +616,6 @@ EOS_EResult EOSSDK_Connect::CopyProductUserInfo(const EOS_Connect_CopyProductUse
 ///////////////////////////////////////////////////////////////////////////////
 //                           Network Send messages                           //
 ///////////////////////////////////////////////////////////////////////////////
-bool EOSSDK_Connect::send_connect_heartbeat(Connect_Heartbeat_pb* hb)
-{
-    //TRACE_FUNC();
-    std::string const& user_id = product_id()->to_string();
-
-    Network_Message_pb msg;
-    Connect_Message_pb* conn = new Connect_Message_pb;
-
-    conn->set_allocated_heartbeat(hb);
-
-    msg.set_source_id(user_id);
-    msg.set_allocated_connect(conn);
-
-    GetNetwork().TCPSendToAllPeers(msg);
-    return true;
-}
-
 bool EOSSDK_Connect::send_connect_infos_request(Network::peer_t const& peerid, Connect_Request_Info_pb* req)
 {
     //TRACE_FUNC();
@@ -667,15 +653,31 @@ bool EOSSDK_Connect::send_connect_infos(Network::peer_t const& peerid, Connect_I
 ///////////////////////////////////////////////////////////////////////////////
 //                          Network Receive messages                         //
 ///////////////////////////////////////////////////////////////////////////////
-bool EOSSDK_Connect::on_connect_heartbeat(Network_Message_pb const& msg, Connect_Heartbeat_pb const& hb)
+bool EOSSDK_Connect::on_peer_connect(Network_Message_pb const& msg, Network_Peer_Connect_pb const& peer)
 {
-    //TRACE_FUNC();
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
-    auto &user = _users[GetProductUserId(msg.source_id())];
-
+    EOS_ProductUserId product_id = GetProductUserId(msg.source_id());
+    auto& user = _users[product_id];
     user.connected = true;
-    user.last_hearbeat = std::chrono::steady_clock::now();
+    user.infos = Connect_Infos_pb{};
+    user.last_infos = std::chrono::steady_clock::time_point{};
+
+    return true;
+}
+
+bool EOSSDK_Connect::on_peer_disconnect(Network_Message_pb const& msg, Network_Peer_Disconnect_pb const& peer)
+{
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+
+    // Presence need to know when a user disconnects
+    GetEOS_Presence().on_peer_disconnect(msg, peer);
+
+    EOS_ProductUserId product_id = GetProductUserId(msg.source_id());
+    _users[product_id].connected = false;
+    _users[product_id].authentified = false;
 
     return true;
 }
@@ -698,17 +700,26 @@ bool EOSSDK_Connect::on_connect_infos(Network_Message_pb const& msg, Connect_Inf
     GLOBAL_LOCK();
 
     auto& user = _users[GetProductUserId(msg.source_id())];
-    auto now = std::chrono::steady_clock::now();
 
-    user.infos = infos;
-    user.last_infos = now;
-
-    std::vector<pFrameResult_t> notifs = std::move(GetCB_Manager().get_notifications(&GetEOS_Friends(), EOS_Friends_OnFriendsUpdateInfo::k_iCallback));
-    for (auto& notif : notifs)
+    if (user.connected)
     {
-        EOS_Friends_OnFriendsUpdateInfo& ofui = notif->GetCallback<EOS_Friends_OnFriendsUpdateInfo>();
-        ofui.TargetUserId = GetEpicUserId(user.infos.userid());
-        notif->res.cb_func(notif->res.data);
+        user.infos = infos;
+        user.last_infos = std::chrono::steady_clock::now();
+        if (!user.authentified)
+        {
+            user.authentified = true;
+
+            Network_Peer_Connect_pb connect;
+            GetEOS_Presence().on_peer_connect(msg, connect);
+        }
+
+        std::vector<pFrameResult_t> notifs = std::move(GetCB_Manager().get_notifications(&GetEOS_Friends(), EOS_Friends_OnFriendsUpdateInfo::k_iCallback));
+        for (auto& notif : notifs)
+        {
+            EOS_Friends_OnFriendsUpdateInfo& ofui = notif->GetCallback<EOS_Friends_OnFriendsUpdateInfo>();
+            ofui.TargetUserId = GetEpicUserId(user.infos.userid());
+            notif->res.cb_func(notif->res.data);
+        }
     }
 
     return true;
@@ -726,27 +737,12 @@ bool EOSSDK_Connect::CBRunFrame()
 
     auto now = std::chrono::steady_clock::now();
 
-    if ((now - get_myself()->second.last_hearbeat) > alive_heartbeat_rate)
-    {
-        Connect_Heartbeat_pb* hb = new Connect_Heartbeat_pb;
-        send_connect_heartbeat(hb);
-        get_myself()->second.last_hearbeat = now;
-    }
-
     auto user_it = _users.begin();
     ++user_it;
     for (; user_it != _users.end(); ++user_it)
     {
         if (!user_it->second.connected)
             continue;
-
-        if ((now - user_it->second.last_hearbeat) > alive_heartbeat)
-        {
-            //LOG(Log::LogLevel::DEBUG, "User disconnected (pid=%s, uid=%s)", user.first->to_string().c_str(), user.second.infos.userid().c_str());
-            //user.second.connected = false;
-            //GetEOS_Presence().set_user_status(GetEpicUserId(user.second.infos.userid()), EOS_Presence_EStatus::EOS_PS_Offline);
-            continue;
-        }
 
         if ((now - user_it->second.last_infos) > user_infos_rate)
         {
@@ -764,14 +760,30 @@ bool EOSSDK_Connect::RunNetwork(Network_Message_pb const& msg)
     if (GetProductUserId(msg.source_id()) == product_id())
         return true;
 
-    Connect_Message_pb const& conn = msg.connect();
-
-    switch (conn.message_case())
+    switch (msg.messages_case())
     {
-        case Connect_Message_pb::MessageCase::kHeartbeat: return on_connect_heartbeat(msg, conn.heartbeat());
-        case Connect_Message_pb::MessageCase::kRequest  : return on_connect_infos_request(msg, conn.request());
-        case Connect_Message_pb::MessageCase::kInfos    : return on_connect_infos(msg, conn.infos());
-        default: LOG(Log::LogLevel::WARN, "Unhandled network message %d", conn.message_case());
+        case Network_Message_pb::MessagesCase::kNetworkAdvertise:
+        {
+            Network_Advertise_pb const& adv = msg.network_advertise();
+            switch (adv.message_case())
+            {
+                case Network_Advertise_pb::MessageCase::kPeerConnect   : return on_peer_connect(msg, adv.peer_connect());
+                case Network_Advertise_pb::MessageCase::kPeerDisconnect: return on_peer_disconnect(msg, adv.peer_disconnect());
+            }
+        }
+        break;
+
+        case Network_Message_pb::MessagesCase::kConnect:
+        {
+            Connect_Message_pb const& conn = msg.connect();
+            switch (conn.message_case())
+            {
+                case Connect_Message_pb::MessageCase::kRequest  : return on_connect_infos_request(msg, conn.request());
+                case Connect_Message_pb::MessageCase::kInfos    : return on_connect_infos(msg, conn.infos());
+                default: LOG(Log::LogLevel::WARN, "Unhandled network message %d", conn.message_case());
+            }
+        }
+        break;
     }
 
     return true;
@@ -789,66 +801,66 @@ void EOSSDK_Connect::FreeCallback(pFrameResult_t res)
     GLOBAL_LOCK();
 
     //switch (res->res.m_iCallback)
-    {
-        /////////////////////////////
-        //        Callbacks        //
-        /////////////////////////////
-        //case EOS_Connect_LoginCallbackInfo::k_iCallback:
-        //{
-        //    EOS_Connect_LoginCallbackInfo& callback = res->GetCallback<EOS_Connect_LoginCallbackInfo>();
-        //}
-        //break;
-        //
-        //case EOS_Connect_CreateUserCallbackInfo::k_iCallback:
-        //{
-        //    EOS_Connect_CreateUserCallbackInfo& callback = res->GetCallback<EOS_Connect_CreateUserCallbackInfo>();
-        //}
-        //break;
-        //
-        //case EOS_Connect_LinkAccountCallbackInfo::k_iCallback:
-        //{
-        //    EOS_Connect_LinkAccountCallbackInfo& callback = res->GetCallback<EOS_Connect_LinkAccountCallbackInfo>();
-        //}
-        //break;
-        //
-        //case EOS_Connect_CreateDeviceIdCallbackInfo::k_iCallback:
-        //{
-        //    EOS_Connect_CreateDeviceIdCallbackInfo& callback = res->GetCallback<EOS_Connect_CreateDeviceIdCallbackInfo>();
-        //}
-        //break;
-        //
-        //case EOS_Connect_DeleteDeviceIdCallbackInfo::k_iCallback:
-        //{
-        //    EOS_Connect_DeleteDeviceIdCallbackInfo& callback = res->GetCallback<EOS_Connect_DeleteDeviceIdCallbackInfo>();
-        //}
-        //break;
-        //
-        //case EOS_Connect_QueryExternalAccountMappingsCallbackInfo::k_iCallback:
-        //{
-        //    EOS_Connect_QueryExternalAccountMappingsCallbackInfo& callback = res->GetCallback<EOS_Connect_QueryExternalAccountMappingsCallbackInfo>();
-        //}
-        //break;
-        //
-        //case EOS_Connect_QueryProductUserIdMappingsCallbackInfo::k_iCallback:
-        //{
-        //    EOS_Connect_QueryProductUserIdMappingsCallbackInfo& callback = res->GetCallback<EOS_Connect_QueryProductUserIdMappingsCallbackInfo>();
-        //}
-        //break;
-        /////////////////////////////
-        //      Notifications      //
-        /////////////////////////////
-        //case EOS_Connect_AuthExpirationCallbackInfo::k_iCallback:
-        //{
-        //    EOS_Connect_AuthExpirationCallbackInfo& callback = res->GetCallback<EOS_Connect_AuthExpirationCallbackInfo>();
-        //}
-        //break;
-        //
-        //case EOS_Connect_LoginStatusChangedCallbackInfo::k_iCallback:
-        //{
-        //    EOS_Connect_LoginStatusChangedCallbackInfo& callback = res->GetCallback<EOS_Connect_LoginStatusChangedCallbackInfo>();
-        //}
-        //break;
-    }
+    //{
+    //    /////////////////////////////
+    //    //        Callbacks        //
+    //    /////////////////////////////
+    //    case EOS_Connect_LoginCallbackInfo::k_iCallback:
+    //    {
+    //        EOS_Connect_LoginCallbackInfo& callback = res->GetCallback<EOS_Connect_LoginCallbackInfo>();
+    //    }
+    //    break;
+    //    
+    //    case EOS_Connect_CreateUserCallbackInfo::k_iCallback:
+    //    {
+    //        EOS_Connect_CreateUserCallbackInfo& callback = res->GetCallback<EOS_Connect_CreateUserCallbackInfo>();
+    //    }
+    //    break;
+    //    
+    //    case EOS_Connect_LinkAccountCallbackInfo::k_iCallback:
+    //    {
+    //        EOS_Connect_LinkAccountCallbackInfo& callback = res->GetCallback<EOS_Connect_LinkAccountCallbackInfo>();
+    //    }
+    //    break;
+    //    
+    //    case EOS_Connect_CreateDeviceIdCallbackInfo::k_iCallback:
+    //    {
+    //        EOS_Connect_CreateDeviceIdCallbackInfo& callback = res->GetCallback<EOS_Connect_CreateDeviceIdCallbackInfo>();
+    //    }
+    //    break;
+    //    
+    //    case EOS_Connect_DeleteDeviceIdCallbackInfo::k_iCallback:
+    //    {
+    //        EOS_Connect_DeleteDeviceIdCallbackInfo& callback = res->GetCallback<EOS_Connect_DeleteDeviceIdCallbackInfo>();
+    //    }
+    //    break;
+    //    
+    //    case EOS_Connect_QueryExternalAccountMappingsCallbackInfo::k_iCallback:
+    //    {
+    //        EOS_Connect_QueryExternalAccountMappingsCallbackInfo& callback = res->GetCallback<EOS_Connect_QueryExternalAccountMappingsCallbackInfo>();
+    //    }
+    //    break;
+    //    
+    //    case EOS_Connect_QueryProductUserIdMappingsCallbackInfo::k_iCallback:
+    //    {
+    //        EOS_Connect_QueryProductUserIdMappingsCallbackInfo& callback = res->GetCallback<EOS_Connect_QueryProductUserIdMappingsCallbackInfo>();
+    //    }
+    //    break;
+    //    /////////////////////////////
+    //    //      Notifications      //
+    //    /////////////////////////////
+    //    case EOS_Connect_AuthExpirationCallbackInfo::k_iCallback:
+    //    {
+    //        EOS_Connect_AuthExpirationCallbackInfo& callback = res->GetCallback<EOS_Connect_AuthExpirationCallbackInfo>();
+    //    }
+    //    break;
+    //    
+    //    case EOS_Connect_LoginStatusChangedCallbackInfo::k_iCallback:
+    //    {
+    //        EOS_Connect_LoginStatusChangedCallbackInfo& callback = res->GetCallback<EOS_Connect_LoginStatusChangedCallbackInfo>();
+    //    }
+    //    break;
+    //}
 }
 
 }

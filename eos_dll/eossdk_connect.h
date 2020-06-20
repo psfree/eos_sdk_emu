@@ -26,8 +26,8 @@ namespace sdk
 {
     struct user_state_t
     {
-        bool connected;
-        std::chrono::steady_clock::time_point last_hearbeat;
+        bool connected;    // Peer is connected
+        bool authentified; // We have peer infos
         std::chrono::steady_clock::time_point last_infos;
         Connect_Infos_pb infos;
     };
@@ -35,9 +35,7 @@ namespace sdk
     class EOSSDK_Connect :
         public IRunFrame
     {
-        static constexpr std::chrono::milliseconds alive_heartbeat_rate = std::chrono::milliseconds(5000);
-        static constexpr std::chrono::milliseconds alive_heartbeat      = std::chrono::milliseconds(10000);
-        static constexpr std::chrono::milliseconds user_infos_rate      = std::chrono::milliseconds(3000);
+        static constexpr std::chrono::milliseconds user_infos_rate = std::chrono::milliseconds(3000);
 
     public:
         std::string _username; // This is used for leaderboards thing ?
@@ -57,12 +55,12 @@ namespace sdk
         void remove_session(EOS_ProductUserId session_id, std::string const& session_name);
 
         // Send Network messages
-        bool send_connect_heartbeat(Connect_Heartbeat_pb* hb);
         bool send_connect_infos_request(Network::peer_t const& peerid, Connect_Request_Info_pb* req);
         bool send_connect_infos(Network::peer_t const& peerid, Connect_Infos_pb* infos);
 
         // Receive Network messages
-        bool on_connect_heartbeat(Network_Message_pb const& msg, Connect_Heartbeat_pb const& hb);
+        bool on_peer_connect(Network_Message_pb const& msg, Network_Peer_Connect_pb const& peer);
+        bool on_peer_disconnect(Network_Message_pb const& msg, Network_Peer_Disconnect_pb const& peer);
         bool on_connect_infos_request(Network_Message_pb const& msg, Connect_Request_Info_pb const& req);
         bool on_connect_infos(Network_Message_pb const& msg, Connect_Infos_pb const& infos);
 

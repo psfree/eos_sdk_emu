@@ -31,13 +31,13 @@ class LOCAL_API Network
 public:
     using channel_t = int32_t;
     using peer_t = std::string;
+    using next_packet_size_t = uint32_t;
 
     struct tcp_buffer_t
     {
         PortableAPI::tcp_socket socket;
         std::vector<uint8_t> buffer;
-        uint32_t next_packet_size;
-        uint32_t received_size;
+        next_packet_size_t next_packet_size;
     };
 
     using tcp_client_iterator = typename std::list<tcp_buffer_t>::iterator;
@@ -47,6 +47,10 @@ private:
     static constexpr uint16_t max_network_port = (network_port + 10);
 
 #if defined(NETWORK_COMPRESS)
+    // Performance counters
+    uint64_t max_message_size;
+    uint64_t max_compressed_message_size;
+
     ZSTD_CCtx   * _zstd_ccontext;
     ZSTD_DStream* _zstd_dstream;
 
@@ -66,8 +70,8 @@ private:
 
     PortableAPI::tcp_socket _tcp_socket;
     std::list<tcp_buffer_t> _tcp_clients;
-    std::map<peer_t, PortableAPI::tcp_socket> _waiting_out_tcp_clients;
     std::map<peer_t, PortableAPI::tcp_socket> _waiting_connect_tcp_clients;
+    std::map<peer_t, tcp_buffer_t>            _waiting_out_tcp_clients;
     std::list<tcp_buffer_t>                   _waiting_in_tcp_clients;
     PortableAPI::tcp_socket _tcp_self_send;
     tcp_buffer_t _tcp_self_recv;
@@ -89,6 +93,8 @@ private:
 
     void start_network();
     void stop_network();
+
+    inline next_packet_size_t make_next_packet_size(std::string const& buff) const;
 
     void build_advertise_msg(Network_Message_pb& msg);
     std::pair<PortableAPI::tcp_socket*, std::vector<peer_t>> get_new_peer_ids(Network_Peer_pb const& peer_msg);
