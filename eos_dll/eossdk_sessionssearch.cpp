@@ -211,6 +211,11 @@ void EOSSDK_SessionSearch::Find(const EOS_SessionSearch_FindOptions* Options, vo
     pFrameResult_t res(new FrameResult);
     EOS_SessionSearch_FindCallbackInfo& fci = res->CreateCallback<EOS_SessionSearch_FindCallbackInfo>((CallbackFunc)CompletionDelegate);
 
+    {
+        char* str = new char[1];
+        *str = '\0';
+        fci.InviteId = str;
+    }
     fci.ClientData = ClientData;
 
     if (_search_cb.get() != nullptr)
@@ -231,7 +236,6 @@ void EOSSDK_SessionSearch::Find(const EOS_SessionSearch_FindOptions* Options, vo
     }
     else
     {
-        fci.ResultCode = EOS_EResult::EOS_Success;
         _search_cb = res;
         _search_infos.set_search_id(search_id++);
         send_sessions_search(&_search_infos);
@@ -372,8 +376,14 @@ bool EOSSDK_SessionSearch::RunCallbacks(pFrameResult_t res)
     {
         case EOS_SessionSearch_FindCallbackInfo::k_iCallback:
         {
+            EOS_SessionSearch_FindCallbackInfo& fci = res->GetCallback<EOS_SessionSearch_FindCallbackInfo>();
             if (_search_peers.empty())
-            {
+            {// All peers answered
+                if (_results.empty())
+                    fci.ResultCode = EOS_EResult::EOS_NotFound;
+                else
+                    fci.ResultCode = EOS_EResult::EOS_Success;
+
                 _search_cb.reset();
                 res->done = true;
             }
@@ -382,6 +392,11 @@ bool EOSSDK_SessionSearch::RunCallbacks(pFrameResult_t res)
                 auto now = std::chrono::steady_clock::now();
                 if ((now - _search_cb->created_time) > search_timeout)
                 {
+                    if (_results.empty())
+                        fci.ResultCode = EOS_EResult::EOS_NotFound;
+                    else
+                        fci.ResultCode = EOS_EResult::EOS_Success;
+
                     _search_cb.reset();
                     res->done = true;
                 }
@@ -397,18 +412,17 @@ void EOSSDK_SessionSearch::FreeCallback(pFrameResult_t res)
 {
     std::lock_guard<std::mutex> lk(_local_mutex);
 
-    //switch (res->res.m_iCallback)
+    switch (res->res.m_iCallback)
     {
         /////////////////////////////
         //        Callbacks        //
         /////////////////////////////
-        //case EOS_Sessions_UpdateSessionCallbackInfo::k_iCallback:
-        //{
-        //    EOS_Sessions_UpdateSessionCallbackInfo& usci = res->GetCallback<EOS_Sessions_UpdateSessionCallbackInfo>();
-        //    delete[]usci.SessionId;
-        //    delete[]usci.SessionName;
-        //}
-        //break;
+        case EOS_SessionSearch_FindCallbackInfo::k_iCallback:
+        {
+            EOS_SessionSearch_FindCallbackInfo& callback = res->GetCallback<EOS_SessionSearch_FindCallbackInfo>();
+            delete[]callback.InviteId;
+        }
+        break;
         /////////////////////////////
         //      Notifications      //
         /////////////////////////////

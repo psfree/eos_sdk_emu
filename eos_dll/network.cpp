@@ -145,7 +145,7 @@ void Network::start_network()
                 addr.set_addr(ipv4_addr::loopback_addr);
                 _tcp_self_send.connect(addr);
                 _tcp_self_recv.socket = std::move(_tcp_socket.accept());
-                _tcp_self_recv.buffer.resize(1024);
+                _tcp_self_recv.buffer.reserve(1024 * 10);
                 break;
             }
             catch (...)
