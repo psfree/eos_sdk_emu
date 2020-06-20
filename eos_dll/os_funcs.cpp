@@ -33,7 +33,60 @@ LOCAL_API std::chrono::microseconds get_uptime()
     return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - get_boottime());
 }
 
-static bool is_lan_ip(const sockaddr* addr, int namelen)
+LOCAL_API std::vector<ipv4_addr> const& get_broadcasts()
+{
+    static std::vector<ipv4_addr> broadcasts;
+
+    if (broadcasts.empty())
+    {
+        std::vector<iface_ip_t> const& ifaces_ip = get_ifaces_ip();
+
+        PortableAPI::ipv4_addr addr;
+
+        for (auto& iface : ifaces_ip)
+        {
+            addr.set_ip(iface.ip | (~iface.mask));
+            broadcasts.emplace_back(addr);
+            LOG(Log::LogLevel::INFO, "%s", addr.to_string().c_str());
+        }
+    }
+
+    return broadcasts;
+}
+
+LOCAL_API bool is_iface_ip(const sockaddr* sock_addr, int namelen)
+{
+    if (namelen == 0)
+        return false;
+
+
+    auto const& ifaces = get_ifaces_ip();
+
+    if (sock_addr->sa_family == AF_INET)
+    {
+        uint32_t target_ip = Socket::net_swap(((struct sockaddr_in*)sock_addr)->sin_addr.s_addr);
+
+        //ipv4_addr addr, mask, target;
+
+        for (auto& iface : ifaces)
+        {
+            //addr.set_ip(iface.ip);
+            //mask.set_ip(iface.mask);
+            //target.set_ip(target_ip);
+            //
+            //LOG(Log::LogLevel::INFO, "Checking %s | %s against %s", addr.to_string().c_str(), mask.to_string().c_str(), target.to_string().c_str());
+
+            if ((iface.ip & iface.mask) == (target_ip & iface.mask))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+LOCAL_API bool is_lan_ip(const sockaddr* addr, int namelen)
 {
     if (!namelen) return false;
 
@@ -42,6 +95,7 @@ static bool is_lan_ip(const sockaddr* addr, int namelen)
         unsigned char ip[4];
         memcpy(ip, &addr_in->sin_addr, sizeof(ip));
         //LOG(Log::LogLevel::DEBUG, "CHECK LAN IP %hhu.%hhu.%hhu.%hhu:%u", ip[0], ip[1], ip[2], ip[3], ntohs(addr_in->sin_port));
+        if (is_iface_ip(addr, namelen)) return true;
         if (ip[0] == 127) return true;
         if (ip[0] == 10) return true;
         if (ip[0] == 192 && ip[1] == 168) return true;
@@ -59,6 +113,7 @@ static bool is_lan_ip(const sockaddr* addr, int namelen)
         unsigned char zeroes[16] = {};
         memcpy(ip, &addr_in6->sin6_addr, sizeof(ip));
         //LOG(Log::LogLevel::DEBUG, "CHECK LAN IP6 %hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu...%hhu", ip[0], ip[1], ip[2], ip[3], ip[4], ip[5], ip[6], ip[7], ip[15]);
+        if (is_iface_ip(addr, namelen)) return true;
         if (((ip[0] == 0xFF) && (ip[1] < 3) && (ip[15] == 1)) ||
             ((ip[0] == 0xFE) && ((ip[1] & 0xC0) == 0x80))) return true;
         if (memcmp(zeroes, ip, sizeof(ip)) == 0) return true;
@@ -320,58 +375,61 @@ LOCAL_API std::string get_module_path()
     return program_path;
 }
 
-LOCAL_API std::vector<ipv4_addr> get_broadcasts()
+LOCAL_API std::vector<iface_ip_t> const& get_ifaces_ip()
 {
-    IP_ADAPTER_INFO* pAdapterInfo = (IP_ADAPTER_INFO*)malloc(sizeof(IP_ADAPTER_INFO));
-    unsigned long ulOutBufLen = sizeof(IP_ADAPTER_INFO);
+    static std::vector<iface_ip_t> ifaces;
 
-    std::vector<ipv4_addr> broadcasts;
-
-    ipv4_addr addr, netmask;
-    addr.set_addr(ipv4_addr::broadcast_addr);
-
-    broadcasts.emplace_back(addr);
-
-    if (pAdapterInfo == nullptr)
-        return broadcasts;
-
-    if (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) == ERROR_BUFFER_OVERFLOW)
+    if (ifaces.empty())
     {
-        free(pAdapterInfo);
-        pAdapterInfo = (IP_ADAPTER_INFO*)malloc(ulOutBufLen);
+        IP_ADAPTER_ADDRESSES* pAdaptersAddresses = nullptr;
+        ULONG ulOutBufLen = 0;
 
-        if (pAdapterInfo == nullptr)
-            return broadcasts;
-    }
-
-    int ret;
-
-    if ((ret = GetAdaptersInfo(pAdapterInfo, &ulOutBufLen)) == NO_ERROR)
-    {
-        IP_ADAPTER_INFO* pAdapter = pAdapterInfo;
-
-        while (pAdapter != nullptr)
+        if (GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_ALL_INTERFACES, nullptr, pAdaptersAddresses, &ulOutBufLen) == ERROR_BUFFER_OVERFLOW)
         {
-            unsigned long iface_ip = 0, subnet_mask = 0;
+            pAdaptersAddresses = (IP_ADAPTER_ADDRESSES*)malloc(ulOutBufLen);
 
-            netmask.from_string(pAdapter->IpAddressList.IpMask.String);
-            addr.from_string(pAdapter->IpAddressList.IpAddress.String);
-
-            int ip = addr.get_ip();
-            int mask = netmask.get_ip();
-            if (ip != 0)
-            {
-                addr.set_ip(ip | (~mask));
-                broadcasts.emplace_back(addr);
-            }
-
-            pAdapter = pAdapter->Next;
+            if (pAdaptersAddresses == nullptr)
+                return ifaces;
         }
+
+        if (GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_ALL_INTERFACES, nullptr, pAdaptersAddresses, &ulOutBufLen) == NO_ERROR)
+        {
+            for(IP_ADAPTER_ADDRESSES* pAdapterAddress = pAdaptersAddresses; pAdapterAddress != nullptr; pAdapterAddress = pAdapterAddress->Next)
+            {
+                if (pAdapterAddress->OperStatus != IfOperStatusUp)
+                    continue;
+
+                for (PIP_ADAPTER_UNICAST_ADDRESS_LH pAddr = pAdapterAddress->FirstUnicastAddress; pAddr != nullptr; pAddr = pAddr->Next)
+                {
+                    if (pAddr->Address.lpSockaddr->sa_family == AF_INET)
+                    {
+                        const sockaddr_in* sock_addr = reinterpret_cast<const sockaddr_in*>(pAddr->Address.lpSockaddr);
+                        uint32_t ip = sock_addr->sin_addr.s_addr;
+                        uint32_t mask = 0;
+                        for (int i = 0; i < pAddr->OnLinkPrefixLength; ++i)
+                        {// Set netmask from cidr
+                            mask <<= 1;
+                            mask |= 1;
+                        }
+
+                        if (sock_addr->sin_addr.s_addr != 0 && pAddr->OnLinkPrefixLength != 0)
+                        {
+                            ifaces.emplace_back(iface_ip_t{ Socket::net_swap(ip), Socket::net_swap(mask) });
+                        }
+                    }
+                    //else if (pAddr->Address.lpSockaddr->sa_family == AF_INET6)
+                    //{
+                    //  const sockaddr_in6* sock_addr = reinterpret_cast<const sockaddr_in6*>(pAddr->Address.lpSockaddr);
+                    //
+                    //}
+                }
+            }
+        }
+
+        free(pAdaptersAddresses);
     }
 
-    free(pAdapterInfo);
-
-    return broadcasts;
+    return ifaces;
 }
 
 LOCAL_API bool create_folder(std::string const& _folder)
@@ -769,41 +827,42 @@ LOCAL_API std::string get_module_path()
     return library_path;
 }
 
-LOCAL_API std::vector<ipv4_addr> get_broadcasts()
+LOCAL_API std::vector<iface_ip_t> const& get_ifaces_ip()
 {
-    std::vector<ipv4_addr> broadcasts;
-    ipv4_addr addr;
+    static std::vector<iface_ip_t> ifaces;
 
-    addr.set_addr(ipv4_addr::broadcast_addr);
-    broadcasts.emplace_back(addr);
-
-    ifaddrs* ifaces_list;
-    ifaddrs* pIface;
-    if (getifaddrs(&ifaces_list) == 0)
+    if (ifaces.empty())
     {
-        const sockaddr_in* sock_addr;
-        for (pIface = ifaces_list; pIface != nullptr; pIface = pIface->ifa_next)
+        ifaddrs* ifaces_list;
+        ifaddrs* pIface;
+
+        if (getifaddrs(&ifaces_list) == 0)
         {
-            if (pIface->ifa_addr->sa_family == AF_INET)
+            const sockaddr_in* sock_addr;
+            for (pIface = ifaces_list; pIface != nullptr; pIface = pIface->ifa_next)
             {
-                sock_addr = reinterpret_cast<const sockaddr_in*>(pIface->ifa_addr);
-                if (sock_addr->sin_addr.s_addr != 0 && pIface->ifa_netmask != nullptr && pIface->ifa_flags & IFF_BROADCAST)
+                if (pIface->ifa_addr->sa_family == AF_INET)
                 {
-                    sock_addr = reinterpret_cast<const sockaddr_in*>(pIface->ifa_broadaddr);
-                    addr.set_addr(sock_addr->sin_addr);
-                    broadcasts.emplace_back(addr);
+                    sock_addr = reinterpret_cast<const sockaddr_in*>(pIface->ifa_addr);
+                    if (sock_addr->sin_addr.s_addr != 0 && pIface->ifa_netmask != nullptr)
+                    {
+                        uint32_t ip = reinterpret_cast<const sockaddr_in*>(pIface->ifa_addr)->sin_addr.s_addr;
+                        uint32_t mask = reinterpret_cast<const sockaddr_in*>(pIface->ifa_netmask)->sin_addr.s_addr;
+
+                        ifaces.emplace_back(iface_ip_t{ Socket::net_swap(ip), Socket::net_swap(mask) });
+                    }
                 }
+                // IPV6
+                //else if (pIface->ifa_addr->sa_family == AF_INET6)
+                //{
+                //    const sockaddr_in6* addr = reinterpret_cast<const sockaddr_in6*>(pIface->ifa_addr);));
+                //}
             }
-            // IPV6
-            //else if (pIface->ifa_addr->sa_family == AF_INET6)
-            //{
-            //    const sockaddr_in6* addr = reinterpret_cast<const sockaddr_in6*>(pIface->ifa_addr);));
-            //}
+            freeifaddrs(ifaces_list);
         }
-        freeifaddrs(ifaces_list);
     }
 
-    return broadcasts;
+    return ifaces;
 }
 
 LOCAL_API bool create_folder(std::string const& _folder)
