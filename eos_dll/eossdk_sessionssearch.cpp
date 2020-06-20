@@ -236,7 +236,6 @@ void EOSSDK_SessionSearch::Find(const EOS_SessionSearch_FindOptions* Options, vo
     }
     else
     {
-        fci.ResultCode = EOS_EResult::EOS_Success;
         _search_cb = res;
         _search_infos.set_search_id(search_id++);
         send_sessions_search(&_search_infos);
@@ -377,8 +376,14 @@ bool EOSSDK_SessionSearch::RunCallbacks(pFrameResult_t res)
     {
         case EOS_SessionSearch_FindCallbackInfo::k_iCallback:
         {
+            EOS_SessionSearch_FindCallbackInfo& fci = res->GetCallback<EOS_SessionSearch_FindCallbackInfo>();
             if (_search_peers.empty())
-            {
+            {// All peers answered
+                if (_results.empty())
+                    fci.ResultCode = EOS_EResult::EOS_NotFound;
+                else
+                    fci.ResultCode = EOS_EResult::EOS_Success;
+
                 _search_cb.reset();
                 res->done = true;
             }
@@ -387,6 +392,11 @@ bool EOSSDK_SessionSearch::RunCallbacks(pFrameResult_t res)
                 auto now = std::chrono::steady_clock::now();
                 if ((now - _search_cb->created_time) > search_timeout)
                 {
+                    if (_results.empty())
+                        fci.ResultCode = EOS_EResult::EOS_NotFound;
+                    else
+                        fci.ResultCode = EOS_EResult::EOS_Success;
+
                     _search_cb.reset();
                     res->done = true;
                 }
