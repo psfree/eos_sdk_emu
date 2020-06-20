@@ -29,6 +29,7 @@ decltype(EOSSDK_SessionSearch::search_timeout) EOSSDK_SessionSearch::search_time
 decltype(EOSSDK_SessionSearch::search_id) EOSSDK_SessionSearch::search_id(0);
 
 EOSSDK_SessionSearch::EOSSDK_SessionSearch():
+    _released(false),
     _target_userid(nullptr)
 {
     GetCB_Manager().register_callbacks(this);
@@ -279,6 +280,21 @@ EOS_EResult EOSSDK_SessionSearch::CopySearchResultByIndex(const EOS_SessionSearc
     return EOS_EResult::EOS_Success;
 }
 
+/**
+ * Release the memory associated with a session search. This must be called on data retrieved from EOS_Sessions_CreateSessionSearch.
+ *
+ * @param SessionSearchHandle - The session search handle to release
+ *
+ * @see EOS_Sessions_CreateSessionSearch
+ */
+void EOSSDK_SessionSearch::Release()
+{
+    TRACE_FUNC();
+    std::lock_guard<std::mutex> lk(_local_mutex);
+
+    _released = true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //                           Network Send messages                           //
 ///////////////////////////////////////////////////////////////////////////////
@@ -324,8 +340,6 @@ bool EOSSDK_SessionSearch::on_sessions_search_response(Network_Message_pb const&
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_SessionSearch::CBRunFrame()
 {
-    
-
     return false;
 }
 
@@ -344,6 +358,8 @@ bool EOSSDK_SessionSearch::RunNetwork(Network_Message_pb const& msg)
 bool EOSSDK_SessionSearch::RunCallbacks(pFrameResult_t res)
 {
     std::lock_guard<std::mutex> lk(_local_mutex);
+    if (_released)
+        return res->done;
 
     switch (res->res.m_iCallback)
     {

@@ -66,6 +66,7 @@ namespace sdk
 
         std::mutex _local_mutex;
 
+        bool                       _released;
         EOS_ProductUserId          _target_userid;
         Sessions_Search_pb         _search_infos;
         std::list<Session_Info_pb> _results;
@@ -95,6 +96,7 @@ namespace sdk
         void Find(const EOS_SessionSearch_FindOptions* Options, void* ClientData, const EOS_SessionSearch_OnFindCallback CompletionDelegate);
         uint32_t GetSearchResultCount(const EOS_SessionSearch_GetSearchResultCountOptions* Options);
         EOS_EResult CopySearchResultByIndex(const EOS_SessionSearch_CopySearchResultByIndexOptions* Options, EOS_HSessionDetails* OutSessionHandle);
+        void Release();
     };
 
     class EOSSDK_SessionDetails
@@ -152,6 +154,7 @@ namespace sdk
         static constexpr auto join_timeout = std::chrono::milliseconds(5000);
         std::map<std::string, pFrameResult_t> _sessions_join;
         std::list<session_invite_t> _session_invites;
+        std::set<EOSSDK_SessionSearch*> _session_searchs;
 
     public:
         EOSSDK_Sessions();

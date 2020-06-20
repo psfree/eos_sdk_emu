@@ -33,11 +33,15 @@ EOSSDK_Sessions::EOSSDK_Sessions()
     GetNetwork().register_listener(this, 0, Network_Message_pb::MessagesCase::kSessionsSearch);
 
     GetCB_Manager().register_callbacks(this);
+
+    GetCB_Manager().register_frame(this);
     
 }
 
 EOSSDK_Sessions::~EOSSDK_Sessions()
 {
+    GetCB_Manager().unregister_frame(this);
+
     GetCB_Manager().unregister_callbacks(this);
 
     GetNetwork().unregister_listener(this, 0, Network_Message_pb::MessagesCase::kSessionsSearch);
@@ -1017,7 +1021,10 @@ EOS_EResult EOSSDK_Sessions::CreateSessionSearch(const EOS_Sessions_CreateSessio
     if (Options == nullptr || Options->MaxSearchResults == 0)
         return EOS_EResult::EOS_InvalidParameters;
     
-    *OutSessionSearchHandle = reinterpret_cast<EOS_HSessionSearch>(new EOSSDK_SessionSearch());
+    auto search_handle = new EOSSDK_SessionSearch();
+    *OutSessionSearchHandle = reinterpret_cast<EOS_HSessionSearch>(search_handle);
+
+    _session_searchs.emplace(search_handle);
 
     return EOS_EResult::EOS_Success;
 }
@@ -1664,7 +1671,22 @@ bool EOSSDK_Sessions::on_session_invite_response(Network_Message_pb const& msg, 
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Sessions::CBRunFrame()
 {
-    return false;
+    GLOBAL_LOCK();
+
+    for (auto it = _session_searchs.begin(); it != _session_searchs.end();)
+    {
+        if ((*it)->_released)
+        {
+            delete *it;
+            it = _session_searchs.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    return true;
 }
 
 bool EOSSDK_Sessions::RunNetwork(Network_Message_pb const& msg)
