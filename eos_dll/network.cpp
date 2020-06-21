@@ -87,15 +87,18 @@ std::string Network::decompress(void const* data, size_t len)
         x = ZSTD_decompressStream(_zstd_dstream, &outbuff, &inbuff);
         if (ZSTD_isError(x))
         {
-            auto str_error = ZSTD_getErrorName(x);
-            LOG(Log::LogLevel::WARN, "Decompression error: %s", str_error);
-            return std::string((char*)data, ((char*)data) + len);
-        }
-        if (inbuff.pos == res.size())
-        {
-            res.resize(res.length() + decompress_block_size);
-            outbuff.size = res.length();
-            outbuff.dst = const_cast<char*>(res.data());
+            if (x == size_t(-70))
+            {
+                res.resize(res.length() + decompress_block_size);
+                outbuff.size = res.length();
+                outbuff.dst = const_cast<char*>(res.data());
+            }
+            else
+            {
+                auto str_error = ZSTD_getErrorName(x);
+                LOG(Log::LogLevel::WARN, "Decompression error: %s", str_error);
+                return std::string((char*)data, ((char*)data) + len);
+            }
         }
     }
 
