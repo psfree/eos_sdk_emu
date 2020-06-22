@@ -31,11 +31,18 @@ namespace sdk
 
         EOS_ProductUserId _transaction_id;
     public:
+
+        EOS_EResult GetTransactionId(char* OutBuffer, int32_t* InOutBufferLength);
+        uint32_t GetEntitlementsCount(const EOS_Ecom_Transaction_GetEntitlementsCountOptions* Options);
+        EOS_EResult CopyEntitlementByIndex(const EOS_Ecom_Transaction_CopyEntitlementByIndexOptions* Options, EOS_Ecom_Entitlement** OutEntitlement);
     };
 
     class EOSSDK_Ecom :
         public IRunFrame
     {
+
+        
+
     public:
         EOSSDK_Ecom();
         ~EOSSDK_Ecom();

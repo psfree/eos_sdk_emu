@@ -552,7 +552,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyTransactionById(EOS_HEcom Handle, con
  * @see EOS_Ecom_GetTransactionCount
  * @see EOS_Ecom_CopyTransactionByIndex
  */
-
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_Transaction_GetTransactionId(EOS_Ecom_HTransaction Handle, char* OutBuffer, int32_t* InOutBufferLength)
 {
     TRACE_FUNC();
@@ -560,8 +559,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_Transaction_GetTransactionId(EOS_Ecom_HTr
     if (Handle == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
-    
-    return EOS_EResult::EOS_Success;
+    auto pInst = reinterpret_cast<EOSSDK_Ecom_Transaction*>(Handle);
+    return pInst->GetTransactionId(OutBuffer, InOutBufferLength);
 }
 
 /**
@@ -580,8 +579,8 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_Transaction_GetEntitlementsCount(EOS_Ecom_HT
     if (Handle == nullptr)
         return 0;
 
-    
-    return 0;
+    auto pInst = reinterpret_cast<EOSSDK_Ecom_Transaction*>(Handle);
+    return pInst->GetEntitlementsCount(Options);
 }
 
 /**
@@ -604,8 +603,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_Transaction_CopyEntitlementByIndex(EOS_Ec
     if (Handle == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
-    
-    return EOS_EResult::EOS_NotFound;
+    auto pInst = reinterpret_cast<EOSSDK_Ecom_Transaction*>(Handle);
+    return pInst->CopyEntitlementByIndex(Options, OutEntitlement);
 }
 
 /**
@@ -624,6 +623,9 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_Entitlement_Release(EOS_Ecom_Entitlement* Entitl
     if (Entitlement == nullptr)
         return;
 
+    delete[]Entitlement->EntitlementId;
+    delete[]Entitlement->EntitlementName;
+    delete[]Entitlement->CatalogItemId;
     delete Entitlement;
 }
 
