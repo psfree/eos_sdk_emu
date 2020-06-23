@@ -410,6 +410,14 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_EResult_IsOperationComplete(EOS_EResult Result)
 {
     TRACE_FUNC();
 
+    switch (Result)
+    {
+        case EOS_EResult::EOS_OperationWillRetry:
+        case EOS_EResult::EOS_Auth_PinGrantCode:
+        case EOS_EResult::EOS_Auth_MFARequired:
+            return EOS_FALSE;
+    }
+
     return EOS_TRUE;
 }
 
