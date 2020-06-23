@@ -25,8 +25,53 @@
 namespace sdk
 {
 
+#if defined(LIBRARY_DEBUG)
+
+static const char* ownership_status_to_string(EOS_EOwnershipStatus status)
+{
+    switch (status)
+    {
+#define OWNERSHIP_CASE(X) case EOS_EOwnershipStatus::X: return #X
+        OWNERSHIP_CASE(EOS_OS_NotOwned);
+        OWNERSHIP_CASE(EOS_OS_Owned);
+        default: return "Unknown Ownership";
+#undef  OWNERSHIP_CASE
+    }
+}
+
+#else
+
+#define ownership_status_to_string(...)
+
+#endif
+
+//constexpr decltype(EOSSDK_Ecom::calatog_db_filename)      EOSSDK_Ecom::calatog_db_filename;
+constexpr decltype(EOSSDK_Ecom::calatog_filename)         EOSSDK_Ecom::calatog_filename;
+constexpr decltype(EOSSDK_Ecom::entitlements_db_filename) EOSSDK_Ecom::entitlements_db_filename;
+constexpr decltype(EOSSDK_Ecom::entitlements_filename)    EOSSDK_Ecom::entitlements_filename;
+
 EOSSDK_Ecom::EOSSDK_Ecom()
 {
+    //_catalog_db_filepath = Settings::Inst().savepath;
+    //_catalog_db_filepath += PATH_SEPARATOR;
+    //_catalog_db_filepath += catalog_db_filename;
+
+    _catalog_filepath = Settings::Inst().savepath;
+    _catalog_filepath += PATH_SEPARATOR;
+    _catalog_filepath += calatog_filename;
+
+    _entitlements_db_filepath = Settings::Inst().savepath;
+    _entitlements_db_filepath += PATH_SEPARATOR;
+    _entitlements_db_filepath += entitlements_db_filename;
+
+    _entitlements_filepath = Settings::Inst().savepath;
+    _entitlements_filepath += PATH_SEPARATOR;
+    _entitlements_filepath += entitlements_filename;
+
+    load_json(_catalog_filepath, _catalog);
+    load_json(_entitlements_db_filepath, _entitlements_db);
+    load_json(_entitlements_filepath, _entitlements);
+
     GetCB_Manager().register_callbacks(this);
 }
 
@@ -72,6 +117,7 @@ void EOSSDK_Ecom::QueryOwnership(const EOS_Ecom_QueryOwnershipOptions* Options, 
         case EOS_ECOM_QUERYOWNERSHIP_API_002:
         {
             auto opts = reinterpret_cast<const EOS_Ecom_QueryOwnershipOptions002*>(Options);
+            LOG(Log::LogLevel::INFO, "TODO?: Check the catalog namespace");
             LOG(Log::LogLevel::DEBUG, "CatalogNamespace: %s", (opts->CatalogNamespace == nullptr ? "" : opts->CatalogNamespace));
         }
         case EOS_ECOM_QUERYOWNERSHIP_API_001:
@@ -88,6 +134,7 @@ void EOSSDK_Ecom::QueryOwnership(const EOS_Ecom_QueryOwnershipOptions* Options, 
                 {
                     LOG(Log::LogLevel::DEBUG, "CatalogItemIds[%u]: %s", i, (opts->CatalogItemIds[i] == nullptr ? "" : opts->CatalogItemIds[i]));
 
+                    EOS_EOwnershipStatus owned = EOS_EOwnershipStatus::EOS_OS_NotOwned;
                     char* id;
                     if (opts->CatalogItemIds[i] != nullptr)
                     {
@@ -95,18 +142,37 @@ void EOSSDK_Ecom::QueryOwnership(const EOS_Ecom_QueryOwnershipOptions* Options, 
                         id = new char[idlen];
                         strncpy(id, opts->CatalogItemIds[i], idlen);
                         
-                        ownerships[i].OwnershipStatus = (Settings::Inst().unlock_dlcs ? EOS_EOwnershipStatus::EOS_OS_Owned : EOS_EOwnershipStatus::EOS_OS_NotOwned);
-                        LOG(Log::LogLevel::INFO, "Catalog Item id %s, %s", id, ownerships[i].OwnershipStatus == EOS_EOwnershipStatus::EOS_OS_Owned ? "owned" : "not owned");
+                        auto catalog_it = _catalog.find(id);
+                        if (catalog_it != _catalog.end())
+                        {
+                            try
+                            {
+                                if (catalog_it.value()["owned"].get<bool>())
+                                {
+                                    owned = EOS_EOwnershipStatus::EOS_OS_Owned;
+                                }
+                                LOG(Log::LogLevel::INFO, "Catalog Item id %s, %s (from %s)", id, ownership_status_to_string(owned), _catalog_filepath.c_str());
+                            }
+                            catch(...)
+                            {
+                                LOG(Log::LogLevel::ERR, "Catalog Item id %s \"owned\" field was invalid, item not owned", id);
+                            }
+                        }
+                        else
+                        {
+                            owned = (Settings::Inst().unlock_dlcs ? EOS_EOwnershipStatus::EOS_OS_Owned : EOS_EOwnershipStatus::EOS_OS_NotOwned);
+                            LOG(Log::LogLevel::INFO, "Catalog Item id %s, %s (from \"unlock_dlcs\")", id, ownership_status_to_string(owned));
+                        }
                     }
                     else
                     {
                         id = new char[1];
                         *id = 0;
 
-                        LOG(Log::LogLevel::WARN, "Empty Catalog Item id, not owned");
-                        ownerships[i].OwnershipStatus = EOS_EOwnershipStatus::EOS_OS_NotOwned;
+                        LOG(Log::LogLevel::WARN, "Empty Catalog Item id, item not owned");
                     }
 
+                    ownerships[i].OwnershipStatus = owned;
                     ownerships[i].ApiVersion = itemownershipversion;
                     ownerships[i].Id = id;
                 }
@@ -115,6 +181,7 @@ void EOSSDK_Ecom::QueryOwnership(const EOS_Ecom_QueryOwnershipOptions* Options, 
 
         }
     }
+
     qoci.ClientData = ClientData;
     qoci.ResultCode = EOS_EResult::EOS_Success;
     
@@ -155,6 +222,24 @@ void EOSSDK_Ecom::QueryOwnershipToken(const EOS_Ecom_QueryOwnershipTokenOptions*
             }
         }
     }
+
+    LOG(Log::LogLevel::INFO, "TODO: Dispatch the callback");
+
+    // TODO: See if this works
+    //pFrameResult_t res(new FrameResult);
+    //EOS_Ecom_QueryOwnershipTokenCallbackInfo& qotci = res->CreateCallback<EOS_Ecom_QueryOwnershipTokenCallbackInfo>((CallbackFunc)CompletionDelegate);
+    //
+    //qotci.ClientData = ClientData;
+    //qotci.ResultCode = EOS_EResult::EOS_Success;
+    //qotci.LocalUserId = Settings::Inst().userid;
+    //{
+    //    char* str = new char[32];
+    //    memset(str, '_', 32);
+    //    qotci.OwnershipToken = str;
+    //}
+    //
+    //res->done = true;
+    //GetCB_Manager().add_callback(this, res);
 }
 
 /**
@@ -185,6 +270,7 @@ void EOSSDK_Ecom::QueryEntitlements(const EOS_Ecom_QueryEntitlementsOptions* Opt
 
     if (Options != nullptr)
     {
+        _include_redeemed = Options->bIncludeRedeemed;
         switch (Options->ApiVersion)
         {
             case EOS_ECOM_QUERYENTITLEMENTS_API_002:
@@ -463,10 +549,102 @@ EOS_EResult EOSSDK_Ecom::CopyEntitlementById(const EOS_Ecom_CopyEntitlementByIdO
 
     LOG(Log::LogLevel::INFO, "Entitlement id: %s", Options->EntitlementId == nullptr ? "<no id>" : Options->EntitlementId);
 
-    if (Options == nullptr || Options->EntitlementId == nullptr)
+    if (Options == nullptr || Options->EntitlementId == nullptr || OutEntitlement == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
-    return EOS_EResult::EOS_NotFound;
+    auto db_it = _entitlements_db.find(Options->EntitlementId);
+    if (db_it == _entitlements_db.end())
+    {
+        *OutEntitlement = nullptr;
+        return EOS_EResult::EOS_NotFound;
+    }
+
+    bool redeemed;
+    std::string const* entitlement_id = nullptr;
+    std::string const* entitlement_name = nullptr;
+    std::string const* catalog_item_id = nullptr;
+    bool error = false;
+
+    try
+    {
+        entitlement_id = &db_it.key();
+    }
+    catch (...)
+    {
+        LOG(Log::LogLevel::ERR, "Entitlement id %s was not found, it will not be owned", Options->EntitlementId);
+        error = true;
+    }
+    try
+    {
+        entitlement_name = db_it.value()["entitlement_name"].get_ptr<std::string*>();
+    }
+    catch (...)
+    {
+        LOG(Log::LogLevel::ERR, "%s \"entitlement_name\" field was not found, it will not be owned", Options->EntitlementId);
+        error = true;
+    }
+    try
+    {
+        catalog_item_id  = db_it.value()["catalog_item_id"].get_ptr<std::string*>();
+    }
+    catch (...)
+    {
+        LOG(Log::LogLevel::ERR, "%s \"catalog_item_id\" field was not found, it will not be owned", Options->EntitlementId);
+        error = true;
+    }
+
+    if (error)
+    {
+        *OutEntitlement = nullptr;
+        return EOS_EResult::EOS_NotFound;
+    }
+    
+
+    auto it = _entitlements.find(Options->EntitlementId);
+    if (it == _entitlements.end())
+    {
+        redeemed = false;
+    }
+    else
+    {
+        try
+        {
+            redeemed = it.value()["redeemed"];
+        }
+        catch (...)
+        {
+            redeemed = false;
+        }
+    }
+
+    switch (Options->ApiVersion)
+    {
+        case EOS_ECOM_ENTITLEMENT_API_002:
+        {
+            EOS_Ecom_Entitlement002* entitlement = new EOS_Ecom_Entitlement002;
+            entitlement->ApiVersion = EOS_ECOM_ENTITLEMENT_API_002;
+            entitlement->EntitlementName = entitlement_name->c_str();
+            entitlement->EntitlementId = entitlement_id->c_str();
+            entitlement->CatalogItemId = catalog_item_id->c_str();
+            entitlement->ServerIndex = -1;
+            entitlement->bRedeemed = redeemed;
+            entitlement->EndTimestamp = -1;
+            *OutEntitlement = reinterpret_cast<decltype(*OutEntitlement)>(entitlement);
+        }
+        break;
+        
+        case EOS_ECOM_ENTITLEMENT_API_001:
+        {
+            EOS_Ecom_Entitlement001* entitlement = new EOS_Ecom_Entitlement001;
+            entitlement->ApiVersion = EOS_ECOM_ENTITLEMENT_API_001;
+            {
+                entitlement->Id = entitlement_id->c_str();
+            }
+            *OutEntitlement = reinterpret_cast<decltype(*OutEntitlement)>(entitlement);
+        }
+    }
+
+    return EOS_EResult::EOS_Success;
 }
 
 /**
@@ -780,14 +958,21 @@ void EOSSDK_Ecom::FreeCallback(pFrameResult_t res)
         /////////////////////////////
         case EOS_Ecom_QueryOwnershipCallbackInfo::k_iCallback:
         {
-            EOS_Ecom_QueryOwnershipCallbackInfo& qoci = res->GetCallback<EOS_Ecom_QueryOwnershipCallbackInfo>();
-            if (qoci.ItemOwnershipCount > 0)
+            EOS_Ecom_QueryOwnershipCallbackInfo& callback = res->GetCallback<EOS_Ecom_QueryOwnershipCallbackInfo>();
+            if (callback.ItemOwnershipCount > 0)
             {
-                for (uint32_t i = 0; i < qoci.ItemOwnershipCount; ++i)
-                    delete[]qoci.ItemOwnership[i].Id;
+                for (uint32_t i = 0; i < callback.ItemOwnershipCount; ++i)
+                    delete[]callback.ItemOwnership[i].Id;
 
-                delete[] qoci.ItemOwnership;
+                delete[] callback.ItemOwnership;
             }
+        }
+        break;
+
+        case EOS_Ecom_QueryOwnershipTokenCallbackInfo::k_iCallback:
+        {
+            EOS_Ecom_QueryOwnershipTokenCallbackInfo& callback = res->GetCallback<EOS_Ecom_QueryOwnershipTokenCallbackInfo>();
+            delete[]callback.OwnershipToken;
         }
         break;
         /////////////////////////////
