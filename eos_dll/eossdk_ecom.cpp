@@ -178,7 +178,7 @@ void EOSSDK_Ecom::QueryEntitlements(const EOS_Ecom_QueryEntitlementsOptions* Opt
 
     pFrameResult_t res(new FrameResult);
 
-    EOS_Ecom_QueryEntitlementsCallbackInfo qeci = res->CreateCallback<EOS_Ecom_QueryEntitlementsCallbackInfo>((CallbackFunc)CompletionDelegate);
+    EOS_Ecom_QueryEntitlementsCallbackInfo& qeci = res->CreateCallback<EOS_Ecom_QueryEntitlementsCallbackInfo>((CallbackFunc)CompletionDelegate);
 
     qeci.ClientData = ClientData;
     qeci.LocalUserId = Settings::Inst().userid;
@@ -460,6 +460,11 @@ EOS_EResult EOSSDK_Ecom::CopyEntitlementById(const EOS_Ecom_CopyEntitlementByIdO
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
+
+    LOG(Log::LogLevel::INFO, "Entitlement id: %s", Options->EntitlementId == nullptr ? "<no id>" : Options->EntitlementId);
+
+    if (Options == nullptr || Options->EntitlementId == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
 
     return EOS_EResult::EOS_NotFound;
 }
