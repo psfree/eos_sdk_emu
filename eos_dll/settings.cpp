@@ -138,7 +138,7 @@ void Settings::load_settings()
 
     language                  = get_setting(settings, "language"                 , std::string("english"));
     languages                 = get_setting(settings, "languages"                , std::string("english"));
-    gamename                  = get_setting(settings, "gamename"                 , std::string("Unreal"));
+    gamename                  = get_setting(settings, "gamename"                 , std::string("DefaultGameName"));
     unlock_dlcs               = get_setting(settings, "unlock_dlcs"              , bool(true));
     enable_overlay            = get_setting(settings, "enable_overlay"           , bool(true));
     disable_online_networking = get_setting(settings, "disable_online_networking", bool(false));

@@ -179,9 +179,11 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
             inst.api_version = p->ApiVersion;
             if (p->ProductName != nullptr && *p->ProductName != 0)
             {
-                //inst.product_name = Options->ProductName;
-                Settings::Inst().gamename = Options->ProductName;
-                Settings::Inst().save_settings();
+                if (Settings::Inst().gamename.empty() || Settings::Inst().gamename == "DefaultGameName")
+                {// Set the gamename in the settings if a gamename was passed in the cmdline and its empty in the JSon
+                    Settings::Inst().gamename = Options->ProductName;
+                    Settings::Inst().save_settings();
+                }
             }
             if (p->ProductVersion != nullptr)
                 inst.product_version = Options->ProductVersion;
