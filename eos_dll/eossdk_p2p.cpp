@@ -98,7 +98,7 @@ EOS_EResult EOSSDK_P2P::SendPacket(const EOS_P2P_SendPacketOptions* Options)
  */
 EOS_EResult EOSSDK_P2P::GetNextReceivedPacketSize(const EOS_P2P_GetNextReceivedPacketSizeOptions* Options, uint32_t* OutPacketSizeBytes)
 {
-    TRACE_FUNC();
+    //TRACE_FUNC();
     std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
     if (Options == nullptr || OutPacketSizeBytes == nullptr)
