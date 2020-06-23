@@ -31,11 +31,32 @@ namespace sdk
 
         EOS_ProductUserId _transaction_id;
     public:
+
+        EOS_EResult GetTransactionId(char* OutBuffer, int32_t* InOutBufferLength);
+        uint32_t GetEntitlementsCount(const EOS_Ecom_Transaction_GetEntitlementsCountOptions* Options);
+        EOS_EResult CopyEntitlementByIndex(const EOS_Ecom_Transaction_CopyEntitlementByIndexOptions* Options, EOS_Ecom_Entitlement** OutEntitlement);
     };
 
     class EOSSDK_Ecom :
         public IRunFrame
     {
+        //static constexpr const char calatog_db_filename[]      = "catalog_db.json";
+        static constexpr const char calatog_filename[]         = "catalog.json";
+        static constexpr const char entitlements_db_filename[] = "entitlements_db.json";
+        static constexpr const char entitlements_filename[]    = "entitlements.json";
+
+        //std::string _catalog_db_filepath;
+        std::string _catalog_filepath;
+        std::string _entitlements_db_filepath;
+        std::string _entitlements_filepath;
+
+        //fifo_json _catalog_db;
+        fifo_json _catalog;
+        fifo_json _entitlements_db;
+        fifo_json _entitlements;
+
+        bool _include_redeemed;
+
     public:
         EOSSDK_Ecom();
         ~EOSSDK_Ecom();
