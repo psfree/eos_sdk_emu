@@ -17,35 +17,24 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifdef LIBRARY_DEBUG
+#ifndef DISABLE_LOG
 
 #include "Log.h"
 #include "common_includes.h"
 
-decltype(Log::_log_level) Log::_log_level = Log::LogLevel::OFF;
+LOCAL_API void default_log_func(Log::LogLevel lv, const char* log_message);
 
-LOCAL_API bool _trace(const char* format, va_list argptr)
+decltype(Log::_log_level) Log::_log_level = Log::LogLevel::OFF;
+decltype(Log::_log_func)  Log::_log_func = default_log_func;
+
+LOCAL_API void default_log_func(Log::LogLevel lv, const char* log_message)
 {
     static std::ofstream log_file("nemirtingassteamemu.log", std::ios::trunc | std::ios::out);
-    std::string fmt = format;
-    if (*fmt.rbegin() != '\n')
-        fmt += '\n';
-
-    va_list argptr2;
-    va_copy(argptr2, argptr);
-
-    int len = vsnprintf(nullptr, 0, fmt.c_str(), argptr);
-    char* buffer = new char[++len];
-
-    vsnprintf(buffer, len, fmt.c_str(), argptr2);
-    fprintf(stderr, buffer);
-    va_end(argptr);
-    va_end(argptr2);
 
 #if defined(__WINDOWS__)
     if (IsDebuggerPresent())
     {
-        OutputDebugString(buffer);
+        OutputDebugString(log_message);
     }
     else
     {
@@ -58,23 +47,31 @@ LOCAL_API bool _trace(const char* format, va_list argptr)
     }
 #endif
 
-    log_file << buffer;
+    log_file << log_message;
     log_file.flush();
-    std::cout << buffer;
+    fprintf(stderr, "%s", log_message);
+}
+
+LOCAL_API bool _trace(const char* format, va_list argptr)
+{
+    std::string fmt = format;
+    if (*fmt.rbegin() != '\n')
+        fmt += '\n';
+
+    va_list argptr2;
+    va_copy(argptr2, argptr);
+
+    int len = vsnprintf(nullptr, 0, fmt.c_str(), argptr);
+    char* buffer = new char[++len];
+
+    vsnprintf(buffer, len, fmt.c_str(), argptr2);
+    va_end(argptr);
+    va_end(argptr2);
+
+    Log::get_log_func()(Log::get_loglevel(), buffer);
 
     delete[]buffer;
     return true;
-}
-
-const char* Log::loglevel_to_str()
-{
-    return loglevel_to_str(_log_level);
-}
-
-void Log::set_loglevel(LogLevel lv)
-{
-    if (lv >= LogLevel::MIN && lv <= LogLevel::MAX)
-        _log_level = lv;
 }
 
 void Log::L(LogLevel lv, const char* format, ...)

@@ -124,6 +124,8 @@ set(Protobuf_SRC_ROOT_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/protobu
 
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Debug or Release")
 
+option(DISABLE_LOG "Disable all logging. Will reduce emu size and will speed it up (a bit)" OFF)
+
 option(USE_ZSTD_COMPRESS "Use zstd to compress network messages" ON)
 
 #option(GLEW_USE_STATIC_LIBS "Use GLEW static libs" ON)
@@ -342,8 +344,7 @@ target_compile_definitions(
   
   $<$<BOOL:${UNIX}>:GNUC>
 
-  $<$<BOOL:${CICD_DEBUG}>:LIBRARY_DEBUG>
-  $<$<STREQUAL:${CMAKE_BUILD_TYPE},Debug>:LIBRARY_DEBUG>
+  $<$<BOOL:${DISABLE_LOG}>:DISABLE_LOG>
   $<$<STREQUAL:${CMAKE_BUILD_TYPE},Release>:EMU_RELEASE_BUILD NDEBUG>
 )
 

@@ -59,7 +59,6 @@ args+=("$protobuf_exec")
 args+=("$build_type")
 if [ "$BUILD_TYPE" == "Debug" ] && [ "$OUT_DIR" == "win32" -o "$OUT_DIR" == "win64" ]; then
   args[2]="-DCMAKE_BUILD_TYPE=Release"
-  args+=("-DCICD_DEBUG=ON")
 fi
 
 # EXTRA_CMAKE_ENV is set by setup_clang_env.sh to build for windows.
