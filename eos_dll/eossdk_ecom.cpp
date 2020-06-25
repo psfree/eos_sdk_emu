@@ -25,8 +25,6 @@
 namespace sdk
 {
 
-#if defined(LIBRARY_DEBUG)
-
 static const char* ownership_status_to_string(EOS_EOwnershipStatus status)
 {
     switch (status)
@@ -38,12 +36,6 @@ static const char* ownership_status_to_string(EOS_EOwnershipStatus status)
 #undef  OWNERSHIP_CASE
     }
 }
-
-#else
-
-#define ownership_status_to_string(...)
-
-#endif
 
 //constexpr decltype(EOSSDK_Ecom::calatog_db_filename)      EOSSDK_Ecom::calatog_db_filename;
 constexpr decltype(EOSSDK_Ecom::calatog_filename)         EOSSDK_Ecom::calatog_filename;
