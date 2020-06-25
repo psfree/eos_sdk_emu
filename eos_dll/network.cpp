@@ -30,8 +30,9 @@ namespace std
 }
 
 Network::Network():
-    _udp_socket(),
-    _tcp_self_recv({})
+    _advertise(false),
+    _advertise_rate(2000),
+    _tcp_port(0)
 {
     //LOG(Log::LogLevel::DEBUG, "");
 #if defined(NETWORK_COMPRESS)
@@ -234,7 +235,7 @@ void Network::do_advertise()
         return;
 
     auto now = std::chrono::steady_clock::now();
-    if ((now - _last_advertise) < std::chrono::milliseconds(2000))
+    if ((now - _last_advertise) < _advertise_rate)
         return;
 
     _last_advertise = now;
@@ -259,6 +260,18 @@ void Network::do_advertise()
     {
         //LOG(Log::LogLevel::DEBUG, "Advertising, failed");
     }
+}
+
+void Network::set_advertise_rate(std::chrono::milliseconds rate)
+{
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+    _advertise_rate = rate;
+}
+
+std::chrono::milliseconds Network::get_advertise_rate()
+{
+    std::lock_guard<std::recursive_mutex> lk(local_mutex);
+    return _advertise_rate;
 }
 
 void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_t> const& peer_ids, bool advertise_peer)

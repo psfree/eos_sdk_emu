@@ -40,8 +40,6 @@ public:
         next_packet_size_t next_packet_size;
     };
 
-    using tcp_client_iterator = typename std::list<tcp_buffer_t>::iterator;
-
 private:
     static constexpr uint16_t network_port = 55789;
     static constexpr uint16_t max_network_port = (network_port + 10);
@@ -59,13 +57,13 @@ private:
 #endif
 
     bool _advertise;
+    std::chrono::milliseconds _advertise_rate;
     std::chrono::steady_clock::time_point _last_advertise;
     std::set<peer_t> _my_peer_ids;
     uint16_t _tcp_port;
 
     PortableAPI::Poll _poll;
     PortableAPI::udp_socket _udp_socket;
-    PortableAPI::udp_socket _query_socket;
     std::map<peer_t, PortableAPI::ipv4_addr> _udp_addrs;
 
     PortableAPI::tcp_socket _tcp_socket;
@@ -100,6 +98,8 @@ private:
     std::pair<PortableAPI::tcp_socket*, std::vector<peer_t>> get_new_peer_ids(Network_Peer_pb const& peer_msg);
 
     void do_advertise();
+    void set_advertise_rate(std::chrono::milliseconds rate);
+    std::chrono::milliseconds get_advertise_rate();
 
     void add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_t> const& peer_ids, bool advertise);
     void remove_tcp_peer(tcp_buffer_t& tcp_buffer);
