@@ -143,9 +143,9 @@ void Settings::load_settings()
     enable_overlay            = get_setting(settings, "enable_overlay"           , bool(true));
     disable_online_networking = get_setting(settings, "disable_online_networking", bool(false));
 
-#ifdef LIBRARY_DEBUG
+#ifndef DISABLE_LOG
     Log::LogLevel llvl;
-    switchstr(get_setting(settings, "debug_level", std::string("OFF")))
+    switchstr(get_setting(settings, "log_level", std::string("OFF")))
     {
         casestr("TRACE"): llvl = Log::LogLevel::TRACE; break;
         casestr("DEBUG"): llvl = Log::LogLevel::DEBUG; break;
@@ -178,18 +178,18 @@ void Settings::save_settings()
 
     build_save_path();
 
-    settings["username"] = username;
-    settings["epicid"] = userid->to_string();
-    settings["language"] = language;
-    settings["languages"] = languages;
-    settings["gamename"] = gamename;
-    settings["unlock_dlcs"] = unlock_dlcs;
-    settings["enable_overlay"] = enable_overlay;
+    settings["username"]                  = username;
+    settings["epicid"]                    = userid->to_string();
+    settings["language"]                  = language;
+    settings["languages"]                 = languages;
+    settings["gamename"]                  = gamename;
+    settings["unlock_dlcs"]               = unlock_dlcs;
+    settings["enable_overlay"]            = enable_overlay;
     settings["disable_online_networking"] = disable_online_networking;
-#ifdef LIBRARY_DEBUG
-    settings["debug_level"] = Log::loglevel_to_str();
+#ifdef DISABLE_LOG
+    settings["log_level"]                 = Log::loglevel_to_str();
 #endif
-    settings["savepath"] = settings_savepath;
+    settings["savepath"]                  = settings_savepath;
 
     create_folder(savepath);
 
