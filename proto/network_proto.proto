@@ -246,11 +246,6 @@ message Friends_Message_pb {
 //////////////////////////////////////////////////////////////////////////
 //                          Connect messages                            //
 //////////////////////////////////////////////////////////////////////////
-// Broadcast to discover and be discoverable by other players
-message Connect_Heartbeat_pb {
-    
-}
-
 message Connect_Request_Info_pb {
 
 }
@@ -264,9 +259,8 @@ message Connect_Infos_pb {
 // Base Connect related message
 message Connect_Message_pb {
     oneof message {
-        Connect_Heartbeat_pb heartbeat = 1;
-        Connect_Request_Info_pb request = 2;
-        Connect_Infos_pb infos = 3;
+        Connect_Request_Info_pb request = 1;
+        Connect_Infos_pb infos = 2;
 	}
 }
 //////////////////////////////////////////////////////////////////////////
