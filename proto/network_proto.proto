@@ -76,8 +76,8 @@ message UserInfo_Message_pb {
 //                         Sessions messages                            //
 //////////////////////////////////////////////////////////////////////////
 // Request peer sessions info
-message Session_Info_Request_pb {
-    string sessionid = 1;
+message Session_Infos_Request_pb {
+    string session_id = 1;
 }
 
 message Session_Attr_Value {
@@ -95,11 +95,11 @@ message Session_Attribute {
 }
 
 // Response to peer sessions infos request
-message Session_Info_pb {
-	string sessionname = 1;
-    string sessionid = 2;
-	string bucketid = 3;
-	uint32 maxplayers = 4;
+message Session_Infos_pb {
+	string session_name = 1;
+    string session_id = 2;
+	string bucket_id = 3;
+	uint32 max_players = 4;
     repeated string players = 5;
     repeated string registered_players = 6;
     bool presence_allowed = 7;
@@ -113,39 +113,39 @@ message Session_Info_pb {
 
 // Message sent to all members when the session is destroyed
 message Session_Destroy_pb {
-    string sessionname = 1;
-    string sessionid = 2;
+    string session_name = 1;
+    string session_id = 2;
 }
 
 // Request a session join
 message Session_Join_Request_pb {
-    string sessionid = 1;
-    string sessionname = 2;
+    string session_id = 1;
+    string session_name = 2;
 }
 
 // Response to a session join
 message Session_Join_Response_pb {
-    string sessionname = 1;
+    string session_name = 1;
     string user_id = 2;
     int32 reason = 3;
 }
 
 // Session invite request
 message Session_Invite_pb {
-    string sessionname = 1;
-    Session_Info_pb infos = 2;
+    string session_name = 1;
+    Session_Infos_pb infos = 2;
 }
 
 message Session_Invite_Response_pb {
-    string sessionid = 1;
+    string session_id = 1;
     bool accepted = 2;
 }
 
 // Base Sessions related message
 message Session_Message_pb {
     oneof message {
-        Session_Info_Request_pb sessions_request = 1;
-        Session_Info_pb session_info = 2;
+        Session_Infos_Request_pb sessions_request = 1;
+        Session_Infos_pb session_infos = 2;
         Session_Destroy_pb session_destroy = 3;
         Session_Join_Request_pb session_join_request = 4;
         Session_Join_Response_pb session_join_response = 5;
@@ -157,23 +157,23 @@ message Session_Message_pb {
 //////////////////////////////////////////////////////////////////////////
 //                      Sessions Search messages                        //
 //////////////////////////////////////////////////////////////////////////
-
-message Search_Parameter {
+message Session_Search_Parameter {
     map<int32, Session_Attr_Value> param = 1;
 }
 
 // Search sessions
 message Sessions_Search_pb {
     uint64 search_id = 1;
-    string sessionid = 2;
-    map<string, Search_Parameter> parameters = 3;
-    uint32 max_results = 4;
+    string session_id = 2;
+    string target_id = 3;
+    map<string, Session_Search_Parameter> parameters = 4;
+    uint32 max_results = 5;
 }
 
 // Search Response
 message Sessions_Search_response_pb {
     uint64 search_id = 1;
-    Session_Info_pb session_infos = 2;
+    repeated Session_Infos_pb sessions = 2;
 }
 
 message Sessions_Search_Message_pb {

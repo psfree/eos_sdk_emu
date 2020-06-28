@@ -26,11 +26,10 @@ namespace sdk
 {
 
 decltype(EOSSDK_SessionSearch::search_timeout) EOSSDK_SessionSearch::search_timeout;
-decltype(EOSSDK_SessionSearch::search_id) EOSSDK_SessionSearch::search_id(0);
+decltype(EOSSDK_SessionSearch::search_id)      EOSSDK_SessionSearch::search_id(0);
 
 EOSSDK_SessionSearch::EOSSDK_SessionSearch():
-    _released(false),
-    _target_userid(nullptr)
+    _released(false)
 {
     GetCB_Manager().register_callbacks(this);
 
@@ -73,7 +72,7 @@ EOS_EResult EOSSDK_SessionSearch::SetSessionId(const EOS_SessionSearch_SetSessio
     if (Options == nullptr || Options->SessionId == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
     
-    _search_infos.set_sessionid(Options->SessionId);
+    _search_infos.set_session_id(Options->SessionId);
 
     return EOS_EResult::EOS_Success;
 }
@@ -96,7 +95,7 @@ EOS_EResult EOSSDK_SessionSearch::SetTargetUserId(const EOS_SessionSearch_SetTar
     if (Options == nullptr || Options->TargetUserId == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
-    _target_userid = Options->TargetUserId;
+    _search_infos.set_target_id(Options->TargetUserId->to_string());
     
     return EOS_EResult::EOS_Success;
 }
@@ -157,13 +156,13 @@ EOS_EResult EOSSDK_SessionSearch::RemoveParameter(const EOS_SessionSearch_Remove
     auto& param = *params[Options->Key].mutable_param();
     auto it = param.find(static_cast<int32_t>(Options->ComparisonOp));
 
-    if (it != param.end())
+    if (it == param.end())
     {
-        param.erase(it);
-        return EOS_EResult::EOS_Success;
+        return EOS_EResult::EOS_NotFound;
     }
-    
-    return EOS_EResult::EOS_NotFound;
+
+    param.erase(it);
+    return EOS_EResult::EOS_Success;
 }
 
 /**
@@ -197,7 +196,7 @@ EOS_EResult EOSSDK_SessionSearch::SetMaxResults(const EOS_SessionSearch_SetMaxRe
  * @param CompletionDelegate A callback that is fired when the search operation completes, either successfully or in error
  *
  * @return EOS_Success if the find operation completes successfully
- *         EOS_NotFound if searching for an individual session by sessionid or targetuserid returns no results
+ *         EOS_NotFound if searching for an individual session by session_id or targetuserid returns no results
  *         EOS_InvalidParameters if any of the options are incorrect
  */
 void EOSSDK_SessionSearch::Find(const EOS_SessionSearch_FindOptions* Options, void* ClientData, const EOS_SessionSearch_OnFindCallback CompletionDelegate)
@@ -223,12 +222,12 @@ void EOSSDK_SessionSearch::Find(const EOS_SessionSearch_FindOptions* Options, vo
         fci.ResultCode = EOS_EResult::EOS_AlreadyPending;
         res->done = true;
     }
-    // If the user has set parameters and sessionid or target userid, it fails
+    // If the user has set parameters and session_id or target userid, it fails
     // If sessiondid and target userid is set, it fails
     else if (
              (_search_infos.parameters_size() != 0 && 
-                 (_target_userid != nullptr || !_search_infos.sessionid().empty())) ||
-             (_target_userid != nullptr && !_search_infos.sessionid().empty())
+                 (!_search_infos.target_id().empty() || !_search_infos.session_id().empty())) ||
+             (!_search_infos.target_id().empty() && !_search_infos.session_id().empty())
             )
     {
         fci.ResultCode = EOS_EResult::EOS_InvalidParameters;
@@ -256,6 +255,9 @@ uint32_t EOSSDK_SessionSearch::GetSearchResultCount(const EOS_SessionSearch_GetS
     TRACE_FUNC();
     std::lock_guard<std::mutex> lk(_local_mutex);
     
+    if (Options == nullptr || _search_cb.get() != nullptr)
+        return 0;
+
     return static_cast<uint32_t>(_results.size());
 }
 
@@ -279,7 +281,10 @@ EOS_EResult EOSSDK_SessionSearch::CopySearchResultByIndex(const EOS_SessionSearc
     std::lock_guard<std::mutex> lk(_local_mutex);
 
     if (Options == nullptr || OutSessionHandle == nullptr || Options->SessionIndex >= _results.size())
+    {
+        *OutSessionHandle == nullptr;
         return EOS_EResult::EOS_InvalidParameters;
+    }
 
     EOSSDK_SessionDetails* details = new EOSSDK_SessionDetails;
 
@@ -322,7 +327,19 @@ bool EOSSDK_SessionSearch::send_sessions_search(Sessions_Search_pb* search)
     search_msg->set_allocated_search(search);
     msg.set_allocated_sessions_search(search_msg);
 
-    _search_peers = std::move(GetNetwork().TCPSendToAllPeers(msg));
+    if (_search_infos.target_id().empty())
+    {
+        _search_peers = std::move(GetNetwork().TCPSendToAllPeers(msg));
+    }
+    else
+    {
+        msg.set_dest_id(_search_infos.target_id());
+        if (GetNetwork().TCPSendTo(msg))
+        {
+            _search_peers.emplace(_search_infos.target_id());
+        }
+    }
+
     search_msg->release_search(); // Don't delete our search infos
 
     return true;
@@ -339,8 +356,10 @@ bool EOSSDK_SessionSearch::on_sessions_search_response(Network_Message_pb const&
     if (_search_cb.get() != nullptr && resp.search_id() == _search_infos.search_id())
     {
         _search_peers.erase(msg.source_id());
-        if (!resp.session_infos().sessionname().empty())
-            _results.emplace_back(resp.session_infos());
+        for (auto const& session : resp.sessions())
+        {
+            _results.emplace_back(session);
+        }
     }
 
     return true;
@@ -356,11 +375,11 @@ bool EOSSDK_SessionSearch::CBRunFrame()
 
 bool EOSSDK_SessionSearch::RunNetwork(Network_Message_pb const& msg)
 {
-    Sessions_Search_Message_pb const& session = msg.sessions_search();
+    Sessions_Search_Message_pb const& search = msg.sessions_search();
 
-    switch (session.message_case())
+    switch (search.message_case())
     {
-        case Sessions_Search_Message_pb::MessageCase::kSearchResponse: return on_sessions_search_response(msg, session.search_response());
+        case Sessions_Search_Message_pb::MessageCase::kSearchResponse: return on_sessions_search_response(msg, search.search_response());
     }
 
     return true;
@@ -377,8 +396,9 @@ bool EOSSDK_SessionSearch::RunCallbacks(pFrameResult_t res)
         case EOS_SessionSearch_FindCallbackInfo::k_iCallback:
         {
             EOS_SessionSearch_FindCallbackInfo& fci = res->GetCallback<EOS_SessionSearch_FindCallbackInfo>();
-            if (_search_peers.empty())
-            {// All peers answered
+            if (_search_peers.empty() ||
+                (std::chrono::steady_clock::now() - _search_cb->created_time) > search_timeout)
+            {// All peers answered or Search timeout
                 if (_results.empty())
                     fci.ResultCode = EOS_EResult::EOS_NotFound;
                 else
@@ -386,20 +406,6 @@ bool EOSSDK_SessionSearch::RunCallbacks(pFrameResult_t res)
 
                 _search_cb.reset();
                 res->done = true;
-            }
-            else
-            {
-                auto now = std::chrono::steady_clock::now();
-                if ((now - _search_cb->created_time) > search_timeout)
-                {
-                    if (_results.empty())
-                        fci.ResultCode = EOS_EResult::EOS_NotFound;
-                    else
-                        fci.ResultCode = EOS_EResult::EOS_Success;
-
-                    _search_cb.reset();
-                    res->done = true;
-                }
             }
         }
         break;

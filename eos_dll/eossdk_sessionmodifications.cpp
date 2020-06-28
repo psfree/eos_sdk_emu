@@ -44,7 +44,7 @@ EOS_EResult EOSSDK_SessionModification::SetBucketId(const EOS_SessionModificatio
     if (Options == nullptr || Options->BucketId == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
-    _infos.set_bucketid(Options->BucketId);
+    _infos.set_bucket_id(Options->BucketId);
 
     return EOS_EResult::EOS_Success;
 }
@@ -136,7 +136,7 @@ EOS_EResult EOSSDK_SessionModification::SetMaxPlayers(const EOS_SessionModificat
     if (Options == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
-    _infos.set_maxplayers(Options->MaxPlayers);
+    _infos.set_max_players(Options->MaxPlayers);
 
     return EOS_EResult::EOS_Success;
 }
@@ -183,6 +183,15 @@ EOS_EResult EOSSDK_SessionModification::AddAttribute(const EOS_SessionModificati
         (Options->SessionAttribute->ValueType == EOS_ESessionAttributeType::EOS_AT_STRING && Options->SessionAttribute->Value.AsUtf8 == nullptr))
         return EOS_EResult::EOS_InvalidParameters;
     
+    // Don't allow more than EOS_SESSIONMODIFICATION_MAX_SESSION_ATTRIBUTES key length
+    if(strlen(Options->SessionAttribute->Key) > EOS_SESSIONMODIFICATION_MAX_SESSION_ATTRIBUTE_LENGTH)
+        return EOS_EResult::EOS_InvalidParameters;
+
+    auto it = _infos.attributes().find(Options->SessionAttribute->Key);
+    // Don't allow more than EOS_LOBBYMODIFICATION_MAX_ATTRIBUTES attributes
+    if(it != _infos.attributes().end() && _infos.attributes_size() >= EOS_SESSIONMODIFICATION_MAX_SESSION_ATTRIBUTES)
+        return EOS_EResult::EOS_InvalidParameters;
+
     auto& attribute = (*_infos.mutable_attributes())[Options->SessionAttribute->Key];
     attribute.set_advertisement_type(static_cast<int32_t>(Options->AdvertisementType));
     switch (Options->SessionAttribute->ValueType)
@@ -220,6 +229,22 @@ EOS_EResult EOSSDK_SessionModification::RemoveAttribute(const EOS_SessionModific
         attributes.erase(it);
 
     return EOS_EResult::EOS_Success;
+}
+
+/**
+*Release the memory associated with session modification.
+* This must be called on data retrieved from EOS_Sessions_CreateSessionModification or EOS_Sessions_UpdateSessionModification
+*
+*@param SessionModificationHandle - The session modification handle to release
+*
+*@see EOS_Sessions_CreateSessionModification
+* @see EOS_Sessions_UpdateSessionModification
+*/
+void EOSSDK_SessionModification::Release()
+{
+    TRACE_FUNC();
+
+    delete this;
 }
 
 }

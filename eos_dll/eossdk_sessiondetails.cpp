@@ -63,14 +63,14 @@ EOS_EResult EOSSDK_SessionDetails::CopyInfo(const EOS_SessionDetails_CopyInfoOpt
     pSettings->bAllowJoinInProgress = _infos.join_in_progress_allowed();
     pSettings->bInvitesAllowed = _infos.invites_allowed();
     pSettings->PermissionLevel = static_cast<EOS_EOnlineSessionPermissionLevel>(_infos.permission_level());
-    pSettings->NumPublicConnections = _infos.maxplayers();
+    pSettings->NumPublicConnections = _infos.max_players();
     {
-        std::string const& bucketid = _infos.bucketid();
+        std::string const& bucket_id = _infos.bucket_id();
         char* str;
-        if (!bucketid.empty())
+        if (!bucket_id.empty())
         {
-            str = new char[bucketid.length() + 1];
-            strncpy(str, bucketid.c_str(), bucketid.length() + 1);
+            str = new char[bucket_id.length() + 1];
+            strncpy(str, bucket_id.c_str(), bucket_id.length() + 1);
         }
         else
         {
@@ -82,12 +82,12 @@ EOS_EResult EOSSDK_SessionDetails::CopyInfo(const EOS_SessionDetails_CopyInfoOpt
 
     pDetails->ApiVersion = EOS_SESSIONDETAILS_COPYINFO_API_LATEST;
     {
-        std::string const& sessionid = _infos.sessionid();
+        std::string const& session_id = _infos.session_id();
         char *str;
-        if (!sessionid.empty())
+        if (!session_id.empty())
         {
-            str = new char[sessionid.length() + 1];
-            strncpy(str, sessionid.c_str(), sessionid.length() + 1);
+            str = new char[session_id.length() + 1];
+            strncpy(str, session_id.c_str(), session_id.length() + 1);
         }
         else
         {
@@ -111,7 +111,7 @@ EOS_EResult EOSSDK_SessionDetails::CopyInfo(const EOS_SessionDetails_CopyInfoOpt
         }
         pDetails->HostAddress = str;
     }
-    pDetails->NumOpenPublicConnections = _infos.maxplayers() - _infos.players_size();
+    pDetails->NumOpenPublicConnections = _infos.max_players() - _infos.players_size();
     pDetails->Settings = pSettings;
     *OutSessionInfo = pDetails;
     
@@ -298,6 +298,20 @@ EOS_EResult EOSSDK_SessionDetails::CopySessionAttributeByKey(const EOS_SessionDe
 
     *OutSessionAttribute = pAttr;
     return EOS_EResult::EOS_Success;
+}
+
+/**
+ * Release the memory associated with a single session. This must be called on data retrieved from EOS_SessionSearch_CopySearchResultByIndex.
+ *
+ * @param SessionHandle - The session handle to release
+ *
+ * @see EOS_SessionSearch_CopySearchResultByIndex
+ */
+void EOSSDK_SessionDetails::Release()
+{
+    TRACE_FUNC();
+    
+    delete this;
 }
 
 }
