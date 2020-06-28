@@ -225,6 +225,81 @@ message P2P_Message_pb {
 }
 
 //////////////////////////////////////////////////////////////////////////
+//                           Lobby messages                             //
+//////////////////////////////////////////////////////////////////////////
+message Lobby_Attr_Value {
+    oneof value {
+        int64  i = 1;
+		double d = 2;
+		bool   b = 3;
+		string s = 4;
+	}
+}
+
+message Lobby_Attribute {
+    int32 visibility_type = 1;
+    Lobby_Attr_Value value = 2;
+}
+
+message Lobby_Member_Attributes {
+    map<string, Lobby_Attribute> attributes = 1;
+}
+
+message Lobby_Infos_pb {
+    string lobby_id = 1;
+    uint32 max_lobby_member = 2;
+    int32 permission_level = 3;
+    map<string, Lobby_Attribute> attributes = 4;
+    string owner_id = 5;
+    map<string, Lobby_Member_Attributes> members = 6;
+}
+
+message Lobby_Update_pb {
+    string lobby_id = 1;
+    uint32 max_lobby_member = 2;
+    int32 permission_level = 3;
+    map<string, Lobby_Attribute> attributes = 4;
+    map<string, Lobby_Member_Attributes> members = 5;
+}
+
+// Base Lobby related message
+message Lobby_Message_pb {
+    oneof message {
+        Lobby_Update_pb lobby_update = 1;
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+//                       Lobbies Search messages                        //
+//////////////////////////////////////////////////////////////////////////
+message Lobby_Search_Parameter {
+    map<int32, Lobby_Attr_Value> param = 1;
+}
+
+// Search sessions
+message Lobbies_Search_pb {
+    uint64 search_id = 1;
+    string lobby_id = 2;
+    string target_id = 3;
+    map<string, Lobby_Search_Parameter> parameters = 4;
+    uint32 max_results = 5;
+}
+
+// Search Response
+message Lobbies_Search_response_pb {
+    uint64 search_id = 1;
+    repeated Lobby_Infos_pb lobbies = 2;
+}
+
+// Base Lobbies Search related message
+message Lobbies_Search_Message_pb {
+    oneof message {
+        Lobbies_Search_pb search = 1;
+        Lobbies_Search_response_pb search_response = 2;
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
 //                          Friends messages                            //
 //////////////////////////////////////////////////////////////////////////
 // Request peer friend infos
@@ -308,5 +383,7 @@ message Network_Message_pb {
         P2P_Message_pb p2p = 10;
         Connect_Message_pb connect = 11;
         Sessions_Search_Message_pb sessions_search = 12;
+        Lobby_Message_pb lobby = 13;
+        Lobbies_Search_Message_pb lobbies_search = 14;
     }
 }
