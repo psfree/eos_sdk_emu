@@ -179,7 +179,7 @@ EOS_EResult EOSSDK_SessionModification::AddAttribute(const EOS_SessionModificati
     TRACE_FUNC();
     std::lock_guard<std::mutex> lk(_local_mutex);
     
-    if (Options == nullptr || Options->SessionAttribute->Key == nullptr ||
+    if (Options == nullptr || Options->SessionAttribute == nullptr || Options->SessionAttribute->Key == nullptr ||
         (Options->SessionAttribute->ValueType == EOS_ESessionAttributeType::EOS_AT_STRING && Options->SessionAttribute->Value.AsUtf8 == nullptr))
         return EOS_EResult::EOS_InvalidParameters;
     
