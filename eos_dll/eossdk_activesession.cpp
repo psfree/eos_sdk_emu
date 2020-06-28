@@ -46,8 +46,7 @@ namespace sdk
 EOS_EResult EOSSDK_ActiveSession::CopyInfo(const EOS_ActiveSession_CopyInfoOptions* Options, EOS_ActiveSession_Info** OutActiveSessionInfo)
 {
     TRACE_FUNC();
-    std::lock_guard<std::mutex> lk(_local_mutex);
-    
+
     EOS_ActiveSession_Info* copy_session_info = new EOS_ActiveSession_Info;
     EOS_SessionDetails_Info* session_details_info = new EOS_SessionDetails_Info;
     EOS_SessionDetails_Settings* session_details_settings = new EOS_SessionDetails_Settings;
@@ -57,20 +56,20 @@ EOS_EResult EOSSDK_ActiveSession::CopyInfo(const EOS_ActiveSession_CopyInfoOptio
     copy_session_info->LocalUserId = GetEOS_Connect().product_id();
     copy_session_info->State = static_cast<EOS_EOnlineSessionState>(_infos.state());
     {
-        size_t len = _infos.sessionname().length() + 1;
+        size_t len = _infos.session_name().length() + 1;
         char* str = new char[len];
-        strncpy(str, _infos.sessionname().c_str(), len);
+        strncpy(str, _infos.session_name().c_str(), len);
         copy_session_info->SessionName = str;
     }
     copy_session_info->SessionDetails = session_details_info;
 
     // SessionDetails_Info
     session_details_info->ApiVersion = EOS_SESSIONDETAILS_INFO_API_LATEST;
-    session_details_info->NumOpenPublicConnections = _infos.maxplayers() - _infos.players_size();
+    session_details_info->NumOpenPublicConnections = _infos.max_players() - _infos.players_size();
     {
-        size_t len = _infos.sessionid().length() + 1;
+        size_t len = _infos.session_id().length() + 1;
         char* str = new char[len];
-        strncpy(str, _infos.sessionid().c_str(), len);
+        strncpy(str, _infos.session_id().c_str(), len);
         session_details_info->SessionId = str;
     }
     {
@@ -86,12 +85,12 @@ EOS_EResult EOSSDK_ActiveSession::CopyInfo(const EOS_ActiveSession_CopyInfoOptio
     session_details_settings->bAllowJoinInProgress = _infos.join_in_progress_allowed();
     session_details_settings->bInvitesAllowed = _infos.invites_allowed();
     {
-        size_t len = _infos.bucketid().length() + 1;
+        size_t len = _infos.bucket_id().length() + 1;
         char* str = new char[len];
-        strncpy(str, _infos.bucketid().c_str(), len);
+        strncpy(str, _infos.bucket_id().c_str(), len);
         session_details_settings->BucketId = str;
     }
-    session_details_settings->NumPublicConnections = _infos.maxplayers();
+    session_details_settings->NumPublicConnections = _infos.max_players();
     session_details_settings->PermissionLevel = static_cast<EOS_EOnlineSessionPermissionLevel>(_infos.permission_level());
 
     *OutActiveSessionInfo = copy_session_info;
@@ -109,7 +108,6 @@ EOS_EResult EOSSDK_ActiveSession::CopyInfo(const EOS_ActiveSession_CopyInfoOptio
 uint32_t EOSSDK_ActiveSession::GetRegisteredPlayerCount(const EOS_ActiveSession_GetRegisteredPlayerCountOptions* Options)
 {
     TRACE_FUNC();
-    std::lock_guard<std::mutex> lk(_local_mutex);
 
     return _infos.registered_players_size();
 }
@@ -127,12 +125,26 @@ uint32_t EOSSDK_ActiveSession::GetRegisteredPlayerCount(const EOS_ActiveSession_
 EOS_ProductUserId EOSSDK_ActiveSession::GetRegisteredPlayerByIndex(const EOS_ActiveSession_GetRegisteredPlayerByIndexOptions* Options)
 {
     TRACE_FUNC();
-    std::lock_guard<std::mutex> lk(_local_mutex);
 
     if (Options->PlayerIndex >= static_cast<uint32_t>(_infos.registered_players_size()))
         return GetInvalidProductUserId();
 
     return GetProductUserId(_infos.registered_players()[Options->PlayerIndex]);
+}
+
+/**
+ * Release the memory associated with an active session.
+ * This must be called on data retrieved from EOS_Sessions_CopyActiveSessionHandle
+ *
+ * @param ActiveSessionHandle - The active session handle to release
+ *
+ * @see EOS_Sessions_CopyActiveSessionHandle
+ */
+void EOSSDK_ActiveSession::Release()
+{
+    TRACE_FUNC();
+
+    delete this;
 }
 
 }
