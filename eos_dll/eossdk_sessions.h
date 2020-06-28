@@ -106,8 +106,6 @@ namespace sdk
         friend class sdk::EOSSDK_Sessions;
         friend class sdk::EOSSDK_SessionSearch;
 
-        std::mutex _local_mutex;
-
         Session_Info_pb _infos;
 
     public:
