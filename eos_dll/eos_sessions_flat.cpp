@@ -407,7 +407,6 @@ EOS_DECLARE_FUNC(void) EOS_SessionSearch_Release(EOS_HSessionSearch SessionSearc
         return;
 
     auto pInst = reinterpret_cast<EOSSDK_SessionSearch*>(SessionSearchHandle);
-
     pInst->Release();
 }
 

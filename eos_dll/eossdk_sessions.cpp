@@ -1021,10 +1021,9 @@ EOS_EResult EOSSDK_Sessions::CreateSessionSearch(const EOS_Sessions_CreateSessio
     if (Options == nullptr || Options->MaxSearchResults == 0)
         return EOS_EResult::EOS_InvalidParameters;
     
-    auto search_handle = new EOSSDK_SessionSearch();
-    *OutSessionSearchHandle = reinterpret_cast<EOS_HSessionSearch>(search_handle);
-
-    _session_searchs.emplace(search_handle);
+    _session_searchs.emplace_back();
+    auto& session_search = _session_searchs.back();
+    *OutSessionSearchHandle = reinterpret_cast<EOS_HSessionSearch>(&session_search);
 
     return EOS_EResult::EOS_Success;
 }
@@ -1675,9 +1674,8 @@ bool EOSSDK_Sessions::CBRunFrame()
 
     for (auto it = _session_searchs.begin(); it != _session_searchs.end();)
     {
-        if ((*it)->released())
+        if (it->released())
         {
-            delete *it;
             it = _session_searchs.erase(it);
         }
         else
