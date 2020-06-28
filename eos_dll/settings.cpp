@@ -186,7 +186,7 @@ void Settings::save_settings()
     settings["unlock_dlcs"]               = unlock_dlcs;
     settings["enable_overlay"]            = enable_overlay;
     settings["disable_online_networking"] = disable_online_networking;
-#ifdef DISABLE_LOG
+#ifndef DISABLE_LOG
     settings["log_level"]                 = Log::loglevel_to_str();
 #endif
     settings["savepath"]                  = settings_savepath;
