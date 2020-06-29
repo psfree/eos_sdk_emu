@@ -286,6 +286,11 @@ EOS_EResult EOSSDK_Sessions::CreateSessionModification(const EOS_Sessions_Create
             modif->_infos.set_max_players(opts->MaxPlayers);
             modif->_infos.set_session_name(opts->SessionName);
         }
+        break;
+
+        default:
+            LOG(Log::LogLevel::FATAL, "Unmanaged API version %d", Options->ApiVersion);
+            abort();
     }
     
 
@@ -331,6 +336,10 @@ EOS_EResult EOSSDK_Sessions::UpdateSessionModification(const EOS_Sessions_Update
                 const EOS_Sessions_UpdateSessionModificationOptions001* opts = reinterpret_cast<const EOS_Sessions_UpdateSessionModificationOptions001*>(Options);
                 modif->_infos.set_session_name(opts->SessionName);
             }
+
+            default:
+                LOG(Log::LogLevel::FATAL, "Unmanaged API version %d", Options->ApiVersion);
+                abort();
         }
     }
     
