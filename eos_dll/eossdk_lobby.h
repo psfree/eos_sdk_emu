@@ -122,7 +122,6 @@ namespace sdk
         {
             created,
             joined,
-            joining,
         } state;
         Lobby_Infos_pb infos;
     };
@@ -134,13 +133,21 @@ namespace sdk
         Lobby_Infos_pb infos;
     };
 
+    struct lobby_join_t
+    {
+        pFrameResult_t cb;
+    };
+
     class EOSSDK_Lobby :
         public IRunFrame
     {
-        std::map<std::string, lobby_state_t> _lobbies;
+        static int32_t join_id;
+        constexpr static auto join_timeout = std::chrono::milliseconds(5000);
 
-        std::list<lobby_invite_t> _lobby_invites;
-        std::list<EOSSDK_LobbySearch> _lobbies_searchs;
+        std::map<std::string, lobby_state_t> _lobbies;
+        std::list<EOSSDK_LobbySearch>        _lobbies_searchs;
+        std::list<lobby_invite_t>            _lobby_invites;
+        std::map<int32_t, lobby_join_t>      _joins_requests;
 
     public:
         EOSSDK_Lobby();
@@ -149,7 +156,7 @@ namespace sdk
         lobby_state_t* get_lobby_by_id(std::string const& lobby_id);
         std::vector<lobby_state_t*> get_lobby_from_attributes(google::protobuf::Map<std::string, Lobby_Search_Parameter> const& parameters);
         void add_member_to_lobby(std::string const& member, lobby_state_t* lobby);
-        void remove_member_from_lobby(std::string const& member, lobby_state_t* lobby);
+        bool remove_member_from_lobby(std::string const& member, lobby_state_t* lobby);
         void promote_member(std::string const& member, lobby_state_t* lobby);
         void kick_member_from_lobby(std::string const& member, lobby_state_t* lobby);
         bool is_member_in_lobby(std::string const& member, lobby_state_t* lobby);
@@ -157,12 +164,26 @@ namespace sdk
 
         // Send Network messages
         bool send_to_all_members(Network_Message_pb& msg, lobby_state_t* lobby);
+        bool send_to_all_members_or_owner(Network_Message_pb& msg, lobby_state_t* lobby);
         bool send_lobby_update(lobby_state_t* pLobby);
+        bool send_lobby_member_update(Network::peer_t const& member_id, lobby_state_t* pLobby);
         bool send_lobbies_search_response(Network::peer_t const& peerid, Lobbies_Search_response_pb* resp);
+        bool send_lobby_join_request(Network::peer_t const& peerid, Lobby_Join_Request_pb* req);
+        bool send_lobby_join_response(Network::peer_t const& peerid, Lobby_Join_Response_pb* resp);
+        bool send_lobby_join(Network::peer_t const& peerid, Lobby_Join_pb* join);
+        bool send_lobby_member_join(Network::peer_t const& member_id, lobby_state_t* lobby);
+        bool send_lobby_member_leave(Network::peer_t const& member_id, lobby_state_t* lobby);
 
         // Receive Network messages
+        bool on_peer_disconnect(Network_Message_pb const& msg, Network_Peer_Disconnect_pb const& peer);
         bool on_lobby_update(Network_Message_pb const& msg, Lobby_Update_pb const& update);
+        bool on_lobby_member_update(Network_Message_pb const& msg, Lobby_Member_Update_pb const& update);
         bool on_lobbies_search(Network_Message_pb const& msg, Lobbies_Search_pb const& search);
+        bool on_lobby_join_request(Network_Message_pb const& msg, Lobby_Join_Request_pb const& req);
+        bool on_lobby_join_response(Network_Message_pb const& msg, Lobby_Join_Response_pb const& resp);
+        bool on_lobby_join(Network_Message_pb const& msg, Lobby_Join_pb const& join);
+        bool on_lobby_member_join(Network_Message_pb const& msg, Lobby_Member_Join_pb const& join);
+        bool on_lobby_member_leave(Network_Message_pb const& msg, Lobby_Member_Leave_pb const& leave);
 
         virtual bool CBRunFrame();
         virtual bool RunNetwork(Network_Message_pb const& msg);

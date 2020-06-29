@@ -324,9 +324,15 @@ bool EOSSDK_LobbySearch::on_lobbies_search_response(Network_Message_pb const& ms
     if (_search_cb.get() != nullptr && resp.search_id() == _search_infos.search_id())
     {
         _search_peers.erase(msg.source_id());
-        for(auto const& lobby : resp.lobbies())
+        if (_results.size() < _max_results)
         {
-            _results.emplace_back(lobby);
+            for (auto const& lobby : resp.lobbies())
+            {
+                if (_results.size() < _max_results)
+                    _results.emplace_back(lobby);
+                else
+                    break;
+            }
         }
     }
 

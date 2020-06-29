@@ -259,13 +259,50 @@ message Lobby_Update_pb {
     uint32 max_lobby_member = 2;
     int32 permission_level = 3;
     map<string, Lobby_Attribute> attributes = 4;
-    map<string, Lobby_Member_Attributes> members = 5;
+}
+
+message Lobby_Member_Update_pb {
+    string lobby_id = 1;
+    map<string, Lobby_Member_Attributes> member = 2;
+}
+
+message Lobby_Join_Request_pb {
+    string lobby_id = 1;
+    int32 join_id = 2;
+}
+
+message Lobby_Join_Response_pb {
+    string lobby_id = 1;
+    int32 reason = 2;
+    int32 join_id = 3;
+    Lobby_Infos_pb infos = 4;
+}
+
+message Lobby_Join_pb {
+    string lobby_id = 1;
+}
+
+message Lobby_Member_Join_pb {
+    string lobby_id = 1;
+    string member_id = 2;
+}
+
+message Lobby_Member_Leave_pb {
+    string lobby_id = 1;
+    string member_id = 2;
+    int32 reason = 3;
 }
 
 // Base Lobby related message
 message Lobby_Message_pb {
     oneof message {
         Lobby_Update_pb lobby_update = 1;
+        Lobby_Member_Update_pb lobby_member_update = 2;
+        Lobby_Join_Request_pb lobby_join_request = 3;
+        Lobby_Join_Response_pb lobby_join_response = 4;
+        Lobby_Join_pb lobby_join = 5;
+        Lobby_Member_Join_pb member_join = 6;
+        Lobby_Member_Leave_pb member_leave = 7;
 	}
 }
 
