@@ -25,6 +25,7 @@ namespace sdk
 
 EOSSDK_Platform::EOSSDK_Platform():
     _platform_init(false),
+    _ticket_budget_in_milliseconds(0),
 
     _cb_manager       (nullptr),
     _network          (nullptr),
@@ -61,19 +62,27 @@ EOSSDK_Platform& EOSSDK_Platform::Inst()
     return instance;
 }
 
-void EOSSDK_Platform::Init(const EOS_Platform_Options* options)
+void EOSSDK_Platform::Init(const EOS_Platform_Options* Options)
 {
     GLOBAL_LOCK();
     if(!_platform_init)
     {
-        if (options != nullptr)
+        if (Options != nullptr)
         {
-            _api_version = options->ApiVersion;
-            switch (options->ApiVersion)
+            _api_version = Options->ApiVersion;
+            switch (Options->ApiVersion)
             {
+                case EOS_PLATFORM_OPTIONS_API_007:
+                {
+                    auto pf = reinterpret_cast<const EOS_Platform_Options007*>(Options);
+                    if (pf->CacheDirectory != nullptr)
+                        _ticket_budget_in_milliseconds = pf->TickBudgetInMilliseconds;
+
+                    LOG(Log::LogLevel::DEBUG, "TickBudgetInMilliseconds = '%d'", _ticket_budget_in_milliseconds);
+                }                
                 case EOS_PLATFORM_OPTIONS_API_006:
                 {
-                    auto pf = reinterpret_cast<const EOS_Platform_Options006*>(options);
+                    auto pf = reinterpret_cast<const EOS_Platform_Options006*>(Options);
                     if (pf->CacheDirectory != nullptr)
                         _cache_directory = pf->CacheDirectory;
 
@@ -81,7 +90,7 @@ void EOSSDK_Platform::Init(const EOS_Platform_Options* options)
                 }
                 case EOS_PLATFORM_OPTIONS_API_005:
                 {
-                    auto pf = reinterpret_cast<const EOS_Platform_Options005*>(options);
+                    auto pf = reinterpret_cast<const EOS_Platform_Options005*>(Options);
                     if (pf->EncryptionKey != nullptr)
                         _encryption_key = pf->EncryptionKey;
 
@@ -104,7 +113,7 @@ void EOSSDK_Platform::Init(const EOS_Platform_Options* options)
                 }
                 case EOS_PLATFORM_OPTIONS_API_001:
                 {
-                    auto pf = reinterpret_cast<const EOS_Platform_Options001*>(options);
+                    auto pf = reinterpret_cast<const EOS_Platform_Options001*>(Options);
                     _reserved = pf->Reserved;
 
                     if (pf->ProductId != nullptr)
@@ -127,6 +136,11 @@ void EOSSDK_Platform::Init(const EOS_Platform_Options* options)
                     LOG(Log::LogLevel::DEBUG, "ClientSecret = '%s'", _client_secret.c_str());
                     LOG(Log::LogLevel::DEBUG, "ApiVersion = %u", pf->ApiVersion);
                 }
+                break;
+
+                default:
+                    LOG(Log::LogLevel::FATAL, "Unmanaged API version %d", Options->ApiVersion);
+                    abort();
             }
         }
 
@@ -186,8 +200,8 @@ void EOSSDK_Platform::Release()
 void EOSSDK_Platform::Tick()
 {
     GLOBAL_LOCK();
-    GetCB_Manager().run_frames();
-    GetCB_Manager().run_callbacks();
+    GetCB_Manager().set_max_tick_budget(_ticket_budget_in_milliseconds);
+    GetCB_Manager().tick();
 }
 
 /**

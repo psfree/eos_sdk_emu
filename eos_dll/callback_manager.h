@@ -23,6 +23,9 @@
 
 class Callback_Manager
 {
+    std::chrono::steady_clock::time_point _frame_start_time;
+    std::chrono::milliseconds _max_tick_budget;
+
     std::set<IRunFrame*> _frames_to_run;
     std::map<IRunFrame*, std::list<pFrameResult_t>> _callbacks_to_run;
     //std::map<IRunFrame*, std::list<pFrameResult_t>> _next_callbacks_to_run;
@@ -52,4 +55,16 @@ public:
     
     void run_frames();
     void run_callbacks();
+
+    inline void set_max_tick_budget(uint32_t milliseconds)
+    {
+        _max_tick_budget = std::chrono::milliseconds{ milliseconds };
+    }
+
+    inline void tick()
+    {
+        _frame_start_time = std::chrono::steady_clock::now();
+        run_frames();
+        run_callbacks();
+    }
 };

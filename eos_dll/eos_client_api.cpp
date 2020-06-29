@@ -188,6 +188,11 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
             if (p->ProductVersion != nullptr)
                 inst.product_version = Options->ProductVersion;
         }
+        break;
+
+        default:
+            LOG(Log::LogLevel::FATAL, "Unmanaged API version %d", Options->ApiVersion);
+            abort();
     }
 
     inst._sdk_initialized = true;
