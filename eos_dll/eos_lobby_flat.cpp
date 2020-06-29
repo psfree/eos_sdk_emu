@@ -250,8 +250,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_CopyLobbyDetailsHandle(EOS_HLobby Handle
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_SetPermissionLevel(EOS_HLobbyModification Handle, const EOS_LobbyModification_SetPermissionLevelOptions* Options)
 {
-    TRACE_FUNC();
-
     if (Handle == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
@@ -261,8 +259,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_SetPermissionLevel(EOS_HLobb
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_SetMaxMembers(EOS_HLobbyModification Handle, const EOS_LobbyModification_SetMaxMembersOptions* Options)
 {
-    TRACE_FUNC();
-
     if (Handle == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
@@ -272,8 +268,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_SetMaxMembers(EOS_HLobbyModi
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_AddAttribute(EOS_HLobbyModification Handle, const EOS_LobbyModification_AddAttributeOptions* Options)
 {
-    TRACE_FUNC();
-
     if (Handle == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
@@ -283,8 +277,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_AddAttribute(EOS_HLobbyModif
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_RemoveAttribute(EOS_HLobbyModification Handle, const EOS_LobbyModification_RemoveAttributeOptions* Options)
 {
-    TRACE_FUNC();
-
     if (Handle == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
@@ -294,8 +286,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_RemoveAttribute(EOS_HLobbyMo
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_AddMemberAttribute(EOS_HLobbyModification Handle, const EOS_LobbyModification_AddMemberAttributeOptions* Options)
 {
-    TRACE_FUNC();
-
     if (Handle == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
@@ -305,8 +295,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_AddMemberAttribute(EOS_HLobb
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_RemoveMemberAttribute(EOS_HLobbyModification Handle, const EOS_LobbyModification_RemoveMemberAttributeOptions* Options)
 {
-    TRACE_FUNC();
-
     if (Handle == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
@@ -316,8 +304,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_RemoveMemberAttribute(EOS_HL
 
 EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_LobbyDetails_GetLobbyOwner(EOS_HLobbyDetails Handle, const EOS_LobbyDetails_GetLobbyOwnerOptions* Options)
 {
-    TRACE_FUNC();
-
     if (Handle == nullptr)
         return nullptr;
 
@@ -327,8 +313,6 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_LobbyDetails_GetLobbyOwner(EOS_HLobbyDet
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyInfo(EOS_HLobbyDetails Handle, const EOS_LobbyDetails_CopyInfoOptions* Options, EOS_LobbyDetails_Info** OutLobbyDetailsInfo)
 {
-    TRACE_FUNC();
-
     if (Handle == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
@@ -338,8 +322,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyInfo(EOS_HLobbyDetails Handle
 
 EOS_DECLARE_FUNC(uint32_t) EOS_LobbyDetails_GetAttributeCount(EOS_HLobbyDetails Handle, const EOS_LobbyDetails_GetAttributeCountOptions* Options)
 {
-    TRACE_FUNC();
-
     if (Handle == nullptr)
         return 0;
 
@@ -349,8 +331,6 @@ EOS_DECLARE_FUNC(uint32_t) EOS_LobbyDetails_GetAttributeCount(EOS_HLobbyDetails 
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyAttributeByIndex(EOS_HLobbyDetails Handle, const EOS_LobbyDetails_CopyAttributeByIndexOptions* Options, EOS_Lobby_Attribute** OutAttribute)
 {
-    TRACE_FUNC();
-
     if (Handle == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
@@ -360,8 +340,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyAttributeByIndex(EOS_HLobbyDe
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyAttributeByKey(EOS_HLobbyDetails Handle, const EOS_LobbyDetails_CopyAttributeByKeyOptions* Options, EOS_Lobby_Attribute** OutAttribute)
 {
-    TRACE_FUNC();
-
     if (Handle == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
@@ -371,8 +349,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyAttributeByKey(EOS_HLobbyDeta
 
 EOS_DECLARE_FUNC(uint32_t) EOS_LobbyDetails_GetMemberCount(EOS_HLobbyDetails Handle, const EOS_LobbyDetails_GetMemberCountOptions* Options)
 {
-    TRACE_FUNC();
-
     if (Handle == nullptr)
         return 0;
 
@@ -382,8 +358,6 @@ EOS_DECLARE_FUNC(uint32_t) EOS_LobbyDetails_GetMemberCount(EOS_HLobbyDetails Han
 
 EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_LobbyDetails_GetMemberByIndex(EOS_HLobbyDetails Handle, const EOS_LobbyDetails_GetMemberByIndexOptions* Options)
 {
-    TRACE_FUNC();
-
     if (Handle == nullptr)
         return nullptr;
 
@@ -393,8 +367,6 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_LobbyDetails_GetMemberByIndex(EOS_HLobby
 
 EOS_DECLARE_FUNC(uint32_t) EOS_LobbyDetails_GetMemberAttributeCount(EOS_HLobbyDetails Handle, const EOS_LobbyDetails_GetMemberAttributeCountOptions* Options)
 {
-    TRACE_FUNC();
-
     if (Handle == nullptr)
         return 0;
 
@@ -404,8 +376,6 @@ EOS_DECLARE_FUNC(uint32_t) EOS_LobbyDetails_GetMemberAttributeCount(EOS_HLobbyDe
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyMemberAttributeByIndex(EOS_HLobbyDetails Handle, const EOS_LobbyDetails_CopyMemberAttributeByIndexOptions* Options, EOS_Lobby_Attribute** OutAttribute)
 {
-    TRACE_FUNC();
-
     if (Handle == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
@@ -415,8 +385,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyMemberAttributeByIndex(EOS_HL
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyMemberAttributeByKey(EOS_HLobbyDetails Handle, const EOS_LobbyDetails_CopyMemberAttributeByKeyOptions* Options, EOS_Lobby_Attribute** OutAttribute)
 {
-    TRACE_FUNC();
-
     if (Handle == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
