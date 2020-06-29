@@ -2,7 +2,7 @@
   "disable_online_networking": false,
   "enable_overlay": true,
   "epicid": "0123456789abcdef0123456789abcdef",
-  "gamename": "Unreal",
+  "gamename": "DefaultGameName",
   "language": "english",
   "languages": "english",
   "savepath": "appdata",
