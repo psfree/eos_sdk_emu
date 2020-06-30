@@ -1,10 +1,11 @@
 .vs
+*.vcxproj*
 nemirtingas_epic_emu*
 /Debug
 /Release
 /x64
 
-/dll_tester
+/dll_tester/OUT
 
 /proto/network_proto.pb*
 /extra/protobuf/protobuf-src
