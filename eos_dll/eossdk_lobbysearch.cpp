@@ -169,6 +169,8 @@ EOS_EResult EOSSDK_LobbySearch::SetParameter(const EOS_LobbySearch_SetParameterO
         case EOS_ESessionAttributeType::EOS_AT_DOUBLE : value.set_d(Options->Parameter->Value.AsDouble); break;
         case EOS_ESessionAttributeType::EOS_AT_STRING : value.set_s(Options->Parameter->Value.AsUtf8)  ; break;
     }
+
+    return EOS_EResult::EOS_Success;
 }
 
 /** NYI */
