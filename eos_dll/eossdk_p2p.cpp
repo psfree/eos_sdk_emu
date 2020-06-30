@@ -202,7 +202,6 @@ EOS_EResult EOSSDK_P2P::ReceivePacket(const EOS_P2P_ReceivePacketOptions* Option
     }
     if (queue == nullptr)
     {
-        LOG(Log::LogLevel::DEBUG, "1");
         return EOS_EResult::EOS_NotFound;
     }
 
@@ -216,8 +215,6 @@ EOS_EResult EOSSDK_P2P::ReceivePacket(const EOS_P2P_ReceivePacketOptions* Option
     next_requested_channel = -1;
 
     queue->pop_front();
-
-    LOG(Log::LogLevel::DEBUG, "2 %p %p", OutPeerId, *OutPeerId);
 
     return EOS_EResult::EOS_Success;
 }
