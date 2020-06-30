@@ -293,16 +293,28 @@ message Lobby_Member_Leave_pb {
     int32 reason = 3;
 }
 
+message Lobby_Member_Promote_pb {
+    string lobby_id = 1;
+    string member_id = 2;
+}
+
+message Lobby_Member_Kick_pb {
+    string lobby_id = 1;
+}
+
 // Base Lobby related message
 message Lobby_Message_pb {
     oneof message {
-        Lobby_Update_pb lobby_update = 1;
-        Lobby_Member_Update_pb lobby_member_update = 2;
-        Lobby_Join_Request_pb lobby_join_request = 3;
-        Lobby_Join_Response_pb lobby_join_response = 4;
-        Lobby_Join_pb lobby_join = 5;
-        Lobby_Member_Join_pb member_join = 6;
-        Lobby_Member_Leave_pb member_leave = 7;
+        Lobby_Update_pb        lobby_update = 1;
+        Lobby_Join_Request_pb  lobby_join_request = 2;
+        Lobby_Join_Response_pb lobby_join_response = 3;
+        Lobby_Join_pb          lobby_join = 4;
+
+        Lobby_Member_Update_pb  member_update = 5;
+        Lobby_Member_Join_pb    member_join = 6;
+        Lobby_Member_Leave_pb   member_leave = 7;
+        Lobby_Member_Promote_pb member_promote = 8;
+        Lobby_Member_Kick_pb    member_kick = 9;
 	}
 }
 
