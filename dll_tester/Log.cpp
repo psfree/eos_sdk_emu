@@ -17,73 +17,65 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifdef LIBRARY_DEBUG
+#ifndef DISABLE_LOG
 
 #include "Log.h"
+#include <thread>
+#include <mutex>
+#include <fstream>
+#include <cstdarg>
 #include <Windows.h>
 
-Log::LogLevel Log::_log_level = Log::LogLevel::TRACE;
+void default_log_func(Log::LogLevel lv, const char* log_message);
 
-#include <fstream>
+decltype(Log::_log_level) Log::_log_level = Log::LogLevel::OFF;
+decltype(Log::_log_func)  Log::_log_func = default_log_func;
 
-std::ofstream logfile("wrapper_log.txt", std::ios::out | std::ios::trunc);
+void default_log_func(Log::LogLevel lv, const char* log_message)
+{
+    static std::ofstream log_file;
+    static std::once_flag log_file_once;
+
+    std::call_once(log_file_once, []()
+    {
+        std::string exe_path;
+        char pgm_path[4096];
+        GetModuleFileNameA(nullptr, pgm_path, 4095);
+
+        exe_path = pgm_path;
+        exe_path = exe_path.substr(0, exe_path.rfind('\\') + 1);
+        log_file.open(exe_path + "wrapper.log", std::ios::trunc | std::ios::out);
+    });
+
+    log_file << log_message;
+    log_file.flush();
+}
 
 bool _trace(const char* format, va_list argptr)
 {
-    //va_list argptr;
-    //va_start(argptr, format);
-
     std::string fmt = format;
     if (*fmt.rbegin() != '\n')
         fmt += '\n';
 
-    if (IsDebuggerPresent())
-    {
-        //va_list argptr2;
-        //va_copy(argptr2, argptr);
-        //int len = vsnprintf(nullptr, 0, fmt.c_str(), argptr);
-        //
-        //char* buffer = new char[++len];
-        //vsnprintf(buffer, len, fmt.c_str(), argptr2);
-        //
-        //va_end(argptr);
-        //va_end(argptr2);
-        //
-        //OutputDebugString(buffer);
-        //delete[]buffer;
-    }
-    else
-    {
-        //vfprintf(stderr, fmt.c_str(), argptr);
-    }
-    {
-        va_list argptr2;
-        va_copy(argptr2, argptr);
-        int len = vsnprintf(nullptr, 0, fmt.c_str(), argptr);
+    va_list argptr2;
+    va_copy(argptr2, argptr);
 
-        char* buffer = new char[++len];
-        vsnprintf(buffer, len, fmt.c_str(), argptr2);
+    int len = vsnprintf(nullptr, 0, fmt.c_str(), argptr);
+    char* buffer = new char[++len];
 
-        va_end(argptr);
-        va_end(argptr2);
+    vsnprintf(buffer, len, fmt.c_str(), argptr2);
+    va_end(argptr);
+    va_end(argptr2);
 
-        logfile << buffer;
-        logfile.flush();
-        delete[]buffer;
-    }
+    Log::get_log_func()(Log::get_loglevel(), buffer);
 
+    delete[]buffer;
     return true;
-}
-
-void Log::set_loglevel(LogLevel lv)
-{
-    if (lv >= LogLevel::MIN && lv <= LogLevel::MAX)
-        _log_level = lv;
 }
 
 void Log::L(LogLevel lv, const char* format, ...)
 {
-    if (lv >= _log_level && lv < LogLevel::MAX)
+    if (lv >= _log_level && _log_level < LogLevel::MAX)
     {
         va_list argptr;
         va_start(argptr, format);

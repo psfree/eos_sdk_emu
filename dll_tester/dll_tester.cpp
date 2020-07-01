@@ -10,6 +10,7 @@
 #include <numeric>
 #include <random>
 #include <thread>
+#include <iomanip>
 
 #define EOS_BUILD_DLL 1
 
@@ -30,6 +31,7 @@
 
 static HMODULE original_dll = nullptr;
 static const char* original_dll_name = "EOSSDK-Win64-Shipping.original.dll";
+static std::string exe_path;
 
 using callback_t = void(EOS_CALL *)(void*);
 
@@ -47,9 +49,11 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
         case DLL_PROCESS_ATTACH:
         {
             original_dll = LoadLibrary(original_dll_name);
+
             Log::set_loglevel(Log::LogLevel::TRACE);
-            std::fstream log("cmdline.txt", std::ios::out | std::ios::trunc);
-            log << GetCommandLine();
+
+            LOG(Log::LogLevel::INFO, "Original dll load (%s): %p", original_dll_name, original_dll);
+            LOG(Log::LogLevel::INFO, "command line: %s", GetCommandLine());
         }
         break;
 
@@ -76,7 +80,6 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Auth_AddNotifyLoginStatusChangedNew(EOS
 
 static bool set_eos_compat(int32_t compat_version)
 {
-    auto accountid = EOS_EpicAccountId_FromString("afeca5d0401f46409095b81510c265ac");
     int failed = false;
 #if ! defined(__WINDOWS_32__)
     if (compat_version == 1)
@@ -112,7 +115,38 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
         abort();
     }
 
-    return _EOS_Initialize(Options);
+    auto res = _EOS_Initialize(Options);
+
+    std::stringstream sstr;
+    sstr << std::endl;
+    sstr << "ApiVersion              : " << Options->ApiVersion << std::endl;
+    switch (Options->ApiVersion)
+    {
+        case EOS_INITIALIZE_API_003:
+        {
+            auto* v = reinterpret_cast<const EOS_InitializeOptions003*>(Options);
+            sstr << "SystemInitializeOptions : " << Options->SystemInitializeOptions << std::endl;
+        }
+
+        case EOS_INITIALIZE_API_002:
+        {
+            auto* v = reinterpret_cast<const EOS_InitializeOptions002*>(Options);
+            sstr << "Reserved                : " << Options->Reserved << std::endl;
+        }
+
+        case EOS_INITIALIZE_API_001:
+        {
+            auto* v = reinterpret_cast<const EOS_InitializeOptions001*>(Options);
+            sstr << "AllocateMemoryFunction  : " << Options->AllocateMemoryFunction << std::endl;
+            sstr << "ReallocateMemoryFunction: " << Options->ReallocateMemoryFunction << std::endl;
+            sstr << "ReleaseMemoryFunction   : " << Options->ReleaseMemoryFunction << std::endl;
+            sstr << "ProductName             : " << (Options->ProductName == nullptr ? "" : Options->ProductName) << std::endl;
+            sstr << "ProductVersion          : " << (Options->ProductVersion == nullptr ? "" : Options->ProductVersion) << std::endl;
+        }
+    }
+    LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
+
+    return res;
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Shutdown()
@@ -148,10 +182,18 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_EpicAccountId_IsValid(EOS_EpicAccountId AccountId
     LOG(Log::LogLevel::TRACE, "");
     ORIGINAL_FUNCTION(EOS_EpicAccountId_IsValid);
     auto res = _EOS_EpicAccountId_IsValid(AccountId);
-    char buff[2048];
-    int32_t size = 2048;
-    EOS_EpicAccountId_ToString(AccountId, buff, &size);
-    LOG(Log::LogLevel::DEBUG, "'%s': '%d'", buff, res);
+
+    std::stringstream sstr;
+    if (res == EOS_TRUE)
+    {
+        char buff[2048];
+        int32_t size = 2048;
+        EOS_EpicAccountId_ToString(AccountId, buff, &size);
+
+        sstr << buff;
+    }
+    LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
+
     return res;
 }
 
@@ -160,7 +202,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_EpicAccountId_ToString(EOS_EpicAccountId Accou
     LOG(Log::LogLevel::TRACE, "");
     ORIGINAL_FUNCTION(EOS_EpicAccountId_ToString);
     auto res = _EOS_EpicAccountId_ToString(AccountId, OutBuffer, InOutBufferLength);
-    LOG(Log::LogLevel::DEBUG, "'%s'", OutBuffer);
     return res;
 }
 
@@ -168,8 +209,9 @@ EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_EpicAccountId_FromString(const char* Acc
 {
     LOG(Log::LogLevel::TRACE, "");
     ORIGINAL_FUNCTION(EOS_EpicAccountId_FromString);
-    LOG(Log::LogLevel::DEBUG, "'%s'", AccountIdString);
-    return _EOS_EpicAccountId_FromString(AccountIdString);
+    auto res = _EOS_EpicAccountId_FromString(AccountIdString);
+    LOG(Log::LogLevel::DEBUG, "%p = %s", res, AccountIdString);
+    return res;
 }
 
 EOS_DECLARE_FUNC(EOS_Bool) EOS_ProductUserId_IsValid(EOS_ProductUserId AccountId)
@@ -177,10 +219,18 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_ProductUserId_IsValid(EOS_ProductUserId AccountId
     LOG(Log::LogLevel::TRACE, "");
     ORIGINAL_FUNCTION(EOS_ProductUserId_IsValid);
     auto res = _EOS_ProductUserId_IsValid(AccountId);
-    char buff[2048];
-    int32_t size = 2048;
-    EOS_ProductUserId_ToString(AccountId, buff, &size);
-    LOG(Log::LogLevel::DEBUG, "'%s': '%d'", buff, res);
+
+    std::stringstream sstr;
+    if (res == EOS_TRUE)
+    {
+        char buff[2048];
+        int32_t size = 2048;
+        EOS_ProductUserId_ToString(AccountId, buff, &size);
+
+        sstr << buff;
+    }
+    LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
+
     return res;
 }
 
@@ -189,7 +239,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ProductUserId_ToString(EOS_ProductUserId Accou
     LOG(Log::LogLevel::TRACE, "");
     ORIGINAL_FUNCTION(EOS_ProductUserId_ToString);
     auto res = _EOS_ProductUserId_ToString(AccountId, OutBuffer, InOutBufferLength);
-    LOG(Log::LogLevel::DEBUG, "'%s'", OutBuffer);
     return res;
 }
 
@@ -197,8 +246,9 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_ProductUserId_FromString(const char* Acc
 {
     LOG(Log::LogLevel::TRACE, "");
     ORIGINAL_FUNCTION(EOS_ProductUserId_FromString);
-    LOG(Log::LogLevel::DEBUG, "'%s'", AccountIdString);
-    return _EOS_ProductUserId_FromString(AccountIdString);
+    auto res = _EOS_ProductUserId_FromString(AccountIdString);
+    LOG(Log::LogLevel::DEBUG, "%p = %s", res, AccountIdString);
+    return res;
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Logging_SetCallback(EOS_LogMessageFunc Callback)
@@ -807,58 +857,58 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Presence_CopyPresence(EOS_HPresence Handle, co
     ORIGINAL_FUNCTION(EOS_Presence_CopyPresence);
     auto res = _EOS_Presence_CopyPresence(Handle, Options, OutPresence);
 
-    std::string myid;
-    std::string targetid;
-    {
-        char str[2048];
-        int32_t size = 2048;
-        EOS_EpicAccountId_ToString(Options->LocalUserId, str, &size);
-        myid = str;
-    }
-    {
-        char str[2048];
-        int32_t size = 2048;
-        EOS_EpicAccountId_ToString(Options->TargetUserId, str, &size);
-        targetid = str;
-    }
+    char local_id[2048];
+    int32_t size = 2048;
+    EOS_EpicAccountId_ToString(Options->LocalUserId, local_id, &size);
 
-    if (targetid != myid)
-    {
-        EOS_Presence_CopyPresenceOptions pres_options;
-        EOS_Presence_Info* out = new EOS_Presence_Info;
-
-        pres_options.ApiVersion = EOS_PRESENCE_COPYPRESENCE_API_LATEST;
-        pres_options.LocalUserId = Options->LocalUserId;
-        pres_options.TargetUserId = Options->LocalUserId;
-
-        EOS_Presence_CopyPresence(Handle, &pres_options, &out);
-        EOS_Presence_Info_Release(out);
-    }
-
+    std::stringstream sstr;
+    sstr << std::endl;
+    sstr << "ApiVersion : " << Options->ApiVersion << std::endl;
+    sstr << "LocalUserId: " << local_id << std::endl;
     if (res == EOS_EResult::EOS_Success)
     {
-        char buff[2048];
-        int32_t size = 2048;
-        EOS_EpicAccountId_ToString((*OutPresence)->UserId, buff, &size);
-        char targetid[2048];
-        size = 2048;
-        EOS_EpicAccountId_ToString(Options->TargetUserId, targetid, &size);
+        sstr << "  ApiVersion    : " << (*OutPresence)->ApiVersion << std::endl;
+        switch ((*OutPresence)->ApiVersion)
+        {
+            case EOS_PRESENCE_COPYPRESENCE_API_002:
+            {
+                auto v = reinterpret_cast<EOS_Presence_Info002*>(*OutPresence);
+                sstr << "  ProductName   : " << v->ProductName << std::endl;
+            }
 
-        LOG(Log::LogLevel::DEBUG, "\n\tResult: %s\n\tTargetId: %s\n\tStatus: %d\n\tUserId: %s\n\tProductId: %s\n\tProductVersion:%s\n\tPlatform: %s\n\tRichText: %s\n\tProductName: %s",
-            EOS_EResult_ToString(res),
-            targetid,
-            (*OutPresence)->Status,
-            buff,
-            (*OutPresence)->ProductId ? (*OutPresence)->ProductId : "",
-            (*OutPresence)->ProductVersion ? (*OutPresence)->ProductVersion : "",
-            (*OutPresence)->Platform ? (*OutPresence)->Platform : "",
-            (*OutPresence)->RichText ? (*OutPresence)->RichText : "",
-            (*OutPresence)->ProductName ? (*OutPresence)->ProductName : "");
+            case EOS_PRESENCE_COPYPRESENCE_API_001:
+            {
+                auto v = reinterpret_cast<EOS_Presence_Info001*>(*OutPresence);
+                char target_id[2048];
+                size = 2048;
+                EOS_EpicAccountId_ToString(v->UserId, target_id, &size);
+
+                sstr << "  Status        : " << v->Status << std::endl;
+                sstr << "  UserId        : " << target_id << std::endl;
+                sstr << "  ProductId     : " << v->ProductId << std::endl;
+                sstr << "  ProductVersion: " << v->ProductVersion << std::endl;
+                sstr << "  Platform      : " << v->Platform << std::endl;
+                sstr << "  RichText      : " << v->RichText << std::endl;
+            }
+        }
+
         for (int i = 0; i < (*OutPresence)->RecordsCount; ++i)
         {
-            LOG(Log::LogLevel::DEBUG, "%s=%s", (*OutPresence)->Records[i].Key, (*OutPresence)->Records[i].Value);
+            switch ((*OutPresence)->Records[i].ApiVersion)
+            {
+                case EOS_PRESENCE_DATARECORD_API_001:
+                {
+                    sstr << "    Records[" << i << "]: " << (*OutPresence)->Records[i].Key << " = " << (*OutPresence)->Records[i].Value << std::endl;
+                }
+                break;
+            }
         }
     }
+    else
+    {
+        sstr << "Failed" << std::endl;
+    }
+    LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
     
     return res;
 }
@@ -1246,6 +1296,46 @@ EOS_DECLARE_FUNC(EOS_HPlatform) EOS_Platform_Create(const EOS_Platform_Options* 
     LOG(Log::LogLevel::TRACE, "");
     ORIGINAL_FUNCTION(EOS_Platform_Create);
     hPlatform = _EOS_Platform_Create(Options);
+
+    std::stringstream sstr;
+    sstr << std::endl;
+    sstr << "ApiVersion                     : " << Options->ApiVersion << std::endl;
+    switch (Options->ApiVersion)
+    {
+        case EOS_PLATFORM_OPTIONS_API_007:
+        {
+            auto* v = reinterpret_cast<const EOS_Platform_Options007*>(Options);
+            sstr << "TickBudgetInMilliseconds       : " << Options->TickBudgetInMilliseconds << std::endl;
+        }
+
+        case EOS_PLATFORM_OPTIONS_API_006:
+        {
+            auto* v = reinterpret_cast<const EOS_Platform_Options006*>(Options);
+            sstr << "CacheDirectory                 : " << (Options->CacheDirectory == nullptr ? "" : Options->CacheDirectory) << std::endl;
+        }
+
+        case EOS_PLATFORM_OPTIONS_API_005:
+        {
+            auto* v = reinterpret_cast<const EOS_Platform_Options005*>(Options);
+            sstr << "EncryptionKey                  : " << (Options->EncryptionKey       == nullptr ? "" : Options->EncryptionKey) << std::endl;
+            sstr << "OverrideCountryCode            : " << (Options->OverrideCountryCode == nullptr ? "" : Options->OverrideCountryCode) << std::endl;
+            sstr << "OverrideLocaleCode             : " << (Options->OverrideLocaleCode  == nullptr ? "" : Options->OverrideLocaleCode) << std::endl;
+            sstr << "DeploymentId                   : " << (Options->DeploymentId        == nullptr ? "" : Options->DeploymentId) << std::endl;
+            sstr << "Flags                          : " << Options->Flags << std::endl;
+        }
+
+        case EOS_PLATFORM_OPTIONS_API_001:
+        {
+            auto* v = reinterpret_cast<const EOS_Platform_Options001*>(Options);
+            sstr << "Reserved                       : " << Options->Reserved << std::endl;
+            sstr << "ProductId                      : " << (Options->ProductId == nullptr ? "" : Options->ProductId) << std::endl;
+            sstr << "SandboxId                      : " << (Options->SandboxId == nullptr ? "" : Options->SandboxId) << std::endl;
+            sstr << "ClientCredentials::ClientId    : " << (Options->ClientCredentials.ClientId     == nullptr ? "" : Options->ClientCredentials.ClientId) << std::endl;
+            sstr << "ClientCredentials::ClientSecret: " << (Options->ClientCredentials.ClientSecret == nullptr ? "" : Options->ClientCredentials.ClientSecret) << std::endl;
+            sstr << "bIsServer                      : " << EOS_Bool_2_str(Options->bIsServer) << std::endl;
+        }
+    }
+    LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
 
     return hPlatform;
 }
@@ -1795,9 +1885,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardDefinitionByIndex(
     sstr << std::endl;
     sstr << "ApiVersion      : " << Options->ApiVersion << std::endl;
     sstr << "LeaderboardIndex: " << Options->LeaderboardIndex << std::endl;
-    sstr << "  ApiVersion   : " << (*OutLeaderboardDefinition)->ApiVersion << std::endl;
     if (res == EOS_EResult::EOS_Success)
     {
+        sstr << "  ApiVersion   : " << (*OutLeaderboardDefinition)->ApiVersion << std::endl;
         switch ((*OutLeaderboardDefinition)->ApiVersion)
         {
             case EOS_LEADERBOARDS_DEFINITION_API_001:
@@ -1831,9 +1921,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardDefinitionByLeader
     sstr << std::endl;
     sstr << "ApiVersion   : " << Options->ApiVersion << std::endl;
     sstr << "LeaderboardId: " << Options->LeaderboardId << std::endl;
-    sstr << "  ApiVersion   : " << (*OutLeaderboardDefinition)->ApiVersion << std::endl;
     if (res == EOS_EResult::EOS_Success)
     {
+        sstr << "  ApiVersion   : " << (*OutLeaderboardDefinition)->ApiVersion << std::endl;
         switch ((*OutLeaderboardDefinition)->ApiVersion)
         {
             case EOS_LEADERBOARDS_DEFINITION_API_001:
@@ -1881,9 +1971,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardRecordByIndex(EOS_
     sstr << std::endl;
     sstr << "ApiVersion            : " << Options->ApiVersion << std::endl;
     sstr << "LeaderboardRecordIndex: " << Options->LeaderboardRecordIndex << std::endl;
-    sstr << "  ApiVersion     : " << (*OutLeaderboardRecord)->ApiVersion << std::endl;
     if (res == EOS_EResult::EOS_Success)
     {
+        sstr << "  ApiVersion     : " << (*OutLeaderboardRecord)->ApiVersion << std::endl;
         switch ((*OutLeaderboardRecord)->ApiVersion)
         {
             case EOS_LEADERBOARDS_LEADERBOARDRECORD_API_002:
@@ -1920,9 +2010,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardRecordByUserId(EOS
     std::stringstream sstr;
     sstr << std::endl;
     sstr << "ApiVersion            : " << Options->ApiVersion << std::endl;
-    sstr << "  ApiVersion     : " << (*OutLeaderboardRecord)->ApiVersion << std::endl;
     if (res == EOS_EResult::EOS_Success)
     {
+        sstr << "  ApiVersion     : " << (*OutLeaderboardRecord)->ApiVersion << std::endl;
         switch ((*OutLeaderboardRecord)->ApiVersion)
         {
             case EOS_LEADERBOARDS_LEADERBOARDRECORD_API_002:
@@ -2148,9 +2238,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementByIndex(EOS_HEcom Handle, 
     sstr << std::endl;
     sstr << "ApiVersion      : " << Options->ApiVersion << std::endl;
     sstr << "EntitlementIndex: " << Options->EntitlementIndex << std::endl;
-    sstr << "  ApiVersion     : " << (*OutEntitlement)->ApiVersion << std::endl;
     if (res == EOS_EResult::EOS_Success)
     {
+        sstr << "  ApiVersion     : " << (*OutEntitlement)->ApiVersion << std::endl;
         switch ((*OutEntitlement)->ApiVersion)
         {
             case EOS_ECOM_ENTITLEMENT_API_002:
@@ -2193,9 +2283,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementByNameAndIndex(EOS_HEcom H
     sstr << "ApiVersion     : " << Options->ApiVersion << std::endl;
     sstr << "EntitlementName: " << Options->EntitlementName << std::endl;
     sstr << "Index          : " << Options->Index << std::endl;
-    sstr << "  ApiVersion     : " << (*OutEntitlement)->ApiVersion << std::endl;
     if (res == EOS_EResult::EOS_Success)
     {
+        sstr << "  ApiVersion     : " << (*OutEntitlement)->ApiVersion << std::endl;
         switch ((*OutEntitlement)->ApiVersion)
         {
             case EOS_ECOM_ENTITLEMENT_API_002:
@@ -2237,9 +2327,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementById(EOS_HEcom Handle, con
     sstr << std::endl;
     sstr << "ApiVersion   : " << Options->ApiVersion << std::endl;
     sstr << "EntitlementId: " << Options->EntitlementId << std::endl;
-    sstr << "  ApiVersion     : " << (*OutEntitlement)->ApiVersion << std::endl;
     if (res == EOS_EResult::EOS_Success)
     {
+        sstr << "  ApiVersion     : " << (*OutEntitlement)->ApiVersion << std::endl;
         switch ((*OutEntitlement)->ApiVersion)
         {
             case EOS_ECOM_ENTITLEMENT_API_002:
@@ -2400,9 +2490,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_Transaction_CopyEntitlementByIndex(EOS_Ec
     sstr << std::endl;
     sstr << "ApiVersion      : " << Options->ApiVersion << std::endl;
     sstr << "EntitlementIndex: " << Options->EntitlementIndex << std::endl;
-    sstr << "  ApiVersion     : " << (*OutEntitlement)->ApiVersion << std::endl;
     if (res == EOS_EResult::EOS_Success)
     {
+        sstr << "  ApiVersion     : " << (*OutEntitlement)->ApiVersion << std::endl;
         switch ((*OutEntitlement)->ApiVersion)
         {
             case EOS_ECOM_ENTITLEMENT_API_002:
@@ -2801,9 +2891,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByIndex(
     sstr << std::endl;
     sstr << "ApiVersion           : " << Options->ApiVersion << std::endl;
     sstr << "AchievementIndex     : " << Options->AchievementIndex << std::endl;
-    sstr << "  ApiVersion           : " << (*OutDefinition)->ApiVersion << std::endl;
     if (res == EOS_EResult::EOS_Success)
     {
+        sstr << "  ApiVersion           : " << (*OutDefinition)->ApiVersion << std::endl;
         switch ((*OutDefinition)->ApiVersion)
         {
             case EOS_ACHIEVEMENTS_COPYDEFINITIONBYINDEX_API_001:
@@ -2849,12 +2939,12 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionV2ByInde
     sstr << std::endl;
     sstr << "ApiVersion           : " << Options->ApiVersion << std::endl;
     sstr << "AchievementIndex     : " << Options->AchievementIndex << std::endl;
-    sstr << "  ApiVersion           : " << (*OutDefinition)->ApiVersion << std::endl;
     if (res == EOS_EResult::EOS_Success)
     {
+        sstr << "  ApiVersion           : " << (*OutDefinition)->ApiVersion << std::endl;
         switch ((*OutDefinition)->ApiVersion)
         {
-            case EOS_ACHIEVEMENTS_COPYDEFINITIONBYINDEX_API_001:
+            case EOS_ACHIEVEMENTS_COPYDEFINITIONV2BYINDEX_API_002:
             {
                 auto* v = reinterpret_cast<EOS_Achievements_DefinitionV2002*>(*OutDefinition);
                 sstr << "  AchievementId        : " << v->AchievementId << std::endl;
@@ -2896,9 +2986,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByAchiev
     std::stringstream sstr;
     sstr << std::endl;
     sstr << "ApiVersion           : " << Options->ApiVersion << std::endl;
-    sstr << "  ApiVersion           : " << (*OutDefinition)->ApiVersion << std::endl;
     if (res == EOS_EResult::EOS_Success)
     {
+        sstr << "  ApiVersion           : " << (*OutDefinition)->ApiVersion << std::endl;
         switch ((*OutDefinition)->ApiVersion)
         {
             case EOS_ACHIEVEMENTS_COPYDEFINITIONBYINDEX_API_001:
@@ -2943,12 +3033,12 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionV2ByAchi
     std::stringstream sstr;
     sstr << std::endl;
     sstr << "ApiVersion           : " << Options->ApiVersion << std::endl;
-    sstr << "  ApiVersion           : " << (*OutDefinition)->ApiVersion << std::endl;
     if (res == EOS_EResult::EOS_Success)
     {
+        sstr << "  ApiVersion           : " << (*OutDefinition)->ApiVersion << std::endl;
         switch ((*OutDefinition)->ApiVersion)
         {
-            case EOS_ACHIEVEMENTS_COPYDEFINITIONBYINDEX_API_001:
+            case EOS_ACHIEVEMENTS_COPYDEFINITIONV2BYACHIEVEMENTID_API_002:
             {
                 auto* v = reinterpret_cast<EOS_Achievements_DefinitionV2002*>(*OutDefinition);
                 sstr << "  AchievementId        : " << v->AchievementId << std::endl;

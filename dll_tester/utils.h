@@ -53,6 +53,22 @@ std::ostream& operator <<(std::ostream& os, EOS_ENATType v)
     return (os << "Unknown enum value: " << (int32_t)v);
 }
 
+std::ostream& operator <<(std::ostream& os, EOS_Presence_EStatus v)
+{
+    switch (v)
+    {
+#define ENUM_STR(X) case decltype(v)::X: return (os << #X)
+        ENUM_STR(EOS_PS_Offline);
+        ENUM_STR(EOS_PS_Online);
+        ENUM_STR(EOS_PS_Away);
+        ENUM_STR(EOS_PS_ExtendedAway);
+        ENUM_STR(EOS_PS_DoNotDisturb);
+#undef ENUM_STR
+    }
+
+    return (os << "Unknown enum value: " << (int32_t)v);
+}
+
 inline std::ostream& operator <<(std::ostream& os, EOS_EResult v)
 {
     return (os << EOS_EResult_ToString(v));
