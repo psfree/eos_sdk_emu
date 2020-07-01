@@ -59,7 +59,7 @@ public:
 
     int32_t api_version;
     //std::string product_name;
-    std::string product_version;
+    std::string _product_version;
 
     EOSSDK_Client();
     ~EOSSDK_Client();
