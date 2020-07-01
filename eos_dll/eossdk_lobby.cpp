@@ -275,6 +275,18 @@ void EOSSDK_Lobby::notify_lobby_member_update(std::string const& member, lobby_s
     }
 }
 
+void EOSSDK_Lobby::notify_lobby_invite_received(std::string const& invite_id, EOS_ProductUserId from_id)
+{
+    std::vector<pFrameResult_t> notifs(std::move(GetCB_Manager().get_notifications(this, EOS_Lobby_LobbyInviteReceivedCallbackInfo::k_iCallback)));
+    for (auto& notif : notifs)
+    {
+        EOS_Lobby_LobbyInviteReceivedCallbackInfo& lirci = notif->GetCallback<EOS_Lobby_LobbyInviteReceivedCallbackInfo>();
+        strncpy(const_cast<char*>(lirci.InviteId), invite_id.c_str(), max_id_length);
+        lirci.TargetUserId = from_id;
+        notif->res.cb_func(notif->res.data);
+    }
+}
+
  /**
   * Creates a lobby and adds the user to the lobby membership.  There is no data associated with the lobby at the start and can be added vis EOS_Lobby_UpdateLobbyModification
   *
@@ -926,7 +938,6 @@ void EOSSDK_Lobby::RemoveNotifyLobbyMemberStatusReceived(EOS_NotificationId InId
 void EOSSDK_Lobby::SendInvite(const EOS_Lobby_SendInviteOptions* Options, void* ClientData, const EOS_Lobby_OnSendInviteCallback CompletionDelegate)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
 
     if (CompletionDelegate == nullptr)
         return;
@@ -958,8 +969,18 @@ void EOSSDK_Lobby::SendInvite(const EOS_Lobby_SendInviteOptions* Options, void* 
     }
     else
     {
-        //send_lobby_invite(remote_id, lobby_invite);
-        sici.ResultCode = EOS_EResult::EOS_NotFound;
+        lobby_state_t* pLobby = get_lobby_by_id(Options->LobbyId);
+        if (pLobby != nullptr && is_member_in_lobby(GetEOS_Connect().get_myself()->first->to_string(), pLobby))
+        {
+            Lobby_Invite_pb* invite = new Lobby_Invite_pb;
+
+            *invite->mutable_infos() = pLobby->infos;
+            send_lobby_invite(Options->TargetUserId->to_string(), invite);
+        }
+        else
+        {
+            sici.ResultCode = EOS_EResult::EOS_NotFound;
+        }
     }
 
     res->done;
@@ -980,7 +1001,6 @@ void EOSSDK_Lobby::SendInvite(const EOS_Lobby_SendInviteOptions* Options, void* 
 void EOSSDK_Lobby::RejectInvite(const EOS_Lobby_RejectInviteOptions* Options, void* ClientData, const EOS_Lobby_OnRejectInviteCallback CompletionDelegate)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
 
     if (CompletionDelegate == nullptr)
         return;
@@ -1012,7 +1032,19 @@ void EOSSDK_Lobby::RejectInvite(const EOS_Lobby_RejectInviteOptions* Options, vo
     }
     else
     {
-        rici.ResultCode = EOS_EResult::EOS_NotFound;
+        auto it = std::find_if(_lobby_invites.begin(), _lobby_invites.end(), [Options](lobby_invite_t& invite)
+        {
+            return invite.invite_id == Options->LobbyId;
+        });
+        if (it != _lobby_invites.end())
+        {
+            _lobby_invites.erase(it);
+            rici.ResultCode = EOS_EResult::EOS_Success;
+        }
+        else
+        {
+            rici.ResultCode = EOS_EResult::EOS_NotFound;
+        }
     }
 
     res->done;
@@ -1063,12 +1095,11 @@ void EOSSDK_Lobby::QueryInvites(const EOS_Lobby_QueryInvitesOptions* Options, vo
 uint32_t EOSSDK_Lobby::GetInviteCount(const EOS_Lobby_GetInviteCountOptions* Options)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
 
     if (Options == nullptr)
         return 0;
 
-    return 0;
+    return _lobby_invites.size();
 }
 
 /**
@@ -1086,19 +1117,24 @@ uint32_t EOSSDK_Lobby::GetInviteCount(const EOS_Lobby_GetInviteCountOptions* Opt
 EOS_EResult EOSSDK_Lobby::GetInviteIdByIndex(const EOS_Lobby_GetInviteIdByIndexOptions* Options, char* OutBuffer, int32_t* InOutBufferLength)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
 
-    if (Options == nullptr || /* Options->Index >= _invites.size() || */ InOutBufferLength == nullptr )
+    if (Options == nullptr || Options->Index >= _lobby_invites.size() || InOutBufferLength == nullptr )
         return EOS_EResult::EOS_InvalidParameters;
 
-    *InOutBufferLength = 0;
+    auto it = _lobby_invites.begin();
+    std::advance(it, Options->Index);
 
     if (OutBuffer != nullptr)
     {
-        //strncpy(OutBuffer, lobby_id, lobby_length);
+        *InOutBufferLength = std::min<int32_t>(*InOutBufferLength, it->invite_id.length() + 1);
+        strncpy(OutBuffer, it->invite_id.c_str(), *InOutBufferLength);
+    }
+    else
+    {
+        *InOutBufferLength = it->invite_id.length() + 1;
     }
     
-    return EOS_EResult::EOS_InvalidParameters;
+    return EOS_EResult::EOS_Success;
 }
 
 /**
@@ -1192,14 +1228,29 @@ void EOSSDK_Lobby::RemoveNotifyLobbyInviteReceived(EOS_NotificationId InId)
 EOS_EResult EOSSDK_Lobby::CopyLobbyDetailsHandleByInviteId(const EOS_Lobby_CopyLobbyDetailsHandleByInviteIdOptions* Options, EOS_HLobbyDetails* OutLobbyDetailsHandle)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
 
     if (Options == nullptr || Options->InviteId == nullptr || OutLobbyDetailsHandle == nullptr)
+    {
+        *OutLobbyDetailsHandle = nullptr;
         return EOS_EResult::EOS_InvalidParameters;
+    }
 
-
+    auto it = std::find_if(_lobby_invites.begin(), _lobby_invites.end(), [Options]( lobby_invite_t &invite)
+    {
+        return Options->InviteId == invite.invite_id;
+    });
     
-    return EOS_EResult::EOS_NotFound;
+    if (it == _lobby_invites.end())
+    {
+        *OutLobbyDetailsHandle = nullptr;
+        return EOS_EResult::EOS_NotFound;
+    }
+
+    EOSSDK_LobbyDetails* pLobbyDetails = new EOSSDK_LobbyDetails;
+    pLobbyDetails->_infos = it->infos;
+    *OutLobbyDetailsHandle = reinterpret_cast<EOS_HLobbyDetails>(pLobbyDetails);
+
+    return EOS_EResult::EOS_Success;
 }
 
 /**
@@ -1355,6 +1406,23 @@ bool EOSSDK_Lobby::send_lobby_join(Network::peer_t const& peerid, Lobby_Join_pb*
     Lobby_Message_pb* lobby_pb = new Lobby_Message_pb;
 
     lobby_pb->set_allocated_lobby_join(join);
+    msg.set_allocated_lobby(lobby_pb);
+
+    msg.set_source_id(user_id);
+    msg.set_dest_id(peerid);
+
+    return GetNetwork().TCPSendTo(msg);
+}
+
+bool EOSSDK_Lobby::send_lobby_invite(Network::peer_t const& peerid, Lobby_Invite_pb* invite)
+{
+    TRACE_FUNC();
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+
+    Network_Message_pb msg;
+    Lobby_Message_pb* lobby_pb = new Lobby_Message_pb;
+
+    lobby_pb->set_allocated_lobby_invite(invite);
     msg.set_allocated_lobby(lobby_pb);
 
     msg.set_source_id(user_id);
@@ -1589,7 +1657,6 @@ bool EOSSDK_Lobby::on_lobby_join_request(Network_Message_pb const& msg, Lobby_Jo
     
     Lobby_Join_Response_pb* resp = new Lobby_Join_Response_pb;
 
-    resp->set_lobby_id(req.lobby_id());
     resp->set_join_id(req.join_id());
 
     if (pLobby == nullptr)
@@ -1634,7 +1701,7 @@ bool EOSSDK_Lobby::on_lobby_join_response(Network_Message_pb const& msg, Lobby_J
         {
             Lobby_Join_pb* join = new Lobby_Join_pb;
 
-            join->set_lobby_id(resp.lobby_id());
+            join->set_lobby_id(resp.infos().lobby_id());
             if (!send_lobby_join(msg.source_id(), join))
             {
                 jlci.ResultCode = EOS_EResult::EOS_NoConnection;
@@ -1676,6 +1743,23 @@ bool EOSSDK_Lobby::on_lobby_join(Network_Message_pb const& msg, Lobby_Join_pb co
             notify_lobby_member_status_update(msg.source_id(), EOS_ELobbyMemberStatus::EOS_LMS_JOINED, pLobby);
         }
     }
+
+    return true;
+}
+
+bool EOSSDK_Lobby::on_lobby_invite(Network_Message_pb const& msg, Lobby_Invite_pb const& invite)
+{
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+
+    lobby_invite_t new_invite;
+    new_invite.invite_id = generate_account_id();
+    new_invite.peer_id = GetProductUserId(msg.source_id());
+    new_invite.infos = invite.infos();
+    _lobby_invites.emplace_back(std::move(new_invite));
+
+    auto& lobby_invite = _lobby_invites.back();
+    notify_lobby_invite_received(lobby_invite.invite_id, lobby_invite.peer_id);
 
     return true;
 }
@@ -1809,10 +1893,12 @@ bool EOSSDK_Lobby::RunNetwork(Network_Message_pb const& msg)
             Lobby_Message_pb const& lobby = msg.lobby();
             switch (lobby.message_case())
             {
-                case Lobby_Message_pb::MessageCase::kLobbyUpdate      : return on_lobby_update(msg, lobby.lobby_update());
-                case Lobby_Message_pb::MessageCase::kLobbyJoinRequest : return on_lobby_join_request(msg, lobby.lobby_join_request());
-                case Lobby_Message_pb::MessageCase::kLobbyJoinResponse: return on_lobby_join_response(msg, lobby.lobby_join_response());
-                case Lobby_Message_pb::MessageCase::kLobbyJoin        : return on_lobby_join(msg, lobby.lobby_join());
+                case Lobby_Message_pb::MessageCase::kLobbyUpdate      : return on_lobby_update        (msg, lobby.lobby_update());
+                case Lobby_Message_pb::MessageCase::kLobbyJoinRequest : return on_lobby_join_request  (msg, lobby.lobby_join_request());
+                case Lobby_Message_pb::MessageCase::kLobbyJoinResponse: return on_lobby_join_response (msg, lobby.lobby_join_response());
+                case Lobby_Message_pb::MessageCase::kLobbyJoin        : return on_lobby_join          (msg, lobby.lobby_join());
+                case Lobby_Message_pb::MessageCase::kLobbyInvite      : return on_lobby_invite        (msg, lobby.lobby_invite());
+
                 case Lobby_Message_pb::MessageCase::kMemberUpdate     : return on_lobby_member_update (msg, lobby.member_update());
                 case Lobby_Message_pb::MessageCase::kMemberJoin       : return on_lobby_member_join   (msg, lobby.member_join());
                 case Lobby_Message_pb::MessageCase::kMemberLeave      : return on_lobby_member_leave  (msg, lobby.member_leave());
