@@ -50,6 +50,8 @@ void EOSSDK_Presence::setup_myself()
     presence.set_userid(Settings::Inst().userid->to_string());
     presence.set_status(get_enum_value(EOS_Presence_EStatus::EOS_PS_Online));
     presence.set_productid(GetEOS_Platform()._product_id);
+    presence.set_productversion(EOSSDK_Client::Inst()._product_version);
+    presence.set_productname(Settings::Inst().gamename);
 #if defined(__WINDOWS__)
     presence.set_platform("WIN");
 #elif defined(__LINUX__)
