@@ -32,11 +32,13 @@ namespace sdk
             requesting,
             connecting,
             connected,
+            connection_loss,
         };
 
         status_e status;
-        std::map<EOS_ProductUserId, std::queue<P2P_Data_Message_pb>> p2p_out_messages;
+        std::list<P2P_Data_Message_pb> p2p_out_messages;
         std::string socket_name;
+        std::chrono::steady_clock::time_point connection_loss_start;
 
         p2p_state_t() :
             status(status_e::closed)
@@ -46,6 +48,8 @@ namespace sdk
     class EOSSDK_P2P :
         public IRunFrame
     {
+        constexpr static auto connection_timeout = std::chrono::milliseconds(10000);
+
         std::recursive_mutex local_mutex;
 
         int32_t next_requested_channel;
@@ -64,6 +68,8 @@ namespace sdk
         bool send_p2p_connetion_close(Network::peer_t const& peerid, P2P_Connection_Close_pb *close) const;
 
         // Receive Network messages
+        bool on_peer_connect(Network_Message_pb const& msg, Network_Peer_Connect_pb const& peer);
+        bool on_peer_disconnect(Network_Message_pb const& msg, Network_Peer_Disconnect_pb const& peer);
         bool on_p2p_connection_request(Network_Message_pb const& msg, P2P_Connect_Request_pb const& req);
         bool on_p2p_connection_response(Network_Message_pb const& msg, P2P_Connect_Response_pb const& resp);
         bool on_p2p_data(Network_Message_pb const& msg, P2P_Data_Message_pb const& data);

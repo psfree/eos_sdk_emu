@@ -61,6 +61,7 @@ namespace sdk
         std::string _deployment_id;
         uint64_t    _flags;
         std::string _cache_directory;
+        uint32_t    _ticket_budget_in_milliseconds;
 
         Callback_Manager      *_cb_manager;
         Network               *_network;
@@ -114,10 +115,10 @@ namespace sdk
     };
 }
 
-inline sdk::EOSSDK_Platform&          GetEOS_Platform         () { return  sdk::EOSSDK_Platform::Inst();            }
+inline sdk::EOSSDK_Platform&          GetEOS_Platform         () { return  sdk::EOSSDK_Platform::Inst();         }
 
-inline Callback_Manager&           GetCB_Manager           () { return *GetEOS_Platform()._cb_manager;        }
-inline Network&                    GetNetwork              () { return *GetEOS_Platform()._network;           }
+inline Callback_Manager&              GetCB_Manager           () { return *GetEOS_Platform()._cb_manager;        }
+inline Network&                       GetNetwork              () { return *GetEOS_Platform()._network;           }
 
 inline sdk::EOSSDK_Metrics&           GetEOS_Metrics          () { return *GetEOS_Platform()._metrics;           }
 inline sdk::EOSSDK_Auth&              GetEOS_Auth             () { return *GetEOS_Platform()._auth;              }

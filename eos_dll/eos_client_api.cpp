@@ -188,6 +188,11 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
             if (p->ProductVersion != nullptr)
                 inst.product_version = Options->ProductVersion;
         }
+        break;
+
+        default:
+            LOG(Log::LogLevel::FATAL, "Unmanaged API version %d", Options->ApiVersion);
+            abort();
     }
 
     inst._sdk_initialized = true;
@@ -434,6 +439,7 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_EResult_IsOperationComplete(EOS_EResult Result)
 EOS_DECLARE_FUNC(EOS_EResult) EOS_ByteArray_ToString(const uint8_t* ByteArray, const uint32_t Length, char* OutBuffer, uint32_t* InOutBufferLength)
 {
     TRACE_FUNC();
+    LOG(Log::LogLevel::INFO, "TODO");
 
     return EOS_EResult::EOS_Success;
 }
@@ -454,6 +460,17 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_EpicAccountId_IsValid(EOS_EpicAccountId AccountId
     //TRACE_FUNC();
     if (AccountId == nullptr)
         return EOS_FALSE;
+
+    auto& user_ids = EOSSDK_Client::Inst()._epicuserids;
+    auto it = std::find_if(user_ids.begin(), user_ids.end(), [AccountId](std::pair<std::string const, EOS_EpicAccountId>& user_id)
+    {
+        return user_id.second == AccountId;
+    });
+    if (it == user_ids.end())
+    {
+        LOG(Log::LogLevel::WARN, "Epic User Id (%p) not found in the cache, wrong parameter returned in a function ?", AccountId);
+        return EOS_FALSE;
+    }
 
     return AccountId->IsValid();
 }
@@ -483,6 +500,17 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_EpicAccountId_ToString(EOS_EpicAccountId Accou
     //TRACE_FUNC();
     if (AccountId == nullptr || !AccountId->IsValid())
         return EOS_EResult::EOS_InvalidUser;
+
+    auto& user_ids = EOSSDK_Client::Inst()._epicuserids;
+    auto it = std::find_if(user_ids.begin(), user_ids.end(), [AccountId](std::pair<std::string const, EOS_EpicAccountId>& user_id)
+    {
+        return user_id.second == AccountId;
+    });
+    if (it == user_ids.end())
+    {
+        LOG(Log::LogLevel::WARN, "Epic User Id (%p) not found in the cache, wrong parameter returned in a function ?", AccountId);
+        return EOS_EResult::EOS_InvalidUser;
+    }
 
     return AccountId->ToString(OutBuffer, InOutBufferLength);
 }
@@ -519,6 +547,17 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_ProductUserId_IsValid(EOS_ProductUserId AccountId
     if (AccountId == nullptr)
         return EOS_FALSE;
 
+    auto& product_ids = EOSSDK_Client::Inst()._productuserids;
+    auto it = std::find_if(product_ids.begin(), product_ids.end(), [AccountId]( std::pair<std::string const, EOS_ProductUserId>& product_id)
+    {
+        return product_id.second == AccountId;
+    });
+    if (it == product_ids.end())
+    {
+        LOG(Log::LogLevel::WARN, "Product User Id (%p) not found in the cache, wrong parameter returned in a function ?", AccountId);
+        return EOS_FALSE;
+    }
+
     return AccountId->IsValid();
 }
 
@@ -543,6 +582,17 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ProductUserId_ToString(EOS_ProductUserId Accou
 
     if (AccountId == nullptr || !AccountId->IsValid())
         return EOS_EResult::EOS_InvalidUser;
+
+    auto& product_ids = EOSSDK_Client::Inst()._productuserids;
+    auto it = std::find_if(product_ids.begin(), product_ids.end(), [AccountId]( std::pair<std::string const, EOS_ProductUserId>& product_id)
+    {
+        return product_id.second == AccountId;
+    });
+    if (it == product_ids.end())
+    {
+        LOG(Log::LogLevel::WARN, "Product User Id (%p) not found in the cache, wrong parameter returned in a function ?", AccountId);
+        return EOS_EResult::EOS_InvalidUser;
+    }
 
     return AccountId->ToString(OutBuffer, InOutBufferLength);
 }

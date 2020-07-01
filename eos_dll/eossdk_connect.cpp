@@ -711,6 +711,7 @@ bool EOSSDK_Connect::on_connect_infos(Network_Message_pb const& msg, Connect_Inf
 
             Network_Peer_Connect_pb connect;
             GetEOS_Presence().on_peer_connect(msg, connect);
+            GetEOS_P2P().on_peer_connect(msg, connect);
         }
 
         std::vector<pFrameResult_t> notifs = std::move(GetCB_Manager().get_notifications(&GetEOS_Friends(), EOS_Friends_OnFriendsUpdateInfo::k_iCallback));

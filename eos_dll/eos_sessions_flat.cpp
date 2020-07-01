@@ -335,74 +335,35 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_CopySearchResultByIndex(EOS_HSes
     return pInst->CopySearchResultByIndex(Options, OutSessionHandle);
 }
 
-/**
-*Release the memory associated with session modification.
-* This must be called on data retrieved from EOS_Sessions_CreateSessionModification or EOS_Sessions_UpdateSessionModification
-*
-*@param SessionModificationHandle - The session modification handle to release
-*
-*@see EOS_Sessions_CreateSessionModification
-* @see EOS_Sessions_UpdateSessionModification
-*/
 EOS_DECLARE_FUNC(void) EOS_SessionModification_Release(EOS_HSessionModification SessionModificationHandle)
 {
-    TRACE_FUNC();
-
     if (SessionModificationHandle == nullptr)
         return;
 
     auto pInst = reinterpret_cast<EOSSDK_SessionModification*>(SessionModificationHandle);
-    delete pInst;
+    pInst->Release();
 }
 
-/**
- * Release the memory associated with an active session.
- * This must be called on data retrieved from EOS_Sessions_CopyActiveSessionHandle
- *
- * @param ActiveSessionHandle - The active session handle to release
- *
- * @see EOS_Sessions_CopyActiveSessionHandle
- */
 EOS_DECLARE_FUNC(void) EOS_ActiveSession_Release(EOS_HActiveSession ActiveSessionHandle)
 {
-    TRACE_FUNC();
-
     if (ActiveSessionHandle == nullptr)
         return;
 
     auto pInst = reinterpret_cast<EOSSDK_ActiveSession*>(ActiveSessionHandle);
-    delete pInst;
+    pInst->Release();
 }
 
-/**
- * Release the memory associated with a single session. This must be called on data retrieved from EOS_SessionSearch_CopySearchResultByIndex.
- *
- * @param SessionHandle - The session handle to release
- *
- * @see EOS_SessionSearch_CopySearchResultByIndex
- */
 EOS_DECLARE_FUNC(void) EOS_SessionDetails_Release(EOS_HSessionDetails SessionHandle)
 {
-    TRACE_FUNC();
-
     if (SessionHandle == nullptr)
         return;
 
     auto pInst = reinterpret_cast<EOSSDK_SessionDetails*>(SessionHandle);
-    delete pInst;
+    pInst->Release();
 }
 
-/**
- * Release the memory associated with a session search. This must be called on data retrieved from EOS_Sessions_CreateSessionSearch.
- *
- * @param SessionSearchHandle - The session search handle to release
- *
- * @see EOS_Sessions_CreateSessionSearch
- */
 EOS_DECLARE_FUNC(void) EOS_SessionSearch_Release(EOS_HSessionSearch SessionSearchHandle)
 {
-    TRACE_FUNC();
-
     if (SessionSearchHandle == nullptr)
         return;
 

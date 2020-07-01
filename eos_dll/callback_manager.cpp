@@ -35,7 +35,7 @@ void Callback_Manager::register_frame(IRunFrame* obj)
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    _frames_to_run.insert(obj);
+    _frames_to_run.emplace(obj);
 }
 
 void Callback_Manager::unregister_frame(IRunFrame* obj)
@@ -59,11 +59,9 @@ void Callback_Manager::unregister_callbacks(IRunFrame* obj)
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    {
-        auto it = _callbacks_to_run.find(obj);
-        if (it != _callbacks_to_run.end())
-            _callbacks_to_run.erase(it);
-    }
+    auto it = _callbacks_to_run.find(obj);
+    if (it != _callbacks_to_run.end())
+        _callbacks_to_run.erase(it);
 }
 
 bool Callback_Manager::add_callback(IRunFrame* obj, pFrameResult_t res)
@@ -108,8 +106,10 @@ void Callback_Manager::remove_all_notifications(IRunFrame* obj)
     auto it = _notifications.find(obj);
     if (it != _notifications.end())
     {
-        for(auto& res : it->second)
+        for (auto& res : it->second)
+        {
             obj->FreeCallback(res.second);
+        }
 
         _notifications.erase(it);
     }
@@ -130,6 +130,8 @@ std::vector<pFrameResult_t> Callback_Manager::get_notifications(IRunFrame* obj, 
     std::vector<pFrameResult_t> results;
 
     auto& notifs = _notifications[obj];
+
+    results.reserve(notifs.size()); // Reserve the maximum we would need, avoid reallocations
     for (auto& notifs : notifs)
     {
         if (notifs.second->res.m_iCallback == callback_id)
@@ -145,10 +147,16 @@ void Callback_Manager::run_frames()
     GLOBAL_LOCK();
 
     for (auto& frame : _frames_to_run)
+    {
         frame->CBRunFrame();
+        //if (_max_tick_budget.count() && (std::chrono::steady_clock::now() - _frame_start_time) > _max_tick_budget)
+        //{
+        //    LOG(Log::LogLevel::WARN, "Exiting because of budget");
+        //    return;
+        //}
+    }
 
-    int network_runs = 0;// Eat only 300 network frames max so we don't freeze the callback loop
-    while (GetNetwork().CBRunFrame(0) && network_runs++ < 300);
+    GetNetwork().CBRunFrame(0);
 }
 
 void Callback_Manager::run_callbacks()
@@ -181,5 +189,10 @@ void Callback_Manager::run_callbacks()
             else
                 ++result_it;
         }
+        //if (_max_tick_budget.count() && (std::chrono::steady_clock::now() - _frame_start_time) > _max_tick_budget)
+        //{
+        //    LOG(Log::LogLevel::WARN, "Exiting because of budget");
+        //    return;
+        //}
     }
 }
