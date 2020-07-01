@@ -69,6 +69,19 @@ std::ostream& operator <<(std::ostream& os, EOS_Presence_EStatus v)
     return (os << "Unknown enum value: " << (int32_t)v);
 }
 
+std::ostream& operator <<(std::ostream& os, EOS_EOwnershipStatus v)
+{
+    switch (v)
+    {
+#define ENUM_STR(X) case decltype(v)::X: return (os << #X)
+        ENUM_STR(EOS_OS_NotOwned);
+        ENUM_STR(EOS_OS_Owned);
+#undef ENUM_STR
+    }
+
+    return (os << "Unknown enum value: " << (int32_t)v);
+}
+
 inline std::ostream& operator <<(std::ostream& os, EOS_EResult v)
 {
     return (os << EOS_EResult_ToString(v));

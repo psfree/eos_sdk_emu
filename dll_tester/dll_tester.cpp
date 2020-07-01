@@ -2160,7 +2160,31 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_QueryOwnership(EOS_HEcom Handle, const EOS_Ecom_
 {
     LOG(Log::LogLevel::TRACE, "");
     ORIGINAL_FUNCTION(EOS_Ecom_QueryOwnership);
-    return _EOS_Ecom_QueryOwnership(Handle, Options, ClientData, CompletionDelegate);
+
+    callback_wrapper* wrapper = new callback_wrapper;
+    wrapper->ClientData = ClientData;
+    wrapper->CbFunc = (callback_t)CompletionDelegate;
+    auto f = [](const EOS_Ecom_QueryOwnershipCallbackInfo* cbinfo) {
+        callback_wrapper* wrapper = (callback_wrapper*)cbinfo->ClientData;
+
+        if (cbinfo->ResultCode == EOS_EResult::EOS_Success)
+        {
+            std::stringstream sstr;
+            sstr << std::endl;
+            for (int i = 0; i < cbinfo->ItemOwnershipCount; ++i)
+            {
+                sstr << "ItemOwnership[" << i << "]: " << cbinfo->ItemOwnership[i].Id << " = " << cbinfo->ItemOwnership[i].OwnershipStatus << std::endl;
+                //const_cast<EOS_Ecom_ItemOwnership*>(cbinfo->ItemOwnership)[i].OwnershipStatus = EOS_EOwnershipStatus::EOS_OS_Owned;
+            }
+            LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
+        }
+
+        const_cast<EOS_Ecom_QueryOwnershipCallbackInfo*>(cbinfo)->ClientData = wrapper->ClientData;
+        wrapper->CbFunc((void*)cbinfo);
+        delete wrapper;
+    };
+
+    return _EOS_Ecom_QueryOwnership(Handle, Options, wrapper, f);
 }
 
 EOS_DECLARE_FUNC(void) EOS_Ecom_QueryOwnershipToken(EOS_HEcom Handle, const EOS_Ecom_QueryOwnershipTokenOptions* Options, void* ClientData, const EOS_Ecom_OnQueryOwnershipTokenCallback CompletionDelegate)
