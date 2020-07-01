@@ -177,6 +177,26 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ByteArray_ToString(const uint8_t* ByteArray, c
     return _EOS_ByteArray_ToString(ByteArray, Length, OutBuffer, InOutBufferLength);
 }
 
+EOS_DECLARE_FUNC(EOS_Bool) EOS_AccountId_IsValid(EOS_AccountId AccountId)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_AccountId_IsValid);
+    auto res = _EOS_AccountId_IsValid(AccountId);
+
+    std::stringstream sstr;
+    if (res == EOS_TRUE)
+    {
+        char buff[2048];
+        int32_t size = 2048;
+        EOS_AccountId_ToString(AccountId, buff, &size);
+
+        sstr << buff;
+    }
+    LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
+
+    return res;
+}
+
 EOS_DECLARE_FUNC(EOS_Bool) EOS_EpicAccountId_IsValid(EOS_EpicAccountId AccountId)
 {
     LOG(Log::LogLevel::TRACE, "");
@@ -197,11 +217,28 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_EpicAccountId_IsValid(EOS_EpicAccountId AccountId
     return res;
 }
 
+EOS_DECLARE_FUNC(EOS_EResult) EOS_AccountId_ToString(EOS_AccountId AccountId, char* OutBuffer, int32_t* InOutBufferLength)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_AccountId_ToString);
+    auto res = _EOS_AccountId_ToString(AccountId, OutBuffer, InOutBufferLength);
+    return res;
+}
+
 EOS_DECLARE_FUNC(EOS_EResult) EOS_EpicAccountId_ToString(EOS_EpicAccountId AccountId, char* OutBuffer, int32_t* InOutBufferLength)
 {
     LOG(Log::LogLevel::TRACE, "");
     ORIGINAL_FUNCTION(EOS_EpicAccountId_ToString);
     auto res = _EOS_EpicAccountId_ToString(AccountId, OutBuffer, InOutBufferLength);
+    return res;
+}
+
+EOS_DECLARE_FUNC(EOS_AccountId) EOS_AccountId_FromString(const char* AccountIdString)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_AccountId_FromString);
+    auto res = _EOS_AccountId_FromString(AccountIdString);
+    LOG(Log::LogLevel::DEBUG, "%p = %s", res, AccountIdString);
     return res;
 }
 

@@ -300,13 +300,12 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardUserScoreByUserId(
  */
 EOS_DECLARE_FUNC(void) EOS_Leaderboards_LeaderboardDefinition_Release(EOS_Leaderboards_Definition* LeaderboardDefinition)
 {
-    TRACE_FUNC();
     EOS_Leaderboards_Definition_Release(LeaderboardDefinition);
 }
 
 EOS_DECLARE_FUNC(void) EOS_Leaderboards_Definition_Release(EOS_Leaderboards_Definition* LeaderboardDefinition)
 {
-
+    TRACE_FUNC();
 }
 
 /**
