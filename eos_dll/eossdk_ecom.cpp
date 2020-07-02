@@ -446,51 +446,85 @@ EOS_EResult EOSSDK_Ecom::CopyEntitlementByIndex(const EOS_Ecom_CopyEntitlementBy
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    if (Options == nullptr || OutEntitlement == nullptr)
+    if (Options == nullptr || Options->EntitlementIndex >= _entitlements_db.size() || OutEntitlement == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
-    return EOS_EResult::EOS_NotFound;
+    auto db_it = _entitlements_db.begin();
+    std::advance(db_it, Options->EntitlementIndex);
 
-    EOS_Ecom_Entitlement* res = new EOS_Ecom_Entitlement;
+    bool redeemed;
+    std::string const* entitlement_id = nullptr;
+    std::string const* entitlement_name = nullptr;
+    std::string const* catalog_item_id = nullptr;
+    bool error = false;
+
+    entitlement_id = &db_it.key();
+    try
+    {
+        entitlement_name = db_it.value()["entitlement_name"].get_ptr<std::string*>();
+    }
+    catch (...)
+    {
+        LOG(Log::LogLevel::ERR, "%s \"entitlement_name\" field was not found, it will not be owned", entitlement_id->c_str());
+        error = true;
+    }
+    try
+    {
+        catalog_item_id  = db_it.value()["catalog_item_id"].get_ptr<std::string*>();
+    }
+    catch (...)
+    {
+        LOG(Log::LogLevel::ERR, "%s \"catalog_item_id\" field was not found, it will not be owned", entitlement_id->c_str());
+        error = true;
+    }
+
+    if (error)
+    {
+        *OutEntitlement = nullptr;
+        return EOS_EResult::EOS_NotFound;
+    }
+    
+    auto it = _entitlements.find(*entitlement_id);
+    if (it == _entitlements.end())
+    {
+        redeemed = false;
+    }
+    else
+    {
+        try
+        {
+            redeemed = it.value()["redeemed"];
+        }
+        catch (...)
+        {
+            redeemed = false;
+        }
+    }
 
     switch (Options->ApiVersion)
     {
         case EOS_ECOM_ENTITLEMENT_API_002:
         {
-            EOS_Ecom_Entitlement002* entitlement = reinterpret_cast<EOS_Ecom_Entitlement002*>(res);
-            {
-                char* str = new char[1];
-                *str = '\0';
-                entitlement->EntitlementName = str;
-            }
-            {
-                char* str = new char[1];
-                *str = '\0';
-                entitlement->EntitlementId = str;
-            }
-            {
-                char* str = new char[1];
-                *str = '\0';
-                entitlement->CatalogItemId = str;
-            }
-            entitlement->ServerIndex;
-            entitlement->bRedeemed;
-            entitlement->EndTimestamp = -1;
-
+            EOS_Ecom_Entitlement002* entitlement = new EOS_Ecom_Entitlement002;
             entitlement->ApiVersion = EOS_ECOM_ENTITLEMENT_API_002;
+            entitlement->EntitlementName = entitlement_name->c_str();
+            entitlement->EntitlementId = entitlement_id->c_str();
+            entitlement->CatalogItemId = catalog_item_id->c_str();
+            entitlement->ServerIndex = -1;
+            entitlement->bRedeemed = redeemed;
+            entitlement->EndTimestamp = -1;
+            *OutEntitlement = reinterpret_cast<decltype(*OutEntitlement)>(entitlement);
         }
         break;
-
+        
         case EOS_ECOM_ENTITLEMENT_API_001:
         {
-            EOS_Ecom_Entitlement001* entitlement = reinterpret_cast<EOS_Ecom_Entitlement001*>(res);
-            {
-                char* str = new char[1];
-                *str = '\0';
-                entitlement->Id = str;
-            }
-
+            EOS_Ecom_Entitlement001* entitlement = new EOS_Ecom_Entitlement001;
             entitlement->ApiVersion = EOS_ECOM_ENTITLEMENT_API_001;
+            {
+                entitlement->Id = entitlement_id->c_str();
+            }
+            *OutEntitlement = reinterpret_cast<decltype(*OutEntitlement)>(entitlement);
         }
     }
 
