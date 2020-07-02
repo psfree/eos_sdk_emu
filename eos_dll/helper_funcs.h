@@ -46,9 +46,6 @@ LOCAL_API std::string generate_epic_id_user_from_name(std::string const& usernam
 
 LOCAL_API void fatal_throw(const char* msg);
 
-LOCAL_API bool load_json(std::string const& file_path, nlohmann::json &json);
-LOCAL_API bool save_json(std::string const& file_path, nlohmann::json const& json);
-
 LOCAL_API std::string get_callback_name(int iCallback);
 
 // Workaround to use fifo_map in json

@@ -132,50 +132,6 @@ LOCAL_API void fatal_throw(const char* msg)
     throw std::exception();
 }
 
-LOCAL_API bool load_json(std::string const& file_path, nlohmann::json &json)
-{
-    std::ifstream file(file_path);
-    if (file)
-    {
-        file.seekg(0, std::ios::end);
-        size_t size = static_cast<size_t>(file.tellg());
-        file.seekg(0, std::ios::beg);
-        
-        std::string buffer(size, '\0');
-
-        file.read(&buffer[0], size);
-        file.close();
-
-        try
-        {
-            json = std::move(nlohmann::json::parse(buffer));
-
-            return true;
-        }
-        catch (std::exception &e)
-        {
-            LOG(Log::LogLevel::ERR, "Error while parsing JSON %s: %s", file_path.c_str(), e.what());
-        }
-    }
-    else
-    {
-        LOG(Log::LogLevel::WARN, "File not found: %s", file_path.c_str());
-    }
-    return false;
-}
-
-LOCAL_API bool save_json(std::string const& file_path, nlohmann::json const& json)
-{
-    std::ofstream file(file_path, std::ios::trunc | std::ios::out);
-    if (!file)
-    {
-        LOG(Log::LogLevel::ERR, "Failed to save: %s", file_path.c_str());
-        return false;
-    }
-    file << std::setw(2) << json;
-    return true;
-}
-
 LOCAL_API std::string get_callback_name(int iCallback)
 {
     switch (iCallback)
