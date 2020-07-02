@@ -85,7 +85,7 @@ void EOS_EpicAccountIdDetails::validate()
         it = _idstr.erase(_idstr.begin(), _idstr.begin() + 2);
     }
 
-    if (it != _idstr.end())
+    if (_idstr.length() == (sdk::max_id_length - 3))
     {
         if (std::string(it, _idstr.end()) == sdk::NULL_USER_ID)
             return;
@@ -193,7 +193,7 @@ void EOS_ProductUserIdDetails::validate()
         it = _idstr.erase(_idstr.begin(), _idstr.begin() + 2);
     }
 
-    if (it != _idstr.end())
+    if (_idstr.length() == (sdk::max_id_length - 3))
     {
         if (std::string(it, _idstr.end()) == sdk::NULL_USER_ID)
             return;

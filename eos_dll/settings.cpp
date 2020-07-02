@@ -129,10 +129,18 @@ void Settings::load_settings()
 
     settings["username"] = username;
 
-    
     userid = GetEpicUserId(get_setting(settings, "epicid", std::string("")));
-    while (!userid->IsValid())
-        userid = GetEpicUserId(generate_epic_id_user_from_name(username));
+    if (!userid->IsValid())
+    {
+        if(username == "DefaultName")
+        {
+            userid = GetEpicUserId(generate_epic_id_user());
+        }
+        else
+        {
+            userid = GetEpicUserId(generate_epic_id_user_from_name(username));
+        }
+    }
 
     settings["epicid"] = userid->to_string();
 
