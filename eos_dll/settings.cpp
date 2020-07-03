@@ -106,50 +106,17 @@ void Settings::build_save_path()
 
 void Settings::load_settings()
 {
-    LOG(Log::LogLevel::DEBUG, "");
+    bool default_config = false;
+
     GLOBAL_LOCK();
 
     nlohmann::json settings;
     config_path = std::move(get_executable_path() + settings_file_name);
 
-    Log::set_loglevel(Log::LogLevel::INFO);
-    LOG(Log::LogLevel::INFO, "Configuration Path: %s", config_path.c_str());
-
     if (!load_json(config_path, settings))
     {
-        LOG(Log::LogLevel::WARN, "Error while loading settings, building a default one");
+        default_config = true;
     }
-
-    username       = get_setting(settings, "username"      , std::string(u8"DefaultName"));
-    if (username.empty() || !utf8::is_valid(username.begin(), username.end()))
-    {
-        LOG(Log::LogLevel::WARN, "Invalid username, resetting to default name.");
-        username = u8"DefaultName";
-    }
-
-    settings["username"] = username;
-
-    userid = GetEpicUserId(get_setting(settings, "epicid", std::string("")));
-    if (!userid->IsValid())
-    {
-        if(username == "DefaultName")
-        {
-            userid = GetEpicUserId(generate_epic_id_user());
-        }
-        else
-        {
-            userid = GetEpicUserId(generate_epic_id_user_from_name(username));
-        }
-    }
-
-    settings["epicid"] = userid->to_string();
-
-    language                  = get_setting(settings, "language"                 , std::string("english"));
-    languages                 = get_setting(settings, "languages"                , std::string("english"));
-    gamename                  = get_setting(settings, "gamename"                 , std::string("DefaultGameName"));
-    unlock_dlcs               = get_setting(settings, "unlock_dlcs"              , bool(true));
-    enable_overlay            = get_setting(settings, "enable_overlay"           , bool(true));
-    disable_online_networking = get_setting(settings, "disable_online_networking", bool(false));
 
 #ifndef DISABLE_LOG
     Log::LogLevel llvl;
@@ -167,6 +134,44 @@ void Settings::load_settings()
     LOG(Log::LogLevel::INFO, "Setting log level to: %s", Log::loglevel_to_str(llvl));
     Log::set_loglevel(llvl);
 #endif
+
+    LOG(Log::LogLevel::INFO, "Configuration Path: %s", config_path.c_str());
+    if (default_config)
+    {
+        LOG(Log::LogLevel::WARN, "Error while loading settings, building a default one");
+    }
+
+    username = get_setting(settings, "username", std::string(u8"DefaultName"));
+    if (username.empty() || !utf8::is_valid(username.begin(), username.end()))
+    {
+        LOG(Log::LogLevel::WARN, "Invalid username, resetting to default name.");
+        username = u8"DefaultName";
+    }
+
+    settings["username"] = username;
+
+    userid = GetEpicUserId(get_setting(settings, "epicid", std::string("")));
+    if (!userid->IsValid())
+    {
+        if (username == "DefaultName")
+        {
+            LOG(Log::LogLevel::INFO, "Username == DefaultName, generating random epic id");
+            userid = GetEpicUserId(generate_epic_id_user());
+        }
+        else
+        {
+            LOG(Log::LogLevel::INFO, "Username != DefaultName, generating random epic id based on your username");
+            userid = GetEpicUserId(generate_epic_id_user_from_name(username));
+        }
+    }
+
+    settings["epicid"]        = userid->to_string();
+    language                  = get_setting(settings, "language", std::string("english"));
+    languages                 = get_setting(settings, "languages", std::string("english"));
+    gamename                  = get_setting(settings, "gamename", std::string("DefaultGameName"));
+    unlock_dlcs               = get_setting(settings, "unlock_dlcs", bool(true));
+    enable_overlay            = get_setting(settings, "enable_overlay", bool(true));
+    disable_online_networking = get_setting(settings, "disable_online_networking", bool(false));
 
     try
     {
