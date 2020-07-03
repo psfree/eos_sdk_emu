@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "eos_common.h"
-
 /*
  * This file contains the deprecated types for EOS Achievements. In a future version, these types will be removed.
  */
@@ -43,6 +41,27 @@ EOS_STRUCT(EOS_Achievements_Definition001, (
 	int32_t StatThresholdsCount;
 	/** Array of stat thresholds that need to be satisfied to unlock the achievement. */
 	const EOS_Achievements_StatThresholds* StatThresholds;
+));
+
+/** The most recent version of the EOS_Achievements_PlayerAchievement struct. */
+#define EOS_ACHIEVEMENTS_PLAYERACHIEVEMENT_API_001 1
+
+/**
+ * Contains information about a single player achievement.
+ */
+EOS_STRUCT(EOS_Achievements_PlayerAchievement001, (
+	/** Version of the API. */
+	int32_t ApiVersion;
+	/** Achievement ID that can be used to uniquely identify the achievement. */
+	const char* AchievementId;
+	/** Progress towards completing this achievement (as a percentage). */
+	double Progress;
+	/** If not EOS_ACHIEVEMENTS_ACHIEVEMENT_UNLOCKTIME_UNDEFINED then this is the POSIX timestamp that the achievement was unlocked. */
+	int64_t UnlockTime;
+	/** The number of player stat info entries. */
+	int32_t StatInfoCount;
+	/** Array of player stat info. These values can be used to calculate the overall progress towards unlocking the achievement. */
+	const EOS_Achievements_PlayerStatInfo* StatInfo;
 ));
 
 /**

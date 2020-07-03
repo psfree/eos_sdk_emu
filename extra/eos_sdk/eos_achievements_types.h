@@ -14,7 +14,7 @@ enum { k_iAchievementsCallbacks = 1000 };
 #define EOS_Achievements_CopyAchievementDefinitionByIndexOptions           EOS_Achievements_CopyAchievementDefinitionByIndexOptions001
 #define EOS_Achievements_CopyAchievementDefinitionByAchievementIdOptions   EOS_Achievements_CopyAchievementDefinitionByAchievementIdOptions001
 #define EOS_Achievements_QueryPlayerAchievementsOptions                    EOS_Achievements_QueryPlayerAchievementsOptions001
-#define EOS_Achievements_PlayerAchievement                                 EOS_Achievements_PlayerAchievement001
+#define EOS_Achievements_PlayerAchievement                                 EOS_Achievements_PlayerAchievement002
 #define EOS_Achievements_GetPlayerAchievementCountOptions                  EOS_Achievements_GetPlayerAchievementCountOptions001
 #define EOS_Achievements_CopyPlayerAchievementByIndexOptions               EOS_Achievements_CopyPlayerAchievementByIndexOptions001
 #define EOS_Achievements_CopyPlayerAchievementByAchievementIdOptions       EOS_Achievements_CopyPlayerAchievementByAchievementIdOptions001
@@ -31,6 +31,7 @@ enum { k_iAchievementsCallbacks = 1000 };
 #define EOS_Achievements_AddNotifyAchievementsUnlockedV2Options            EOS_Achievements_AddNotifyAchievementsUnlockedV2Options002
 
 #include "eos_achievements_types1.6.1.h"
+#include "eos_achievements_types1.5.0.h"
 
 #define EOS_ACHIEVEMENTS_QUERYDEFINITIONS_API_LATEST                       EOS_ACHIEVEMENTS_QUERYDEFINITIONS_API_001
 #define EOS_ACHIEVEMENTS_STATTHRESHOLD_API_LATEST                          EOS_ACHIEVEMENTS_STATTHRESHOLD_API_001
@@ -40,7 +41,7 @@ enum { k_iAchievementsCallbacks = 1000 };
 #define EOS_ACHIEVEMENTS_COPYDEFINITIONBYINDEX_API_LATEST                  EOS_ACHIEVEMENTS_COPYDEFINITIONBYINDEX_API_001
 #define EOS_ACHIEVEMENTS_COPYDEFINITIONBYACHIEVEMENTID_API_LATEST          EOS_ACHIEVEMENTS_COPYDEFINITIONBYACHIEVEMENTID_API_001
 #define EOS_ACHIEVEMENTS_QUERYPLAYERACHIEVEMENTS_API_LATEST                EOS_ACHIEVEMENTS_QUERYPLAYERACHIEVEMENTS_API_001
-#define EOS_ACHIEVEMENTS_PLAYERACHIEVEMENT_API_LATEST                      EOS_ACHIEVEMENTS_PLAYERACHIEVEMENT_API_001
+#define EOS_ACHIEVEMENTS_PLAYERACHIEVEMENT_API_LATEST                      EOS_ACHIEVEMENTS_PLAYERACHIEVEMENT_API_002
 #define EOS_ACHIEVEMENTS_GETPLAYERACHIEVEMENTCOUNT_API_LATEST              EOS_ACHIEVEMENTS_GETPLAYERACHIEVEMENTCOUNT_API_001
 #define EOS_ACHIEVEMENTS_COPYPLAYERACHIEVEMENTBYINDEX_API_LATEST           EOS_ACHIEVEMENTS_COPYPLAYERACHIEVEMENTBYINDEX_API_001
 #define EOS_ACHIEVEMENTS_COPYPLAYERACHIEVEMENTBYACHIEVEMENTID_API_LATEST   EOS_ACHIEVEMENTS_COPYPLAYERACHIEVEMENTBYACHIEVEMENTID_API_001
