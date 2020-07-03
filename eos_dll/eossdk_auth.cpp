@@ -37,6 +37,23 @@ EOSSDK_Auth::~EOSSDK_Auth()
     GetCB_Manager().remove_all_notifications(this);
 }
 
+/**
+ * The Auth Interface is used to manage local user permissions and access to backend services through the verification of various forms of credentials.
+ * All Auth Interface calls take a handle of type EOS_HAuth as the first parameter.
+ * This handle can be retrieved from a EOS_HPlatform handle by using the EOS_Platform_GetAuthInterface function.
+ *
+ * NOTE: At this time, this feature is only available for products that are part of the Epic Games store.
+ *
+ * @see EOS_Platform_GetAuthInterface
+ */
+
+ /**
+  * Login/Authenticate with user credentials.
+  *
+  * @param Options structure containing the account credentials to use during the login operation
+  * @param ClientData arbitrary data that is passed back to you in the CompletionDelegate
+  * @param CompletionDelegate a callback that is fired when the login operation completes, either successfully or in error
+  */
 void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, const EOS_Auth_OnLoginCallback CompletionDelegate)
 {
     TRACE_FUNC();
@@ -45,7 +62,16 @@ void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, 
     if (CompletionDelegate == nullptr)
         return;
 
-    if (Options != nullptr)
+    pFrameResult_t res(new FrameResult);
+    EOS_Auth_LoginCallbackInfo& lci = res->CreateCallback<EOS_Auth_LoginCallbackInfo>((CallbackFunc)CompletionDelegate, std::chrono::milliseconds(1000));
+    lci.ClientData = ClientData;
+    lci.LocalUserId = Settings::Inst().userid;
+
+    if (Options == nullptr)
+    {
+        lci.ResultCode = EOS_EResult::EOS_InvalidParameters;
+    }
+    else
     {
         if (Options->ApiVersion >= EOS_AUTH_LOGIN_API_002)
         {
@@ -54,25 +80,27 @@ void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, 
 
         LOG(Log::LogLevel::DEBUG, "ApiVersion = %u", Options->ApiVersion);
         LOG(Log::LogLevel::DEBUG, "Credentials ApiVersion = %u", Options->Credentials->ApiVersion);
-        LOG(Log::LogLevel::DEBUG, "Id    = '%s'", Options->Credentials->Id);
-        LOG(Log::LogLevel::DEBUG, "Token = '%s'", Options->Credentials->Token);
+        LOG(Log::LogLevel::DEBUG, "Id    = %s", Options->Credentials->Id);
+        LOG(Log::LogLevel::DEBUG, "Token = %s", Options->Credentials->Token);
         LOG(Log::LogLevel::DEBUG, "Type  = %u", Options->Credentials->Type);
 
-        pFrameResult_t res(new FrameResult);
-
-        EOS_Auth_LoginCallbackInfo &lci = res->CreateCallback<EOS_Auth_LoginCallbackInfo>((CallbackFunc)CompletionDelegate, std::chrono::milliseconds(1000));
-        lci.ClientData = ClientData;
-        lci.LocalUserId = Settings::Inst().userid;
         lci.ResultCode = EOS_EResult::EOS_Success;
         lci.PinGrantInfo = nullptr;
-        res->done = true;
-
-        GetCB_Manager().add_callback(this, res);
 
         _logged_in = true;
     }
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
 }
 
+/**
+ * Signs the player out of the online service.
+ *
+ * @param Options structure containing information about which account to log out.
+ * @param ClientData arbitrary data that is passed back to you in the CompletionDelegate
+ * @param CompletionDelegate a callback that is fired when the logout operation completes, either successfully or in error
+ */
 void EOSSDK_Auth::Logout(const EOS_Auth_LogoutOptions* Options, void* ClientData, const EOS_Auth_OnLogoutCallback CompletionDelegate)
 {
     TRACE_FUNC();
@@ -81,22 +109,33 @@ void EOSSDK_Auth::Logout(const EOS_Auth_LogoutOptions* Options, void* ClientData
     if (CompletionDelegate == nullptr)
         return;
 
-    if (Options != nullptr)
+    pFrameResult_t res(new FrameResult);
+
+    EOS_Auth_LogoutCallbackInfo& lci = res->CreateCallback<EOS_Auth_LogoutCallbackInfo>((CallbackFunc)CompletionDelegate);
+    lci.ClientData = ClientData;
+    lci.LocalUserId = Settings::Inst().userid;
+
+    if (Options == nullptr)
     {
-        //if (Options->ApiVersion >= EOS_AUTH_LOGOUT_API_001)
-
-        pFrameResult_t res(new FrameResult);
-
-        EOS_Auth_LogoutCallbackInfo& lci = res->CreateCallback<EOS_Auth_LogoutCallbackInfo>((CallbackFunc)CompletionDelegate);
-        lci.ClientData = ClientData;
-        lci.LocalUserId = Settings::Inst().userid;
-        lci.ResultCode = EOS_EResult::EOS_Success;
-        res->done = true;
-
-        GetCB_Manager().add_callback(this, res);
+        lci.ResultCode = EOS_EResult::EOS_InvalidParameters;
     }
+    else
+    {
+        lci.ResultCode = EOS_EResult::EOS_Success;
+    }
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
 }
 
+/**
+ * Deletes a previously received and locally stored persistent auth access token for the currently logged in user of the local device.
+ * The access token is deleted in they keychain of the local user and a backend request is also made to revoke the token on the authentication server.
+ *
+ * @param Options structure containing operation input parameters
+ * @param ClientData arbitrary data that is passed back to you in the CompletionDelegate
+ * @param CompletionDelegate a callback that is fired when the deletion operation completes, either successfully or in error
+ */
 void EOSSDK_Auth::DeletePersistentAuth(const EOS_Auth_DeletePersistentAuthOptions* Options, void* ClientData, const EOS_Auth_OnDeletePersistentAuthCallback CompletionDelegate)
 {
     TRACE_FUNC();
@@ -105,8 +144,32 @@ void EOSSDK_Auth::DeletePersistentAuth(const EOS_Auth_DeletePersistentAuthOption
     if (CompletionDelegate == nullptr)
         return;
 
+    pFrameResult_t res(new FrameResult);
+    EOS_Auth_DeletePersistentAuthCallbackInfo& dpaci = res->CreateCallback<EOS_Auth_DeletePersistentAuthCallbackInfo>((CallbackFunc)CompletionDelegate);
+
+    dpaci.ClientData = ClientData;
+
+    if (Options == nullptr | Options->RefreshToken == nullptr)
+    {
+        dpaci.ResultCode = EOS_EResult::EOS_InvalidParameters;
+    }
+    else
+    {
+        dpaci.ResultCode = EOS_EResult::EOS_Success;
+    }
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
 }
 
+/**
+ * Contact the backend service to verify validity of an existing user auth token.
+ * This function is intended for server-side use only.
+ *
+ * @param Options structure containing information about the auth token being verified
+ * @param ClientData arbitrary data that is passed back to you in the CompletionDelegate
+ * @param CompletionDelegate a callback that is fired when the logout operation completes, either successfully or in error
+ */
 void EOSSDK_Auth::VerifyUserAuth(const EOS_Auth_VerifyUserAuthOptions* Options, void* ClientData, const EOS_Auth_OnVerifyUserAuthCallback CompletionDelegate)
 {
     TRACE_FUNC();
@@ -115,8 +178,28 @@ void EOSSDK_Auth::VerifyUserAuth(const EOS_Auth_VerifyUserAuthOptions* Options, 
     if (CompletionDelegate == nullptr)
         return;
 
+    pFrameResult_t res(new FrameResult);
+    EOS_Auth_VerifyUserAuthCallbackInfo& vuaci = res->CreateCallback<EOS_Auth_VerifyUserAuthCallbackInfo>((CallbackFunc)CompletionDelegate);
+
+    vuaci.ClientData = ClientData;
+    if (Options == nullptr || Options->AuthToken == nullptr)
+    {
+        vuaci.ResultCode = EOS_EResult::EOS_InvalidParameters;
+    }
+    else
+    {
+        vuaci.ResultCode = EOS_EResult::EOS_Success;
+    }
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
 }
 
+/**
+ * Fetch the number of accounts that are logged in.
+ *
+ * @return the number of accounts logged in.
+ */
 int32_t EOSSDK_Auth::GetLoggedInAccountsCount()
 {
     TRACE_FUNC();
@@ -125,6 +208,13 @@ int32_t EOSSDK_Auth::GetLoggedInAccountsCount()
     return (_logged_in ? 1 : 0);
 }
 
+/**
+ * Fetch an account id that is logged in.
+ *
+ * @param Index an index into the list of logged in accounts. If the index is out of bounds, the returned account id will be invalid.
+ *
+ * @return the account id associated with the index passed
+ */
 EOS_EpicAccountId EOSSDK_Auth::GetLoggedInAccountByIndex(int32_t Index)
 {
     TRACE_FUNC();
@@ -135,6 +225,13 @@ EOS_EpicAccountId EOSSDK_Auth::GetLoggedInAccountByIndex(int32_t Index)
 
     return nullptr;
 }
+/**
+ * Fetches the login status for an account id.
+ *
+ * @param LocalUserId the account id of the user being queried
+ *
+ * @return the enum value of a user's login status
+ */
 
 EOS_ELoginStatus EOSSDK_Auth::GetLoginStatus(EOS_EpicAccountId LocalUserId)
 {
@@ -156,6 +253,20 @@ EOS_EResult EOSSDK_Auth::CopyUserAuthTokenOld(EOS_AccountId LocalUserId, EOS_Aut
     return CopyUserAuthToken(&options, LocalUserId, OutUserAuthToken);
 }
 
+/**
+ * Fetches a user auth token for an account id.
+ *
+ * @param Options structure containing the api version of CopyUserAuthToken to use
+ * @param LocalUserId the account id of the user being queried
+ * @param OutUserAuthToken the auth token for the given user, if it exists and is valid, use EOS_Auth_Token_Release when finished
+ *
+ * @see EOS_Auth_Token_Release
+ *
+ * @return EOS_Success if the information is available and passed out in OutUserAuthToken
+ *         EOS_InvalidParameters if you pass a null pointer for the out parameter
+ *         EOS_NotFound if the auth token is not found or expired.
+ *
+ */
 EOS_EResult EOSSDK_Auth::CopyUserAuthToken(const EOS_Auth_CopyUserAuthTokenOptions* Options, EOS_EpicAccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken)
 {
     TRACE_FUNC();
@@ -209,10 +320,20 @@ EOS_NotificationId EOSSDK_Auth::AddNotifyLoginStatusChangedOld(void* ClientData,
     EOS_Auth_AddNotifyLoginStatusChangedOptions options;
     options.ApiVersion = EOS_AUTH_ADDNOTIFYLOGINSTATUSCHANGED_API_001;
 
-    return AddNotifyLoginStatusChangedNew(&options, ClientData, Notification);
+    return AddNotifyLoginStatusChanged(&options, ClientData, Notification);
 }
 
-EOS_NotificationId EOSSDK_Auth::AddNotifyLoginStatusChangedNew(const EOS_Auth_AddNotifyLoginStatusChangedOptions* Options, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification)
+/**
+ * Register to receive login status updates.
+ * @note must call RemoveNotifyLoginStatusChanged to remove the notification
+ *
+ * @param Options structure containing the api version of AddNotifyLoginStatusChanged to use
+ * @param ClientData arbitrary data that is passed back to you in the callback
+ * @param Notification a callback that is fired when the login status for a user changes
+ *
+ * @return handle representing the registered callback
+ */
+EOS_NotificationId EOSSDK_Auth::AddNotifyLoginStatusChanged(const EOS_Auth_AddNotifyLoginStatusChangedOptions* Options, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification)
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
@@ -228,6 +349,11 @@ EOS_NotificationId EOSSDK_Auth::AddNotifyLoginStatusChangedNew(const EOS_Auth_Ad
     return GetCB_Manager().add_notification(this, res);
 }
 
+/**
+ * Unregister from receiving login status updates.
+ *
+ * @param InId handle representing the registered callback
+ */
 void EOSSDK_Auth::RemoveNotifyLoginStatusChanged(EOS_NotificationId InId)
 {
     TRACE_FUNC();

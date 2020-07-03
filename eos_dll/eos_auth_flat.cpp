@@ -21,23 +21,6 @@
 
 using namespace sdk;
 
-/**
- * The Auth Interface is used to manage local user permissions and access to backend services through the verification of various forms of credentials.
- * All Auth Interface calls take a handle of type EOS_HAuth as the first parameter.
- * This handle can be retrieved from a EOS_HPlatform handle by using the EOS_Platform_GetAuthInterface function.
- *
- * NOTE: At this time, this feature is only available for products that are part of the Epic Games store.
- *
- * @see EOS_Platform_GetAuthInterface
- */
-
- /**
-  * Login/Authenticate with user credentials.
-  *
-  * @param Options structure containing the account credentials to use during the login operation
-  * @param ClientData arbitrary data that is passed back to you in the CompletionDelegate
-  * @param CompletionDelegate a callback that is fired when the login operation completes, either successfully or in error
-  */
 EOS_DECLARE_FUNC(void) EOS_Auth_Login(EOS_HAuth Handle, const EOS_Auth_LoginOptions* Options, void* ClientData, const EOS_Auth_OnLoginCallback CompletionDelegate)
 {
     if (Handle == nullptr)
@@ -47,13 +30,6 @@ EOS_DECLARE_FUNC(void) EOS_Auth_Login(EOS_HAuth Handle, const EOS_Auth_LoginOpti
     pInst->Login(Options, ClientData, CompletionDelegate);
 }
 
-/**
- * Signs the player out of the online service.
- *
- * @param Options structure containing information about which account to log out.
- * @param ClientData arbitrary data that is passed back to you in the CompletionDelegate
- * @param CompletionDelegate a callback that is fired when the logout operation completes, either successfully or in error
- */
 EOS_DECLARE_FUNC(void) EOS_Auth_Logout(EOS_HAuth Handle, const EOS_Auth_LogoutOptions* Options, void* ClientData, const EOS_Auth_OnLogoutCallback CompletionDelegate)
 {
     if (Handle == nullptr)
@@ -63,14 +39,6 @@ EOS_DECLARE_FUNC(void) EOS_Auth_Logout(EOS_HAuth Handle, const EOS_Auth_LogoutOp
     pInst->Logout(Options, ClientData, CompletionDelegate);
 }
 
-/**
- * Deletes a previously received and locally stored persistent auth access token for the currently logged in user of the local device.
- * The access token is deleted in they keychain of the local user and a backend request is also made to revoke the token on the authentication server.
- *
- * @param Options structure containing operation input parameters
- * @param ClientData arbitrary data that is passed back to you in the CompletionDelegate
- * @param CompletionDelegate a callback that is fired when the deletion operation completes, either successfully or in error
- */
 EOS_DECLARE_FUNC(void) EOS_Auth_DeletePersistentAuth(EOS_HAuth Handle, const EOS_Auth_DeletePersistentAuthOptions* Options, void* ClientData, const EOS_Auth_OnDeletePersistentAuthCallback CompletionDelegate)
 {
     if (Handle == nullptr)
@@ -80,14 +48,6 @@ EOS_DECLARE_FUNC(void) EOS_Auth_DeletePersistentAuth(EOS_HAuth Handle, const EOS
     pInst->DeletePersistentAuth(Options, ClientData, CompletionDelegate);
 }
 
-/**
- * Contact the backend service to verify validity of an existing user auth token.
- * This function is intended for server-side use only.
- *
- * @param Options structure containing information about the auth token being verified
- * @param ClientData arbitrary data that is passed back to you in the CompletionDelegate
- * @param CompletionDelegate a callback that is fired when the logout operation completes, either successfully or in error
- */
 EOS_DECLARE_FUNC(void) EOS_Auth_VerifyUserAuth(EOS_HAuth Handle, const EOS_Auth_VerifyUserAuthOptions* Options, void* ClientData, const EOS_Auth_OnVerifyUserAuthCallback CompletionDelegate)
 {
     if (Handle == nullptr)
@@ -97,11 +57,6 @@ EOS_DECLARE_FUNC(void) EOS_Auth_VerifyUserAuth(EOS_HAuth Handle, const EOS_Auth_
     pInst->VerifyUserAuth(Options, ClientData, CompletionDelegate);
 }
 
-/**
- * Fetch the number of accounts that are logged in.
- *
- * @return the number of accounts logged in.
- */
 EOS_DECLARE_FUNC(int32_t) EOS_Auth_GetLoggedInAccountsCount(EOS_HAuth Handle)
 {
     if (Handle == nullptr)
@@ -111,13 +66,6 @@ EOS_DECLARE_FUNC(int32_t) EOS_Auth_GetLoggedInAccountsCount(EOS_HAuth Handle)
     return pInst->GetLoggedInAccountsCount();
 }
 
-/**
- * Fetch an account id that is logged in.
- *
- * @param Index an index into the list of logged in accounts. If the index is out of bounds, the returned account id will be invalid.
- *
- * @return the account id associated with the index passed
- */
 EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_Auth_GetLoggedInAccountByIndex(EOS_HAuth Handle, int32_t Index)
 {
     if (Handle == nullptr)
@@ -127,13 +75,6 @@ EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_Auth_GetLoggedInAccountByIndex(EOS_HAuth
     return pInst->GetLoggedInAccountByIndex(Index);
 }
 
-/**
- * Fetches the login status for an account id.
- *
- * @param LocalUserId the account id of the user being queried
- *
- * @return the enum value of a user's login status
- */
 EOS_DECLARE_FUNC(EOS_ELoginStatus) EOS_Auth_GetLoginStatus(EOS_HAuth Handle, EOS_EpicAccountId LocalUserId)
 {
     if (Handle == nullptr)
@@ -143,20 +84,6 @@ EOS_DECLARE_FUNC(EOS_ELoginStatus) EOS_Auth_GetLoginStatus(EOS_HAuth Handle, EOS
     return pInst->GetLoginStatus(LocalUserId);
 }
 
-/**
- * Fetches a user auth token for an account id.
- *
- * @param Options structure containing the api version of CopyUserAuthToken to use
- * @param LocalUserId the account id of the user being queried
- * @param OutUserAuthToken the auth token for the given user, if it exists and is valid, use EOS_Auth_Token_Release when finished
- *
- * @see EOS_Auth_Token_Release
- *
- * @return EOS_Success if the information is available and passed out in OutUserAuthToken
- *         EOS_InvalidParameters if you pass a null pointer for the out parameter
- *         EOS_NotFound if the auth token is not found or expired.
- *
- */
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthTokenOld(EOS_HAuth Handle, EOS_AccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken)
 {
     if (Handle == nullptr)
@@ -197,16 +124,6 @@ EOS_DECLARE_FUNC(EOS_EResult) CLANG_GCC_DONT_OPTIMIZE EOS_Auth_CopyUserAuthToken
 #pragma optimize("", on)
 #endif
 
-/**
- * Register to receive login status updates.
- * @note must call RemoveNotifyLoginStatusChanged to remove the notification
- *
- * @param Options structure containing the api version of AddNotifyLoginStatusChanged to use
- * @param ClientData arbitrary data that is passed back to you in the callback
- * @param Notification a callback that is fired when the login status for a user changes
- *
- * @return handle representing the registered callback
- */
 EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Auth_AddNotifyLoginStatusChangedOld(EOS_HAuth Handle, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification)
 {
     if (Handle == nullptr)
@@ -222,7 +139,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Auth_AddNotifyLoginStatusChangedNew(EOS
         return EOS_INVALID_NOTIFICATIONID;
 
     auto pInst = reinterpret_cast<EOSSDK_Auth*>(Handle);
-    return pInst->AddNotifyLoginStatusChangedNew(Options, ClientData, Notification);
+    return pInst->AddNotifyLoginStatusChanged(Options, ClientData, Notification);
 }
 
 #ifdef _MSC_VER
@@ -246,11 +163,6 @@ EOS_DECLARE_FUNC(EOS_NotificationId) CLANG_GCC_DONT_OPTIMIZE EOS_Auth_AddNotifyL
 #pragma optimize("", on)
 #endif
 
-/**
- * Unregister from receiving login status updates.
- *
- * @param InId handle representing the registered callback
- */
 EOS_DECLARE_FUNC(void) EOS_Auth_RemoveNotifyLoginStatusChanged(EOS_HAuth Handle, EOS_NotificationId InId)
 {
     if (Handle == nullptr)
@@ -266,6 +178,9 @@ EOS_DECLARE_FUNC(void) EOS_Auth_Token_Release(EOS_Auth_Token* AuthToken)
     TRACE_FUNC();
     if (AuthToken == nullptr)
         return;
+
+    //delete[] AuthToken->AccessToken;
+    //delete[] AuthToken->RefreshToken;
 
     delete[] AuthToken->ExpiresAt;
     delete[] AuthToken->RefreshExpiresAt;

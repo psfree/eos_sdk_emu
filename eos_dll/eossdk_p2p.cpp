@@ -49,6 +49,12 @@ EOSSDK_P2P::~EOSSDK_P2P()
 }
 
 /**
+ * P2P functions to help manage sending and receiving of messages to peers
+ *
+ * These functions will attempt to perform NAT-punching, but will fallback to relays if a direct connection cannot be established
+ */
+
+/**
   * Send a packet to a peer at the specified address. If there is already an open connection to this peer, it will be
   * sent immediately. If there is no open connection, an attempt to connect to the peer will be made. A EOS_Success
   * result does not guarantee the packet will be delivered to the peer, as data is sent unreliably.

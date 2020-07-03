@@ -248,6 +248,16 @@ bool EOSSDK_Sessions::is_player_registered(std::string const& player, session_st
 }
 
 /**
+ * The Session Interface is used to manage sessions that can be advertised with the backend service
+ * All Session Interface calls take a handle of type EOS_HSessions as the first parameter.
+ * This handle can be retrieved from a EOS_HPlatform handle by using the EOS_Platform_GetSessionsInterface function.
+ *
+ * NOTE: At this time, this feature is only available for products that are part of the Epic Games store.
+ *
+ * @see EOS_Platform_GetSessionsInterface
+ */
+
+/**
   * Creates a session modification handle (EOS_HSessionModification).  The session modification handle is used to build a new session and can be applied with EOS_Sessions_UpdateSession
   * The EOS_HSessionModification must be released by calling EOS_SessionModification_Release once it no longer needed.
   *

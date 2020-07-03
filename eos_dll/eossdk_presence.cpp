@@ -97,6 +97,16 @@ void EOSSDK_Presence::set_user_status(EOS_EpicAccountId userid, EOS_Presence_ESt
 }
 
 /**
+ * The Presence methods allow you to query, read other player's presence information, as well as to modify your own.
+ *
+ * QueryPresence must be called once per login, per remote user, before data will be available. It is currently only possible to query presence for
+ * users that are on your friends list, all other queries will return no results.
+ *
+ * NOTE: At this time, this feature is only available for products that are part of the Epic Games store.
+ *
+ */
+
+/**
  * Query a user's presence. This must complete successfully before CopyPresence will have valid results. If HasPresence returns true for a remote
  * user, this does not need to be called.
  *

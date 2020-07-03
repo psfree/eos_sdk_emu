@@ -21,17 +21,6 @@
 
 using namespace sdk;
 
-/**
- * The Lobby Interface is used to manage lobbies that provide a persistent connection between users and
- * notifications of data sharing/updates.  Lobbies may also be found by advertising and searching with the backend service.
- * All Lobby Interface calls take a handle of type EOS_HLobby as the first parameter.
- * This handle can be retrieved from a EOS_HPlatform handle by using the EOS_Platform_GetLobbyInterface function.
- *
- * NOTE: At this time, this feature is only available for products that are part of the Epic Games store.
- *
- * @see EOS_Platform_GetLobbyInterface
- */
-
 EOS_DECLARE_FUNC(void) EOS_Lobby_CreateLobby(EOS_HLobby Handle, const EOS_Lobby_CreateLobbyOptions* Options, void* ClientData, const EOS_Lobby_OnCreateLobbyCallback CompletionDelegate)
 {
     if (Handle == nullptr)

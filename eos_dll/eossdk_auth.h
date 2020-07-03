@@ -54,7 +54,7 @@ namespace sdk
         EOS_EResult CopyUserAuthTokenOld(EOS_EpicAccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken);
         EOS_EResult CopyUserAuthToken(const EOS_Auth_CopyUserAuthTokenOptions* Options, EOS_EpicAccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken);
         EOS_NotificationId AddNotifyLoginStatusChangedOld(void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification);
-        EOS_NotificationId AddNotifyLoginStatusChangedNew(const EOS_Auth_AddNotifyLoginStatusChangedOptions* Options, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification);
+        EOS_NotificationId AddNotifyLoginStatusChanged(const EOS_Auth_AddNotifyLoginStatusChangedOptions* Options, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification);
         void RemoveNotifyLoginStatusChanged(EOS_NotificationId InId);
     };
 }

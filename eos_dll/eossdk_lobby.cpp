@@ -28,17 +28,6 @@ decltype(EOSSDK_Lobby::join_timeout) EOSSDK_Lobby::join_timeout;
 
 decltype(EOSSDK_Lobby::join_id) EOSSDK_Lobby::join_id(0);
 
-/**
- * The Lobby Interface is used to manage lobbies that provide a persistent connection between users and
- * notifications of data sharing/updates.  Lobbies may also be found by advertising and searching with the backend service.
- * All Lobby Interface calls take a handle of type EOS_HLobby as the first parameter.
- * This handle can be retrieved from a EOS_HPlatform handle by using the EOS_Platform_GetLobbyInterface function.
- *
- * NOTE: At this time, this feature is only available for products that are part of the Epic Games store.
- *
- * @see EOS_Platform_GetLobbyInterface
- */
-
 EOSSDK_Lobby::EOSSDK_Lobby()
 {
     GetCB_Manager().register_frame(this);
@@ -286,6 +275,17 @@ void EOSSDK_Lobby::notify_lobby_invite_received(std::string const& invite_id, EO
         notif->res.cb_func(notif->res.data);
     }
 }
+
+/**
+ * The Lobby Interface is used to manage lobbies that provide a persistent connection between users and
+ * notifications of data sharing/updates.  Lobbies may also be found by advertising and searching with the backend service.
+ * All Lobby Interface calls take a handle of type EOS_HLobby as the first parameter.
+ * This handle can be retrieved from a EOS_HPlatform handle by using the EOS_Platform_GetLobbyInterface function.
+ *
+ * NOTE: At this time, this feature is only available for products that are part of the Epic Games store.
+ *
+ * @see EOS_Platform_GetLobbyInterface
+ */
 
  /**
   * Creates a lobby and adds the user to the lobby membership.  There is no data associated with the lobby at the start and can be added vis EOS_Lobby_UpdateLobbyModification

@@ -66,6 +66,16 @@ UserInfo_Info_pb* EOSSDK_UserInfo::get_userinfo(EOS_EpicAccountId userid)
 }
 
 /**
+ * The UserInfo Interface is used to receive user information for Epic account IDs from the backend services and to retrieve that information once it is cached.
+ * All UserInfo Interface calls take a handle of type EOS_HUserInfo as the first parameter.
+ * This handle can be retrieved from a EOS_HPlatform handle by using the EOS_Platform_GetUserInfoInterface function.
+ *
+ * NOTE: At this time, this feature is only available for products that are part of the Epic Games store.
+ *
+ * @see EOS_Platform_GetUserInfoInterface
+ */
+
+/**
   * EOS_UserInfo_QueryUserInfo is used to start an asynchronous query to retrieve information, such as display name, about another account.
   * Once the callback has been fired with a successful ResultCode, it is possible to call EOS_UserInfo_CopyUserInfo to receive an EOS_UserInfo containing the available information.
   *

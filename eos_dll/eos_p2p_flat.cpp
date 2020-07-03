@@ -21,12 +21,6 @@
 
 using namespace sdk;
 
-/**
- * P2P functions to help manage sending and receiving of messages to peers
- *
- * These functions will attempt to perform NAT-punching, but will fallback to relays if a direct connection cannot be established
- */
-
 EOS_DECLARE_FUNC(EOS_EResult) EOS_P2P_SendPacket(EOS_HP2P Handle, const EOS_P2P_SendPacketOptions* Options)
 {
     if (Handle == nullptr)

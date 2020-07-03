@@ -19,16 +19,6 @@
 
 #include "eossdk_userinfo.h"
 
-/**
- * The UserInfo Interface is used to receive user information for Epic account IDs from the backend services and to retrieve that information once it is cached.
- * All UserInfo Interface calls take a handle of type EOS_HUserInfo as the first parameter.
- * This handle can be retrieved from a EOS_HPlatform handle by using the EOS_Platform_GetUserInfoInterface function.
- *
- * NOTE: At this time, this feature is only available for products that are part of the Epic Games store.
- *
- * @see EOS_Platform_GetUserInfoInterface
- */
-
 EOS_DECLARE_FUNC(void) EOS_UserInfo_QueryUserInfo(EOS_HUserInfo Handle, const EOS_UserInfo_QueryUserInfoOptions* Options, void* ClientData, const EOS_UserInfo_OnQueryUserInfoCallback CompletionDelegate)
 {
     if (Handle == nullptr)

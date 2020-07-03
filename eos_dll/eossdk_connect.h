@@ -37,6 +37,8 @@ namespace sdk
     {
         static constexpr std::chrono::milliseconds user_infos_rate = std::chrono::milliseconds(3000);
 
+        std::string _device_id;
+
     public:
         std::string _username; // This is used for leaderboards thing ?
 

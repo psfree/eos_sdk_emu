@@ -122,6 +122,17 @@ void EOSSDK_Connect::remove_session(EOS_ProductUserId session_id, std::string co
 }
 
 /**
+ * The Connect Interface is used to manage local user permissions and access to backend services through the verification of various forms of credentials.
+ * It creates an association between third party providers and an internal mapping that allows Epic Online Services to represent a user agnostically
+ * All Connect Interface calls take a handle of type EOS_HConnect as the first parameter.
+ * This handle can be retrieved from a EOS_HPlatform handle by using the EOS_Platform_GetConnectInterface function.
+ *
+ * NOTE: At this time, this feature is only available for products that are part of the Epic Games store.
+ *
+ * @see EOS_Platform_GetConnectInterface
+ */
+
+/**
   * Login/Authenticate given a valid set of external auth credentials.
   *
   * @param Options structure containing the external account credentials and type to use during the login operation
@@ -190,6 +201,23 @@ void EOSSDK_Connect::LinkAccount(const EOS_Connect_LinkAccountOptions* Options, 
     if (CompletionDelegate == nullptr)
         return;
 
+    pFrameResult_t res(new FrameResult);
+    EOS_Connect_LinkAccountCallbackInfo& laci = res->CreateCallback<EOS_Connect_LinkAccountCallbackInfo>((CallbackFunc)CompletionDelegate);
+
+    laci.ClientData = ClientData;
+    laci.LocalUserId = get_myself()->first;
+
+    if (Options == nullptr)
+    {
+        laci.ResultCode = EOS_EResult::EOS_InvalidParameters;
+    }
+    else
+    {
+        laci.ResultCode = EOS_EResult::EOS_Connect_LinkAccountFailed;
+    }
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
 }
 
 /**
@@ -226,6 +254,23 @@ void EOSSDK_Connect::CreateDeviceId(const EOS_Connect_CreateDeviceIdOptions* Opt
     if (CompletionDelegate == nullptr)
         return;
 
+    pFrameResult_t res(new FrameResult);
+    EOS_Connect_CreateDeviceIdCallbackInfo& cdici = res->CreateCallback<EOS_Connect_CreateDeviceIdCallbackInfo>((CallbackFunc)CompletionDelegate);
+
+    cdici.ClientData = ClientData;
+
+    if (Options == nullptr || Options->DeviceModel == nullptr)
+    {
+        cdici.ResultCode = EOS_EResult::EOS_InvalidParameters;
+    }
+    else
+    {
+        _device_id = Options->DeviceModel;
+        cdici.ResultCode = EOS_EResult::EOS_Success;
+    }
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
 }
 
 /**
@@ -245,6 +290,23 @@ void EOSSDK_Connect::DeleteDeviceId(const EOS_Connect_DeleteDeviceIdOptions* Opt
     if (CompletionDelegate == nullptr)
         return;
 
+    pFrameResult_t res(new FrameResult);
+    EOS_Connect_DeleteDeviceIdCallbackInfo& ddici = res->CreateCallback<EOS_Connect_DeleteDeviceIdCallbackInfo>((CallbackFunc)CompletionDelegate);
+
+    ddici.ClientData = ClientData;
+
+    if (Options == nullptr || _device_id.empty())
+    {
+        ddici.ResultCode = EOS_EResult::EOS_InvalidParameters;
+    }
+    else
+    {
+        _device_id.clear();
+        ddici.ResultCode = EOS_EResult::EOS_Success;
+    }
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
 }
 
 /**
@@ -305,6 +367,23 @@ void EOSSDK_Connect::QueryProductUserIdMappings(const EOS_Connect_QueryProductUs
     if (CompletionDelegate == nullptr)
         return;
 
+    pFrameResult_t res(new FrameResult);
+    EOS_Connect_QueryProductUserIdMappingsCallbackInfo& qpuimci = res->CreateCallback<EOS_Connect_QueryProductUserIdMappingsCallbackInfo>((CallbackFunc)CompletionDelegate);
+
+    qpuimci.ClientData = ClientData;
+    qpuimci.LocalUserId = get_myself()->first;
+
+    if (Options == nullptr)
+    {
+        qpuimci.ResultCode = EOS_EResult::EOS_InvalidParameters;
+    }
+    else
+    {
+        qpuimci.ResultCode = EOS_EResult::EOS_Success;
+    }
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
 }
 
 /**

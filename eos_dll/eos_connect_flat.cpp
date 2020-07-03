@@ -21,17 +21,6 @@
 
 using namespace sdk;
 
-/**
- * The Connect Interface is used to manage local user permissions and access to backend services through the verification of various forms of credentials.
- * It creates an association between third party providers and an internal mapping that allows Epic Online Services to represent a user agnostically
- * All Connect Interface calls take a handle of type EOS_HConnect as the first parameter.
- * This handle can be retrieved from a EOS_HPlatform handle by using the EOS_Platform_GetConnectInterface function.
- *
- * NOTE: At this time, this feature is only available for products that are part of the Epic Games store.
- *
- * @see EOS_Platform_GetConnectInterface
- */
-
 EOS_DECLARE_FUNC(void) EOS_Connect_Login(EOS_HConnect Handle, const EOS_Connect_LoginOptions* Options, void* ClientData, const EOS_Connect_OnLoginCallback CompletionDelegate)
 {
     if (Handle == nullptr)

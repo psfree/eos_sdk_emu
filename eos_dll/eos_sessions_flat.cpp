@@ -22,16 +22,6 @@
 
 using namespace sdk;
 
-/**
- * The Session Interface is used to manage sessions that can be advertised with the backend service
- * All Session Interface calls take a handle of type EOS_HSessions as the first parameter.
- * This handle can be retrieved from a EOS_HPlatform handle by using the EOS_Platform_GetSessionsInterface function.
- *
- * NOTE: At this time, this feature is only available for products that are part of the Epic Games store.
- *
- * @see EOS_Platform_GetSessionsInterface
- */
-
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CreateSessionModification(EOS_HSessions Handle, const EOS_Sessions_CreateSessionModificationOptions* Options, EOS_HSessionModification* OutSessionModificationHandle)
 {
     auto pInst = reinterpret_cast<EOSSDK_Sessions*>(Handle);

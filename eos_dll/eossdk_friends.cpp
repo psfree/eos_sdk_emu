@@ -39,6 +39,16 @@ EOSSDK_Friends::~EOSSDK_Friends()
 }
 
 /**
+ * The Friends Interface is used to manage a user's friends list, by interacting with the backend services, and to retrieve the cached list of friends and pending invitations.
+ * All Friends Interface calls take a handle of type EOS_HFriends as the first parameter.
+ * This handle can be retrieved from a EOS_HPlatform handle by using the EOS_Platform_GetFriendsInterface function.
+ *
+ * NOTE: At this time, this feature is only available for products that are part of the Epic Games store.
+ *
+ * @see EOS_Platform_GetFriendsInterface
+ */
+
+/**
   * Starts an asynchronous task that reads the user's friends list from the backend service, caching it for future use.
   *
   * @param Options structure containing the account for which to retrieve the friends list
@@ -72,7 +82,6 @@ void EOSSDK_Friends::QueryFriends(const EOS_Friends_QueryFriendsOptions* Options
     }
 
     res->done = true;
-
     GetCB_Manager().add_callback(this, res);
 }
 
@@ -92,7 +101,24 @@ void EOSSDK_Friends::SendInvite(const EOS_Friends_SendInviteOptions* Options, vo
     if (CompletionDelegate == nullptr)
         return;
 
+    pFrameResult_t res(new FrameResult);
+    EOS_Friends_SendInviteCallbackInfo& sici = res->CreateCallback<EOS_Friends_SendInviteCallbackInfo>((CallbackFunc)CompletionDelegate);
 
+    sici.ClientData = ClientData;
+    sici.LocalUserId = Settings::Inst().userid;
+    sici.TargetUserId = Options->TargetUserId;
+
+    if (Options == nullptr || Options->TargetUserId == nullptr)
+    {
+        sici.ResultCode = EOS_EResult::EOS_InvalidParameters;
+    }
+    else
+    {
+        sici.ResultCode = EOS_EResult::EOS_NotImplemented;
+    }
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
 }
 
 /**
@@ -110,7 +136,24 @@ void EOSSDK_Friends::AcceptInvite(const EOS_Friends_AcceptInviteOptions* Options
     if (CompletionDelegate == nullptr)
         return;
 
+    pFrameResult_t res(new FrameResult);
+    EOS_Friends_AcceptInviteCallbackInfo& aici = res->CreateCallback<EOS_Friends_AcceptInviteCallbackInfo>((CallbackFunc)CompletionDelegate);
 
+    aici.ClientData = ClientData;
+    aici.LocalUserId = Settings::Inst().userid;
+    aici.TargetUserId = Options->TargetUserId;
+
+    if (Options == nullptr || Options->TargetUserId == nullptr)
+    {
+        aici.ResultCode = EOS_EResult::EOS_InvalidParameters;
+    }
+    else
+    {
+        aici.ResultCode = EOS_EResult::EOS_NotImplemented;
+    }
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
 }
 
 /**
@@ -128,7 +171,24 @@ void EOSSDK_Friends::RejectInvite(const EOS_Friends_RejectInviteOptions* Options
     if (CompletionDelegate == nullptr)
         return;
 
+    pFrameResult_t res(new FrameResult);
+    EOS_Friends_RejectInviteCallbackInfo& rici = res->CreateCallback<EOS_Friends_RejectInviteCallbackInfo>((CallbackFunc)CompletionDelegate);
 
+    rici.ClientData = ClientData;
+    rici.LocalUserId = Settings::Inst().userid;
+    rici.TargetUserId = Options->TargetUserId;
+
+    if (Options == nullptr || Options->TargetUserId == nullptr)
+    {
+        rici.ResultCode = EOS_EResult::EOS_InvalidParameters;
+    }
+    else
+    {
+        rici.ResultCode = EOS_EResult::EOS_NotImplemented;
+    }
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
 }
 
 /**
