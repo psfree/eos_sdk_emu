@@ -18,6 +18,11 @@
     #define CLANG_GCC_DONT_OPTIMIZE
 #endif
 
+inline constexpr const char* str_or_empty(const char* v)
+{
+    return (v == nullptr ? "" : v);
+}
+
 inline const char* EOS_Bool_2_str(EOS_Bool v)
 {
     return (v == EOS_TRUE ? "EOS_TRUE" : "EOS_FALSE");

@@ -180,12 +180,12 @@ EOS_STRUCT(EOS_Achievements_QueryPlayerAchievementsOptions001, (
 #define EOS_ACHIEVEMENTS_ACHIEVEMENT_UNLOCKTIME_UNDEFINED -1
 
 /** The most recent version of the EOS_Achievements_PlayerAchievement struct. */
-#define EOS_ACHIEVEMENTS_PLAYERACHIEVEMENT_API_001 1
+#define EOS_ACHIEVEMENTS_PLAYERACHIEVEMENT_API_002 2
 
 /**
  * Contains information about a single player achievement.
  */
-EOS_STRUCT(EOS_Achievements_PlayerAchievement001, (
+EOS_STRUCT(EOS_Achievements_PlayerAchievement002, (
 	/** Version of the API. */
 	int32_t ApiVersion;
 	/** Achievement ID that can be used to uniquely identify the achievement. */
@@ -198,6 +198,23 @@ EOS_STRUCT(EOS_Achievements_PlayerAchievement001, (
 	int32_t StatInfoCount;
 	/** Array of player stat info. These values can be used to calculate the overall progress towards unlocking the achievement. */
 	const EOS_Achievements_PlayerStatInfo* StatInfo;
+    /**
+     * Localized display name for the achievement based on this specific player's current progress on the achievement.
+     * Note: The current progress is updated when EOS_Achievements_QueryPlayerAchievements succeeds and when an achievement is unlocked.
+     */
+    const char* DisplayName;
+    /**
+     * Localized description for the achievement based on this specific player's current progress on the achievement.
+     * Note: The current progress is updated when EOS_Achievements_QueryPlayerAchievements succeeds and when an achievement is unlocked.
+     */
+    const char* Description;
+    /**
+     * URL of an icon to display for the achievement based on this specific player's current progress on the achievement. This may be null if there is no data configured in the dev portal
+     * Note: The current progress is updated when EOS_Achievements_QueryPlayerAchievements succeeds and when an achievement is unlocked.
+     */
+    const char* IconURL;
+    /** Localized flavor text that can be used by the game in an arbitrary manner. This may be null if there is no data configured in the dev portal */
+    const char* FlavorText;
 ));
 
 /** The most recent version of the EOS_Achievements_GetPlayerAchievementCount API. */
@@ -350,5 +367,3 @@ EOS_STRUCT(EOS_Achievements_OnAchievementsUnlockedCallbackV2Info, (
 EOS_DECLARE_CALLBACK(EOS_Achievements_OnAchievementsUnlockedCallbackV2, const EOS_Achievements_OnAchievementsUnlockedCallbackV2Info* Data);
 
 #pragma pack(pop)
-
-#include "eos_achievements_types_deprecated.inl"

@@ -35,10 +35,12 @@ static HMODULE original_dll = nullptr;
 static const char* original_dll_name = "EOSSDK-Win64-Shipping.original.dll";
 static std::string exe_path;
 
+constexpr static char achievements_db_file[] = "achievements_db.json";
 constexpr static char achievements_file[] = "achievements.json";
 constexpr static char entitlements_file[] = "entitlements.json";
 constexpr static char catalog_file[] = "catalog.json";
 
+static nlohmann::json achievements_db;
 static nlohmann::json achievements;
 static nlohmann::json entitlements;
 static nlohmann::json catalog;
@@ -60,6 +62,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
         {
             original_dll = LoadLibrary(original_dll_name);
 
+            load_json(achievements_db_file, achievements_db);
             load_json(achievements_file, achievements);
             load_json(entitlements_file, entitlements);
             load_json(catalog_file, catalog);
@@ -158,8 +161,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
             sstr << "AllocateMemoryFunction  : " << Options->AllocateMemoryFunction << std::endl;
             sstr << "ReallocateMemoryFunction: " << Options->ReallocateMemoryFunction << std::endl;
             sstr << "ReleaseMemoryFunction   : " << Options->ReleaseMemoryFunction << std::endl;
-            sstr << "ProductName             : " << (Options->ProductName == nullptr ? "" : Options->ProductName) << std::endl;
-            sstr << "ProductVersion          : " << (Options->ProductVersion == nullptr ? "" : Options->ProductVersion) << std::endl;
+            sstr << "ProductName             : " << str_or_empty(Options->ProductName) << std::endl;
+            sstr << "ProductVersion          : " << str_or_empty(Options->ProductVersion) << std::endl;
         }
     }
     LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
@@ -1366,16 +1369,16 @@ EOS_DECLARE_FUNC(EOS_HPlatform) EOS_Platform_Create(const EOS_Platform_Options* 
         case EOS_PLATFORM_OPTIONS_API_006:
         {
             auto* v = reinterpret_cast<const EOS_Platform_Options006*>(Options);
-            sstr << "CacheDirectory                 : " << (Options->CacheDirectory == nullptr ? "" : Options->CacheDirectory) << std::endl;
+            sstr << "CacheDirectory                 : " << str_or_empty(Options->CacheDirectory) << std::endl;
         }
 
         case EOS_PLATFORM_OPTIONS_API_005:
         {
             auto* v = reinterpret_cast<const EOS_Platform_Options005*>(Options);
-            sstr << "EncryptionKey                  : " << (Options->EncryptionKey       == nullptr ? "" : Options->EncryptionKey) << std::endl;
-            sstr << "OverrideCountryCode            : " << (Options->OverrideCountryCode == nullptr ? "" : Options->OverrideCountryCode) << std::endl;
-            sstr << "OverrideLocaleCode             : " << (Options->OverrideLocaleCode  == nullptr ? "" : Options->OverrideLocaleCode) << std::endl;
-            sstr << "DeploymentId                   : " << (Options->DeploymentId        == nullptr ? "" : Options->DeploymentId) << std::endl;
+            sstr << "EncryptionKey                  : " << str_or_empty(Options->EncryptionKey) << std::endl;
+            sstr << "OverrideCountryCode            : " << str_or_empty(Options->OverrideCountryCode) << std::endl;
+            sstr << "OverrideLocaleCode             : " << str_or_empty(Options->OverrideLocaleCode) << std::endl;
+            sstr << "DeploymentId                   : " << str_or_empty(Options->DeploymentId) << std::endl;
             sstr << "Flags                          : " << Options->Flags << std::endl;
         }
 
@@ -1383,10 +1386,10 @@ EOS_DECLARE_FUNC(EOS_HPlatform) EOS_Platform_Create(const EOS_Platform_Options* 
         {
             auto* v = reinterpret_cast<const EOS_Platform_Options001*>(Options);
             sstr << "Reserved                       : " << Options->Reserved << std::endl;
-            sstr << "ProductId                      : " << (Options->ProductId == nullptr ? "" : Options->ProductId) << std::endl;
-            sstr << "SandboxId                      : " << (Options->SandboxId == nullptr ? "" : Options->SandboxId) << std::endl;
-            sstr << "ClientCredentials::ClientId    : " << (Options->ClientCredentials.ClientId     == nullptr ? "" : Options->ClientCredentials.ClientId) << std::endl;
-            sstr << "ClientCredentials::ClientSecret: " << (Options->ClientCredentials.ClientSecret == nullptr ? "" : Options->ClientCredentials.ClientSecret) << std::endl;
+            sstr << "ProductId                      : " << str_or_empty(Options->ProductId) << std::endl;
+            sstr << "SandboxId                      : " << str_or_empty(Options->SandboxId) << std::endl;
+            sstr << "ClientCredentials::ClientId    : " << str_or_empty(Options->ClientCredentials.ClientId) << std::endl;
+            sstr << "ClientCredentials::ClientSecret: " << str_or_empty(Options->ClientCredentials.ClientSecret) << std::endl;
             sstr << "bIsServer                      : " << EOS_Bool_2_str(Options->bIsServer) << std::endl;
         }
     }
@@ -2247,7 +2250,7 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_QueryOwnership(EOS_HEcom Handle, const EOS_Ecom_
         case EOS_ECOM_QUERYOWNERSHIP_API_002:
         {
             auto* v = reinterpret_cast<const EOS_Ecom_QueryOwnershipOptions002*>(Options);
-            sstr << "CatalogNamespace: " << (Options->CatalogNamespace == nullptr ? "" : Options->CatalogNamespace) << std::endl;
+            sstr << "CatalogNamespace: " << str_or_empty(v->CatalogNamespace) << std::endl;
         }
 
         case EOS_ECOM_QUERYOWNERSHIP_API_001:
@@ -2255,7 +2258,7 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_QueryOwnership(EOS_HEcom Handle, const EOS_Ecom_
             auto *v = reinterpret_cast<const EOS_Ecom_QueryOwnershipOptions001*>(Options);
             for (int i = 0; i < v->CatalogItemIdCount; ++i)
             {
-                sstr << "CatalogItemIds[" << i << "]: " << (Options->CatalogItemIds[i] == nullptr ? "" : Options->CatalogItemIds[i]) << std::endl;
+                sstr << "CatalogItemIds[" << i << "]: " << str_or_empty(v->CatalogItemIds[i]) << std::endl;
                 catalog[Options->CatalogItemIds[i]]["owned"] = true;
             }
         }
@@ -2304,7 +2307,7 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_RedeemEntitlements(EOS_HEcom Handle, const EOS_E
     {
         for (uint32_t i = 0; i < Options->EntitlementIdCount; ++i)
         {
-            LOG(Log::LogLevel::INFO, "EntitlementIds[%i] = %s", i, Options->EntitlementIds[i] == nullptr ? "<no id>" : Options->EntitlementIds[i]);
+            LOG(Log::LogLevel::INFO, "EntitlementIds[%i] = %s", i, str_or_empty(Options->EntitlementIds[i]));
         }
     }
 
@@ -2327,7 +2330,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Ecom_GetEntitlementsByNameCount(EOS_HEcom Handle,
     auto res = _EOS_Ecom_GetEntitlementsByNameCount(Handle, Options);
 
     if(Options != nullptr)
-        LOG(Log::LogLevel::INFO, "Entitlements Count (%s): %u", Options->EntitlementName == nullptr ? "<no name>": Options->EntitlementName, res);
+        LOG(Log::LogLevel::INFO, "Entitlements Count (%s): %u", str_or_empty(Options->EntitlementName), res);
 
     return res;
 }
@@ -2350,17 +2353,17 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementByIndex(EOS_HEcom Handle, 
             case EOS_ECOM_ENTITLEMENT_API_002:
             {
                 auto v = reinterpret_cast<EOS_Ecom_Entitlement002*>(*OutEntitlement);
-                sstr << "  EntitlementName: " << v->EntitlementName << std::endl;
-                sstr << "  EntitlementId  : " << v->EntitlementId << std::endl;
-                sstr << "  CatalogItemId  : " << v->CatalogItemId << std::endl;
+                sstr << "  EntitlementName: " << str_or_empty(v->EntitlementName) << std::endl;
+                sstr << "  EntitlementId  : " << str_or_empty(v->EntitlementId) << std::endl;
+                sstr << "  CatalogItemId  : " << str_or_empty(v->CatalogItemId) << std::endl;
                 sstr << "  ServerIndex    : " << v->ServerIndex << std::endl;
                 sstr << "  bRedeemed      : " << EOS_Bool_2_str(v->bRedeemed) << std::endl;
                 sstr << "  EndTimestamp   : " << v->EndTimestamp << std::endl;
                 
-                entitlements[v->EntitlementId]["entitlement_name"] = v->EntitlementName;
-                entitlements[v->EntitlementId]["entitlement_id"] = v->EntitlementId;
-                entitlements[v->EntitlementId]["catalog_item_id"] = v->CatalogItemId;
-                entitlements[v->EntitlementId]["redeemed"] = (bool)v->bRedeemed;
+                entitlements[v->EntitlementId]["entitlement_name"] = str_or_empty(v->EntitlementName);
+                entitlements[v->EntitlementId]["entitlement_id"]   = str_or_empty(v->EntitlementId);
+                entitlements[v->EntitlementId]["catalog_item_id"]  = str_or_empty(v->CatalogItemId);
+                entitlements[v->EntitlementId]["redeemed"]         = (bool)v->bRedeemed;
             }
             break;
 
@@ -2370,9 +2373,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementByIndex(EOS_HEcom Handle, 
                 sstr << "  Id             : " << v->Id << std::endl;
 
                 entitlements[v->Id]["entitlement_name"] = "";
-                entitlements[v->Id]["entitlement_id"] = v->Id;
-                entitlements[v->Id]["catalog_item_id"] = "";
-                entitlements[v->Id]["redeemed"] = true;
+                entitlements[v->Id]["entitlement_id"]   = str_or_empty(v->Id);
+                entitlements[v->Id]["catalog_item_id"]  = "";
+                entitlements[v->Id]["redeemed"]         = true;
             }
             break;
         }
@@ -2396,7 +2399,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementByNameAndIndex(EOS_HEcom H
     std::stringstream sstr;
     sstr << std::endl;
     sstr << "ApiVersion     : " << Options->ApiVersion << std::endl;
-    sstr << "EntitlementName: " << Options->EntitlementName << std::endl;
+    sstr << "EntitlementName: " << str_or_empty(Options->EntitlementName) << std::endl;
     sstr << "Index          : " << Options->Index << std::endl;
     if (res == EOS_EResult::EOS_Success)
     {
@@ -2406,9 +2409,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementByNameAndIndex(EOS_HEcom H
             case EOS_ECOM_ENTITLEMENT_API_002:
             {
                 auto v = reinterpret_cast<EOS_Ecom_Entitlement002*>(*OutEntitlement);
-                sstr << "  EntitlementName: " << v->EntitlementName << std::endl;
-                sstr << "  EntitlementId  : " << v->EntitlementId << std::endl;
-                sstr << "  CatalogItemId  : " << v->CatalogItemId << std::endl;
+                sstr << "  EntitlementName: " << str_or_empty(v->EntitlementName) << std::endl;
+                sstr << "  EntitlementId  : " << str_or_empty(v->EntitlementId) << std::endl;
+                sstr << "  CatalogItemId  : " << str_or_empty(v->CatalogItemId) << std::endl;
                 sstr << "  ServerIndex    : " << v->ServerIndex << std::endl;
                 sstr << "  bRedeemed      : " << EOS_Bool_2_str(v->bRedeemed) << std::endl;
                 sstr << "  EndTimestamp   : " << v->EndTimestamp << std::endl;
@@ -2423,7 +2426,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementByNameAndIndex(EOS_HEcom H
             case EOS_ECOM_ENTITLEMENT_API_001:
             {
                 auto v = reinterpret_cast<EOS_Ecom_Entitlement001*>(*OutEntitlement);
-                sstr << "  Id             : " << v->Id << std::endl;
+                sstr << "  Id             : " << str_or_empty(v->Id) << std::endl;
 
                 //entitlements[v->Id]["entitlement_name"] = "";
                 //entitlements[v->Id]["entitlement_id"] = v->Id;
@@ -2452,7 +2455,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementById(EOS_HEcom Handle, con
     std::stringstream sstr;
     sstr << std::endl;
     sstr << "ApiVersion   : " << Options->ApiVersion << std::endl;
-    sstr << "EntitlementId: " << Options->EntitlementId << std::endl;
+    sstr << "EntitlementId: " << str_or_empty(Options->EntitlementId) << std::endl;
     if (res == EOS_EResult::EOS_Success)
     {
         sstr << "  ApiVersion     : " << (*OutEntitlement)->ApiVersion << std::endl;
@@ -2461,17 +2464,17 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementById(EOS_HEcom Handle, con
             case EOS_ECOM_ENTITLEMENT_API_002:
             {
                 auto v = reinterpret_cast<EOS_Ecom_Entitlement002*>(*OutEntitlement);
-                sstr << "  EntitlementName: " << v->EntitlementName << std::endl;
-                sstr << "  EntitlementId  : " << v->EntitlementId << std::endl;
-                sstr << "  CatalogItemId  : " << v->CatalogItemId << std::endl;
+                sstr << "  EntitlementName: " << str_or_empty(v->EntitlementName) << std::endl;
+                sstr << "  EntitlementId  : " << str_or_empty(v->EntitlementId) << std::endl;
+                sstr << "  CatalogItemId  : " << str_or_empty(v->CatalogItemId) << std::endl;
                 sstr << "  ServerIndex    : " << v->ServerIndex << std::endl;
                 sstr << "  bRedeemed      : " << EOS_Bool_2_str(v->bRedeemed) << std::endl;
                 sstr << "  EndTimestamp   : " << v->EndTimestamp << std::endl;
 
-                entitlements[v->EntitlementId]["entitlement_name"] = v->EntitlementName;
-                entitlements[v->EntitlementId]["entitlement_id"] = v->EntitlementId;
-                entitlements[v->EntitlementId]["catalog_item_id"] = v->CatalogItemId;
-                entitlements[v->EntitlementId]["redeemed"] = (bool)v->bRedeemed;
+                entitlements[v->EntitlementId]["entitlement_name"] = str_or_empty(v->EntitlementName);
+                entitlements[v->EntitlementId]["entitlement_id"]   = str_or_empty(v->EntitlementId);
+                entitlements[v->EntitlementId]["catalog_item_id"]  = str_or_empty(v->CatalogItemId);
+                entitlements[v->EntitlementId]["redeemed"]         = (bool)v->bRedeemed;
             }
             break;
 
@@ -2481,9 +2484,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_CopyEntitlementById(EOS_HEcom Handle, con
                 sstr << "  Id             : " << v->Id << std::endl;
 
                 entitlements[v->Id]["entitlement_name"] = "";
-                entitlements[v->Id]["entitlement_id"] = v->Id;
-                entitlements[v->Id]["catalog_item_id"] = "";
-                entitlements[v->Id]["redeemed"] = true;
+                entitlements[v->Id]["entitlement_id"]   = str_or_empty(v->Id);
+                entitlements[v->Id]["catalog_item_id"]  = "";
+                entitlements[v->Id]["redeemed"]         = true;
             }
             break;
         }
@@ -2635,9 +2638,9 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Ecom_Transaction_CopyEntitlementByIndex(EOS_Ec
             case EOS_ECOM_ENTITLEMENT_API_002:
             {
                 auto v = reinterpret_cast<EOS_Ecom_Entitlement002*>(*OutEntitlement);
-                sstr << "  EntitlementName: " << v->EntitlementName << std::endl;
-                sstr << "  EntitlementId  : " << v->EntitlementId << std::endl;
-                sstr << "  CatalogItemId  : " << v->CatalogItemId << std::endl;
+                sstr << "  EntitlementName: " << str_or_empty(v->EntitlementName) << std::endl;
+                sstr << "  EntitlementId  : " << str_or_empty(v->EntitlementId) << std::endl;
+                sstr << "  CatalogItemId  : " << str_or_empty(v->CatalogItemId) << std::endl;
                 sstr << "  ServerIndex    : " << v->ServerIndex << std::endl;
                 sstr << "  bRedeemed      : " << EOS_Bool_2_str(v->bRedeemed) << std::endl;
                 sstr << "  EndTimestamp   : " << v->EndTimestamp << std::endl;
@@ -3037,42 +3040,43 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByIndex(
             case EOS_ACHIEVEMENTS_COPYDEFINITIONBYINDEX_API_001:
             {
                 auto* v = reinterpret_cast<EOS_Achievements_Definition001*>(*OutDefinition);
-                sstr << "  AchievementId        : " << (*OutDefinition)->AchievementId << std::endl;
-                sstr << "  DisplayName          : " << (*OutDefinition)->DisplayName << std::endl;
-                sstr << "  Description          : " << (*OutDefinition)->Description << std::endl;
-                sstr << "  LockedDisplayName    : " << (*OutDefinition)->LockedDisplayName << std::endl;
-                sstr << "  LockedDescription    : " << (*OutDefinition)->LockedDescription << std::endl;
-                sstr << "  HiddenDescription    : " << (*OutDefinition)->HiddenDescription << std::endl;
-                sstr << "  CompletionDescription: " << (*OutDefinition)->CompletionDescription << std::endl;
-                sstr << "  UnlockedIconId       : " << (*OutDefinition)->UnlockedIconId << std::endl;
-                sstr << "  LockedIconId         : " << (*OutDefinition)->LockedIconId << std::endl;
-                sstr << "  bIsHidden            : " << EOS_Bool_2_str((*OutDefinition)->bIsHidden) << std::endl;
+                sstr << "  AchievementId        : " << str_or_empty((*OutDefinition)->AchievementId        ) << std::endl;
+                sstr << "  DisplayName          : " << str_or_empty((*OutDefinition)->DisplayName          ) << std::endl;
+                sstr << "  Description          : " << str_or_empty((*OutDefinition)->Description          ) << std::endl;
+                sstr << "  LockedDisplayName    : " << str_or_empty((*OutDefinition)->LockedDisplayName    ) << std::endl;
+                sstr << "  LockedDescription    : " << str_or_empty((*OutDefinition)->LockedDescription    ) << std::endl;
+                sstr << "  HiddenDescription    : " << str_or_empty((*OutDefinition)->HiddenDescription    ) << std::endl;
+                sstr << "  CompletionDescription: " << str_or_empty((*OutDefinition)->CompletionDescription) << std::endl;
+                sstr << "  UnlockedIconId       : " << str_or_empty((*OutDefinition)->UnlockedIconId       ) << std::endl;
+                sstr << "  LockedIconId         : " << str_or_empty((*OutDefinition)->LockedIconId         ) << std::endl;
+                sstr << "  bIsHidden            : " << EOS_Bool_2_str((*OutDefinition)->bIsHidden)           << std::endl;
 
-                achievements[(*OutDefinition)->AchievementId]["AchievementId"]         = (*OutDefinition)->AchievementId;
-                achievements[(*OutDefinition)->AchievementId]["UnlockedDisplayName"]   = (*OutDefinition)->DisplayName;
-                achievements[(*OutDefinition)->AchievementId]["UnlockedDescription"]   = (*OutDefinition)->Description;
-                achievements[(*OutDefinition)->AchievementId]["LockedDisplayName"]     = (*OutDefinition)->LockedDisplayName;
-                achievements[(*OutDefinition)->AchievementId]["LockedDescription"]     = (*OutDefinition)->LockedDescription;
-                achievements[(*OutDefinition)->AchievementId]["HiddenDescription"]     = (*OutDefinition)->HiddenDescription;
-                achievements[(*OutDefinition)->AchievementId]["FlavorText"]            = "";
-                achievements[(*OutDefinition)->AchievementId]["CompletionDescription"] = (*OutDefinition)->CompletionDescription;
-                achievements[(*OutDefinition)->AchievementId]["UnlockedIconURL"]       = (*OutDefinition)->UnlockedIconId;
-                achievements[(*OutDefinition)->AchievementId]["LockedIconURL"]         = (*OutDefinition)->LockedIconId;
-                achievements[(*OutDefinition)->AchievementId]["bIsHidden"]             = (bool)(*OutDefinition)->bIsHidden;
+                achievements_db[(*OutDefinition)->AchievementId]["achievement_id"]         = str_or_empty((*OutDefinition)->AchievementId);
+                achievements_db[(*OutDefinition)->AchievementId]["unlocked_display_name"]  = str_or_empty((*OutDefinition)->DisplayName);
+                achievements_db[(*OutDefinition)->AchievementId]["unlocked_description"]   = str_or_empty((*OutDefinition)->Description);
+                achievements_db[(*OutDefinition)->AchievementId]["locked_display_name"]    = str_or_empty((*OutDefinition)->LockedDisplayName);
+                achievements_db[(*OutDefinition)->AchievementId]["locked_description"]     = str_or_empty((*OutDefinition)->LockedDescription);
+                achievements_db[(*OutDefinition)->AchievementId]["hidden_description"]     = str_or_empty((*OutDefinition)->HiddenDescription);
+                achievements_db[(*OutDefinition)->AchievementId]["flavor_text"]            = str_or_empty("");
+                achievements_db[(*OutDefinition)->AchievementId]["completion_description"] = str_or_empty((*OutDefinition)->CompletionDescription);
+                achievements_db[(*OutDefinition)->AchievementId]["unlocked_icon_url"]      = str_or_empty((*OutDefinition)->UnlockedIconId);
+                achievements_db[(*OutDefinition)->AchievementId]["locked_icon_url"]        = str_or_empty((*OutDefinition)->LockedIconId);
+                achievements_db[(*OutDefinition)->AchievementId]["is_hidden"]              = (bool)(*OutDefinition)->bIsHidden;
 
                 for (int i = 0; i < (*OutDefinition)->StatThresholdsCount; ++i)
                 {
                     sstr << "  StatThresholds[" << i << "]" << std::endl;
-                    sstr << "    Name     : " << (*OutDefinition)->StatThresholds[i].Name << std::endl;
+                    sstr << "    Name     : " << str_or_empty((*OutDefinition)->StatThresholds[i].Name) << std::endl;
                     sstr << "    Threshold: " << (*OutDefinition)->StatThresholds[i].Threshold << std::endl;
 
-                    achievements[(*OutDefinition)->AchievementId]["StatThresholds"][(*OutDefinition)->StatThresholds[i].Name] = (*OutDefinition)->StatThresholds[i].Threshold;
+                    achievements_db[(*OutDefinition)->AchievementId]["stats_thresholds"][(*OutDefinition)->StatThresholds[i].Name]["name"] = str_or_empty((*OutDefinition)->StatThresholds[i].Name);
+                    achievements_db[(*OutDefinition)->AchievementId]["stats_thresholds"][(*OutDefinition)->StatThresholds[i].Name]["threshold"] = (*OutDefinition)->StatThresholds[i].Threshold;
                 }
             }
             break;
         }
 
-        save_json(achievements_file, achievements);
+        save_json(achievements_db_file, achievements_db);
     }
     else
     {
@@ -3101,41 +3105,42 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionV2ByInde
             case EOS_ACHIEVEMENTS_COPYDEFINITIONV2BYINDEX_API_002:
             {
                 auto* v = reinterpret_cast<EOS_Achievements_DefinitionV2002*>(*OutDefinition);
-                sstr << "  AchievementId        : " << v->AchievementId << std::endl;
-                sstr << "  UnlockedDisplayName  : " << v->UnlockedDisplayName << std::endl;
-                sstr << "  UnlockedDescription  : " << v->UnlockedDescription << std::endl;
-                sstr << "  LockedDisplayName    : " << v->LockedDisplayName << std::endl;
-                sstr << "  LockedDescription    : " << v->LockedDescription << std::endl;
-                sstr << "  FlavorText           : " << v->FlavorText << std::endl;
-                sstr << "  UnlockedIconURL      : " << v->UnlockedIconURL << std::endl;
-                sstr << "  LockedIconURL        : " << v->LockedIconURL << std::endl;
-                sstr << "  bIsHidden            : " << EOS_Bool_2_str(v->bIsHidden) << std::endl;
+                sstr << "  AchievementId        : " << str_or_empty(v->AchievementId      ) << std::endl;
+                sstr << "  UnlockedDisplayName  : " << str_or_empty(v->UnlockedDisplayName) << std::endl;
+                sstr << "  UnlockedDescription  : " << str_or_empty(v->UnlockedDescription) << std::endl;
+                sstr << "  LockedDisplayName    : " << str_or_empty(v->LockedDisplayName  ) << std::endl;
+                sstr << "  LockedDescription    : " << str_or_empty(v->LockedDescription  ) << std::endl;
+                sstr << "  FlavorText           : " << str_or_empty(v->FlavorText         ) << std::endl;
+                sstr << "  UnlockedIconURL      : " << str_or_empty(v->UnlockedIconURL    ) << std::endl;
+                sstr << "  LockedIconURL        : " << str_or_empty(v->LockedIconURL      ) << std::endl;
+                sstr << "  bIsHidden            : " << EOS_Bool_2_str(v->bIsHidden)         << std::endl;
 
-                achievements[(*OutDefinition)->AchievementId]["AchievementId"]         = (*OutDefinition)->AchievementId;
-                achievements[(*OutDefinition)->AchievementId]["UnlockedDisplayName"]   = (*OutDefinition)->UnlockedDisplayName;
-                achievements[(*OutDefinition)->AchievementId]["UnlockedDescription"]   = (*OutDefinition)->UnlockedDescription;
-                achievements[(*OutDefinition)->AchievementId]["LockedDisplayName"]     = (*OutDefinition)->LockedDisplayName;
-                achievements[(*OutDefinition)->AchievementId]["LockedDescription"]     = (*OutDefinition)->LockedDescription;
-                achievements[(*OutDefinition)->AchievementId]["FlavorText"]            = (*OutDefinition)->FlavorText;
-                achievements[(*OutDefinition)->AchievementId]["HiddenDescription"]     = "";
-                achievements[(*OutDefinition)->AchievementId]["CompletionDescription"] = "";
-                achievements[(*OutDefinition)->AchievementId]["UnlockedIconURL"]       = (*OutDefinition)->UnlockedIconURL;
-                achievements[(*OutDefinition)->AchievementId]["LockedIconURL"]         = (*OutDefinition)->LockedIconURL;
-                achievements[(*OutDefinition)->AchievementId]["bIsHidden"]             = (bool)(*OutDefinition)->bIsHidden;
+                achievements_db[(*OutDefinition)->AchievementId]["achievement_id"]         = str_or_empty((*OutDefinition)->AchievementId);
+                achievements_db[(*OutDefinition)->AchievementId]["unlocked_display_name"]  = str_or_empty((*OutDefinition)->UnlockedDisplayName);
+                achievements_db[(*OutDefinition)->AchievementId]["unlocked_description"]   = str_or_empty((*OutDefinition)->UnlockedDescription);
+                achievements_db[(*OutDefinition)->AchievementId]["locked_display_name"]    = str_or_empty((*OutDefinition)->LockedDisplayName);
+                achievements_db[(*OutDefinition)->AchievementId]["locked_description"]     = str_or_empty((*OutDefinition)->LockedDescription);
+                achievements_db[(*OutDefinition)->AchievementId]["flavor_text"]            = str_or_empty((*OutDefinition)->FlavorText);
+                achievements_db[(*OutDefinition)->AchievementId]["hidden_description"]     = str_or_empty("");
+                achievements_db[(*OutDefinition)->AchievementId]["completion_description"] = str_or_empty("");
+                achievements_db[(*OutDefinition)->AchievementId]["unlocked_icon_url"]      = str_or_empty((*OutDefinition)->UnlockedIconURL);
+                achievements_db[(*OutDefinition)->AchievementId]["locked_icon_url"]        = str_or_empty((*OutDefinition)->LockedIconURL);
+                achievements_db[(*OutDefinition)->AchievementId]["is_hidden"]              = (bool)(*OutDefinition)->bIsHidden;
 
                 for (int i = 0; i < v->StatThresholdsCount; ++i)
                 {
                     sstr << "  StatThresholds[" << i << "]" << std::endl;
-                    sstr << "    Name     : " << v->StatThresholds[i].Name << std::endl;
+                    sstr << "    Name     : " << str_or_empty(v->StatThresholds[i].Name) << std::endl;
                     sstr << "    Threshold: " << v->StatThresholds[i].Threshold << std::endl;
 
-                    achievements[(*OutDefinition)->AchievementId]["StatThresholds"][(*OutDefinition)->StatThresholds[i].Name] = (*OutDefinition)->StatThresholds[i].Threshold;
+                    achievements_db[(*OutDefinition)->AchievementId]["stats_thresholds"][(*OutDefinition)->StatThresholds[i].Name]["name"] = str_or_empty((*OutDefinition)->StatThresholds[i].Name);
+                    achievements_db[(*OutDefinition)->AchievementId]["stats_thresholds"][(*OutDefinition)->StatThresholds[i].Name]["threshold"] = (*OutDefinition)->StatThresholds[i].Threshold;
                 }
             }
             break;
         }
 
-        save_json(achievements_file, achievements);
+        save_json(achievements_db_file, achievements_db);
     }
     else
     {
@@ -3164,42 +3169,43 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByAchiev
             case EOS_ACHIEVEMENTS_COPYDEFINITIONBYINDEX_API_001:
             {
                 auto* v = reinterpret_cast<EOS_Achievements_Definition001*>(*OutDefinition);
-                sstr << "  AchievementId        : " << v->AchievementId << std::endl;
-                sstr << "  DisplayName          : " << v->DisplayName << std::endl;
-                sstr << "  Description          : " << v->Description << std::endl;
-                sstr << "  LockedDisplayName    : " << v->LockedDisplayName << std::endl;
-                sstr << "  LockedDescription    : " << v->LockedDescription << std::endl;
-                sstr << "  HiddenDescription    : " << v->HiddenDescription << std::endl;
-                sstr << "  CompletionDescription: " << v->CompletionDescription << std::endl;
-                sstr << "  UnlockedIconId       : " << v->UnlockedIconId << std::endl;
-                sstr << "  LockedIconId         : " << v->LockedIconId << std::endl;
-                sstr << "  bIsHidden            : " << EOS_Bool_2_str(v->bIsHidden) << std::endl;
+                sstr << "  AchievementId        : " << str_or_empty(v->AchievementId        ) << std::endl;
+                sstr << "  DisplayName          : " << str_or_empty(v->DisplayName          ) << std::endl;
+                sstr << "  Description          : " << str_or_empty(v->Description          ) << std::endl;
+                sstr << "  LockedDisplayName    : " << str_or_empty(v->LockedDisplayName    ) << std::endl;
+                sstr << "  LockedDescription    : " << str_or_empty(v->LockedDescription    ) << std::endl;
+                sstr << "  HiddenDescription    : " << str_or_empty(v->HiddenDescription    ) << std::endl;
+                sstr << "  CompletionDescription: " << str_or_empty(v->CompletionDescription) << std::endl;
+                sstr << "  UnlockedIconId       : " << str_or_empty(v->UnlockedIconId       ) << std::endl;
+                sstr << "  LockedIconId         : " << str_or_empty(v->LockedIconId         ) << std::endl;
+                sstr << "  bIsHidden            : " << EOS_Bool_2_str(v->bIsHidden)           << std::endl;
 
-                achievements[(*OutDefinition)->AchievementId]["AchievementId"] = (*OutDefinition)->AchievementId;
-                achievements[(*OutDefinition)->AchievementId]["UnlockedDisplayName"] = (*OutDefinition)->DisplayName;
-                achievements[(*OutDefinition)->AchievementId]["UnlockedDescription"] = (*OutDefinition)->Description;
-                achievements[(*OutDefinition)->AchievementId]["LockedDisplayName"] = (*OutDefinition)->LockedDisplayName;
-                achievements[(*OutDefinition)->AchievementId]["LockedDescription"] = (*OutDefinition)->LockedDescription;
-                achievements[(*OutDefinition)->AchievementId]["HiddenDescription"] = (*OutDefinition)->HiddenDescription;
-                achievements[(*OutDefinition)->AchievementId]["FlavorText"] = "";
-                achievements[(*OutDefinition)->AchievementId]["CompletionDescription"] = (*OutDefinition)->CompletionDescription;
-                achievements[(*OutDefinition)->AchievementId]["UnlockedIconURL"] = (*OutDefinition)->UnlockedIconId;
-                achievements[(*OutDefinition)->AchievementId]["LockedIconURL"] = (*OutDefinition)->LockedIconId;
-                achievements[(*OutDefinition)->AchievementId]["bIsHidden"] = (bool)(*OutDefinition)->bIsHidden;
+                achievements_db[(*OutDefinition)->AchievementId]["achievement_id"]         = str_or_empty((*OutDefinition)->AchievementId);
+                achievements_db[(*OutDefinition)->AchievementId]["unlocked_display_name"]  = str_or_empty((*OutDefinition)->DisplayName);
+                achievements_db[(*OutDefinition)->AchievementId]["unlocked_description"]   = str_or_empty((*OutDefinition)->Description);
+                achievements_db[(*OutDefinition)->AchievementId]["locked_display_name"]    = str_or_empty((*OutDefinition)->LockedDisplayName);
+                achievements_db[(*OutDefinition)->AchievementId]["locked_description"]     = str_or_empty((*OutDefinition)->LockedDescription);
+                achievements_db[(*OutDefinition)->AchievementId]["hidden_description"]     = str_or_empty((*OutDefinition)->HiddenDescription);
+                achievements_db[(*OutDefinition)->AchievementId]["flavor_text"]            = str_or_empty("");
+                achievements_db[(*OutDefinition)->AchievementId]["completion_description"] = str_or_empty((*OutDefinition)->CompletionDescription);
+                achievements_db[(*OutDefinition)->AchievementId]["unlocked_icon_url"]      = str_or_empty((*OutDefinition)->UnlockedIconId);
+                achievements_db[(*OutDefinition)->AchievementId]["locked_icon_url"]        = str_or_empty((*OutDefinition)->LockedIconId);
+                achievements_db[(*OutDefinition)->AchievementId]["is_hidden"]              = (bool)(*OutDefinition)->bIsHidden;
 
                 for (int i = 0; i < v->StatThresholdsCount; ++i)
                 {
                     sstr << "  Threshold[" << i << "]" << std::endl;
-                    sstr << "    Name     : " << v->StatThresholds[i].Name << std::endl;
+                    sstr << "    Name     : " << str_or_empty(v->StatThresholds[i].Name) << std::endl;
                     sstr << "    Threshold: " << v->StatThresholds[i].Threshold << std::endl;
 
-                    achievements[(*OutDefinition)->AchievementId]["StatThresholds"][(*OutDefinition)->StatThresholds[i].Name] = (*OutDefinition)->StatThresholds[i].Threshold;
+                    achievements_db[(*OutDefinition)->AchievementId]["stats_thresholds"][(*OutDefinition)->StatThresholds[i].Name]["name"] = str_or_empty((*OutDefinition)->StatThresholds[i].Name);
+                    achievements_db[(*OutDefinition)->AchievementId]["stats_thresholds"][(*OutDefinition)->StatThresholds[i].Name]["threshold"] = (*OutDefinition)->StatThresholds[i].Threshold;
                 }
             }
             break;
         }
 
-        save_json(achievements_file, achievements);
+        save_json(achievements_db_file, achievements_db);
     }
     else
     {
@@ -3227,41 +3233,42 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionV2ByAchi
             case EOS_ACHIEVEMENTS_COPYDEFINITIONV2BYACHIEVEMENTID_API_002:
             {
                 auto* v = reinterpret_cast<EOS_Achievements_DefinitionV2002*>(*OutDefinition);
-                sstr << "  AchievementId        : " << v->AchievementId << std::endl;
-                sstr << "  UnlockedDisplayName  : " << v->UnlockedDisplayName << std::endl;
-                sstr << "  UnlockedDescription  : " << v->UnlockedDescription << std::endl;
-                sstr << "  LockedDisplayName    : " << v->LockedDisplayName << std::endl;
-                sstr << "  LockedDescription    : " << v->LockedDescription << std::endl;
-                sstr << "  FlavorText           : " << v->FlavorText << std::endl;
-                sstr << "  UnlockedIconURL      : " << v->UnlockedIconURL << std::endl;
-                sstr << "  LockedIconURL        : " << v->LockedIconURL << std::endl;
-                sstr << "  bIsHidden            : " << EOS_Bool_2_str(v->bIsHidden) << std::endl;
+                sstr << "  AchievementId        : " << str_or_empty(v->AchievementId      ) << std::endl;
+                sstr << "  UnlockedDisplayName  : " << str_or_empty(v->UnlockedDisplayName) << std::endl;
+                sstr << "  UnlockedDescription  : " << str_or_empty(v->UnlockedDescription) << std::endl;
+                sstr << "  LockedDisplayName    : " << str_or_empty(v->LockedDisplayName  ) << std::endl;
+                sstr << "  LockedDescription    : " << str_or_empty(v->LockedDescription  ) << std::endl;
+                sstr << "  FlavorText           : " << str_or_empty(v->FlavorText         ) << std::endl;
+                sstr << "  UnlockedIconURL      : " << str_or_empty(v->UnlockedIconURL    ) << std::endl;
+                sstr << "  LockedIconURL        : " << str_or_empty(v->LockedIconURL      ) << std::endl;
+                sstr << "  bIsHidden            : " << EOS_Bool_2_str(v->bIsHidden)         << std::endl;
 
-                achievements[(*OutDefinition)->AchievementId]["AchievementId"] = (*OutDefinition)->AchievementId;
-                achievements[(*OutDefinition)->AchievementId]["UnlockedDisplayName"] = (*OutDefinition)->UnlockedDisplayName;
-                achievements[(*OutDefinition)->AchievementId]["UnlockedDescription"] = (*OutDefinition)->UnlockedDescription;
-                achievements[(*OutDefinition)->AchievementId]["LockedDisplayName"] = (*OutDefinition)->LockedDisplayName;
-                achievements[(*OutDefinition)->AchievementId]["LockedDescription"] = (*OutDefinition)->LockedDescription;
-                achievements[(*OutDefinition)->AchievementId]["FlavorText"] = (*OutDefinition)->FlavorText;
-                achievements[(*OutDefinition)->AchievementId]["HiddenDescription"] = "";
-                achievements[(*OutDefinition)->AchievementId]["CompletionDescription"] = "";
-                achievements[(*OutDefinition)->AchievementId]["UnlockedIconURL"] = (*OutDefinition)->UnlockedIconURL;
-                achievements[(*OutDefinition)->AchievementId]["LockedIconURL"] = (*OutDefinition)->LockedIconURL;
-                achievements[(*OutDefinition)->AchievementId]["bIsHidden"] = (bool)(*OutDefinition)->bIsHidden;
+                achievements_db[(*OutDefinition)->AchievementId]["achievement_id"]         = str_or_empty((*OutDefinition)->AchievementId);
+                achievements_db[(*OutDefinition)->AchievementId]["unlocked_display_name"]  = str_or_empty((*OutDefinition)->UnlockedDisplayName);
+                achievements_db[(*OutDefinition)->AchievementId]["unlocked_description"]   = str_or_empty((*OutDefinition)->UnlockedDescription);
+                achievements_db[(*OutDefinition)->AchievementId]["locked_display_name"]    = str_or_empty((*OutDefinition)->LockedDisplayName);
+                achievements_db[(*OutDefinition)->AchievementId]["locked_description"]     = str_or_empty((*OutDefinition)->LockedDescription);
+                achievements_db[(*OutDefinition)->AchievementId]["flavor_text"]            = str_or_empty((*OutDefinition)->FlavorText);
+                achievements_db[(*OutDefinition)->AchievementId]["hidden_description"]     = str_or_empty("");
+                achievements_db[(*OutDefinition)->AchievementId]["completion_description"] = str_or_empty("");
+                achievements_db[(*OutDefinition)->AchievementId]["unlocked_icon_url"]      = str_or_empty((*OutDefinition)->UnlockedIconURL);
+                achievements_db[(*OutDefinition)->AchievementId]["locked_icon_url"]        = str_or_empty((*OutDefinition)->LockedIconURL);
+                achievements_db[(*OutDefinition)->AchievementId]["is_hidden"]              = (bool)(*OutDefinition)->bIsHidden;
 
                 for (int i = 0; i < v->StatThresholdsCount; ++i)
                 {
                     sstr << "  Threshold[" << i << "]" << std::endl;
-                    sstr << "    Name     : " << v->StatThresholds[i].Name << std::endl;
+                    sstr << "    Name     : " << str_or_empty(v->StatThresholds[i].Name) << std::endl;
                     sstr << "    Threshold: " << v->StatThresholds[i].Threshold << std::endl;
 
-                    achievements[(*OutDefinition)->AchievementId]["StatThresholds"][(*OutDefinition)->StatThresholds[i].Name] = (*OutDefinition)->StatThresholds[i].Threshold;
+                    achievements_db[(*OutDefinition)->AchievementId]["stats_thresholds"][(*OutDefinition)->StatThresholds[i].Name]["name"] = str_or_empty((*OutDefinition)->StatThresholds[i].Name);
+                    achievements_db[(*OutDefinition)->AchievementId]["stats_thresholds"][(*OutDefinition)->StatThresholds[i].Name]["threshold"] = (*OutDefinition)->StatThresholds[i].Threshold;
                 }
             }
             break;
         }
 
-        save_json(achievements_file, achievements);
+        save_json(achievements_db_file, achievements_db);
     }
     else
     {
@@ -3290,14 +3297,143 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyPlayerAchievementByIndex(EOS_
 {
     LOG(Log::LogLevel::TRACE, "");
     ORIGINAL_FUNCTION(EOS_Achievements_CopyPlayerAchievementByIndex);
-    return _EOS_Achievements_CopyPlayerAchievementByIndex(Handle, Options, OutAchievement);
+    auto res = _EOS_Achievements_CopyPlayerAchievementByIndex(Handle, Options, OutAchievement);
+
+    std::stringstream sstr;
+    sstr << std::endl;
+    sstr << "ApiVersion           : " << Options->ApiVersion << std::endl;
+    if (res == EOS_EResult::EOS_Success)
+    {
+        sstr << "  ApiVersion           : " << (*OutAchievement)->ApiVersion << std::endl;
+        switch ((*OutAchievement)->ApiVersion)
+        {
+            case EOS_ACHIEVEMENTS_PLAYERACHIEVEMENT_API_002:
+            {
+                auto* v = reinterpret_cast<EOS_Achievements_PlayerAchievement002*>(*OutAchievement);
+
+                sstr << "  DisplayName  : " << str_or_empty(v->DisplayName) << std::endl;
+                sstr << "  Description  : " << str_or_empty(v->Description) << std::endl;
+                sstr << "  IconURL      : " << str_or_empty(v->IconURL    ) << std::endl;
+                sstr << "  FlavorText   : " << str_or_empty(v->FlavorText ) << std::endl;
+
+                achievements[v->AchievementId]["display_name"] = str_or_empty(v->DisplayName);
+                achievements[v->AchievementId]["description"]  = str_or_empty(v->Description);
+                achievements[v->AchievementId]["icon_url"]     = str_or_empty(v->IconURL);
+                achievements[v->AchievementId]["flavor_text"]  = str_or_empty(v->FlavorText);
+            }
+
+            case EOS_ACHIEVEMENTS_PLAYERACHIEVEMENT_API_001:
+            {
+                auto* v = reinterpret_cast<EOS_Achievements_PlayerAchievement001*>(*OutAchievement);
+                sstr << "  AchievementId: " << str_or_empty(v->AchievementId) << std::endl;
+                sstr << "  Progress     : " << v->Progress << std::endl;
+                sstr << "  UnlockTime   : " << v->UnlockTime << std::endl;
+
+                achievements[v->AchievementId]["achievement_id"] = str_or_empty(v->AchievementId);
+                achievements[v->AchievementId]["progress"]       = v->Progress;
+                achievements[v->AchievementId]["unlock_time"]    = v->UnlockTime;
+
+                for (int i = 0; i < v->StatInfoCount; ++i)
+                {
+                    sstr << "  StatInfo[" << i << "]:" << std::endl;
+                    switch (v->StatInfo[i].ApiVersion)
+                    {
+                        case EOS_ACHIEVEMENTS_PLAYERSTATINFO_API_001:
+                        {
+                            sstr << "    Name          :" << str_or_empty(v->StatInfo[i].Name) << std::endl;
+                            sstr << "    CurrentValue  :" << v->StatInfo[i].CurrentValue << std::endl;
+                            sstr << "    ThresholdValue:" << v->StatInfo[i].ThresholdValue << std::endl;
+
+                            achievements[v->AchievementId]["stat_info"][v->StatInfo[i].Name]["name"]            = str_or_empty(v->StatInfo[i].Name);
+                            achievements[v->AchievementId]["stat_info"][v->StatInfo[i].Name]["current_value"]   = v->StatInfo[i].CurrentValue;
+                            achievements[v->AchievementId]["stat_info"][v->StatInfo[i].Name]["threshold_value"] = v->StatInfo[i].ThresholdValue;
+                        }
+                    }
+                }
+            }
+            break;
+        }
+
+        save_json(achievements_file, achievements);
+    }
+    else
+    {
+        sstr << "Failed" << std::endl;
+    }
+    LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
+    return res;
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyPlayerAchievementByAchievementId(EOS_HAchievements Handle, const EOS_Achievements_CopyPlayerAchievementByAchievementIdOptions* Options, EOS_Achievements_PlayerAchievement** OutAchievement)
 {
     LOG(Log::LogLevel::TRACE, "");
     ORIGINAL_FUNCTION(EOS_Achievements_CopyPlayerAchievementByAchievementId);
-    return _EOS_Achievements_CopyPlayerAchievementByAchievementId(Handle, Options, OutAchievement);
+    auto res = _EOS_Achievements_CopyPlayerAchievementByAchievementId(Handle, Options, OutAchievement);
+
+    std::stringstream sstr;
+    sstr << std::endl;
+    sstr << "ApiVersion           : " << Options->ApiVersion << std::endl;
+    if (res == EOS_EResult::EOS_Success)
+    {
+        sstr << "  ApiVersion           : " << (*OutAchievement)->ApiVersion << std::endl;
+        switch ((*OutAchievement)->ApiVersion)
+        {
+            case EOS_ACHIEVEMENTS_PLAYERACHIEVEMENT_API_002:
+            {
+                auto* v = reinterpret_cast<EOS_Achievements_PlayerAchievement002*>(*OutAchievement);
+
+                sstr << "  DisplayName  : " << str_or_empty(v->DisplayName) << std::endl;
+                sstr << "  Description  : " << str_or_empty(v->Description) << std::endl;
+                sstr << "  IconURL      : " << str_or_empty(v->IconURL    ) << std::endl;
+                sstr << "  FlavorText   : " << str_or_empty(v->FlavorText ) << std::endl;
+
+                achievements[v->AchievementId]["display_name"] = str_or_empty(v->DisplayName);
+                achievements[v->AchievementId]["description"]  = str_or_empty(v->Description);
+                achievements[v->AchievementId]["icon_url"]     = str_or_empty(v->IconURL);
+                achievements[v->AchievementId]["flavor_text"]  = str_or_empty(v->FlavorText);
+            }
+
+            case EOS_ACHIEVEMENTS_PLAYERACHIEVEMENT_API_001:
+            {
+                auto* v = reinterpret_cast<EOS_Achievements_PlayerAchievement001*>(*OutAchievement);
+                sstr << "  AchievementId: " << str_or_empty(v->AchievementId) << std::endl;
+                sstr << "  Progress     : " << v->Progress << std::endl;
+                sstr << "  UnlockTime   : " << v->UnlockTime << std::endl;
+
+                achievements[v->AchievementId]["achievement_id"] = str_or_empty(v->AchievementId);
+                achievements[v->AchievementId]["progress"]       = v->Progress;
+                achievements[v->AchievementId]["unlock_time"]    = v->UnlockTime;
+
+                for (int i = 0; i < v->StatInfoCount; ++i)
+                {
+                    sstr << "  StatInfo[" << i << "]:" << std::endl;
+                    switch (v->StatInfo[i].ApiVersion)
+                    {
+                        case EOS_ACHIEVEMENTS_PLAYERSTATINFO_API_001:
+                        {
+                            sstr << "    Name          :" << str_or_empty(v->StatInfo[i].Name) << std::endl;
+                            sstr << "    CurrentValue  :" << v->StatInfo[i].CurrentValue << std::endl;
+                            sstr << "    ThresholdValue:" << v->StatInfo[i].ThresholdValue << std::endl;
+
+                            achievements[v->AchievementId]["stat_info"][v->StatInfo[i].Name]["name"]            = str_or_empty(v->StatInfo[i].Name);
+                            achievements[v->AchievementId]["stat_info"][v->StatInfo[i].Name]["current_value"]   = v->StatInfo[i].CurrentValue;
+                            achievements[v->AchievementId]["stat_info"][v->StatInfo[i].Name]["threshold_value"] = v->StatInfo[i].ThresholdValue;
+                        }
+                    }
+                }
+            }
+            break;
+        }
+
+        save_json(achievements_file, achievements);
+    }
+    else
+    {
+        sstr << "Failed" << std::endl;
+    }
+    LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
+
+    return res;
 }
 
 EOS_DECLARE_FUNC(void) EOS_Achievements_UnlockAchievements(EOS_HAchievements Handle, const EOS_Achievements_UnlockAchievementsOptions* Options, void* ClientData, const EOS_Achievements_OnUnlockAchievementsCompleteCallback CompletionDelegate)
