@@ -43,6 +43,8 @@ EOSSDK_Achievements::EOSSDK_Achievements()
 
 EOSSDK_Achievements::~EOSSDK_Achievements()
 {
+
+    GetCB_Manager().remove_all_notifications(this);
 }
 
 EOS_EResult EOSSDK_Achievements::copy_definition(typename decltype(_achievements_db)::iterator it, EOS_Achievements_Definition** OutDefinition)
@@ -754,6 +756,8 @@ void EOSSDK_Achievements::UnlockAchievements(const EOS_Achievements_UnlockAchiev
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+
+
     if (CompletionDelegate == nullptr)
         return;
 
@@ -1062,18 +1066,18 @@ void EOSSDK_Achievements::FreeCallback(pFrameResult_t res)
         {
             EOS_Achievements_OnAchievementsUnlockedCallbackInfo& callback = res->GetCallback<EOS_Achievements_OnAchievementsUnlockedCallbackInfo>();
             // Free resources
-            for (int i = 0; i < callback.AchievementsCount; ++i)
-            {
-                delete[] callback.AchievementIds[i];
-            }
-            delete[] callback.AchievementIds;
+            //for (int i = 0; i < callback.AchievementsCount; ++i)
+            //{
+            //    delete[] callback.AchievementIds[i];
+            //}
+            delete[]callback.AchievementIds;
         }
 
         case EOS_Achievements_OnAchievementsUnlockedCallbackV2Info::k_iCallback:
         {
             EOS_Achievements_OnAchievementsUnlockedCallbackV2Info& callback = res->GetCallback<EOS_Achievements_OnAchievementsUnlockedCallbackV2Info>();
             // Free resources
-            delete[] callback.AchievementId;
+            //delete[] callback.AchievementId;
         }
         break;
     }
