@@ -2,11 +2,12 @@
 #pragma once
 
 #include "eos_common.h"
+#include "eos_connect_types.h"
 
 enum { k_iAuthCallbackBase = 0 };
 
 #define EOS_Auth_Token                              EOS_Auth_Token002
-#define EOS_Auth_Credentials                        EOS_Auth_Credentials002
+#define EOS_Auth_Credentials                        EOS_Auth_Credentials003
 #define EOS_Auth_PinGrantInfo                       EOS_Auth_PinGrantInfo002
 #define EOS_Auth_LoginOptions                       EOS_Auth_LoginOptions002
 #define EOS_Auth_LogoutOptions                      EOS_Auth_LogoutOptions001
@@ -17,12 +18,13 @@ enum { k_iAuthCallbackBase = 0 };
 #define EOS_Auth_CreateDeviceAuthOptions            EOS_Auth_CreateDeviceAuthOptions001
 #define EOS_Auth_DeleteDeviceAuthOptions            EOS_Auth_DeleteDeviceAuthOptions001
 
+#include <eos_auth_types1.7.0.h>
 #include <eos_auth_types1.6.0.h>
 #include <eos_auth_types1.5.0.h>
 #include <eos_auth_types1.3.1.h>
 
 #define EOS_AUTH_TOKEN_API_LATEST                       EOS_AUTH_TOKEN_API_002
-#define EOS_AUTH_CREDENTIALS_API_LATEST                 EOS_AUTH_CREDENTIALS_API_002
+#define EOS_AUTH_CREDENTIALS_API_LATEST                 EOS_AUTH_CREDENTIALS_API_003
 #define EOS_AUTH_PINGRANTINFO_API_LATEST                EOS_AUTH_PINGRANTINFO_API_002
 #define EOS_AUTH_LOGIN_API_LATEST                       EOS_AUTH_LOGIN_API_002
 #define EOS_AUTH_LOGOUT_API_LATEST                      EOS_AUTH_LOGOUT_API_001

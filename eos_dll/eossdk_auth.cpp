@@ -73,16 +73,39 @@ void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, 
     }
     else
     {
-        if (Options->ApiVersion >= EOS_AUTH_LOGIN_API_002)
-        {
-            //Options->ScopeFlags;
-        }
-
         LOG(Log::LogLevel::DEBUG, "ApiVersion = %u", Options->ApiVersion);
-        LOG(Log::LogLevel::DEBUG, "Credentials ApiVersion = %u", Options->Credentials->ApiVersion);
-        LOG(Log::LogLevel::DEBUG, "Id    = %s", Options->Credentials->Id);
-        LOG(Log::LogLevel::DEBUG, "Token = %s", Options->Credentials->Token);
-        LOG(Log::LogLevel::DEBUG, "Type  = %u", Options->Credentials->Type);
+        switch (Options->ApiVersion)
+        {
+            case EOS_AUTH_LOGIN_API_002:
+            {
+                //Options->ScopeFlags;
+            }
+
+            case EOS_AUTH_LOGIN_API_001:
+            {
+                LOG(Log::LogLevel::DEBUG, "Credentials ApiVersion = %u", Options->Credentials->ApiVersion);
+                switch (Options->Credentials->ApiVersion)
+                {
+                    case EOS_AUTH_CREDENTIALS_API_003:
+                    {
+                        auto* v = reinterpret_cast<const EOS_Auth_Credentials003*>(Options->Credentials);
+                        LOG(Log::LogLevel::DEBUG, "SystemAuthCredentialsOptions = %p", v->SystemAuthCredentialsOptions);
+                        LOG(Log::LogLevel::DEBUG, "ExternalType                 = %d", v->ExternalType);
+                    }
+                    case EOS_AUTH_CREDENTIALS_API_002:
+                    {
+                        auto* v = reinterpret_cast<const EOS_Auth_Credentials002*>(Options->Credentials);
+                    }
+                    case EOS_AUTH_CREDENTIALS_API_001:
+                    {
+                        auto* v = reinterpret_cast<const EOS_Auth_Credentials001*>(Options->Credentials);
+                        LOG(Log::LogLevel::DEBUG, "Id                           = %s", v->Id);
+                        LOG(Log::LogLevel::DEBUG, "Token                        = %s", v->Token);
+                        LOG(Log::LogLevel::DEBUG, "Type                         = %u", v->Type);
+                    }
+                }
+            }
+        }
 
         lci.ResultCode = EOS_EResult::EOS_Success;
         lci.PinGrantInfo = nullptr;

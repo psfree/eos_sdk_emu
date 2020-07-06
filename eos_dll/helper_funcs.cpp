@@ -187,6 +187,7 @@ LOCAL_API std::string get_callback_name(int iCallback)
         I_CALLBACK(EOS_Lobby_LobbyMemberStatusReceivedCallbackInfo);
         I_CALLBACK(EOS_Lobby_LobbyInviteReceivedCallbackInfo);
         I_CALLBACK(EOS_Lobby_SendInviteCallbackInfo);
+        I_CALLBACK(EOS_Lobby_JoinLobbyAcceptedCallbackInfo);
         I_CALLBACK(EOS_Lobby_RejectInviteCallbackInfo);
         I_CALLBACK(EOS_Lobby_QueryInvitesCallbackInfo);
         I_CALLBACK(EOS_LobbySearch_FindCallbackInfo);
@@ -224,6 +225,7 @@ LOCAL_API std::string get_callback_name(int iCallback)
         I_CALLBACK(EOS_SessionSearch_FindCallbackInfo);
         I_CALLBACK(EOS_Sessions_SessionInviteReceivedCallbackInfo);
         I_CALLBACK(EOS_Sessions_SessionInviteAcceptedCallbackInfo);
+        I_CALLBACK(EOS_Sessions_JoinSessionAcceptedCallbackInfo);
         // Stats
         I_CALLBACK(EOS_Stats_IngestStatCompleteCallbackInfo);
         I_CALLBACK(EOS_Stats_OnQueryStatsCompleteCallbackInfo);

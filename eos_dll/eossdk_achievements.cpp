@@ -107,6 +107,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition(typename decltype(_achievements
         }
         catch (...)
         {// If the user did not provide a hidden description (old field), use the locked description
+            LOG(Log::LogLevel::INFO, "No \"hidden_description\" in achievements_db, falling back to \"locked_description\"");
             ach->HiddenDescription = it.value()["locked_description"].get_ref<std::string&>().c_str();
         }
     }
@@ -123,6 +124,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition(typename decltype(_achievements
         }
         catch (...)
         {// If the user did not provide a completion description (old field), use the flavor text
+            LOG(Log::LogLevel::INFO, "No \"completion_description\" in achievements_db, falling back to \"flavor_text\"");
             ach->CompletionDescription = it.value()["flavor_text"].get_ref<std::string&>().c_str();
         }
     }

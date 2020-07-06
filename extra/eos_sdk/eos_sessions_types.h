@@ -3,6 +3,7 @@
 #pragma once
 
 #include "eos_common.h"
+#include "eos_ui_types.h"
 
 enum { k_iSessionsCallbackBase = 11000 };
 
@@ -56,8 +57,14 @@ enum { k_iSessionsCallbackBase = 11000 };
 #define EOS_Sessions_CopySessionHandleForPresenceOptions        EOS_Sessions_CopySessionHandleForPresenceOptions001
 #define EOS_Sessions_IsUserInSessionOptions                     EOS_Sessions_IsUserInSessionOptions001
 #define EOS_Sessions_DumpSessionStateOptions                    EOS_Sessions_DumpSessionStateOptions001
+#define EOS_Sessions_AddNotifyJoinSessionAcceptedOptions        EOS_Sessions_AddNotifyJoinSessionAcceptedOptions001
+#define EOS_Sessions_CopySessionHandleByUiEventIdOptions        EOS_Sessions_CopySessionHandleByUiEventIdOptions001
 
-#include <eos_sessions_types1.6.0.h>
+/**
+ * Input parameters for the EOS_Sessions_CopySessionHandleByUiEventId Function.
+ */
+
+#include <eos_sessions_types1.7.0.h>
 #include <eos_sessions_types1.5.0.h>
 #include <eos_sessions_types1.3.1.h>
 
@@ -111,3 +118,5 @@ enum { k_iSessionsCallbackBase = 11000 };
 #define EOS_SESSIONS_COPYSESSIONHANDLEFORPRESENCE_API_LATEST        EOS_SESSIONS_COPYSESSIONHANDLEFORPRESENCE_API_001
 #define EOS_SESSIONS_ISUSERINSESSION_API_LATEST                     EOS_SESSIONS_ISUSERINSESSION_API_001
 #define EOS_SESSIONS_DUMPSESSIONSTATE_API_LATEST                    EOS_SESSIONS_DUMPSESSIONSTATE_API_001
+#define EOS_SESSIONS_ADDNOTIFYJOINSESSIONACCEPTED_API_LATEST        EOS_SESSIONS_ADDNOTIFYJOINSESSIONACCEPTED_API_001
+#define EOS_SESSIONS_COPYSESSIONHANDLEBYUIEVENTID_API_LATEST        EOS_SESSIONS_COPYSESSIONHANDLEBYUIEVENTID_API_001

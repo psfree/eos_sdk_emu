@@ -28,7 +28,10 @@ namespace sdk
 decltype(EOSSDK_P2P::connection_timeout) EOSSDK_P2P::connection_timeout;
 
 EOSSDK_P2P::EOSSDK_P2P():
-    next_requested_channel(-1)
+    next_requested_channel(-1),
+    _relay_control(EOS_ERelayControl::EOS_RC_AllowRelays),
+    _p2p_port(7777),
+    _max_additional_ports_to_try(99)
 {
     GetCB_Manager().register_frame(this);
     GetCB_Manager().register_callbacks(this);
@@ -49,20 +52,21 @@ EOSSDK_P2P::~EOSSDK_P2P()
 }
 
 /**
- * P2P functions to help manage sending and receiving of messages to peers
+ * P2P functions to help manage sending and receiving of messages to peers.
  *
- * These functions will attempt to perform NAT-punching, but will fallback to relays if a direct connection cannot be established
+ * These functions will attempt to punch through NATs, but will fallback to using Epic relay servers if a direct connection cannot be established.
  */
 
 /**
-  * Send a packet to a peer at the specified address. If there is already an open connection to this peer, it will be
-  * sent immediately. If there is no open connection, an attempt to connect to the peer will be made. A EOS_Success
-  * result does not guarantee the packet will be delivered to the peer, as data is sent unreliably.
-  *
-  * @param Options Information about the data being sent, by who, to who
-  * @return EOS_EResult::EOS_Success           - If packet was queued to be sent successfully
-  *         EOS_EResult::EOS_InvalidParameters - If input was invalid
-  */
+ * Send a packet to a peer at the specified address. If there is already an open connection to this peer, it will be
+ * sent immediately. If there is no open connection, an attempt to connect to the peer will be made. An EOS_Success
+ * result only means the data was accepted to be sent, not that it has been successfully delivered to the peer.
+ *
+ * @param Options Information about the data being sent, by who, to who
+ * @return EOS_EResult::EOS_Success           - If packet was queued to be sent successfully
+ *         EOS_EResult::EOS_InvalidParameters - If input was invalid
+ *         EOS_EResult::EOS_LimitExceeded     - If amount of data being sent is too large
+ */
 EOS_EResult EOSSDK_P2P::SendPacket(const EOS_P2P_SendPacketOptions* Options)
 {
     TRACE_FUNC();
@@ -432,7 +436,7 @@ EOS_EResult EOSSDK_P2P::CloseConnections(const EOS_P2P_CloseConnectionsOptions* 
 /**
  * Query the current NAT-type of our connection.
  *
- * @param Options Information about what version of the EOS_P2P_QueryNATType API they support
+ * @param Options Information about what version of the EOS_P2P_QueryNATType API is supported
  * @param NATTypeQueriedHandler The callback to be fired when we finish querying our NAT type
  */
 void EOSSDK_P2P::QueryNATType(const EOS_P2P_QueryNATTypeOptions* Options, void* ClientData, const EOS_P2P_OnQueryNATTypeCompleteCallback NATTypeQueriedHandler)
@@ -479,6 +483,88 @@ EOS_EResult EOSSDK_P2P::GetNATType(const EOS_P2P_GetNATTypeOptions* Options, EOS
     GLOBAL_LOCK();
 
     *OutNATType = EOS_ENATType::EOS_NAT_Moderate;
+    return EOS_EResult::EOS_Success;
+}
+
+/**
+ * Set how relay servers are to be used. This setting does not immediately apply to existing connections, but may apply to existing
+ * connections if the connection requires renegotiation.
+ *
+ * @param Options Information about relay server config options
+ * @return EOS_EResult::EOS_Success - if the options were set successfully
+ *         EOS_EResult::EOS_InvalidParameters - if the options are invalid in some way
+ */
+EOS_EResult EOSSDK_P2P::SetRelayControl(const EOS_P2P_SetRelayControlOptions* Options)
+{
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+
+    if(Options == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+    
+    _relay_control = Options->RelayControl;
+    return EOS_EResult::EOS_Success;
+}
+
+/**
+ * Get the current relay control setting.
+ *
+ * @param Options Information about what version of the EOS_P2P_GetRelayControl API is supported
+ * @param OutRelayControl The relay control setting currently configured
+ * @return EOS_EResult::EOS_Success - if the input was valid
+ *         EOS_EResult::EOS_InvalidParameters - if the input was invalid in some way
+ */
+EOS_EResult EOSSDK_P2P::GetRelayControl(const EOS_P2P_GetRelayControlOptions* Options, EOS_ERelayControl* OutRelayControl)
+{
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+
+    if (Options == nullptr || OutRelayControl == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
+    *OutRelayControl = _relay_control;
+    return EOS_EResult::EOS_Success;
+}
+
+/**
+ * Set configuration options related to network ports.
+ *
+ * @param Options Information about network ports config options
+ * @return EOS_EResult::EOS_Success - if the options were set successfully
+ *         EOS_EResult::EOS_InvalidParameters - if the options are invalid in some way
+ */
+EOS_EResult EOSSDK_P2P::SetPortRange(const EOS_P2P_SetPortRangeOptions* Options)
+{
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+
+    if (Options == nullptr || Options->Port <= 1024)
+        return EOS_EResult::EOS_InvalidParameters;
+
+    _p2p_port = Options->Port;
+    _max_additional_ports_to_try = Options->MaxAdditionalPortsToTry;
+    return EOS_EResult::EOS_Success;
+}
+
+/**
+ * Get the current chosen port and the amount of other ports to try above the chosen port if the chosen port is unavailable.
+ *
+ * @param Options Information about what version of the EOS_P2P_GetPortRange API is supported
+ * @param OutPort The port that will be tried first
+ * @param OutNumAdditionalPortsToTry The amount of ports to try above the value in OutPort, if OutPort is unavailable
+ * @return EOS_EResult::EOS_Success - if the input options were valid
+ *         EOS_EResult::EOS_InvalidParameters - if the input was invalid in some way
+ */
+EOS_EResult EOSSDK_P2P::GetPortRange(const EOS_P2P_GetPortRangeOptions* Options, uint16_t* OutPort, uint16_t* OutNumAdditionalPortsToTry)
+{
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+
+    if (Options == nullptr || OutPort == nullptr || OutNumAdditionalPortsToTry == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
+    *OutPort = _p2p_port;
+    *OutNumAdditionalPortsToTry = _max_additional_ports_to_try;
     return EOS_EResult::EOS_Success;
 }
 

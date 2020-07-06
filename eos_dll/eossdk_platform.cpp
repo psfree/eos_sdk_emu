@@ -72,6 +72,7 @@ void EOSSDK_Platform::Init(const EOS_Platform_Options* Options)
             _api_version = Options->ApiVersion;
             switch (Options->ApiVersion)
             {
+                case EOS_PLATFORM_OPTIONS_API_008:
                 case EOS_PLATFORM_OPTIONS_API_007:
                 {
                     auto pf = reinterpret_cast<const EOS_Platform_Options007*>(Options);

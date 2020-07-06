@@ -209,7 +209,7 @@ void EOSSDK_SessionSearch::Find(const EOS_SessionSearch_FindOptions* Options, vo
 
     pFrameResult_t res(new FrameResult);
     EOS_SessionSearch_FindCallbackInfo& fci = res->CreateCallback<EOS_SessionSearch_FindCallbackInfo>((CallbackFunc)CompletionDelegate);
-
+    
     {
         char* str = new char[1];
         *str = '\0';

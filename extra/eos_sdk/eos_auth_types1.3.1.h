@@ -29,31 +29,7 @@ EOS_STRUCT(EOS_Auth_Token001, (
 /** The most recent version of the EOS_Auth_Credentials struct. */
 #define EOS_AUTH_CREDENTIALS_API_001 1
 
-/**
- * A structure that contains login credentials. What is required is dependent on the type of login being initiated.
- * 
- * This is part of the input structure EOS_Auth_LoginOptions and related to device auth
- *
- * EOS_LCT_Password - (id/token) required with email/password
- * EOS_LCT_ExchangeCode - (token) exchange code
- * EOS_LCT_DeviceAuth - (id/token) 
- * EOS_LCT_DeviceCode - (N/A) initiate a pin grant completed via an external device
- *
- * @see EOS_ELoginCredentialType
- * @see EOS_Auth_Login
- * @see EOS_Auth_CreateDeviceAuthCallbackInfo
- * @see EOS_Auth_DeleteDeviceAuthOptions
- */ 
-EOS_STRUCT(EOS_Auth_Credentials001, (
-	/** Version of the API */
-	int32_t ApiVersion;
-	/** Id of the user logging in, based on EOS_ELoginCredentialType */
-	const char* Id;
-	/** Credentials or token related to the user logging in */
-	const char* Token;
-	/** Type of login. Needed to identity the auth method to use */
-	EOS_ELoginCredentialType Type;
-));
+using EOS_Auth_Credentials001 = EOS_Auth_Credentials002;
 
 /** The most recent version of the EOS_Auth_PinGrantInfo struct. */
 #define EOS_AUTH_PINGRANTINFO_API_001 1

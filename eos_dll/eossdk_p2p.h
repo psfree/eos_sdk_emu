@@ -56,6 +56,10 @@ namespace sdk
         std::map<uint8_t, std::list<P2P_Data_Message_pb>> _p2p_in_messages;
         std::map<EOS_ProductUserId, p2p_state_t> _p2p_connections;
 
+        EOS_ERelayControl _relay_control;
+        uint16_t _p2p_port;
+        uint16_t _max_additional_ports_to_try;
+
     public:
         EOSSDK_P2P();
         ~EOSSDK_P2P();
@@ -81,17 +85,21 @@ namespace sdk
         virtual bool RunCallbacks(pFrameResult_t res);
         virtual void FreeCallback(pFrameResult_t res);
 
-        EOS_EResult SendPacket(const EOS_P2P_SendPacketOptions* Options);
-        EOS_EResult GetNextReceivedPacketSize(const EOS_P2P_GetNextReceivedPacketSizeOptions* Options, uint32_t* OutPacketSizeBytes);
-        EOS_EResult ReceivePacket(const EOS_P2P_ReceivePacketOptions* Options, EOS_ProductUserId* OutPeerId, EOS_P2P_SocketId* OutSocketId, uint8_t* OutChannel, void* OutData, uint32_t* OutBytesWritten);
+        EOS_EResult        SendPacket(const EOS_P2P_SendPacketOptions* Options);
+        EOS_EResult        GetNextReceivedPacketSize(const EOS_P2P_GetNextReceivedPacketSizeOptions* Options, uint32_t* OutPacketSizeBytes);
+        EOS_EResult        ReceivePacket(const EOS_P2P_ReceivePacketOptions* Options, EOS_ProductUserId* OutPeerId, EOS_P2P_SocketId* OutSocketId, uint8_t* OutChannel, void* OutData, uint32_t* OutBytesWritten);
         EOS_NotificationId AddNotifyPeerConnectionRequest(const EOS_P2P_AddNotifyPeerConnectionRequestOptions* Options, void* ClientData, EOS_P2P_OnIncomingConnectionRequestCallback ConnectionRequestHandler);
-        void RemoveNotifyPeerConnectionRequest(EOS_NotificationId NotificationId);
+        void               RemoveNotifyPeerConnectionRequest(EOS_NotificationId NotificationId);
         EOS_NotificationId AddNotifyPeerConnectionClosed(const EOS_P2P_AddNotifyPeerConnectionClosedOptions* Options, void* ClientData, EOS_P2P_OnRemoteConnectionClosedCallback ConnectionClosedHandler);
-        void RemoveNotifyPeerConnectionClosed(EOS_NotificationId NotificationId);
-        EOS_EResult AcceptConnection(const EOS_P2P_AcceptConnectionOptions* Options);
-        EOS_EResult CloseConnection(const EOS_P2P_CloseConnectionOptions* Options);
-        EOS_EResult CloseConnections(const EOS_P2P_CloseConnectionsOptions* Options);
-        void QueryNATType(const EOS_P2P_QueryNATTypeOptions* Options, void* ClientData, const EOS_P2P_OnQueryNATTypeCompleteCallback NATTypeQueriedHandler);
-        EOS_EResult GetNATType(const EOS_P2P_GetNATTypeOptions* Options, EOS_ENATType* OutNATType);
+        void               RemoveNotifyPeerConnectionClosed(EOS_NotificationId NotificationId);
+        EOS_EResult        AcceptConnection(const EOS_P2P_AcceptConnectionOptions* Options);
+        EOS_EResult        CloseConnection(const EOS_P2P_CloseConnectionOptions* Options);
+        EOS_EResult        CloseConnections(const EOS_P2P_CloseConnectionsOptions* Options);
+        void               QueryNATType(const EOS_P2P_QueryNATTypeOptions* Options, void* ClientData, const EOS_P2P_OnQueryNATTypeCompleteCallback NATTypeQueriedHandler);
+        EOS_EResult        GetNATType(const EOS_P2P_GetNATTypeOptions* Options, EOS_ENATType* OutNATType);
+        EOS_EResult        SetRelayControl(const EOS_P2P_SetRelayControlOptions* Options);
+        EOS_EResult        GetRelayControl(const EOS_P2P_GetRelayControlOptions* Options, EOS_ERelayControl* OutRelayControl);
+        EOS_EResult        SetPortRange(const EOS_P2P_SetPortRangeOptions* Options);
+        EOS_EResult        GetPortRange(const EOS_P2P_GetPortRangeOptions* Options, uint16_t* OutPort, uint16_t* OutNumAdditionalPortsToTry);
     };
 }

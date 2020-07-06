@@ -134,7 +134,7 @@ EOS_EResult EOSSDK_LobbyDetails::CopyAttributeByIndex(const EOS_LobbyDetails_Cop
 
     if (Options == nullptr || Options->AttrIndex >= _infos.attributes_size() || OutAttribute == nullptr)
     {
-        *OutAttribute = nullptr;
+        set_nullptr(OutAttribute);
         return EOS_EResult::EOS_InvalidParameters;
     }
 
@@ -214,7 +214,7 @@ EOS_EResult EOSSDK_LobbyDetails::CopyAttributeByKey(const EOS_LobbyDetails_CopyA
 
     if (Options == nullptr || Options->AttrKey == nullptr || OutAttribute == nullptr)
     {
-        *OutAttribute = nullptr;
+        set_nullptr(OutAttribute);
         return EOS_EResult::EOS_InvalidParameters;
     }
 

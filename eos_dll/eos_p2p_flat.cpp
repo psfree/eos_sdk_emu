@@ -128,3 +128,39 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_P2P_GetNATType(EOS_HP2P Handle, const EOS_P2P_
     auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
     return pInst->GetNATType(Options, OutNATType);
 }
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_P2P_SetRelayControl(EOS_HP2P Handle, const EOS_P2P_SetRelayControlOptions* Options)
+{
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
+    return pInst->SetRelayControl(Options);
+}
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_P2P_GetRelayControl(EOS_HP2P Handle, const EOS_P2P_GetRelayControlOptions* Options, EOS_ERelayControl* OutRelayControl)
+{
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
+    return pInst->GetRelayControl(Options, OutRelayControl);
+}
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_P2P_SetPortRange(EOS_HP2P Handle, const EOS_P2P_SetPortRangeOptions* Options)
+{
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
+    return pInst->SetPortRange(Options);
+}
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_P2P_GetPortRange(EOS_HP2P Handle, const EOS_P2P_GetPortRangeOptions* Options, uint16_t* OutPort, uint16_t* OutNumAdditionalPortsToTry)
+{
+    if (Handle == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
+    return pInst->GetPortRange(Options, OutPort, OutNumAdditionalPortsToTry);
+}

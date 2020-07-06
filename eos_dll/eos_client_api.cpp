@@ -400,6 +400,7 @@ EOS_DECLARE_FUNC(const char*) EOS_EResult_ToString(EOS_EResult Result)
         CASE_RESULT(EOS_Lobby_DeploymentAtCapacity);
         CASE_RESULT(EOS_Lobby_NotAllowed);
         CASE_RESULT(EOS_Lobby_MemberUpdateOnly);
+        CASE_RESULT(EOS_Lobby_PresenceLobbyExists);
 
         default: return "EOS_UnexpectedError";
 #undef CASE_RESULT
@@ -656,6 +657,7 @@ EOS_DECLARE_FUNC(const char*) EOS_GetVersion(void)
         { "1.6.0", "1.6.0-13289764" },
         { "1.6.1", "1.6.1-13568552" },
         { "1.6.2", "1.6.2-13619780" },
+        { "1.7.0", "1.7.0-13812567" },
     };
     
     return versions[EOS_VERSION_STRING];

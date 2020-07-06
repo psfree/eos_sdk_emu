@@ -24,7 +24,7 @@ enum { k_iPresenceCallbackBase = 10000 };
 #define EOS_PresenceModification_DataRecordId          EOS_PresenceModification_DataRecordId001
 #define EOS_PresenceModification_DeleteDataOptions     EOS_PresenceModification_DeleteDataOptions001
 
-#include <eos_presence_types1.6.0.h>
+#include <eos_presence_types1.7.0.h>
 #include <eos_presence_types1.5.0.h>
 #include <eos_presence_types1.3.1.h>
 

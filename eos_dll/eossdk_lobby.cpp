@@ -551,7 +551,7 @@ EOS_EResult EOSSDK_Lobby::UpdateLobbyModification(const EOS_Lobby_UpdateLobbyMod
 
     if (Options == nullptr || OutLobbyModificationHandle == nullptr)
     {
-        *OutLobbyModificationHandle = nullptr;
+        set_nullptr(OutLobbyModificationHandle);
         return EOS_EResult::EOS_InvalidParameters;
     }
 
@@ -1155,7 +1155,10 @@ EOS_EResult EOSSDK_Lobby::CreateLobbySearch(const EOS_Lobby_CreateLobbySearchOpt
     TRACE_FUNC();
 
     if (Options == nullptr || Options->MaxResults == 0 || OutLobbySearchHandle == nullptr)
+    {
+        set_nullptr(OutLobbySearchHandle);
         return EOS_EResult::EOS_InvalidParameters;
+    }
 
     _lobbies_searchs.emplace_back();
     EOSSDK_LobbySearch& search = _lobbies_searchs.back();
@@ -1211,6 +1214,89 @@ void EOSSDK_Lobby::RemoveNotifyLobbyInviteReceived(EOS_NotificationId InId)
 }
 
 /**
+ * Register to receive notifications about lobby invites accepted by local user via the overlay.
+ * @note must call RemoveNotifyLobbyInviteAccepted to remove the notification
+ *
+ * @param Options Structure containing information about the request.
+ * @param ClientData Arbitrary data that is passed back to you in the CompletionDelegate.
+ * @param Notification A callback that is fired when a a notification is received.
+ *
+ * @return handle representing the registered callback
+ */
+EOS_NotificationId EOSSDK_Lobby::AddNotifyLobbyInviteAccepted(const EOS_Lobby_AddNotifyLobbyInviteAcceptedOptions* Options, void* ClientData, const EOS_Lobby_OnLobbyInviteAcceptedCallback NotificationFn)
+{
+    TRACE_FUNC();
+
+    if (Options == nullptr || NotificationFn == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
+    pFrameResult_t res(new FrameResult);
+
+    EOS_Lobby_LobbyInviteAcceptedCallbackInfo& liaci = res->CreateCallback<EOS_Lobby_LobbyInviteAcceptedCallbackInfo>((CallbackFunc)NotificationFn);
+    liaci.ClientData = ClientData;
+    liaci.LocalUserId = GetEOS_Connect().get_myself()->first;
+    liaci.TargetUserId = GetInvalidProductUserId();
+    {
+        char* str = new char[EOS_LOBBY_INVITEID_MAX_LENGTH + 1];
+        *str = '\0';
+        liaci.InviteId = str;
+    }
+
+    return GetCB_Manager().add_notification(this, res);
+}
+
+/**
+ * Unregister from receiving notifications when a user accepts a lobby invitation via the overlay.
+ *
+ * @param InId Handle representing the registered callback
+ */
+void EOSSDK_Lobby::RemoveNotifyLobbyInviteAccepted(EOS_NotificationId InId)
+{
+    TRACE_FUNC();
+
+    GetCB_Manager().remove_notification(this, InId);
+}
+
+/**
+ * Register to receive notifications about lobby join game accepted by local user via the overlay.
+ * @note must call RemoveNotifyJoinLobbyAccepted to remove the notification
+ *
+ * @param Options Structure containing information about the request.
+ * @param ClientData Arbitrary data that is passed back to you in the CompletionDelegate.
+ * @param Notification A callback that is fired when a a notification is received.
+ *
+ * @return handle representing the registered callback
+ */
+EOS_NotificationId EOSSDK_Lobby::AddNotifyJoinLobbyAccepted(const EOS_Lobby_AddNotifyJoinLobbyAcceptedOptions* Options, void* ClientData, const EOS_Lobby_OnJoinLobbyAcceptedCallback NotificationFn)
+{
+    TRACE_FUNC();
+
+    if (Options == nullptr || NotificationFn == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
+    pFrameResult_t res(new FrameResult);
+
+    EOS_Lobby_JoinLobbyAcceptedCallbackInfo& jlaci = res->CreateCallback<EOS_Lobby_JoinLobbyAcceptedCallbackInfo>((CallbackFunc)NotificationFn);
+    jlaci.ClientData = ClientData;
+    jlaci.LocalUserId = GetEOS_Connect().get_myself()->first;
+    jlaci.UiEventId = EOS_UI_EVENTID_INVALID;
+
+    return GetCB_Manager().add_notification(this, res);
+}
+
+/**
+ * Unregister from receiving notifications when a user accepts a lobby invitation via the overlay.
+ *
+ * @param InId Handle representing the registered callback
+ */
+void EOSSDK_Lobby::RemoveNotifyJoinLobbyAccepted(EOS_NotificationId InId)
+{
+    TRACE_FUNC();
+
+    GetCB_Manager().remove_notification(this, InId);
+}
+
+/**
  * EOS_Lobby_CopyLobbyDetailsHandleByInviteId is used to immediately retrieve a handle to the lobby information from after notification of an invite
  * If the call returns an EOS_Success result, the out parameter, OutLobbyDetailsHandle, must be passed to EOS_LobbyDetails_Release to release the memory associated with it.
  *
@@ -1231,7 +1317,7 @@ EOS_EResult EOSSDK_Lobby::CopyLobbyDetailsHandleByInviteId(const EOS_Lobby_CopyL
 
     if (Options == nullptr || Options->InviteId == nullptr || OutLobbyDetailsHandle == nullptr)
     {
-        *OutLobbyDetailsHandle = nullptr;
+        set_nullptr(OutLobbyDetailsHandle);
         return EOS_EResult::EOS_InvalidParameters;
     }
 
@@ -1254,6 +1340,35 @@ EOS_EResult EOSSDK_Lobby::CopyLobbyDetailsHandleByInviteId(const EOS_Lobby_CopyL
 }
 
 /**
+ * EOS_Lobby_CopyLobbyDetailsHandleByUiEventId is used to immediately retrieve a handle to the lobby information from after notification of an join game
+ * If the call returns an EOS_Success result, the out parameter, OutLobbyDetailsHandle, must be passed to EOS_LobbyDetails_Release to release the memory associated with it.
+ *
+ * @param Options Structure containing the input parameters
+ * @param OutLobbyDetailsHandle out parameter used to receive the lobby handle
+ *
+ * @return EOS_Success if the information is available and passed out in OutLobbyDetailsHandle
+ *         EOS_InvalidParameters if you pass an invalid ui event id
+ *         EOS_IncompatibleVersion if the API version passed in is incorrect
+ *         EOS_NotFound If the invite id cannot be found
+ *
+ * @see EOS_Lobby_CopyLobbyDetailsHandleByUiEventIdOptions
+ * @see EOS_LobbyDetails_Release
+ */
+EOS_EResult EOSSDK_Lobby::CopyLobbyDetailsHandleByUiEventId(const EOS_Lobby_CopyLobbyDetailsHandleByUiEventIdOptions* Options, EOS_HLobbyDetails* OutLobbyDetailsHandle)
+{
+    TRACE_FUNC();
+
+    if (Options == nullptr || Options->UiEventId == EOS_UI_EVENTID_INVALID || OutLobbyDetailsHandle == nullptr)
+    {
+        set_nullptr(OutLobbyDetailsHandle);
+        return EOS_EResult::EOS_InvalidParameters;
+    }
+
+    *OutLobbyDetailsHandle = nullptr;
+    return EOS_EResult::EOS_NotFound;
+}
+
+/**
  * Create a handle to an existing lobby.
  * If the call returns an EOS_Success result, the out parameter, OutLobbyDetailsHandle, must be passed to EOS_LobbyDetails_Release to release the memory associated with it.
  *
@@ -1270,7 +1385,10 @@ EOS_EResult EOSSDK_Lobby::CopyLobbyDetailsHandle(const EOS_Lobby_CopyLobbyDetail
     TRACE_FUNC();
 
     if (Options == nullptr || OutLobbyDetailsHandle == nullptr)
+    {
+        set_nullptr(OutLobbyDetailsHandle);
         return EOS_EResult::EOS_InvalidParameters;
+    }
 
     auto it = _lobbies.find(Options->LobbyId);
     if (it == _lobbies.end())
@@ -2040,6 +2158,14 @@ void EOSSDK_Lobby::FreeCallback(pFrameResult_t res)
         case EOS_Lobby_LobbyInviteReceivedCallbackInfo::k_iCallback:
         {
             EOS_Lobby_LobbyInviteReceivedCallbackInfo& callback = res->GetCallback<EOS_Lobby_LobbyInviteReceivedCallbackInfo>();
+            // Free resources
+            delete[]callback.InviteId;
+        }
+        break;
+
+        case EOS_Lobby_LobbyInviteAcceptedCallbackInfo::k_iCallback:
+        {
+            EOS_Lobby_LobbyInviteAcceptedCallbackInfo& callback = res->GetCallback<EOS_Lobby_LobbyInviteAcceptedCallbackInfo>();
             // Free resources
             delete[]callback.InviteId;
         }

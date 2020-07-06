@@ -218,7 +218,10 @@ namespace sdk
         void               RemoveNotifySessionInviteReceived(EOS_NotificationId InId);
         EOS_NotificationId AddNotifySessionInviteAccepted(const EOS_Sessions_AddNotifySessionInviteAcceptedOptions* Options, void* ClientData, const EOS_Sessions_OnSessionInviteAcceptedCallback NotificationFn);
         void               RemoveNotifySessionInviteAccepted(EOS_NotificationId InId);
+        EOS_NotificationId AddNotifyJoinSessionAccepted(const EOS_Sessions_AddNotifyJoinSessionAcceptedOptions* Options, void* ClientData, const EOS_Sessions_OnJoinSessionAcceptedCallback NotificationFn);
+        void               RemoveNotifyJoinSessionAccepted(EOS_NotificationId InId);
         EOS_EResult        CopySessionHandleByInviteId(const EOS_Sessions_CopySessionHandleByInviteIdOptions* Options, EOS_HSessionDetails* OutSessionHandle);
+        EOS_EResult        CopySessionHandleByUiEventId(const EOS_Sessions_CopySessionHandleByUiEventIdOptions* Options, EOS_HSessionDetails* OutSessionHandle);
         EOS_EResult        CopySessionHandleForPresence(const EOS_Sessions_CopySessionHandleForPresenceOptions* Options, EOS_HSessionDetails* OutSessionHandle);
         EOS_EResult        IsUserInSession(const EOS_Sessions_IsUserInSessionOptions* Options);
         EOS_EResult        DumpSessionState(const EOS_Sessions_DumpSessionStateOptions* Options);

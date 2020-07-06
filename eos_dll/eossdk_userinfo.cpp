@@ -219,8 +219,11 @@ EOS_EResult EOSSDK_UserInfo::CopyUserInfo(const EOS_UserInfo_CopyUserInfoOptions
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    if (OutUserInfo == nullptr || Options == nullptr || Options->TargetUserId == nullptr)
+    if (OutUserInfo == nullptr || Options == nullptr || Options->TargetUserId == nullptr || OutUserInfo == nullptr)
+    {
+        set_nullptr(OutUserInfo);
         return EOS_EResult::EOS_InvalidParameters;
+    }
 
     LOG(Log::LogLevel::DEBUG, "Copy infos of %s", Options->TargetUserId->to_string().c_str());
 
@@ -279,6 +282,7 @@ EOS_EResult EOSSDK_UserInfo::CopyExternalUserInfoByIndex(const EOS_UserInfo_Copy
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    set_nullptr(OutExternalUserInfo);
     return EOS_EResult::EOS_NotFound;
 }
 
@@ -299,6 +303,7 @@ EOS_EResult EOSSDK_UserInfo::CopyExternalUserInfoByAccountType(const EOS_UserInf
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    set_nullptr(OutExternalUserInfo);
     return EOS_EResult::EOS_NotFound;
 }
 
@@ -319,6 +324,7 @@ EOS_EResult EOSSDK_UserInfo::CopyExternalUserInfoByAccountId(const EOS_UserInfo_
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    set_nullptr(OutExternalUserInfo);
     return EOS_EResult::EOS_NotFound;
 }
 
