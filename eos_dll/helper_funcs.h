@@ -38,11 +38,6 @@ LOCAL_API std::string generate_account_id();
 LOCAL_API std::string generate_account_id_from_name(std::string const& username);
 LOCAL_API std::string generate_epic_id_user();
 LOCAL_API std::string generate_epic_id_user_from_name(std::string const& username);
-//LOCAL_API CSteamID generate_steam_anon_user();
-//LOCAL_API CSteamID generate_steam_id_server();
-//LOCAL_API CSteamID generate_steam_id_anonserver();
-//LOCAL_API CSteamID generate_steam_id_lobby();
-//LOCAL_API uint32 generate_steam_ticket_id();
 
 LOCAL_API void fatal_throw(const char* msg);
 
