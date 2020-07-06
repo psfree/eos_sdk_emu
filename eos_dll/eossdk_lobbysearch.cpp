@@ -252,7 +252,7 @@ EOS_EResult EOSSDK_LobbySearch::CopySearchResultByIndex(const EOS_LobbySearch_Co
 
     if (Options == nullptr || Options->LobbyIndex >= _results.size() || OutLobbyDetailsHandle == nullptr)
     {
-        *OutLobbyDetailsHandle = nullptr;
+        set_nullptr(OutLobbyDetailsHandle);
         return EOS_EResult::EOS_InvalidParameters;
     }
 

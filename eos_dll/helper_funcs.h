@@ -48,6 +48,9 @@ LOCAL_API void fatal_throw(const char* msg);
 
 LOCAL_API std::string get_callback_name(int iCallback);
 
+template<typename T>
+constexpr inline void set_nullptr(T& v) { if (v != nullptr) *v = nullptr; }
+
 // Workaround to use fifo_map in json
 // A workaround to give to use fifo_map as map, we are just ignoring the 'less' compare
 template<class K, class V, class dummy_compare, class A>

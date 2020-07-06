@@ -274,8 +274,11 @@ EOS_EResult EOSSDK_Sessions::CreateSessionModification(const EOS_Sessions_Create
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    if (OutSessionModificationHandle == nullptr || Options == nullptr || Options->SessionName == nullptr || Options->BucketId == nullptr)
+    if (Options == nullptr || Options->SessionName == nullptr || Options->BucketId == nullptr || OutSessionModificationHandle == nullptr)
+    {
+        set_nullptr(OutSessionModificationHandle);
         return EOS_EResult::EOS_InvalidParameters;
+    }
 
     EOSSDK_SessionModification* modif = new EOSSDK_SessionModification;
     modif->_api_version = Options->ApiVersion;
@@ -325,8 +328,11 @@ EOS_EResult EOSSDK_Sessions::UpdateSessionModification(const EOS_Sessions_Update
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    if (OutSessionModificationHandle == nullptr || Options == nullptr || Options->SessionName == nullptr)
+    if (Options == nullptr || Options->SessionName == nullptr || OutSessionModificationHandle == nullptr)
+    {
+        set_nullptr(OutSessionModificationHandle);
         return EOS_EResult::EOS_InvalidParameters;
+    }
 
     EOSSDK_SessionModification* modif = new EOSSDK_SessionModification;
     modif->_api_version = Options->ApiVersion;
@@ -1058,8 +1064,11 @@ EOS_EResult EOSSDK_Sessions::CreateSessionSearch(const EOS_Sessions_CreateSessio
 {
     TRACE_FUNC();
 
-    if (Options == nullptr || Options->MaxSearchResults == 0)
+    if (Options == nullptr || Options->MaxSearchResults == 0 || OutSessionSearchHandle == nullptr)
+    {
+        set_nullptr(OutSessionSearchHandle);
         return EOS_EResult::EOS_InvalidParameters;
+    }
     
     _session_searchs.emplace_back();
     auto& session_search = _session_searchs.back();
@@ -1084,8 +1093,11 @@ EOS_EResult EOSSDK_Sessions::CopyActiveSessionHandle(const EOS_Sessions_CopyActi
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    if (Options->SessionName == nullptr)
+    if (Options == nullptr || Options->SessionName == nullptr || OutSessionHandle == nullptr)
+    {
+        set_nullptr(OutSessionHandle);
         return EOS_EResult::EOS_InvalidParameters;
+    }
 
     session_state_t* session = get_session_by_name(Options->SessionName);
     if (session == nullptr)
@@ -1181,6 +1193,46 @@ void EOSSDK_Sessions::RemoveNotifySessionInviteAccepted(EOS_NotificationId InId)
 }
 
 /**
+ * Register to receive notifications when a user accepts a session join game via the social overlay.
+ * @note must call RemoveNotifyJoinSessionAccepted to remove the notification
+ *
+ * @param Options Structure containing information about the request.
+ * @param ClientData Arbitrary data that is passed back to you in the CompletionDelegate.
+ * @param Notification A callback that is fired when a a notification is received.
+ *
+ * @return handle representing the registered callback
+ */
+EOS_NotificationId EOSSDK_Sessions::AddNotifyJoinSessionAccepted(const EOS_Sessions_AddNotifyJoinSessionAcceptedOptions* Options, void* ClientData, const EOS_Sessions_OnJoinSessionAcceptedCallback NotificationFn)
+{
+    TRACE_FUNC();
+
+    if (NotificationFn == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
+    pFrameResult_t res(new FrameResult);
+
+    EOS_Sessions_JoinSessionAcceptedCallbackInfo& jsaci = res->CreateCallback<EOS_Sessions_JoinSessionAcceptedCallbackInfo>((CallbackFunc)NotificationFn);
+
+    jsaci.ClientData = ClientData;
+    jsaci.LocalUserId = GetEOS_Connect().get_myself()->first;
+    jsaci.UiEventId = EOS_UI_EVENTID_INVALID;
+
+    return GetCB_Manager().add_notification(this, res);
+}
+
+/**
+ * Unregister from receiving notifications when a user accepts a session join game via the social overlay.
+ *
+ * @param InId Handle representing the registered callback
+ */
+void EOSSDK_Sessions::RemoveNotifyJoinSessionAccepted(EOS_NotificationId InId)
+{
+    TRACE_FUNC();
+
+    GetCB_Manager().remove_notification(this, InId);
+}
+
+/**
  * EOS_Sessions_CopySessionHandleByInviteId is used to immediately retrieve a handle to the session information from after notification of an invite
  * If the call returns an EOS_Success result, the out parameter, OutSessionHandle, must be passed to EOS_SessionDetails_Release to release the memory associated with it.
  *
@@ -1200,8 +1252,11 @@ EOS_EResult EOSSDK_Sessions::CopySessionHandleByInviteId(const EOS_Sessions_Copy
     TRACE_FUNC();
     GLOBAL_LOCK();
     
-    if (Options == nullptr || Options->InviteId == nullptr)
+    if (Options == nullptr || Options->InviteId == nullptr || OutSessionHandle == nullptr)
+    {
+        set_nullptr(OutSessionHandle);
         return EOS_EResult::EOS_InvalidParameters;
+    }
 
     auto it = std::find_if(_session_invites.begin(), _session_invites.end(), [Options](session_invite_t const& invite)
     {
@@ -1217,6 +1272,36 @@ EOS_EResult EOSSDK_Sessions::CopySessionHandleByInviteId(const EOS_Sessions_Copy
     *OutSessionHandle = reinterpret_cast<EOS_HSessionDetails>(details);
 
     return EOS_EResult::EOS_Success;
+}
+
+/**
+ * EOS_Sessions_CopySessionHandleByUiEventId is used to immediately retrieve a handle to the session information from after notification of a join game event.
+ * If the call returns an EOS_Success result, the out parameter, OutSessionHandle, must be passed to EOS_SessionDetails_Release to release the memory associated with it.
+ *
+ * @param Options Structure containing the input parameters
+ * @param OutSessionHandle out parameter used to receive the session handle
+ *
+ * @return EOS_Success if the information is available and passed out in OutSessionHandle
+ *         EOS_InvalidParameters if you pass an invalid invite id or a null pointer for the out parameter
+ *         EOS_IncompatibleVersion if the API version passed in is incorrect
+ *         EOS_NotFound if the invite id cannot be found
+ *
+ * @see EOS_Sessions_CopySessionHandleByUiEventIdOptions
+ * @see EOS_SessionDetails_Release
+ */
+EOS_EResult EOSSDK_Sessions::CopySessionHandleByUiEventId(const EOS_Sessions_CopySessionHandleByUiEventIdOptions* Options, EOS_HSessionDetails* OutSessionHandle)
+{
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+    
+    if (Options == nullptr || Options->UiEventId == EOS_UI_EVENTID_INVALID || OutSessionHandle == nullptr)
+    {
+        set_nullptr(OutSessionHandle);
+        return EOS_EResult::EOS_InvalidParameters;
+    }
+
+    *OutSessionHandle = nullptr;
+    return EOS_EResult::EOS_InvalidParameters;
 }
 
 /**
@@ -1239,8 +1324,11 @@ EOS_EResult EOSSDK_Sessions::CopySessionHandleForPresence(const EOS_Sessions_Cop
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    if (Options == nullptr)
+    if (Options == nullptr || OutSessionHandle == nullptr)
+    {
+        set_nullptr(OutSessionHandle);
         return EOS_EResult::EOS_InvalidParameters;
+    }
 
     for (auto const& session : _sessions)
     {

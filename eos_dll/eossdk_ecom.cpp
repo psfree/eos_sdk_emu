@@ -447,7 +447,10 @@ EOS_EResult EOSSDK_Ecom::CopyEntitlementByIndex(const EOS_Ecom_CopyEntitlementBy
     GLOBAL_LOCK();
 
     if (Options == nullptr || Options->EntitlementIndex >= _entitlements_db.size() || OutEntitlement == nullptr)
+    {
+        set_nullptr(OutEntitlement);
         return EOS_EResult::EOS_InvalidParameters;
+    }
 
     auto db_it = _entitlements_db.begin();
     std::advance(db_it, Options->EntitlementIndex);
@@ -551,6 +554,7 @@ EOS_EResult EOSSDK_Ecom::CopyEntitlementByNameAndIndex(const EOS_Ecom_CopyEntitl
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    set_nullptr(OutEntitlement);
     return EOS_EResult::EOS_NotFound;
 }
 
@@ -576,7 +580,10 @@ EOS_EResult EOSSDK_Ecom::CopyEntitlementById(const EOS_Ecom_CopyEntitlementByIdO
     LOG(Log::LogLevel::INFO, "Entitlement id: %s", Options->EntitlementId == nullptr ? "<no id>" : Options->EntitlementId);
 
     if (Options == nullptr || Options->EntitlementId == nullptr || OutEntitlement == nullptr)
+    {
+        set_nullptr(OutEntitlement);
         return EOS_EResult::EOS_InvalidParameters;
+    }
 
     auto db_it = _entitlements_db.find(Options->EntitlementId);
     if (db_it == _entitlements_db.end())
@@ -712,6 +719,7 @@ EOS_EResult EOSSDK_Ecom::CopyOfferByIndex(const EOS_Ecom_CopyOfferByIndexOptions
     LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
+    set_nullptr(OutOffer);
     return EOS_EResult::EOS_NotFound;
 }
 
@@ -736,6 +744,7 @@ EOS_EResult EOSSDK_Ecom::CopyOfferById(const EOS_Ecom_CopyOfferByIdOptions* Opti
     LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
+    set_nullptr(OutOffer);
     return EOS_EResult::EOS_NotFound;
 }
 
@@ -774,6 +783,7 @@ EOS_EResult EOSSDK_Ecom::CopyOfferItemByIndex(const EOS_Ecom_CopyOfferItemByInde
     LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
+    set_nullptr(OutItem);
     return EOS_EResult::EOS_NotFound;
 }
 
@@ -798,6 +808,7 @@ EOS_EResult EOSSDK_Ecom::CopyItemById(const EOS_Ecom_CopyItemByIdOptions* Option
     LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
+    set_nullptr(OutItem);
     return EOS_EResult::EOS_NotFound;
 }
 
@@ -834,6 +845,7 @@ EOS_EResult EOSSDK_Ecom::CopyOfferImageInfoByIndex(const EOS_Ecom_CopyOfferImage
     LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
+    set_nullptr(OutImageInfo);
     return EOS_EResult::EOS_NotFound;
 }
 
@@ -870,6 +882,7 @@ EOS_EResult EOSSDK_Ecom::CopyItemImageInfoByIndex(const EOS_Ecom_CopyItemImageIn
     LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
+    set_nullptr(OutImageInfo);
     return EOS_EResult::EOS_NotFound;
 }
 
@@ -906,6 +919,7 @@ EOS_EResult EOSSDK_Ecom::CopyItemReleaseByIndex(const EOS_Ecom_CopyItemReleaseBy
     LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
+    set_nullptr(OutRelease);
     return EOS_EResult::EOS_NotFound;
 }
 
@@ -944,6 +958,7 @@ EOS_EResult EOSSDK_Ecom::CopyTransactionByIndex(const EOS_Ecom_CopyTransactionBy
     LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
+    set_nullptr(OutTransaction);
     return EOS_EResult::EOS_NotFound;
 }
 
@@ -965,6 +980,7 @@ EOS_EResult EOSSDK_Ecom::CopyTransactionById(const EOS_Ecom_CopyTransactionByIdO
     LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
+    set_nullptr(OutTransaction);
     return EOS_EResult::EOS_NotFound;
 }
 

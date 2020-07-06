@@ -194,16 +194,18 @@ EOS_EResult EOSSDK_Presence::CopyPresence( const EOS_Presence_CopyPresenceOption
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    if (OutPresence == nullptr)
+    if (Options == nullptr || OutPresence == nullptr)
+    {
+        set_nullptr(OutPresence);
         return EOS_EResult::EOS_InvalidParameters;
-
-    *OutPresence = nullptr;
-    if(Options == nullptr)
-        return EOS_EResult::EOS_UnexpectedError;
+    }
 
     auto presence = get_presence(Options->TargetUserId);
     if (presence == nullptr)
+    {
+        set_nullptr(OutPresence);
         return EOS_EResult::EOS_NotFound;
+    }
 
     EOS_Presence_Info* presence_info = new EOS_Presence_Info;
 
@@ -287,6 +289,12 @@ EOS_EResult EOSSDK_Presence::CreatePresenceModification( const EOS_Presence_Crea
     // TODO: Check the return codes from the real sdk
     TRACE_FUNC();
     GLOBAL_LOCK();
+
+    if (Options == nullptr || OutPresenceModificationHandle == nullptr)
+    {
+        set_nullptr(OutPresenceModificationHandle);
+        return EOS_EResult::EOS_InvalidParameters;
+    }
 
     if (Options->LocalUserId == Settings::Inst().userid)
     {
