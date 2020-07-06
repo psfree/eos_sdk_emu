@@ -83,7 +83,7 @@ void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, 
 
             case EOS_AUTH_LOGIN_API_001:
             {
-                LOG(Log::LogLevel::DEBUG, "Credentials ApiVersion = %u", );
+                LOG(Log::LogLevel::DEBUG, "Credentials ApiVersion = %u", Options->Credentials->ApiVersion);
                 switch (Options->Credentials->ApiVersion)
                 {
                     case EOS_AUTH_CREDENTIALS_API_003:
