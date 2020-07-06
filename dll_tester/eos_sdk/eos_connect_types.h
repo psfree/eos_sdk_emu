@@ -27,7 +27,7 @@ enum { k_iConnectCallbackBase = 2000 };
 #define EOS_Connect_CopyProductUserInfoOptions                         EOS_Connect_CopyProductUserInfoOptions001
 #define EOS_Connect_ExternalAccountInfo                                EOS_Connect_ExternalAccountInfo001
 
-#include "eos_connect_types1.6.0.h"
+#include "eos_connect_types1.7.0.h"
 #include "eos_connect_types1.3.1.h"
 
 #define EOS_CONNECT_CREDENTIALS_API_LATEST                                 EOS_CONNECT_CREDENTIALS_API_001

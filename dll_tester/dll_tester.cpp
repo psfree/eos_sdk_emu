@@ -612,11 +612,32 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_RemoveNotifySessionInviteAccepted(EOS_HSessi
     return _EOS_Sessions_RemoveNotifySessionInviteAccepted(Handle, InId);
 }
 
+EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Sessions_AddNotifyJoinSessionAccepted(EOS_HSessions Handle, const EOS_Sessions_AddNotifyJoinSessionAcceptedOptions* Options, void* ClientData, const EOS_Sessions_OnJoinSessionAcceptedCallback NotificationFn)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_Sessions_AddNotifyJoinSessionAccepted);
+    return _EOS_Sessions_AddNotifyJoinSessionAccepted(Handle, Options, ClientData, NotificationFn);
+}
+
+EOS_DECLARE_FUNC(void) EOS_Sessions_RemoveNotifyJoinSessionAccepted(EOS_HSessions Handle, EOS_NotificationId InId)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_Sessions_RemoveNotifyJoinSessionAccepted);
+    return _EOS_Sessions_RemoveNotifyJoinSessionAccepted(Handle, InId);
+}
+
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CopySessionHandleByInviteId(EOS_HSessions Handle, const EOS_Sessions_CopySessionHandleByInviteIdOptions* Options, EOS_HSessionDetails* OutSessionHandle)
 {
     LOG(Log::LogLevel::TRACE, "");
     ORIGINAL_FUNCTION(EOS_Sessions_CopySessionHandleByInviteId);
     return _EOS_Sessions_CopySessionHandleByInviteId(Handle, Options, OutSessionHandle);
+}
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CopySessionHandleByUiEventId(EOS_HSessions Handle, const EOS_Sessions_CopySessionHandleByUiEventIdOptions* Options, EOS_HSessionDetails* OutSessionHandle)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_Sessions_CopySessionHandleByUiEventId);
+    return _EOS_Sessions_CopySessionHandleByUiEventId(Handle, Options, OutSessionHandle);
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CopySessionHandleForPresence(EOS_HSessions Handle, const EOS_Sessions_CopySessionHandleForPresenceOptions* Options, EOS_HSessionDetails* OutSessionHandle)
@@ -1528,6 +1549,34 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_P2P_GetNATType(EOS_HP2P Handle, const EOS_P2P_
     return res;
 }
 
+EOS_DECLARE_FUNC(EOS_EResult) EOS_P2P_SetRelayControl(EOS_HP2P Handle, const EOS_P2P_SetRelayControlOptions* Options)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_P2P_SetRelayControl);
+    return _EOS_P2P_SetRelayControl(Handle, Options);
+}
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_P2P_GetRelayControl(EOS_HP2P Handle, const EOS_P2P_GetRelayControlOptions* Options, EOS_ERelayControl* OutRelayControl)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_P2P_GetRelayControl);
+    return _EOS_P2P_GetRelayControl(Handle, Options, OutRelayControl);
+}
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_P2P_SetPortRange(EOS_HP2P Handle, const EOS_P2P_SetPortRangeOptions* Options)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_P2P_SetPortRange);
+    return _EOS_P2P_SetPortRange(Handle, Options);
+}
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_P2P_GetPortRange(EOS_HP2P Handle, const EOS_P2P_GetPortRangeOptions* Options, uint16_t* OutPort, uint16_t* OutNumAdditionalPortsToTry)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_P2P_GetPortRange);
+    return _EOS_P2P_GetPortRange(Handle, Options, OutPort, OutNumAdditionalPortsToTry);
+}
+
 ////////////////////////////////////////////
 // metrics
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Metrics_BeginPlayerSession(EOS_HMetrics Handle, const EOS_Metrics_BeginPlayerSessionOptions* Options)
@@ -1698,6 +1747,34 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifyLobbyInviteReceived(EOS_HLobby Hand
     LOG(Log::LogLevel::TRACE, "");
     ORIGINAL_FUNCTION(EOS_Lobby_RemoveNotifyLobbyInviteReceived);
     return _EOS_Lobby_RemoveNotifyLobbyInviteReceived(Handle, InId);
+}
+
+EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyInviteAccepted(EOS_HLobby Handle, const EOS_Lobby_AddNotifyLobbyInviteAcceptedOptions* Options, void* ClientData, const EOS_Lobby_OnLobbyInviteAcceptedCallback NotificationFn)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_Lobby_AddNotifyLobbyInviteAccepted);
+    return _EOS_Lobby_AddNotifyLobbyInviteAccepted(Handle, Options, ClientData, NotificationFn);
+}
+
+EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifyLobbyInviteAccepted(EOS_HLobby Handle, EOS_NotificationId InId)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_Lobby_RemoveNotifyLobbyInviteAccepted);
+    return _EOS_Lobby_RemoveNotifyLobbyInviteAccepted(Handle, InId);
+}
+
+EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyJoinLobbyAccepted(EOS_HLobby Handle, const EOS_Lobby_AddNotifyJoinLobbyAcceptedOptions* Options, void* ClientData, const EOS_Lobby_OnJoinLobbyAcceptedCallback NotificationFn)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_Lobby_AddNotifyJoinLobbyAccepted);
+    return _EOS_Lobby_AddNotifyJoinLobbyAccepted(Handle, Options, ClientData, NotificationFn);
+}
+
+EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifyJoinLobbyAccepted(EOS_HLobby Handle, EOS_NotificationId InId)
+{
+    LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_Lobby_RemoveNotifyJoinLobbyAccepted);
+    return _EOS_Lobby_RemoveNotifyJoinLobbyAccepted(Handle, InId);
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_CopyLobbyDetailsHandleByInviteId(EOS_HLobby Handle, const EOS_Lobby_CopyLobbyDetailsHandleByInviteIdOptions* Options, EOS_HLobbyDetails* OutLobbyDetailsHandle)
