@@ -96,19 +96,18 @@ message Session_Attribute {
 
 // Response to peer sessions infos request
 message Session_Infos_pb {
-	string session_name = 1;
-    string session_id = 2;
-	string bucket_id = 3;
-	uint32 max_players = 4;
-    repeated string players = 5;
-    repeated string registered_players = 6;
-    bool presence_allowed = 7;
-    string host_address = 8;
-    int32 permission_level = 9;
-    bool join_in_progress_allowed = 10;
-    bool invites_allowed = 11;
-    map<string, Session_Attribute> attributes = 12;
-    int32 state = 13;
+    string session_id = 1;
+	string bucket_id = 2;
+	uint32 max_players = 3;
+    repeated string players = 4;
+    repeated string registered_players = 5;
+    bool presence_allowed = 6;
+    string host_address = 7;
+    int32 permission_level = 8;
+    bool join_in_progress_allowed = 9;
+    bool invites_allowed = 10;
+    map<string, Session_Attribute> attributes = 11;
+    int32 state = 12;
 }
 
 // Message sent to all members when the session is destroyed

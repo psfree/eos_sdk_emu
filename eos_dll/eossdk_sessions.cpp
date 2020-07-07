@@ -297,9 +297,9 @@ EOS_EResult EOSSDK_Sessions::CreateSessionModification(const EOS_Sessions_Create
             const EOS_Sessions_CreateSessionModificationOptions001* opts = reinterpret_cast<const EOS_Sessions_CreateSessionModificationOptions001*>(Options);
             modif->_infos.set_bucket_id(opts->BucketId);
             modif->_infos.set_max_players(opts->MaxPlayers);
-            modif->_infos.set_session_name(opts->SessionName);
+            modif->_session_name = opts->SessionName;
 
-            LOG(Log::LogLevel::DEBUG, "Starting session creation: session_name = %s, bucket_id = %s", modif->_infos.session_name().c_str(), modif->_infos.bucket_id().c_str());
+            LOG(Log::LogLevel::DEBUG, "Starting session creation: session_name = %s, bucket_id = %s", modif->_session_name.c_str(), modif->_infos.bucket_id().c_str());
         }
         break;
 
@@ -352,8 +352,8 @@ EOS_EResult EOSSDK_Sessions::UpdateSessionModification(const EOS_Sessions_Update
             case EOS_SESSIONS_UPDATESESSIONMODIFICATION_API_001:
             {
                 const EOS_Sessions_UpdateSessionModificationOptions001* opts = reinterpret_cast<const EOS_Sessions_UpdateSessionModificationOptions001*>(Options);
-                modif->_infos.set_session_name(opts->SessionName);
-                LOG(Log::LogLevel::DEBUG, "Starting session modification: session_name = %s", modif->_infos.session_name().c_str());
+                modif->_session_name = opts->SessionName;
+                LOG(Log::LogLevel::DEBUG, "Starting session modification: session_name = %s", modif->_session_name.c_str());
             }
             break;
 
@@ -412,7 +412,7 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
         EOSSDK_SessionModification* modif = reinterpret_cast<EOSSDK_SessionModification*>(Options->SessionModificationHandle);
         usci.SessionId = nullptr;
         {
-            std::string const& sess_name = modif->_infos.session_name();
+            std::string const& sess_name = modif->_session_name;
             char* name = new char[sess_name.length() + 1];
             strncpy(name, sess_name.c_str(), sess_name.length() + 1);
             usci.SessionName = name;
@@ -429,7 +429,7 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
                 }
                 else
                 {
-                    auto& session = _sessions[modif->_infos.session_name()];
+                    auto& session = _sessions[modif->_session_name];
                     {
                         modif->_infos.set_session_id(generate_account_id());
 
@@ -446,7 +446,7 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
                         "  session_id: %s\n"
                         "  bucket_id: %s\n"
                         "  host_address: %s\n",
-                        modif->_infos.session_name().c_str(),
+                        modif->_session_name.c_str(),
                         modif->_infos.session_id().c_str(),
                         modif->_infos.bucket_id().c_str(),
                         modif->_infos.host_address().c_str()
@@ -485,7 +485,7 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
                         "  session_id: %s\n"
                         "  bucket_id: %s\n"
                         "  host_address: %s\n",
-                        modif->_infos.session_name().c_str(),
+                        modif->_session_name.c_str(),
                         modif->_infos.session_id().c_str(),
                         modif->_infos.bucket_id().c_str(),
                         modif->_infos.host_address().c_str()
@@ -539,7 +539,7 @@ void EOSSDK_Sessions::DestroySession(const EOS_Sessions_DestroySessionOptions* O
         auto it = _sessions.find(Options->SessionName);
         if (it != _sessions.end())
         {
-            LOG(Log::LogLevel::DEBUG, "Destroying session: name %s,  details name: %s", Options->SessionName, it->second.infos.session_name().c_str());
+            LOG(Log::LogLevel::DEBUG, "Destroying session: name %s", Options->SessionName);
 
             dsci.ResultCode = EOS_EResult::EOS_Success;
 
@@ -600,11 +600,10 @@ void EOSSDK_Sessions::JoinSession(const EOS_Sessions_JoinSessionOptions* Options
     }
     else
     {
+        EOSSDK_SessionDetails* details = reinterpret_cast<EOSSDK_SessionDetails*>(Options->SessionHandle);
         if (_sessions.count(Options->SessionName) == 0) // If we haven't already a session with that name (created, joining or joined)
         {
-            EOSSDK_SessionDetails* details = reinterpret_cast<EOSSDK_SessionDetails*>(Options->SessionHandle);
-
-            LOG(Log::LogLevel::DEBUG, "Joining session: name %s, details name: %s", Options->SessionName, details->_infos.session_name().c_str());
+            LOG(Log::LogLevel::DEBUG, "Joining session: name %s, session_id: %s", Options->SessionName, details->_infos.session_id().c_str());
 
             Session_Join_Request_pb* join = new Session_Join_Request_pb;
             join->set_session_id(details->_infos.session_id());
@@ -619,7 +618,7 @@ void EOSSDK_Sessions::JoinSession(const EOS_Sessions_JoinSessionOptions* Options
         }
         else
         {
-            LOG(Log::LogLevel::DEBUG, "joining session: name %s Already Exists", Options->SessionName);
+            LOG(Log::LogLevel::DEBUG, "joining session: name %s Already Exists, session_id: %s", Options->SessionName, details->_infos.session_id().c_str());
 
             jsci.ResultCode = EOS_EResult::EOS_Sessions_SessionAlreadyExists;
             res->done = true;
@@ -663,7 +662,7 @@ void EOSSDK_Sessions::StartSession(const EOS_Sessions_StartSessionOptions* Optio
         session_state_t* session = get_session_by_name(Options->SessionName);
         if (session != nullptr)
         {
-            LOG(Log::LogLevel::DEBUG, "Starting session: name %s, details name: %s", Options->SessionName, session->infos.session_name().c_str());
+            LOG(Log::LogLevel::DEBUG, "Starting session: name %s", Options->SessionName);
 
             ssci.ResultCode = EOS_EResult::EOS_Success;
             switch (session->infos.state())
@@ -1131,6 +1130,7 @@ EOS_EResult EOSSDK_Sessions::CopyActiveSessionHandle(const EOS_Sessions_CopyActi
 
     EOSSDK_ActiveSession* active_session = new EOSSDK_ActiveSession;
     
+    active_session->_session_name = Options->SessionName;
     active_session->_infos = session->infos;
 
     *OutSessionHandle = reinterpret_cast<EOS_HActiveSession>(active_session);
@@ -1295,6 +1295,7 @@ EOS_EResult EOSSDK_Sessions::CopySessionHandleByInviteId(const EOS_Sessions_Copy
     EOSSDK_SessionDetails* details = new EOSSDK_SessionDetails;
 
     details->_infos = it->infos;
+
     *OutSessionHandle = reinterpret_cast<EOS_HSessionDetails>(details);
 
     return EOS_EResult::EOS_Success;
@@ -1666,7 +1667,7 @@ bool EOSSDK_Sessions::on_session_info(Network_Message_pb const& msg, Session_Inf
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    session_state_t *session = get_session_by_name(infos.session_name());
+    session_state_t *session = get_session_by_id(infos.session_id());
     if (session != nullptr)
         session->infos = infos;
 
@@ -1768,7 +1769,7 @@ bool EOSSDK_Sessions::on_session_join_response(Network_Message_pb const& msg, Se
     std::string const& user_id = GetEOS_Connect().product_id()->to_string();
     auto session_it = std::find_if(_sessions.begin(), _sessions.end(), [&resp]( std::pair<const std::string, session_state_t>& item)
     {
-        return item.second.infos.session_name() == resp.session_id();
+        return item.second.infos.session_id() == resp.session_id();
     });
 
     auto reason = static_cast<EOS_EResult>(resp.reason());
@@ -1833,20 +1834,24 @@ bool EOSSDK_Sessions::on_session_invite(Network_Message_pb const& msg, Session_I
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    EOS_ProductUserId target_id = GetProductUserId(msg.source_id());
+
+    std::string invite_id(generate_account_id());
+    
+    session_invite_t invite_infos;
+    invite_infos.infos = invite.infos();
+    invite_infos.invite_id = std::move(invite_id);
+    invite_infos.peer_id = target_id;
+
+    _session_invites.emplace_back(std::move(invite_infos));
+
     std::vector<pFrameResult_t> notifs = std::move(GetCB_Manager().get_notifications(this, EOS_Sessions_SessionInviteReceivedCallbackInfo::k_iCallback));
     for (auto& notif : notifs)
     {
         EOS_Sessions_SessionInviteReceivedCallbackInfo& sirci = notif->GetCallback<EOS_Sessions_SessionInviteReceivedCallbackInfo>();
-        
-        auto invite_id(generate_account_id());
         strncpy(const_cast<char*>(sirci.InviteId), invite_id.c_str(), max_id_length);
-        sirci.TargetUserId = GetProductUserId(msg.source_id());
+        sirci.TargetUserId = target_id;
 
-        session_invite_t invite_infos;
-        invite_infos.infos = invite.infos();
-        invite_infos.invite_id = std::move(invite_id);
-        invite_infos.peer_id = sirci.TargetUserId;
-        _session_invites.emplace_back(std::move(invite_infos));
         notif->res.cb_func(notif->res.data);
     }
 

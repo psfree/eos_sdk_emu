@@ -42,6 +42,7 @@ namespace sdk
 
         uint32_t _api_version;
         modif_type _type;
+        std::string _session_name;
         Session_Infos_pb _infos;
 
     public:
@@ -106,6 +107,7 @@ namespace sdk
         friend class sdk::EOSSDK_Sessions;
         friend class sdk::EOSSDK_SessionSearch;
 
+        std::string _session_name;
         Session_Infos_pb _infos;
 
     public:
@@ -120,6 +122,7 @@ namespace sdk
     {
         friend class sdk::EOSSDK_Sessions;
 
+        std::string _session_name;
         Session_Infos_pb _infos;
 
     public:
