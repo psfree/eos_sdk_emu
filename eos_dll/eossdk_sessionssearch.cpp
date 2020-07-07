@@ -356,9 +356,15 @@ bool EOSSDK_SessionSearch::on_sessions_search_response(Network_Message_pb const&
     if (_search_cb.get() != nullptr && resp.search_id() == _search_infos.search_id())
     {
         _search_peers.erase(msg.source_id());
+        if (_results.size() >= _search_infos.max_results())
+            return true;
+
         for (auto const& session : resp.sessions())
         {
             _results.emplace_back(session);
+            
+            if(_results.size() >= _search_infos.max_results())
+                break;
         }
     }
 
@@ -396,13 +402,9 @@ bool EOSSDK_SessionSearch::RunCallbacks(pFrameResult_t res)
         case EOS_SessionSearch_FindCallbackInfo::k_iCallback:
         {
             EOS_SessionSearch_FindCallbackInfo& fci = res->GetCallback<EOS_SessionSearch_FindCallbackInfo>();
-            if (_search_peers.empty() ||
-                (std::chrono::steady_clock::now() - _search_cb->created_time) > search_timeout)
+            if (_search_peers.empty())
             {// All peers answered or Search timeout
-                if (_results.empty())
-                    fci.ResultCode = EOS_EResult::EOS_NotFound;
-                else
-                    fci.ResultCode = EOS_EResult::EOS_Success;
+                fci.ResultCode = EOS_EResult::EOS_Success;
 
                 _search_cb.reset();
                 res->done = true;
