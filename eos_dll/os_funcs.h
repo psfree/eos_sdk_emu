@@ -74,7 +74,7 @@ LOCAL_API std::vector<iface_ip_t> const& get_ifaces_ip();
 LOCAL_API std::vector<PortableAPI::ipv4_addr> const& get_broadcasts();
 
 // Filesystem related functions
-LOCAL_API std::string process_path(std::string const& path);
+LOCAL_API std::string clean_path(std::string const& path);
 LOCAL_API std::string canonical_path(std::string const& path);
 LOCAL_API bool create_folder(std::string const& folder);
 LOCAL_API std::string get_path_folder(std::string const& path);

@@ -262,7 +262,7 @@ LOCAL_API std::chrono::system_clock::time_point get_boottime()
     return boottime;
 }
 
-LOCAL_API std::string process_path(std::string const& path)
+LOCAL_API std::string clean_path(std::string const& path)
 {
     std::string canonicalized_path(path);
     size_t pos;
@@ -764,7 +764,7 @@ LOCAL_API void enable_online_networking()
     mini_detour::transaction_commit();
 }
 
-LOCAL_API std::string process_path(std::string const& path)
+LOCAL_API std::string clean_path(std::string const& path)
 {
     std::string canonicalized_path(path);
     size_t pos;
@@ -806,7 +806,7 @@ LOCAL_API std::string process_path(std::string const& path)
 
 LOCAL_API std::string canonical_path(std::string const& path)
 {
-    return process_path(path);
+    return clean_path(path);
 }
 
 LOCAL_API std::string get_env_var(std::string const& name)

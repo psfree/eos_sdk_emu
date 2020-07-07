@@ -115,6 +115,7 @@
 
 #include <mini_detour/mini_detour.h>
 
+#include "md5.h"
 #include "os_funcs.h"
 #include "Log.h"
 #include "helper_funcs.h"
