@@ -76,15 +76,15 @@ namespace sdk
         virtual bool RunCallbacks(pFrameResult_t res);
         virtual void FreeCallback(pFrameResult_t res);
 
-        void QueryPresence( const EOS_Presence_QueryPresenceOptions* Options, void* ClientData, const EOS_Presence_OnQueryPresenceCompleteCallback CompletionDelegate);
-        EOS_Bool HasPresence( const EOS_Presence_HasPresenceOptions* Options);
-        EOS_EResult CopyPresence( const EOS_Presence_CopyPresenceOptions* Options, EOS_Presence_Info** OutPresence);
-        EOS_EResult CreatePresenceModification( const EOS_Presence_CreatePresenceModificationOptions* Options, EOS_HPresenceModification* OutPresenceModificationHandle);
-        void SetPresence( const EOS_Presence_SetPresenceOptions* Options, void* ClientData, const EOS_Presence_SetPresenceCompleteCallback CompletionDelegate);
+        void               QueryPresence( const EOS_Presence_QueryPresenceOptions* Options, void* ClientData, const EOS_Presence_OnQueryPresenceCompleteCallback CompletionDelegate);
+        EOS_Bool           HasPresence( const EOS_Presence_HasPresenceOptions* Options);
+        EOS_EResult        CopyPresence( const EOS_Presence_CopyPresenceOptions* Options, EOS_Presence_Info** OutPresence);
+        EOS_EResult        CreatePresenceModification( const EOS_Presence_CreatePresenceModificationOptions* Options, EOS_HPresenceModification* OutPresenceModificationHandle);
+        void               SetPresence( const EOS_Presence_SetPresenceOptions* Options, void* ClientData, const EOS_Presence_SetPresenceCompleteCallback CompletionDelegate);
         EOS_NotificationId AddNotifyOnPresenceChanged( const EOS_Presence_AddNotifyOnPresenceChangedOptions* Options, void* ClientData, const EOS_Presence_OnPresenceChangedCallback NotificationHandler);
-        void RemoveNotifyOnPresenceChanged( EOS_NotificationId NotificationId);
+        void               RemoveNotifyOnPresenceChanged( EOS_NotificationId NotificationId);
         EOS_NotificationId AddNotifyJoinGameAccepted( const EOS_Presence_AddNotifyJoinGameAcceptedOptions* Options, void* ClientData, const EOS_Presence_OnJoinGameAcceptedCallback NotificationFn);
-        void RemoveNotifyJoinGameAccepted( EOS_NotificationId InId);
-        EOS_EResult GetJoinInfo( const EOS_Presence_GetJoinInfoOptions* Options, char* OutBuffer, int32_t* InOutBufferLength);
+        void               RemoveNotifyJoinGameAccepted( EOS_NotificationId InId);
+        EOS_EResult        GetJoinInfo( const EOS_Presence_GetJoinInfoOptions* Options, char* OutBuffer, int32_t* InOutBufferLength);
     };
 }
