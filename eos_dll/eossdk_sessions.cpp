@@ -341,6 +341,8 @@ EOS_EResult EOSSDK_Sessions::UpdateSessionModification(const EOS_Sessions_Update
     modif->_type = EOSSDK_SessionModification::modif_type::update;
 
     session_state_t* session = get_session_by_name(Options->SessionName);
+    modif->_session_name = Options->SessionName;
+
     if (session != nullptr)
     {
         modif->_infos = session->infos;
@@ -352,7 +354,6 @@ EOS_EResult EOSSDK_Sessions::UpdateSessionModification(const EOS_Sessions_Update
             case EOS_SESSIONS_UPDATESESSIONMODIFICATION_API_001:
             {
                 const EOS_Sessions_UpdateSessionModificationOptions001* opts = reinterpret_cast<const EOS_Sessions_UpdateSessionModificationOptions001*>(Options);
-                modif->_session_name = opts->SessionName;
                 LOG(Log::LogLevel::DEBUG, "Starting session modification: session_name = %s", modif->_session_name.c_str());
             }
             break;
