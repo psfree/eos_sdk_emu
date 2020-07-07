@@ -617,13 +617,14 @@ void EOSSDK_Sessions::JoinSession(const EOS_Sessions_JoinSessionOptions* Options
 
             Session_Join_Request_pb* join = new Session_Join_Request_pb;
             join->set_session_id(details->_infos.session_id());
-            join->set_session_name(Options->SessionName);
+            join->set_session_name(details->_infos.session_name());
 
             session_state_t& session = _sessions[Options->SessionName];
             session.state = session_state_t::state_e::joining;
             session.infos = details->_infos;
-            _sessions_join[Options->SessionName] = res;
+            _sessions_join[details->_infos.session_name()] = res;
 
+            jsci.ResultCode = EOS_EResult::EOS_UnexpectedError;
             send_session_join_request(&session);
         }
         else
@@ -1757,7 +1758,7 @@ bool EOSSDK_Sessions::on_session_join_request(Network_Message_pb const& msg, Ses
             {
                 LOG(Log::LogLevel::DEBUG, "Join request accepted.");
                 resp->set_reason(get_enum_value(EOS_EResult::EOS_Success));
-                *it->second.infos.add_players() = msg.source_id();
+                add_player_to_session(msg.source_id(), &it->second);
             }
             else
             {
@@ -1785,6 +1786,12 @@ bool EOSSDK_Sessions::on_session_join_response(Network_Message_pb const& msg, Se
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    auto session_it = std::find_if(_sessions.begin(), _sessions.end(), [&resp]( std::pair<const std::string, session_state_t>& item)
+    {
+        return item.second.infos.session_name() == resp.session_name();
+    });
+
     auto reason = static_cast<EOS_EResult>(resp.reason());
     if (resp.user_id() == GetEOS_Connect().product_id()->to_string())
     {
@@ -1793,14 +1800,56 @@ bool EOSSDK_Sessions::on_session_join_response(Network_Message_pb const& msg, Se
         {
             EOS_Sessions_JoinSessionCallbackInfo& jsci = it->second->GetCallback<EOS_Sessions_JoinSessionCallbackInfo>();
             jsci.ResultCode = static_cast<EOS_EResult>(resp.reason());
-            it->second->done = true;
+
+            switch (jsci.ResultCode)
+            {
+                case EOS_EResult::EOS_Sessions_NotAllowed:
+                {// If this peer doesn't know us yet, set the error code but do not stop the join request
+                    LOG(Log::LogLevel::DEBUG, "(%s) Join request rejected: We don't know (yet?) the user.", msg.source_id().c_str());
+                }
+                break;
+
+                case EOS_EResult::EOS_NotFound:
+                {
+                    LOG(Log::LogLevel::DEBUG, "(%s) Join rejected: This session doesn't exist.", msg.source_id().c_str());
+                    it->second->done = true;
+                    _sessions_join.erase(it);
+                    _sessions.erase(session_it);
+                }
+                break;
+
+                case EOS_EResult::EOS_Sessions_TooManyPlayers:
+                {
+                    LOG(Log::LogLevel::DEBUG, "(%s) Join rejected: This session is full.", msg.source_id().c_str());
+                    it->second->done = true;
+                    _sessions_join.erase(it);
+                    _sessions.erase(session_it);
+                }
+                break;
+                
+                case EOS_EResult::EOS_Success:
+                {
+                    LOG(Log::LogLevel::DEBUG, "(%s) Join accepted.", msg.source_id().c_str());
+                    it->second->done = true;
+                    _sessions_join.erase(it);
+                    // Add myself to the session
+                    //GetEOS_Connect().add_session(GetProductUserId(session_it->second.infos.session_id()), session_it->second.infos.session_name());
+                    add_player_to_session(user_id, &session_it->second);
+                }
+                break;
+            }
+        }
+        else
+        {
+            LOG(Log::LogLevel::DEBUG, "Join request not found.");
         }
     }
-    else
+    else if(is_player_in_session(user_id, &session_it->second))
     {// We are not joining, so someone else is joining
         if (reason == EOS_EResult::EOS_Success)
         {// If the user has been accepted in the session
-            add_player_to_session(resp.user_id(), get_session_by_name(resp.session_name()));
+            LOG(Log::LogLevel::DEBUG, "Add new player (%s) to session.", resp.user_id().c_str());
+            add_player_to_session(resp.user_id(), &session_it->second);
         }
     }
 
@@ -1926,14 +1975,28 @@ bool EOSSDK_Sessions::RunCallbacks(pFrameResult_t res)
             if ((now - res->created_time) > join_timeout)
             {
                 EOS_Sessions_JoinSessionCallbackInfo& jsci = res->GetCallback<EOS_Sessions_JoinSessionCallbackInfo>();
-                jsci.ResultCode = EOS_EResult::EOS_TimedOut;
+                if (jsci.ResultCode == EOS_EResult::EOS_UnexpectedError)
+                {// If its the default error code, set the result code to TimedOut
+                    jsci.ResultCode = EOS_EResult::EOS_TimedOut;
+                }
 
-                auto it = std::find_if(_sessions_join.begin(), _sessions_join.end(), [&res]( std::pair<std::string const, pFrameResult_t> &join )
+                auto join_it = std::find_if(_sessions_join.begin(), _sessions_join.end(), [&res]( std::pair<std::string const, pFrameResult_t> &join )
                 {
                     return res == join.second;
                 });
-                if (it != _sessions_join.end())
-                    _sessions_join.erase(it);
+                if (join_it != _sessions_join.end())
+                {
+                    auto session_it = std::find_if(_sessions.begin(), _sessions.end(), [join_it]( std::pair<const std::string, session_state_t>& item)
+                    {
+                        return item.second.infos.session_name() == join_it->first;
+                    });
+                    if (session_it == _sessions.end())
+                    {
+                        _sessions.erase(session_it);
+                    }
+
+                    _sessions_join.erase(join_it);
+                }
 
                 res->done = true;
             }
