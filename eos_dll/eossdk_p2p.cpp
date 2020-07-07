@@ -37,12 +37,10 @@ EOSSDK_P2P::EOSSDK_P2P():
     GetCB_Manager().register_callbacks(this);
 
     GetNetwork().register_listener(this, 0, Network_Message_pb::MessagesCase::kP2P);
-    GetNetwork().register_listener(this, 0, Network_Message_pb::MessagesCase::kNetworkAdvertise);
 }
 
 EOSSDK_P2P::~EOSSDK_P2P()
 {
-    GetNetwork().unregister_listener(this, 0, Network_Message_pb::MessagesCase::kNetworkAdvertise);
     GetNetwork().unregister_listener(this, 0, Network_Message_pb::MessagesCase::kP2P);
 
     GetCB_Manager().unregister_callbacks(this);
@@ -870,16 +868,6 @@ bool EOSSDK_P2P::RunNetwork(Network_Message_pb const& msg)
 {
     switch (msg.messages_case())
     {
-        case Network_Message_pb::MessagesCase::kNetworkAdvertise:
-        {
-            Network_Advertise_pb const& adv = msg.network_advertise();
-            switch (adv.message_case())
-            {
-                case Network_Advertise_pb::MessageCase::kPeerDisconnect: return on_peer_disconnect(msg, adv.peer_disconnect());
-            }
-        }
-        break;
-
         case Network_Message_pb::MessagesCase::kP2P:
         {
             P2P_Message_pb const& p2p = msg.p2p();

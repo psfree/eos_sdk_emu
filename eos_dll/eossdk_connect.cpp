@@ -50,6 +50,9 @@ EOSSDK_Connect::EOSSDK_Connect()
 
 EOSSDK_Connect::~EOSSDK_Connect()
 {
+    GetNetwork().advertise(false);
+    GetNetwork().remove_advertise_peer_id(get_myself()->first->to_string());
+
     GetNetwork().unregister_listener(this, 0, Network_Message_pb::MessagesCase::kConnect);
     GetNetwork().unregister_listener(this, 0, Network_Message_pb::MessagesCase::kNetworkAdvertise);
 
@@ -105,21 +108,21 @@ std::pair<EOS_ProductUserId const, user_state_t>* EOSSDK_Connect::get_user_by_na
     return &(*it);
 }
 
-void EOSSDK_Connect::add_session(EOS_ProductUserId session_id, std::string const& session_name)
-{
-    auto& sessions = *get_myself()->second.infos.mutable_sessions();
-    sessions[session_name] = session_id->to_string();
-}
-
-void EOSSDK_Connect::remove_session(EOS_ProductUserId session_id, std::string const& session_name)
-{
-    auto& sessions = *get_myself()->second.infos.mutable_sessions();
-    auto it = sessions.find(session_name);
-    if (it != sessions.end())
-    {
-        sessions.erase(it);
-    }
-}
+//void EOSSDK_Connect::add_session(EOS_ProductUserId session_id, std::string const& session_name)
+//{
+//    auto& sessions = *get_myself()->second.infos.mutable_sessions();
+//    sessions[session_name] = session_id->to_string();
+//}
+//
+//void EOSSDK_Connect::remove_session(EOS_ProductUserId session_id, std::string const& session_name)
+//{
+//    auto& sessions = *get_myself()->second.infos.mutable_sessions();
+//    auto it = sessions.find(session_name);
+//    if (it != sessions.end())
+//    {
+//        sessions.erase(it);
+//    }
+//}
 
 /**
  * The Connect Interface is used to manage local user permissions and access to backend services through the verification of various forms of credentials.
@@ -753,6 +756,9 @@ bool EOSSDK_Connect::on_peer_disconnect(Network_Message_pb const& msg, Network_P
 
     // Presence need to know when a user disconnects
     GetEOS_Presence().on_peer_disconnect(msg, peer);
+    GetEOS_Lobby().on_peer_disconnect(msg, peer);
+    GetEOS_Sessions().on_peer_disconnect(msg, peer);
+    GetEOS_P2P().on_peer_disconnect(msg, peer);
 
     EOS_ProductUserId product_id = GetProductUserId(msg.source_id());
     _users[product_id].connected = false;

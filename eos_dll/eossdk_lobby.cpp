@@ -34,12 +34,10 @@ EOSSDK_Lobby::EOSSDK_Lobby()
     GetCB_Manager().register_callbacks(this);
     GetNetwork().register_listener(this, 0, Network_Message_pb::MessagesCase::kLobby);
     GetNetwork().register_listener(this, 0, Network_Message_pb::MessagesCase::kLobbiesSearch);
-    GetNetwork().register_listener(this, 0, Network_Message_pb::MessagesCase::kNetworkAdvertise);
 }
 
 EOSSDK_Lobby::~EOSSDK_Lobby()
 {
-    GetNetwork().unregister_listener(this, 0, Network_Message_pb::MessagesCase::kNetworkAdvertise);
     GetNetwork().unregister_listener(this, 0, Network_Message_pb::MessagesCase::kLobbiesSearch);
     GetNetwork().unregister_listener(this, 0, Network_Message_pb::MessagesCase::kLobby);
     GetCB_Manager().unregister_callbacks(this);
@@ -1161,10 +1159,11 @@ EOS_EResult EOSSDK_Lobby::CreateLobbySearch(const EOS_Lobby_CreateLobbySearchOpt
     }
 
     _lobbies_searchs.emplace_back();
-    EOSSDK_LobbySearch& search = _lobbies_searchs.back();
-    search._max_results = Options->MaxResults;
+    EOSSDK_LobbySearch*& search = _lobbies_searchs.back();
+    search = new EOSSDK_LobbySearch;
+    search->_max_results = Options->MaxResults;
 
-    *OutLobbySearchHandle = reinterpret_cast<EOS_HLobbySearch>(&search);
+    *OutLobbySearchHandle = reinterpret_cast<EOS_HLobbySearch>(search);
 
     return EOS_EResult::EOS_Success;
 }
@@ -1979,8 +1978,9 @@ bool EOSSDK_Lobby::CBRunFrame()
 
     for (auto it = _lobbies_searchs.begin(); it != _lobbies_searchs.end();)
     {
-        if (it->released())
+        if ((*it)->released())
         {
+            delete *it;
             it = _lobbies_searchs.erase(it);
         }
         else
@@ -1996,16 +1996,6 @@ bool EOSSDK_Lobby::RunNetwork(Network_Message_pb const& msg)
 {
     switch (msg.messages_case())
     {
-        case Network_Message_pb::MessagesCase::kNetworkAdvertise:
-        {
-            Network_Advertise_pb const& adv = msg.network_advertise();
-            switch (adv.message_case())
-            {
-                case Network_Advertise_pb::MessageCase::kPeerDisconnect: return on_peer_disconnect(msg, adv.peer_disconnect());
-            }
-        }
-        break;
-
         case Network_Message_pb::MessagesCase::kLobby:
         {
             Lobby_Message_pb const& lobby = msg.lobby();
