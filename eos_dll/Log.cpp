@@ -29,7 +29,7 @@ decltype(Log::_log_func)  Log::_log_func = default_log_func;
 
 LOCAL_API void default_log_func(Log::LogLevel lv, const char* log_message)
 {
-    static std::ofstream log_file("nemirtingassteamemu.log", std::ios::trunc | std::ios::out);
+    static std::ofstream log_file("nemirtingasepicemu.log", std::ios::trunc | std::ios::out);
 
 #if defined(__WINDOWS__)
     if (IsDebuggerPresent())
