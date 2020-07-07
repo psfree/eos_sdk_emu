@@ -1584,6 +1584,12 @@ bool EOSSDK_Sessions::send_session_join_response(Network::peer_t const& peerid, 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
 
+    session_state_t* pSession = get_session_by_name(resp->session_name());
+
+    if (pSession != nullptr)
+    {// Notify all session members of a join status
+        send_to_all_members(msg, pSession);
+    }
     return GetNetwork().TCPSendTo(msg);
 }
 
@@ -1625,6 +1631,19 @@ bool EOSSDK_Sessions::send_session_invite_response(Network::peer_t const& peerid
 ///////////////////////////////////////////////////////////////////////////////
 //                          Network Receive messages                         //
 ///////////////////////////////////////////////////////////////////////////////
+bool EOSSDK_Sessions::on_peer_disconnect(Network_Message_pb const& msg, Network_Peer_Disconnect_pb const& peer)
+{
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+
+    for (auto& session : _sessions)
+    {
+        remove_player_from_session(msg.source_id(), &session.second);
+    }
+
+    return true;
+}
+
 bool EOSSDK_Sessions::on_session_info_request(Network_Message_pb const& msg, Session_Infos_Request_pb const& req)
 {
     TRACE_FUNC();
