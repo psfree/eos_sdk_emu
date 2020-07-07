@@ -43,7 +43,9 @@ LOCAL_API void default_log_func(Log::LogLevel lv, const char* log_message)
         {
             AllocConsole();
             freopen("CONOUT$", "w", stdout);
+            console = true;
         }
+        fprintf(stdout, "%s", log_message);
     }
 #endif
 
