@@ -33,14 +33,32 @@ namespace sdk
 
         std::mutex _local_mutex;
 
-        bool        _released;
         std::string _file_path;
         std::string _file_name;
+
+        bool _done;
+        bool _canceled;
+        bool _released;
+
+        union
+        {
+            EOS_PlayerDataStorage_OnReadFileDataCallback  _read_callback;
+            EOS_PlayerDataStorage_OnWriteFileDataCallback _write_callback;
+        };
+        EOS_PlayerDataStorage_OnFileTransferProgressCallback _progress_callback;
+        uint32_t _chunk_size;
+
+        std::vector<uint8_t> _file_buffer;
+        std::fstream _input_file;
+
+        void set_read_transfert(const EOS_PlayerDataStorage_ReadFileOptions* ReadOptions);
+        void set_write_transfert(const EOS_PlayerDataStorage_WriteFileOptions* WriteOptions);
 
     public:
         EOSSDK_PlayerDataStorageFileTransferRequest();
         ~EOSSDK_PlayerDataStorageFileTransferRequest();
 
+        bool canceled();
         bool released();
 
         EOS_EResult GetFileRequestState();
@@ -49,15 +67,26 @@ namespace sdk
         void Release();
     };
 
+    struct file_metadata_t
+    {
+        std::string file_path;
+        size_t file_size;
+        std::string md5sum;
+    };
+
     class EOSSDK_PlayerDataStorage :
         public IRunFrame
     {
-        static constexpr const char remote_folder[] = "remote";
         std::string _game_save_folder;
 
-        std::set<EOSSDK_PlayerDataStorageFileTransferRequest*> _transfer_requests;
+        std::map<pFrameResult_t, EOSSDK_PlayerDataStorageFileTransferRequest*> _transferts;
+        std::map<std::string, file_metadata_t> _files_cache;
+
+        bool get_metadata(std::string const& filename);
 
     public:
+        static constexpr const char remote_folder[] = "remote";
+
         EOSSDK_PlayerDataStorage();
         ~EOSSDK_PlayerDataStorage();
 

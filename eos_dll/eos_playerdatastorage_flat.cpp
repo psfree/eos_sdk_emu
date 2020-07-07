@@ -261,6 +261,14 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorageFileTransferRequest_CancelReq
 EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_FileMetadata_Release(EOS_PlayerDataStorage_FileMetadata* FileMetadata)
 {
     TRACE_FUNC();
+
+    if (FileMetadata == nullptr)
+        return;
+
+    delete[]FileMetadata->Filename;
+    delete[]FileMetadata->MD5Hash;
+    
+    delete FileMetadata;
 }
 
 /**

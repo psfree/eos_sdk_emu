@@ -18,12 +18,15 @@
  */
 
 #include "eossdk_playerdatastorage.h"
+#include "eossdk_platform.h"
 #include "settings.h"
 
 namespace sdk
 {
 
 EOSSDK_PlayerDataStorageFileTransferRequest::EOSSDK_PlayerDataStorageFileTransferRequest():
+    _done(false),
+    _canceled(false),
     _released(false)
 {
 
@@ -34,11 +37,41 @@ EOSSDK_PlayerDataStorageFileTransferRequest::~EOSSDK_PlayerDataStorageFileTransf
 
 }
 
+void EOSSDK_PlayerDataStorageFileTransferRequest::set_read_transfert(const EOS_PlayerDataStorage_ReadFileOptions* ReadOptions)
+{
+    std::lock_guard<std::mutex> _lk(_local_mutex);
+
+    _read_callback = ReadOptions->ReadFileDataCallback;
+    _progress_callback = ReadOptions->FileTransferProgressCallback;
+    _chunk_size = ReadOptions->ReadChunkLengthBytes;
+    _file_name = ReadOptions->Filename;
+    _file_path = std::move(GetEOS_PlayerDataStorage().build_path_string(EOSSDK_PlayerDataStorage::remote_folder, _file_name));
+
+    _file_buffer.resize(_chunk_size);
+    _input_file.open(_file_path, std::ios::in | std::ios::binary);
+}
+
+void EOSSDK_PlayerDataStorageFileTransferRequest::set_write_transfert(const EOS_PlayerDataStorage_WriteFileOptions* WriteOptions)
+{
+    std::lock_guard<std::mutex> _lk(_local_mutex);
+
+    _write_callback = WriteOptions->WriteFileDataCallback;
+    _progress_callback = WriteOptions->FileTransferProgressCallback;
+    _chunk_size = WriteOptions->ChunkLengthBytes;
+    _file_name = WriteOptions->Filename;
+    _file_path = std::move(GetEOS_PlayerDataStorage().build_path_string(EOSSDK_PlayerDataStorage::remote_folder, _file_name));
+}
+
+bool EOSSDK_PlayerDataStorageFileTransferRequest::canceled()
+{
+    std::lock_guard<std::mutex> _lk(_local_mutex);
+    return _canceled;
+}
+
 bool EOSSDK_PlayerDataStorageFileTransferRequest::released()
 {
     std::lock_guard<std::mutex> _lk(_local_mutex);
-    bool res = _released;
-    return res;
+    return _released;
 }
 
 /**
@@ -52,7 +85,10 @@ bool EOSSDK_PlayerDataStorageFileTransferRequest::released()
   */
 EOS_EResult EOSSDK_PlayerDataStorageFileTransferRequest::GetFileRequestState()
 {
-    return EOS_EResult::EOS_Success;
+    LOG(Log::LogLevel::TRACE, "");
+    std::lock_guard<std::mutex> _lk(_local_mutex);
+
+    return (_done ? EOS_EResult::EOS_Success : EOS_EResult::EOS_PlayerDataStorage_RequestInProgress);
 }
 
 /**
@@ -67,6 +103,7 @@ EOS_EResult EOSSDK_PlayerDataStorageFileTransferRequest::GetFileRequestState()
  */
 EOS_EResult EOSSDK_PlayerDataStorageFileTransferRequest::GetFilename(uint32_t FilenameStringBufferSizeBytes, char* OutStringBuffer, int32_t* OutStringLength)
 {
+    LOG(Log::LogLevel::TRACE, "");
     std::lock_guard<std::mutex> _lk(_local_mutex);
 
     if (OutStringLength == nullptr || OutStringBuffer == nullptr)
@@ -87,14 +124,19 @@ EOS_EResult EOSSDK_PlayerDataStorageFileTransferRequest::GetFilename(uint32_t Fi
  */
 EOS_EResult EOSSDK_PlayerDataStorageFileTransferRequest::CancelRequest()
 {
-    return EOS_EResult::EOS_NoChange;
+    LOG(Log::LogLevel::TRACE, "");
+    std::lock_guard<std::mutex> _lk(_local_mutex);
+
+    if (_done)
+        return EOS_EResult::EOS_NoChange;
+
+    _canceled = true;
+    return EOS_EResult::EOS_Success;
 }
 
-/**
- * Free the memory used by a cloud-storage file request handle. This will not cancel a request in progress.
- */
 void EOSSDK_PlayerDataStorageFileTransferRequest::Release()
 {
+    LOG(Log::LogLevel::TRACE, "");
     std::lock_guard<std::mutex> _lk(_local_mutex);
     _released = true;
 }
