@@ -610,16 +610,15 @@ void EOSSDK_Sessions::JoinSession(const EOS_Sessions_JoinSessionOptions* Options
             switch ((EOS_EOnlineSessionState)details->_infos.state())
             {
                 case EOS_EOnlineSessionState::EOS_OSS_InProgress:
-                {
                     if (!details->_infos.join_in_progress_allowed())
                     {
                         //jsci.ResultCode = EOS_EResult::EOS_Sessions_SessionInProgress;
                         jsci.ResultCode = EOS_EResult::EOS_Sessions_NotAllowed;
                         res->done = true;
+                        break;
                     }
-                }
-                break;
-
+                    // Allowed to join while in progress
+                
                 case EOS_EOnlineSessionState::EOS_OSS_Pending   :
                 {
                     Session_Join_Request_pb* join = new Session_Join_Request_pb;
