@@ -1819,10 +1819,6 @@ bool EOSSDK_Lobby::on_lobby_join_response(Network_Message_pb const& msg, Lobby_J
 
         if ((EOS_EResult)resp.reason() == EOS_EResult::EOS_Success)
         {
-            Lobby_Join_pb* join = new Lobby_Join_pb;
-
-            join->set_lobby_id(resp.infos().lobby_id());
-
             jlci.ResultCode = EOS_EResult::EOS_Success;
             auto& lobby = _lobbies[resp.infos().lobby_id()];
             lobby.infos = resp.infos();
