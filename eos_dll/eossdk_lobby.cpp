@@ -1619,9 +1619,10 @@ bool EOSSDK_Lobby::send_lobby_member_promote(Network::peer_t const& member_id, l
 
     lobby_pb->set_allocated_member_promote(promote);
     msg.set_allocated_lobby(lobby_pb);
+
     msg.set_source_id(user_id);
 
-    return GetNetwork().TCPSendTo(msg);
+    return send_to_all_members(msg, lobby);
 }
 
 bool EOSSDK_Lobby::send_lobby_member_kick(Network::peer_t const& member_id, lobby_state_t* lobby)
@@ -1921,7 +1922,7 @@ bool EOSSDK_Lobby::on_lobby_member_promote(Network_Message_pb const& msg, Lobby_
     {
         pLobby->infos.set_owner_id(promote.member_id());
 
-        notify_lobby_member_status_update(msg.source_id(), EOS_ELobbyMemberStatus::EOS_LMS_PROMOTED, pLobby);
+        notify_lobby_member_status_update(promote.member_id(), EOS_ELobbyMemberStatus::EOS_LMS_PROMOTED, pLobby);
     }
 
     return true;

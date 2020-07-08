@@ -328,6 +328,7 @@ message Lobby_Message_pb {
 //////////////////////////////////////////////////////////////////////////
 //                       Lobbies Search messages                        //
 //////////////////////////////////////////////////////////////////////////
+// Search parameter, key is the comparison type
 message Lobby_Search_Parameter {
     map<int32, Lobby_Attr_Value> param = 1;
 }
