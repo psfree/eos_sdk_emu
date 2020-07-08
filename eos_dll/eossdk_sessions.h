@@ -170,9 +170,9 @@ namespace sdk
         session_state_t* get_session_by_id(std::string const& session_id);
         std::vector<session_state_t*> get_sessions_from_attributes(google::protobuf::Map<std::string, Session_Search_Parameter> const& parameters);
         void add_player_to_session(std::string const& player, session_state_t* session);
-        void register_player_to_session(std::string const& player, session_state_t *session);
-        void remove_player_from_session(std::string const& player, session_state_t *session);
-        void unregister_player_from_session(std::string const& player, session_state_t* session);
+        void remove_player_from_session(std::string const& player, session_state_t* session);
+        bool register_player_to_session(std::string const& player, session_state_t *session);
+        bool unregister_player_from_session(std::string const& player, session_state_t* session);
         bool is_player_in_session(std::string const& player, session_state_t* session);
         bool is_player_registered(std::string const& player, session_state_t *session);
 
@@ -186,6 +186,8 @@ namespace sdk
         bool send_session_join_response(Network::peer_t const& peerid, Session_Join_Response_pb* resp);
         bool send_session_invite(Network::peer_t const& peerid, Session_Invite_pb* invite);
         bool send_session_invite_response(Network::peer_t const& peerid, Session_Invite_Response_pb* invite);
+        bool send_session_register(Session_Register_pb* register_, session_state_t* session);
+        bool send_session_unregister(Session_Unregister_pb* unregister, session_state_t* session);
 
         // Receive Network messages
         bool on_peer_disconnect(Network_Message_pb const& msg, Network_Peer_Disconnect_pb const& peer);
@@ -197,6 +199,8 @@ namespace sdk
         bool on_session_join_response(Network_Message_pb const& msg, Session_Join_Response_pb const& resp);
         bool on_session_invite(Network_Message_pb const& msg, Session_Invite_pb const& invite);
         bool on_session_invite_response(Network_Message_pb const& msg, Session_Invite_Response_pb const& resp);
+        bool on_session_register(Network_Message_pb const& msg, Session_Register_pb const& register_);
+        bool on_session_unregister(Network_Message_pb const& msg, Session_Unregister_pb const& unregister);
 
         virtual bool CBRunFrame();
         virtual bool RunNetwork(Network_Message_pb const& msg);

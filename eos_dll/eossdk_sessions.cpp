@@ -194,15 +194,6 @@ void EOSSDK_Sessions::add_player_to_session(std::string const& player, session_s
     }
 }
 
-void EOSSDK_Sessions::register_player_to_session(std::string const& player, session_state_t* session)
-{
-    if (session != nullptr)
-    {
-        if(!is_player_registered(player, session))
-            *session->infos.add_registered_players() = player;
-    }
-}
-
 void EOSSDK_Sessions::remove_player_from_session(std::string const& player, session_state_t* session)
 {
     if (session != nullptr)
@@ -217,14 +208,30 @@ void EOSSDK_Sessions::remove_player_from_session(std::string const& player, sess
     }
 }
 
-void EOSSDK_Sessions::unregister_player_from_session(std::string const& player, session_state_t* session)
+bool EOSSDK_Sessions::register_player_to_session(std::string const& player, session_state_t* session)
+{
+    if (session != nullptr && !is_player_registered(player, session))
+    {
+        *session->infos.add_registered_players() = player;
+        return true;
+    }
+
+    return false;
+}
+
+bool EOSSDK_Sessions::unregister_player_from_session(std::string const& player, session_state_t* session)
 {
     if (session != nullptr)
     {
         auto it = std::find(session->infos.registered_players().begin(), session->infos.registered_players().end(), player);
         if (it != session->infos.registered_players().end())
+        {
             session->infos.mutable_registered_players()->erase(it);
+            return true;
+        }
     }
+
+    return false;
 }
 
 bool EOSSDK_Sessions::is_player_in_session(std::string const& player, session_state_t* session)
@@ -806,12 +813,15 @@ void EOSSDK_Sessions::RegisterPlayers(const EOS_Sessions_RegisterPlayersOptions*
         {
             if (is_player_registered(GetEOS_Connect().product_id()->to_string(), session))
             {
-                auto registered_players = session->infos.registered_players_size();
+                google::protobuf::RepeatedPtrField<std::string> registered;
                 for (uint32_t i = 0; i < Options->PlayersToRegisterCount; ++i)
                 {
-                    register_player_to_session(Options->PlayersToRegister[i]->to_string(), session);
+                    if (register_player_to_session(Options->PlayersToRegister[i]->to_string(), session))
+                    {
+                        *registered.Add() = Options->PlayersToRegister[i]->to_string();
+                    }
                 }
-                if (registered_players == session->infos.registered_players_size())
+                if (registered.empty())
                 {
                     rpci.ResultCode = EOS_EResult::EOS_NoChange;
                 }
@@ -819,15 +829,14 @@ void EOSSDK_Sessions::RegisterPlayers(const EOS_Sessions_RegisterPlayersOptions*
                 {
                     rpci.ResultCode = EOS_EResult::EOS_Success;
 
-                    Network_Message_pb msg;
-                    Session_Message_pb* session_pb = new Session_Message_pb;
+                    std::string const& user_id = GetEOS_Connect().product_id()->to_string();                    
 
-                    session_pb->set_allocated_session_infos(&session->infos);
-                    msg.set_allocated_session(session_pb);
+                    Session_Register_pb* register_ = new Session_Register_pb;
 
-                    send_to_all_members(msg, session);
+                    register_->set_session_id(session->infos.session_id());
+                    *register_->mutable_member_ids() = std::move(registered);
 
-                    session_pb->release_session_infos();
+                    send_session_register(register_, session);
                 }
             }
             else
@@ -882,12 +891,15 @@ void EOSSDK_Sessions::UnregisterPlayers(const EOS_Sessions_UnregisterPlayersOpti
         {
             if (is_player_registered(GetEOS_Connect().product_id()->to_string(), session))
             {
-                auto registered_players = session->infos.registered_players_size();
+                google::protobuf::RepeatedPtrField<std::string> unregistered;
                 for (uint32_t i = 0; i < Options->PlayersToUnregisterCount; ++i)
                 {
-                    unregister_player_from_session(Options->PlayersToUnregister[i]->to_string(), session);
+                    if (unregister_player_from_session(Options->PlayersToUnregister[i]->to_string(), session))
+                    {
+                        *unregistered.Add() = Options->PlayersToUnregister[i]->to_string();
+                    }
                 }
-                if (registered_players == session->infos.registered_players_size())
+                if (unregistered.empty())
                 {
                     upci.ResultCode = EOS_EResult::EOS_NoChange;
                 }
@@ -895,15 +907,14 @@ void EOSSDK_Sessions::UnregisterPlayers(const EOS_Sessions_UnregisterPlayersOpti
                 {
                     upci.ResultCode = EOS_EResult::EOS_Success;
 
-                    Network_Message_pb msg;
-                    Session_Message_pb* session_pb = new Session_Message_pb;
+                    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
-                    session_pb->set_allocated_session_infos(&session->infos);
-                    msg.set_allocated_session(session_pb);
+                    Session_Unregister_pb* unregister = new Session_Unregister_pb;
 
-                    send_to_all_members(msg, session);
+                    unregister->set_session_id(session->infos.session_id());
+                    *unregister->mutable_member_ids() = std::move(unregistered);
 
-                    session_pb->release_session_infos();
+                    send_session_unregister(unregister, session);
                 }
             }
             else
@@ -1650,6 +1661,37 @@ bool EOSSDK_Sessions::send_session_invite_response(Network::peer_t const& peerid
     return GetNetwork().TCPSendTo(msg);
 }
 
+bool EOSSDK_Sessions::send_session_register(Session_Register_pb* register_, session_state_t* session)
+{
+    TRACE_FUNC();
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+
+    Network_Message_pb msg;
+    Session_Message_pb* session_pb = new Session_Message_pb;
+
+    session_pb->set_allocated_session_register(register_);
+    msg.set_allocated_session(session_pb);
+
+    msg.set_source_id(user_id);
+
+    return send_to_all_members(msg, session);
+}
+
+bool EOSSDK_Sessions::send_session_unregister(Session_Unregister_pb* unregister, session_state_t* session)
+{
+    TRACE_FUNC();
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+
+    Network_Message_pb msg;
+    Session_Message_pb* session_pb = new Session_Message_pb;
+
+    session_pb->set_allocated_session_unregister(unregister);
+    msg.set_allocated_session(session_pb);
+
+    msg.set_source_id(user_id);
+
+    return send_to_all_members(msg, session);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //                          Network Receive messages                         //

@@ -137,6 +137,16 @@ message Session_Invite_Response_pb {
     bool accepted = 2;
 }
 
+message Session_Register_pb {
+    string session_id = 1;
+    repeated string member_ids = 2;
+}
+
+message Session_Unregister_pb {
+    string session_id = 1;
+    repeated string member_ids = 2;
+}
+
 // Base Sessions related message
 message Session_Message_pb {
     oneof message {
@@ -147,6 +157,8 @@ message Session_Message_pb {
         Session_Join_Response_pb session_join_response = 5;
         Session_Invite_pb session_invite = 6;
         Session_Invite_Response_pb session_invite_response = 7;
+        Session_Register_pb session_register = 8;
+        Session_Unregister_pb session_unregister = 9;
 	}
 }
 
