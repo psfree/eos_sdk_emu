@@ -1874,7 +1874,7 @@ bool EOSSDK_Lobby::on_lobby_member_leave(Network_Message_pb const& msg, Lobby_Me
     GLOBAL_LOCK();
 
     lobby_state_t* pLobby = get_lobby_by_id(leave.lobby_id());
-    if (pLobby != nullptr)
+    if (pLobby != nullptr && remove_member_from_lobby(leave.member_id(), pLobby))
     {
         if (i_am_owner(pLobby))
         {// If I am the lobby owner, send the leave message to all clients
@@ -1887,7 +1887,6 @@ bool EOSSDK_Lobby::on_lobby_member_leave(Network_Message_pb const& msg, Lobby_Me
 
             send_to_all_members(msg_resp, pLobby);
         }
-        remove_member_from_lobby(leave.member_id(), pLobby);
 
         notify_lobby_member_status_update(leave.member_id(), (EOS_ELobbyMemberStatus)leave.reason(), pLobby);
     }
