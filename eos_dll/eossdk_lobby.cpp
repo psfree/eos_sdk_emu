@@ -1622,6 +1622,7 @@ bool EOSSDK_Lobby::send_lobby_member_promote(Network::peer_t const& member_id, l
 
     msg.set_source_id(user_id);
 
+    // Only the lobby owner can promote, so send to all members
     return send_to_all_members(msg, lobby);
 }
 
