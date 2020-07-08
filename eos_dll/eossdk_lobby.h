@@ -171,7 +171,6 @@ namespace sdk
         bool send_lobbies_search_response(Network::peer_t const& peerid, Lobbies_Search_response_pb *resp);
         bool send_lobby_join_request     (Network::peer_t const& peerid, Lobby_Join_Request_pb      *req);
         bool send_lobby_join_response    (Network::peer_t const& peerid, Lobby_Join_Response_pb     *resp);
-        bool send_lobby_join             (Network::peer_t const& peerid, Lobby_Join_pb              *join);
         bool send_lobby_invite           (Network::peer_t const& peerid, Lobby_Invite_pb            *invite);
 
         bool send_lobby_member_update    (Network::peer_t const& member_id, lobby_state_t *lobby);
@@ -186,7 +185,6 @@ namespace sdk
         bool on_lobbies_search      (Network_Message_pb const& msg, Lobbies_Search_pb          const& search);
         bool on_lobby_join_request  (Network_Message_pb const& msg, Lobby_Join_Request_pb      const& req);
         bool on_lobby_join_response (Network_Message_pb const& msg, Lobby_Join_Response_pb     const& resp);
-        bool on_lobby_join          (Network_Message_pb const& msg, Lobby_Join_pb              const& join);
         bool on_lobby_invite        (Network_Message_pb const& msg, Lobby_Invite_pb            const& invite);
 
         bool on_lobby_member_update (Network_Message_pb const& msg, Lobby_Member_Update_pb  const& update);

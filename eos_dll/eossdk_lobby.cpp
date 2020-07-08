@@ -1514,23 +1514,6 @@ bool EOSSDK_Lobby::send_lobby_join_response(Network::peer_t const& peerid, Lobby
     return GetNetwork().TCPSendTo(msg);
 }
 
-bool EOSSDK_Lobby::send_lobby_join(Network::peer_t const& peerid, Lobby_Join_pb* join)
-{
-    TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
-
-    Network_Message_pb msg;
-    Lobby_Message_pb* lobby_pb = new Lobby_Message_pb;
-
-    lobby_pb->set_allocated_lobby_join(join);
-    msg.set_allocated_lobby(lobby_pb);
-
-    msg.set_source_id(user_id);
-    msg.set_dest_id(peerid);
-
-    return GetNetwork().TCPSendTo(msg);
-}
-
 bool EOSSDK_Lobby::send_lobby_invite(Network::peer_t const& peerid, Lobby_Invite_pb* invite)
 {
     TRACE_FUNC();
@@ -1788,6 +1771,13 @@ bool EOSSDK_Lobby::on_lobby_join_request(Network_Message_pb const& msg, Lobby_Jo
             {// Can join
                 resp->set_reason(get_enum_value(EOS_EResult::EOS_Success));   
                 *resp->mutable_infos() = pLobby->infos;
+
+                send_lobby_member_join(msg.source_id(), pLobby);
+
+                if (add_member_to_lobby(msg.source_id(), pLobby))
+                {
+                    notify_lobby_member_status_update(msg.source_id(), EOS_ELobbyMemberStatus::EOS_LMS_JOINED, pLobby);
+                }
             }
             else
             {// Lobby full
@@ -1819,18 +1809,12 @@ bool EOSSDK_Lobby::on_lobby_join_response(Network_Message_pb const& msg, Lobby_J
             Lobby_Join_pb* join = new Lobby_Join_pb;
 
             join->set_lobby_id(resp.infos().lobby_id());
-            if (!send_lobby_join(msg.source_id(), join))
-            {
-                jlci.ResultCode = EOS_EResult::EOS_NoConnection;
-            }
-            else
-            {
-                jlci.ResultCode = EOS_EResult::EOS_Success;
-                auto& lobby = _lobbies[resp.infos().lobby_id()];
-                lobby.infos = resp.infos();
-                lobby.state = lobby_state_t::joined;
-                add_member_to_lobby(msg.dest_id(), &lobby);
-            }
+
+            jlci.ResultCode = EOS_EResult::EOS_Success;
+            auto& lobby = _lobbies[resp.infos().lobby_id()];
+            lobby.infos = resp.infos();
+            lobby.state = lobby_state_t::joined;
+            add_member_to_lobby(msg.dest_id(), &lobby);
         }
         else
         {
@@ -1838,27 +1822,6 @@ bool EOSSDK_Lobby::on_lobby_join_response(Network_Message_pb const& msg, Lobby_J
         }
 
         _joins_requests.erase(it);
-    }
-
-    return true;
-}
-
-bool EOSSDK_Lobby::on_lobby_join(Network_Message_pb const& msg, Lobby_Join_pb const& join)
-{
-    TRACE_FUNC();
-    GLOBAL_LOCK();
-
-    lobby_state_t* pLobby = get_lobby_by_id(join.lobby_id());
-
-    if (pLobby != nullptr && i_am_owner(pLobby))
-    {
-        // Send before notifying to not send the join notification to the new client
-        send_lobby_member_join(msg.source_id(), pLobby);
-
-        if (add_member_to_lobby(msg.source_id(), pLobby))
-        {
-            notify_lobby_member_status_update(msg.source_id(), EOS_ELobbyMemberStatus::EOS_LMS_JOINED, pLobby);
-        }
     }
 
     return true;
@@ -2004,7 +1967,6 @@ bool EOSSDK_Lobby::RunNetwork(Network_Message_pb const& msg)
                 case Lobby_Message_pb::MessageCase::kLobbyUpdate      : return on_lobby_update        (msg, lobby.lobby_update());
                 case Lobby_Message_pb::MessageCase::kLobbyJoinRequest : return on_lobby_join_request  (msg, lobby.lobby_join_request());
                 case Lobby_Message_pb::MessageCase::kLobbyJoinResponse: return on_lobby_join_response (msg, lobby.lobby_join_response());
-                case Lobby_Message_pb::MessageCase::kLobbyJoin        : return on_lobby_join          (msg, lobby.lobby_join());
                 case Lobby_Message_pb::MessageCase::kLobbyInvite      : return on_lobby_invite        (msg, lobby.lobby_invite());
 
                 case Lobby_Message_pb::MessageCase::kMemberUpdate     : return on_lobby_member_update (msg, lobby.member_update());
