@@ -34,6 +34,9 @@ namespace sdk
 
         Lobby_Infos_pb _infos;
 
+        bool _lobby_modified;
+        bool _member_modified;
+
     public:
         EOSSDK_LobbyModification();
         ~EOSSDK_LobbyModification();

@@ -623,15 +623,28 @@ void EOSSDK_Lobby::UpdateLobby(const EOS_Lobby_UpdateLobbyOptions* Options, void
         }
         else
         {
-            if (i_am_owner(pLobby))
+            if (pLobbyModif->_lobby_modified)
             {
-                pLobby->infos = pLobbyModif->_infos;
-                ulci.ResultCode = EOS_EResult::EOS_Success;
-                send_lobby_update(pLobby);
+                if (i_am_owner(pLobby))
+                {
+                    pLobby->infos = pLobbyModif->_infos;
+                    ulci.ResultCode = EOS_EResult::EOS_Success;
+                    send_lobby_update(pLobby);
+
+                    if (pLobbyModif->_member_modified)
+                    {
+                        send_lobby_member_update(GetEOS_Connect().get_myself()->first->to_string(), pLobby);
+                    }
+                }
+                else
+                {
+                    ulci.ResultCode = EOS_EResult::EOS_Lobby_NotOwner;
+                }
             }
-            else
+            else if (pLobbyModif->_member_modified)
             {
-                ulci.ResultCode = EOS_EResult::EOS_Lobby_NotOwner;
+                ulci.ResultCode = EOS_EResult::EOS_Success;
+                send_lobby_member_update(GetEOS_Connect().get_myself()->first->to_string(), pLobby);
             }
         }
     }
