@@ -1424,14 +1424,11 @@ EOS_EResult EOSSDK_Lobby::CopyLobbyDetailsHandle(const EOS_Lobby_CopyLobbyDetail
 bool EOSSDK_Lobby::send_to_all_members(Network_Message_pb& msg, lobby_state_t* lobby)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
-
     assert(lobby != nullptr);
 
-    msg.set_source_id(user_id);
     for (auto const& member : lobby->infos.members())
     {
-        if (member.first != user_id)
+        if (member.first != msg.source_id())
         {
             msg.set_dest_id(member.first);
             GetNetwork().TCPSendTo(msg);
@@ -1451,8 +1448,6 @@ bool EOSSDK_Lobby::send_to_all_members_or_owner(Network_Message_pb& msg, lobby_s
         return send_to_all_members(msg, lobby);
     }
     
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
-    msg.set_source_id(lobby->infos.owner_id());
     msg.set_dest_id(lobby->infos.owner_id());
     return GetNetwork().TCPSendTo(msg);
 }
@@ -1460,6 +1455,7 @@ bool EOSSDK_Lobby::send_to_all_members_or_owner(Network_Message_pb& msg, lobby_s
 bool EOSSDK_Lobby::send_lobby_update(lobby_state_t* pLobby)
 {
     TRACE_FUNC();
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
     
     Network_Message_pb msg;
     Lobby_Message_pb* lobby = new Lobby_Message_pb;
@@ -1472,6 +1468,8 @@ bool EOSSDK_Lobby::send_lobby_update(lobby_state_t* pLobby)
 
     lobby->set_allocated_lobby_update(update);
     msg.set_allocated_lobby(lobby);
+
+    msg.set_source_id(user_id);
 
     return send_to_all_members(msg, pLobby);
 }
@@ -1547,6 +1545,7 @@ bool EOSSDK_Lobby::send_lobby_invite(Network::peer_t const& peerid, Lobby_Invite
 bool EOSSDK_Lobby::send_lobby_member_update(Network::peer_t const& member_id, lobby_state_t* pLobby)
 {
     TRACE_FUNC();
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     auto it = pLobby->infos.members().find(member_id);
     if (it != pLobby->infos.members().end())
@@ -1560,6 +1559,8 @@ bool EOSSDK_Lobby::send_lobby_member_update(Network::peer_t const& member_id, lo
 
         lobby->set_allocated_member_update(update);
         msg.set_allocated_lobby(lobby);
+        msg.set_source_id(user_id);
+
         return send_to_all_members_or_owner(msg, pLobby);
     }
     return false;
@@ -1568,6 +1569,7 @@ bool EOSSDK_Lobby::send_lobby_member_update(Network::peer_t const& member_id, lo
 bool EOSSDK_Lobby::send_lobby_member_join(Network::peer_t const& member_id, lobby_state_t* lobby)
 {
     TRACE_FUNC();
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
     Lobby_Message_pb* lobby_pb = new Lobby_Message_pb;
@@ -1578,6 +1580,7 @@ bool EOSSDK_Lobby::send_lobby_member_join(Network::peer_t const& member_id, lobb
 
     lobby_pb->set_allocated_member_join(join);
     msg.set_allocated_lobby(lobby_pb);
+    msg.set_source_id(user_id);
 
     return send_to_all_members(msg, lobby);
 }
@@ -1585,6 +1588,7 @@ bool EOSSDK_Lobby::send_lobby_member_join(Network::peer_t const& member_id, lobb
 bool EOSSDK_Lobby::send_lobby_member_leave(Network::peer_t const& member_id, lobby_state_t* lobby)
 {
     TRACE_FUNC();
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
     Lobby_Message_pb* lobby_pb = new Lobby_Message_pb;
@@ -1596,6 +1600,7 @@ bool EOSSDK_Lobby::send_lobby_member_leave(Network::peer_t const& member_id, lob
 
     lobby_pb->set_allocated_member_leave(leave);
     msg.set_allocated_lobby(lobby_pb);
+    msg.set_source_id(user_id);
 
     return send_to_all_members_or_owner(msg, lobby);
 }
@@ -1603,6 +1608,7 @@ bool EOSSDK_Lobby::send_lobby_member_leave(Network::peer_t const& member_id, lob
 bool EOSSDK_Lobby::send_lobby_member_promote(Network::peer_t const& member_id, lobby_state_t* lobby)
 {
     TRACE_FUNC();
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
     Lobby_Message_pb* lobby_pb = new Lobby_Message_pb;
@@ -1613,8 +1619,9 @@ bool EOSSDK_Lobby::send_lobby_member_promote(Network::peer_t const& member_id, l
 
     lobby_pb->set_allocated_member_promote(promote);
     msg.set_allocated_lobby(lobby_pb);
+    msg.set_source_id(user_id);
 
-    return send_to_all_members(msg, lobby);
+    return GetNetwork().TCPSendTo(msg);
 }
 
 bool EOSSDK_Lobby::send_lobby_member_kick(Network::peer_t const& member_id, lobby_state_t* lobby)
@@ -1643,6 +1650,8 @@ bool EOSSDK_Lobby::send_lobby_member_kick(Network::peer_t const& member_id, lobb
     leave->set_reason(get_enum_value(EOS_ELobbyMemberStatus::EOS_LMS_KICKED));
 
     lobby_pb->set_allocated_member_leave(leave);
+    msg.set_source_id(user_id);
+
     send_to_all_members(msg, lobby);
 
     return res;
@@ -1662,6 +1671,8 @@ bool EOSSDK_Lobby::on_peer_disconnect(Network_Message_pb const& msg, Network_Pee
         {
             if (remove_member_from_lobby(msg.source_id(), &lobby.second))
             {
+                std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+
                 Network_Message_pb msg_resp;
                 Lobby_Message_pb* lobby_pb = new Lobby_Message_pb;
                 Lobby_Member_Leave_pb* member_leave = new Lobby_Member_Leave_pb;
@@ -1672,6 +1683,8 @@ bool EOSSDK_Lobby::on_peer_disconnect(Network_Message_pb const& msg, Network_Pee
 
                 lobby_pb->set_allocated_member_leave(member_leave);
                 msg_resp.set_allocated_lobby(lobby_pb);
+
+                msg_resp.set_source_id(user_id);
 
                 send_to_all_members(msg_resp, &lobby.second);
 
@@ -1878,12 +1891,16 @@ bool EOSSDK_Lobby::on_lobby_member_leave(Network_Message_pb const& msg, Lobby_Me
     {
         if (i_am_owner(pLobby))
         {// If I am the lobby owner, send the leave message to all clients
+            std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+
             Network_Message_pb msg_resp;
             Lobby_Message_pb* lobby_pb = new Lobby_Message_pb;
             Lobby_Member_Leave_pb* leave_pb = new Lobby_Member_Leave_pb(leave);
 
             lobby_pb->set_allocated_member_leave(leave_pb);
             msg_resp.set_allocated_lobby(lobby_pb);
+
+            msg_resp.set_source_id(user_id);
 
             send_to_all_members(msg_resp, pLobby);
         }
