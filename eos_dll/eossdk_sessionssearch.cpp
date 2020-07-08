@@ -34,6 +34,8 @@ EOSSDK_SessionSearch::EOSSDK_SessionSearch():
     GetCB_Manager().register_callbacks(this);
 
     GetNetwork().register_listener(this, 0, Network_Message_pb::MessagesCase::kSessionsSearch);
+
+    _search_infos.set_max_results(EOS_SESSIONS_MAX_SEARCH_RESULTS);
 }
 
 EOSSDK_SessionSearch::~EOSSDK_SessionSearch()
@@ -179,7 +181,7 @@ EOS_EResult EOSSDK_SessionSearch::SetMaxResults(const EOS_SessionSearch_SetMaxRe
     TRACE_FUNC();
     std::lock_guard<std::mutex> lk(_local_mutex);
 
-    if(Options == nullptr)
+    if(Options == nullptr || Options->MaxSearchResults == 0 || Options->MaxSearchResults > EOS_SESSIONS_MAX_SEARCH_RESULTS)
         return EOS_EResult::EOS_InvalidParameters;
 
     _search_infos.set_max_results(Options->MaxSearchResults);
@@ -356,9 +358,15 @@ bool EOSSDK_SessionSearch::on_sessions_search_response(Network_Message_pb const&
     if (_search_cb.get() != nullptr && resp.search_id() == _search_infos.search_id())
     {
         _search_peers.erase(msg.source_id());
+        if (_results.size() >= _search_infos.max_results())
+            return true;
+
         for (auto const& session : resp.sessions())
         {
             _results.emplace_back(session);
+            
+            if(_results.size() >= _search_infos.max_results())
+                break;
         }
     }
 
@@ -399,10 +407,7 @@ bool EOSSDK_SessionSearch::RunCallbacks(pFrameResult_t res)
             if (_search_peers.empty() ||
                 (std::chrono::steady_clock::now() - _search_cb->created_time) > search_timeout)
             {// All peers answered or Search timeout
-                if (_results.empty())
-                    fci.ResultCode = EOS_EResult::EOS_NotFound;
-                else
-                    fci.ResultCode = EOS_EResult::EOS_Success;
+                fci.ResultCode = EOS_EResult::EOS_Success;
 
                 _search_cb.reset();
                 res->done = true;

@@ -42,6 +42,7 @@ namespace sdk
 
         uint32_t _api_version;
         modif_type _type;
+        std::string _session_name;
         Session_Infos_pb _infos;
 
     public:
@@ -106,6 +107,7 @@ namespace sdk
         friend class sdk::EOSSDK_Sessions;
         friend class sdk::EOSSDK_SessionSearch;
 
+        std::string _session_name;
         Session_Infos_pb _infos;
 
     public:
@@ -120,6 +122,7 @@ namespace sdk
     {
         friend class sdk::EOSSDK_Sessions;
 
+        std::string _session_name;
         Session_Infos_pb _infos;
 
     public:
@@ -152,9 +155,10 @@ namespace sdk
     {
 
         static constexpr auto join_timeout = std::chrono::milliseconds(5000);
+        // key: session_id
         std::map<std::string, pFrameResult_t> _sessions_join;
-        std::list<session_invite_t> _session_invites;
-        std::list<EOSSDK_SessionSearch> _session_searchs;
+        std::list<session_invite_t>           _session_invites;
+        std::list<EOSSDK_SessionSearch*>      _session_searchs;
 
     public:
         EOSSDK_Sessions();
@@ -184,6 +188,7 @@ namespace sdk
         bool send_session_invite_response(Network::peer_t const& peerid, Session_Invite_Response_pb* invite);
 
         // Receive Network messages
+        bool on_peer_disconnect(Network_Message_pb const& msg, Network_Peer_Disconnect_pb const& peer);
         bool on_session_info_request(Network_Message_pb const& msg, Session_Infos_Request_pb const& req);
         bool on_session_info(Network_Message_pb const& msg, Session_Infos_pb const& infos);
         bool on_session_destroy(Network_Message_pb const& msg, Session_Destroy_pb const& destr);

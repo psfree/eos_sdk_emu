@@ -194,13 +194,31 @@ EOS_EResult EOSSDK_SessionModification::AddAttribute(const EOS_SessionModificati
 
     auto& attribute = (*_infos.mutable_attributes())[Options->SessionAttribute->Key];
     attribute.set_advertisement_type(static_cast<int32_t>(Options->AdvertisementType));
+
     switch (Options->SessionAttribute->ValueType)
     {
-        case EOS_ESessionAttributeType::EOS_AT_BOOLEAN: attribute.mutable_value()->set_b(Options->SessionAttribute->Value.AsBool); break;
-        case EOS_ESessionAttributeType::EOS_AT_DOUBLE : attribute.mutable_value()->set_d(Options->SessionAttribute->Value.AsDouble); break;
-        case EOS_ESessionAttributeType::EOS_AT_INT64  : attribute.mutable_value()->set_i(Options->SessionAttribute->Value.AsInt64); break;
-        case EOS_ESessionAttributeType::EOS_AT_STRING : attribute.mutable_value()->set_s(Options->SessionAttribute->Value.AsUtf8); break;
-        default                                       : return EOS_EResult::EOS_InvalidParameters;
+        case EOS_ESessionAttributeType::EOS_AT_BOOLEAN: 
+            LOG(Log::LogLevel::DEBUG, "%s = %s", Options->SessionAttribute->Key, (Options->SessionAttribute->Value.AsBool == EOS_TRUE ? "EOS_TRUE" : "EOS_FALSE"));
+            attribute.mutable_value()->set_b(Options->SessionAttribute->Value.AsBool);
+            break;
+
+        case EOS_ESessionAttributeType::EOS_AT_DOUBLE :
+            LOG(Log::LogLevel::DEBUG, "%s = %f", Options->SessionAttribute->Key, Options->SessionAttribute->Value.AsDouble);
+            attribute.mutable_value()->set_d(Options->SessionAttribute->Value.AsDouble);
+            break;
+
+        case EOS_ESessionAttributeType::EOS_AT_INT64  :
+            LOG(Log::LogLevel::DEBUG, "%s = %lld", Options->SessionAttribute->Key, Options->SessionAttribute->Value.AsInt64);
+            attribute.mutable_value()->set_i(Options->SessionAttribute->Value.AsInt64);
+            break;
+
+        case EOS_ESessionAttributeType::EOS_AT_STRING :
+            LOG(Log::LogLevel::DEBUG, "%s = %s", Options->SessionAttribute->Key, Options->SessionAttribute->Value.AsUtf8);
+            attribute.mutable_value()->set_s(Options->SessionAttribute->Value.AsUtf8);
+            break;
+
+        default                                       :
+            return EOS_EResult::EOS_InvalidParameters;
     }
 
     return EOS_EResult::EOS_Success;
@@ -226,7 +244,10 @@ EOS_EResult EOSSDK_SessionModification::RemoveAttribute(const EOS_SessionModific
     auto &attributes = *_infos.mutable_attributes();
     auto it = attributes.find(Options->Key);
     if (it != attributes.end())
+    {
+        LOG(Log::LogLevel::DEBUG, "%s", Options->Key);
         attributes.erase(it);
+    }
 
     return EOS_EResult::EOS_Success;
 }

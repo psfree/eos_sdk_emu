@@ -74,21 +74,21 @@ bool compare_attribute_values(T&& v1, EOS_EOnlineComparisonOp op, T&& v2)
     return true;
 }
 
-session_state_t* EOSSDK_Sessions::get_session_by_name(std::string const& session_name)
-{
-    auto it = _sessions.find(session_name);
-    if (it == _sessions.end())
-        return nullptr;
-
-    return &it->second;
-}
-
 session_state_t* EOSSDK_Sessions::get_session_by_id(std::string const& session_id)
 {
     auto it = std::find_if(_sessions.begin(), _sessions.end(), [&session_id]( std::pair<std::string const, session_state_t>& infos)
     {
         return session_id == infos.second.infos.session_id();
     });
+    if (it == _sessions.end())
+        return nullptr;
+
+    return &it->second;
+}
+
+session_state_t* EOSSDK_Sessions::get_session_by_name(std::string const& session_name)
+{
+    auto it = _sessions.find(session_name);
     if (it == _sessions.end())
         return nullptr;
 
@@ -283,6 +283,7 @@ EOS_EResult EOSSDK_Sessions::CreateSessionModification(const EOS_Sessions_Create
     EOSSDK_SessionModification* modif = new EOSSDK_SessionModification;
     modif->_api_version = Options->ApiVersion;
     modif->_type = EOSSDK_SessionModification::modif_type::creation;
+    modif->_infos.set_host_address("127.0.0.1");
 
     switch (Options->ApiVersion)
     {
@@ -297,7 +298,9 @@ EOS_EResult EOSSDK_Sessions::CreateSessionModification(const EOS_Sessions_Create
             const EOS_Sessions_CreateSessionModificationOptions001* opts = reinterpret_cast<const EOS_Sessions_CreateSessionModificationOptions001*>(Options);
             modif->_infos.set_bucket_id(opts->BucketId);
             modif->_infos.set_max_players(opts->MaxPlayers);
-            modif->_infos.set_session_name(opts->SessionName);
+            modif->_session_name = opts->SessionName;
+
+            LOG(Log::LogLevel::DEBUG, "Starting session creation: session_name = %s, bucket_id = %s, presence_enabled: %d", modif->_session_name.c_str(), modif->_infos.bucket_id().c_str(), (int)modif->_infos.presence_allowed());
         }
         break;
 
@@ -338,7 +341,9 @@ EOS_EResult EOSSDK_Sessions::UpdateSessionModification(const EOS_Sessions_Update
     modif->_api_version = Options->ApiVersion;
     modif->_type = EOSSDK_SessionModification::modif_type::update;
 
-    auto session = get_session_by_name(Options->SessionName);
+    session_state_t* session = get_session_by_name(Options->SessionName);
+    modif->_session_name = Options->SessionName;
+
     if (session != nullptr)
     {
         modif->_infos = session->infos;
@@ -350,8 +355,9 @@ EOS_EResult EOSSDK_Sessions::UpdateSessionModification(const EOS_Sessions_Update
             case EOS_SESSIONS_UPDATESESSIONMODIFICATION_API_001:
             {
                 const EOS_Sessions_UpdateSessionModificationOptions001* opts = reinterpret_cast<const EOS_Sessions_UpdateSessionModificationOptions001*>(Options);
-                modif->_infos.set_session_name(opts->SessionName);
+                LOG(Log::LogLevel::DEBUG, "Starting session modification: session_name = %s", modif->_session_name.c_str());
             }
+            break;
 
             default:
                 LOG(Log::LogLevel::FATAL, "Unmanaged API version %d", Options->ApiVersion);
@@ -408,12 +414,12 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
         EOSSDK_SessionModification* modif = reinterpret_cast<EOSSDK_SessionModification*>(Options->SessionModificationHandle);
         usci.SessionId = nullptr;
         {
-            std::string const& sess_name = modif->_infos.session_name();
+            std::string const& sess_name = modif->_session_name;
             char* name = new char[sess_name.length() + 1];
             strncpy(name, sess_name.c_str(), sess_name.length() + 1);
             usci.SessionName = name;
         }
-        session_state_t* session = get_session_by_name(modif->_infos.session_name());
+        session_state_t* session = get_session_by_id(modif->_infos.session_id());
 
         switch (modif->_type)
         {
@@ -425,7 +431,7 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
                 }
                 else
                 {
-                    auto& session = _sessions[modif->_infos.session_name()];
+                    auto& session = _sessions[modif->_session_name];
                     {
                         modif->_infos.set_session_id(generate_account_id());
 
@@ -436,10 +442,22 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
                     }
                     session.state = session_state_t::state_e::created;
                     session.infos = modif->_infos;
+
+                    LOG(Log::LogLevel::DEBUG, "Session created: \n"
+                        "  session_name: %s\n"
+                        "  session_id: %s\n"
+                        "  bucket_id: %s\n"
+                        "  host_address: %s\n",
+                        modif->_session_name.c_str(),
+                        modif->_infos.session_id().c_str(),
+                        modif->_infos.bucket_id().c_str(),
+                        modif->_infos.host_address().c_str()
+                    );
+
                     session.infos.set_state(get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Pending));
                     *session.infos.add_players() = GetEOS_Connect().product_id()->to_string();
                     *session.infos.add_registered_players() = GetEOS_Connect().product_id()->to_string();
-                    GetEOS_Connect().add_session(GetProductUserId(session.infos.session_id()), session.infos.session_name());
+                    //GetEOS_Connect().add_session(GetProductUserId(session.infos.session_id()), session.infos.session_name());
 
                     usci.ResultCode = EOS_EResult::EOS_Success;
                 }
@@ -463,6 +481,18 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
                         strncpy(session_id, sess_id.c_str(), sess_id.length() + 1);
                         usci.SessionId = session_id;
                     }
+
+                    LOG(Log::LogLevel::DEBUG, "Session modified: \n"
+                        "  session_name: %s\n"
+                        "  session_id: %s\n"
+                        "  bucket_id: %s\n"
+                        "  host_address: %s\n",
+                        modif->_session_name.c_str(),
+                        modif->_infos.session_id().c_str(),
+                        modif->_infos.bucket_id().c_str(),
+                        modif->_infos.host_address().c_str()
+                    );
+
                     usci.ResultCode = EOS_EResult::EOS_Success;
 
                     send_session_info(session);
@@ -511,39 +541,29 @@ void EOSSDK_Sessions::DestroySession(const EOS_Sessions_DestroySessionOptions* O
         auto it = _sessions.find(Options->SessionName);
         if (it != _sessions.end())
         {
+            LOG(Log::LogLevel::DEBUG, "Destroying session: name %s", Options->SessionName);
+
             dsci.ResultCode = EOS_EResult::EOS_Success;
-            if (it->second.state == session_state_t::state_e::created)
-            {
-                it->second.infos.set_state(get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Destroying));
 
-                Network_Message_pb msg;
-                Session_Message_pb* session = new Session_Message_pb;
-                Session_Destroy_pb* destroy = new Session_Destroy_pb;
-                
-                destroy->set_session_id(it->second.infos.session_id());
-                destroy->set_session_name(it->second.infos.session_name());
-                
-                session->set_allocated_session_destroy(destroy);
-                msg.set_allocated_session(session);
-
-                send_to_all_members(msg, &it->second);
-            }
-            else
+            auto join_it = _sessions_join.find(Options->SessionName);
+            if (join_it != _sessions_join.end())
             {
-                auto it = _sessions_join.find(Options->SessionName);
-                if (it != _sessions_join.end())
-                {
-                    EOS_Sessions_JoinSessionCallbackInfo& jsci = it->second->GetCallback<EOS_Sessions_JoinSessionCallbackInfo>();
-                    jsci.ResultCode = EOS_EResult::EOS_UnexpectedError;
-                    res->done = true;
-                    _sessions_join.erase(it);
-                }
+                EOS_Sessions_JoinSessionCallbackInfo& jsci = join_it->second->GetCallback<EOS_Sessions_JoinSessionCallbackInfo>();
+                jsci.ResultCode = EOS_EResult::EOS_UnexpectedError;
+                res->done = true;
+                _sessions_join.erase(join_it);
             }
-            GetEOS_Connect().remove_session(GetProductUserId(it->second.infos.session_id()), it->second.infos.session_name());
+
+            it->second.infos.set_state(get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Destroying));
+
+            send_session_destroy(&it->second);
+            //GetEOS_Connect().remove_session(GetProductUserId(it->second.infos.session_id()), it->second.infos.session_name());
             _sessions.erase(it);
         }
         else
         {
+            LOG(Log::LogLevel::DEBUG, "Destroying session: name %s Not Found", Options->SessionName);
+
             dsci.ResultCode = EOS_EResult::EOS_NotFound;
         }
     }
@@ -582,23 +602,49 @@ void EOSSDK_Sessions::JoinSession(const EOS_Sessions_JoinSessionOptions* Options
     }
     else
     {
+        EOSSDK_SessionDetails* details = reinterpret_cast<EOSSDK_SessionDetails*>(Options->SessionHandle);
         if (_sessions.count(Options->SessionName) == 0) // If we haven't already a session with that name (created, joining or joined)
         {
-            EOSSDK_SessionDetails* details = reinterpret_cast<EOSSDK_SessionDetails*>(Options->SessionHandle);
+            LOG(Log::LogLevel::DEBUG, "Joining session: name %s, session_id: %s", Options->SessionName, details->_infos.session_id().c_str());
 
-            Session_Join_Request_pb* join = new Session_Join_Request_pb;
-            join->set_session_id(details->_infos.session_id());
-            join->set_session_name(Options->SessionName);
+            switch ((EOS_EOnlineSessionState)details->_infos.state())
+            {
+                case EOS_EOnlineSessionState::EOS_OSS_InProgress:
+                    if (!details->_infos.join_in_progress_allowed())
+                    {
+                        //jsci.ResultCode = EOS_EResult::EOS_Sessions_SessionInProgress;
+                        jsci.ResultCode = EOS_EResult::EOS_Sessions_NotAllowed;
+                        res->done = true;
+                        break;
+                    }
+                    // Allowed to join while in progress
+                
+                case EOS_EOnlineSessionState::EOS_OSS_Pending   :
+                {
+                    Session_Join_Request_pb* join = new Session_Join_Request_pb;
+                    join->set_session_id(details->_infos.session_id());
 
-            session_state_t& session = _sessions[Options->SessionName];
-            session.state = session_state_t::state_e::joining;
-            session.infos = details->_infos;
-            _sessions_join[Options->SessionName] = res;
+                    session_state_t& session = _sessions[Options->SessionName];
+                    session.state = session_state_t::state_e::joining;
+                    session.infos = details->_infos;
+                    _sessions_join[details->_infos.session_id()] = res;
 
-            send_session_join_request(&session);
+                    jsci.ResultCode = EOS_EResult::EOS_UnexpectedError;
+                    send_session_join_request(&session);
+                }
+                break;
+
+                default:
+                {
+                    jsci.ResultCode = EOS_EResult::EOS_Sessions_NotAllowed;
+                    res->done = true;
+                }
+            }
         }
         else
         {
+            LOG(Log::LogLevel::DEBUG, "joining session: name %s Already Exists, session_id: %s", Options->SessionName, details->_infos.session_id().c_str());
+
             jsci.ResultCode = EOS_EResult::EOS_Sessions_SessionAlreadyExists;
             res->done = true;
         }
@@ -638,29 +684,32 @@ void EOSSDK_Sessions::StartSession(const EOS_Sessions_StartSessionOptions* Optio
     }
     else
     {
-        auto session = get_session_by_name(Options->SessionName);
+        session_state_t* session = get_session_by_name(Options->SessionName);
         if (session != nullptr)
         {
+            LOG(Log::LogLevel::DEBUG, "Starting session: name %s", Options->SessionName);
+
             ssci.ResultCode = EOS_EResult::EOS_Success;
-            switch (session->infos.state())
+            switch ((EOS_EOnlineSessionState)session->infos.state())
             {
-                case get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Destroying):
-                case get_enum_value(EOS_EOnlineSessionState::EOS_OSS_NoSession) :
-                case get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Ending)    :
-                case get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Creating)  :
-                case get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Starting)  :
-                case get_enum_value(EOS_EOnlineSessionState::EOS_OSS_InProgress):
+                case EOS_EOnlineSessionState::EOS_OSS_Destroying:
+                case EOS_EOnlineSessionState::EOS_OSS_NoSession :
+                case EOS_EOnlineSessionState::EOS_OSS_Ending    :
+                case EOS_EOnlineSessionState::EOS_OSS_Creating  :
+                case EOS_EOnlineSessionState::EOS_OSS_Starting  :
+                case EOS_EOnlineSessionState::EOS_OSS_InProgress:
                     ssci.ResultCode = EOS_EResult::EOS_InvalidParameters;
                     break;
 
-                case get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Ended)     :
-                case get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Pending)   :
+                case EOS_EOnlineSessionState::EOS_OSS_Ended     :
+                case EOS_EOnlineSessionState::EOS_OSS_Pending   :
                     session->infos.set_state(get_enum_value(EOS_EOnlineSessionState::EOS_OSS_InProgress));
                     send_session_info(session);
             }
         }
         else
         {
+            LOG(Log::LogLevel::DEBUG, "Starting session: name %s Not Found", Options->SessionName);
             ssci.ResultCode = EOS_EResult::EOS_NotFound;
         }
     }
@@ -700,7 +749,7 @@ void EOSSDK_Sessions::EndSession(const EOS_Sessions_EndSessionOptions* Options, 
     }
     else
     {
-        auto session = get_session_by_name(Options->SessionName);
+        session_state_t* session = get_session_by_name(Options->SessionName);
         if (session != nullptr)
         {
             esci.ResultCode = EOS_EResult::EOS_Success;
@@ -899,7 +948,7 @@ void EOSSDK_Sessions::SendInvite(const EOS_Sessions_SendInviteOptions* Options, 
     }
     else
     {
-        auto session = get_session_by_name(Options->SessionName);
+        session_state_t* session = get_session_by_name(Options->SessionName);
         if (session == nullptr || GetEOS_Connect().get_user_by_productid(Options->TargetUserId) == nullptr)
         {
             sici.ResultCode = EOS_EResult::EOS_NotFound;
@@ -907,7 +956,6 @@ void EOSSDK_Sessions::SendInvite(const EOS_Sessions_SendInviteOptions* Options, 
         else
         {
             Session_Invite_pb* invite = new Session_Invite_pb;
-            invite->set_session_name(Options->SessionName);
             *invite->mutable_infos() = session->infos;
             send_session_invite(Options->TargetUserId->to_string(), invite);
             sici.ResultCode = EOS_EResult::EOS_Success;
@@ -1071,8 +1119,10 @@ EOS_EResult EOSSDK_Sessions::CreateSessionSearch(const EOS_Sessions_CreateSessio
     }
     
     _session_searchs.emplace_back();
-    auto& session_search = _session_searchs.back();
-    *OutSessionSearchHandle = reinterpret_cast<EOS_HSessionSearch>(&session_search);
+    EOSSDK_SessionSearch*& session_search = _session_searchs.back();
+    session_search = new EOSSDK_SessionSearch;
+
+    *OutSessionSearchHandle = reinterpret_cast<EOS_HSessionSearch>(session_search);
 
     return EOS_EResult::EOS_Success;
 }
@@ -1101,10 +1151,15 @@ EOS_EResult EOSSDK_Sessions::CopyActiveSessionHandle(const EOS_Sessions_CopyActi
 
     session_state_t* session = get_session_by_name(Options->SessionName);
     if (session == nullptr)
+    {
+        LOG(Log::LogLevel::DEBUG, "Didn't find Active Session %s", Options->SessionName);
         return EOS_EResult::EOS_NotFound;
+    }
 
+    LOG(Log::LogLevel::DEBUG, "Found Active Session %s", Options->SessionName);
     EOSSDK_ActiveSession* active_session = new EOSSDK_ActiveSession;
     
+    active_session->_session_name = Options->SessionName;
     active_session->_infos = session->infos;
 
     *OutSessionHandle = reinterpret_cast<EOS_HActiveSession>(active_session);
@@ -1264,11 +1319,14 @@ EOS_EResult EOSSDK_Sessions::CopySessionHandleByInviteId(const EOS_Sessions_Copy
     });
 
     if (it == _session_invites.end())
+    {
         return EOS_EResult::EOS_NotFound;
+    }
     
     EOSSDK_SessionDetails* details = new EOSSDK_SessionDetails;
 
     details->_infos = it->infos;
+
     *OutSessionHandle = reinterpret_cast<EOS_HSessionDetails>(details);
 
     return EOS_EResult::EOS_Success;
@@ -1334,6 +1392,8 @@ EOS_EResult EOSSDK_Sessions::CopySessionHandleForPresence(const EOS_Sessions_Cop
     {
         if (session.second.infos.presence_allowed())
         {
+            LOG(Log::LogLevel::DEBUG, "Found Session for presence");
+
             EOSSDK_SessionDetails *details = new EOSSDK_SessionDetails;
             details->_infos = session.second.infos;
             *OutSessionHandle = reinterpret_cast<EOS_HSessionDetails>(details);
@@ -1341,6 +1401,7 @@ EOS_EResult EOSSDK_Sessions::CopySessionHandleForPresence(const EOS_Sessions_Cop
         }
     }
 
+    LOG(Log::LogLevel::DEBUG, "Did not find Session for presence");
     *OutSessionHandle = nullptr;
     return EOS_EResult::EOS_NotFound;
 }
@@ -1367,7 +1428,7 @@ EOS_EResult EOSSDK_Sessions::IsUserInSession(const EOS_Sessions_IsUserInSessionO
 
     if (Options->TargetUserId == GetEOS_Connect().product_id())
     {
-        auto session = get_session_by_name(Options->SessionName);
+        session_state_t* session = get_session_by_name(Options->SessionName);
         if (session != nullptr)
         {
             for (auto const& player : session->infos.players())
@@ -1490,7 +1551,6 @@ bool EOSSDK_Sessions::send_session_destroy(session_state_t *session)
     Session_Destroy_pb* destr = new Session_Destroy_pb;
 
     destr->set_session_id(session->infos.session_id());
-    destr->set_session_name(session->infos.session_name());
 
     session_pb->set_allocated_session_destroy(destr);
     msg.set_allocated_session(session_pb);
@@ -1529,7 +1589,6 @@ bool EOSSDK_Sessions::send_session_join_request(session_state_t *session)
     msg.set_allocated_session(session_pb);
 
     req->set_session_id(session->infos.session_id());
-    req->set_session_name(session->infos.session_name());
 
     return send_to_all_members(msg, session);
 }
@@ -1548,6 +1607,12 @@ bool EOSSDK_Sessions::send_session_join_response(Network::peer_t const& peerid, 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
 
+    session_state_t* pSession = get_session_by_id(resp->session_id());
+
+    if (pSession != nullptr)
+    {// Notify all session members of a join status
+        send_to_all_members(msg, pSession);
+    }
     return GetNetwork().TCPSendTo(msg);
 }
 
@@ -1589,12 +1654,25 @@ bool EOSSDK_Sessions::send_session_invite_response(Network::peer_t const& peerid
 ///////////////////////////////////////////////////////////////////////////////
 //                          Network Receive messages                         //
 ///////////////////////////////////////////////////////////////////////////////
+bool EOSSDK_Sessions::on_peer_disconnect(Network_Message_pb const& msg, Network_Peer_Disconnect_pb const& peer)
+{
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+
+    for (auto& session : _sessions)
+    {
+        remove_player_from_session(msg.source_id(), &session.second);
+    }
+
+    return true;
+}
+
 bool EOSSDK_Sessions::on_session_info_request(Network_Message_pb const& msg, Session_Infos_Request_pb const& req)
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    auto session = get_session_by_id(req.session_id());
+    session_state_t* session = get_session_by_id(req.session_id());
     Session_Infos_pb* infos;
 
     if (session == nullptr)
@@ -1623,7 +1701,7 @@ bool EOSSDK_Sessions::on_session_info(Network_Message_pb const& msg, Session_Inf
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    session_state_t *session = get_session_by_name(infos.session_name());
+    session_state_t *session = get_session_by_id(infos.session_id());
     if (session != nullptr)
         session->infos = infos;
 
@@ -1635,9 +1713,9 @@ bool EOSSDK_Sessions::on_session_destroy(Network_Message_pb const& msg, Session_
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    session_state_t* session = get_session_by_name(destr.session_name());
+    session_state_t* session = get_session_by_id(destr.session_id());
     if (session != nullptr)
-        remove_player_from_session(msg.source_id(), get_session_by_name(destr.session_name()));
+        remove_player_from_session(msg.source_id(), session);
 
     return true;
 }
@@ -1682,39 +1760,35 @@ bool EOSSDK_Sessions::on_session_join_request(Network_Message_pb const& msg, Ses
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    if (!is_player_registered(GetEOS_Connect().product_id()->to_string(), get_session_by_name(req.session_name())))
+    session_state_t* pSession = get_session_by_id(req.session_id());
+    if (!is_player_registered(GetEOS_Connect().product_id()->to_string(), pSession))
     {// We are not in the session or we are not registered, we cannot accept the session join
         return true;
     }
 
     Session_Join_Response_pb* resp = new Session_Join_Response_pb;
 
-    resp->set_session_name(req.session_name());
+    resp->set_session_id(req.session_id());
     resp->set_user_id(msg.source_id());
 
     // If we know the user
     if (GetEOS_Connect().get_user_by_productid(GetProductUserId(msg.source_id())) != nullptr)
     {
-        auto it = _sessions.find(req.session_name());
-        if (it != _sessions.end())
+        if (pSession->infos.max_players() - pSession->infos.players_size())
         {
-            if (it->second.infos.max_players() - it->second.infos.players_size())
-            {
-                resp->set_reason(get_enum_value(EOS_EResult::EOS_Success));
-                *it->second.infos.add_players() = msg.source_id();
-            }
-            else
-            {
-                resp->set_reason(get_enum_value(EOS_EResult::EOS_Sessions_TooManyPlayers));
-            }
+            LOG(Log::LogLevel::DEBUG, "Join request accepted.");
+            resp->set_reason(get_enum_value(EOS_EResult::EOS_Success));
+            add_player_to_session(msg.source_id(), pSession);
         }
         else
         {
-            resp->set_reason(get_enum_value(EOS_EResult::EOS_NotFound));
+            LOG(Log::LogLevel::DEBUG, "Join request rejected: This session is full.");
+            resp->set_reason(get_enum_value(EOS_EResult::EOS_Sessions_TooManyPlayers));
         }
     }
     else
     {
+        LOG(Log::LogLevel::DEBUG, "Join request rejected: We don't know (yet?) the user.");
         resp->set_reason(get_enum_value(EOS_EResult::EOS_Sessions_NotAllowed));
     }
 
@@ -1726,22 +1800,63 @@ bool EOSSDK_Sessions::on_session_join_response(Network_Message_pb const& msg, Se
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    auto session_it = std::find_if(_sessions.begin(), _sessions.end(), [&resp]( std::pair<const std::string, session_state_t>& item)
+    {
+        return item.second.infos.session_id() == resp.session_id();
+    });
+
     auto reason = static_cast<EOS_EResult>(resp.reason());
     if (resp.user_id() == GetEOS_Connect().product_id()->to_string())
     {
-        auto it = _sessions_join.find(resp.session_name());
+        auto it = _sessions_join.find(resp.session_id());
         if (it != _sessions_join.end())
         {
             EOS_Sessions_JoinSessionCallbackInfo& jsci = it->second->GetCallback<EOS_Sessions_JoinSessionCallbackInfo>();
             jsci.ResultCode = static_cast<EOS_EResult>(resp.reason());
-            it->second->done = true;
+
+            switch (jsci.ResultCode)
+            {// Don't wait for a consensus, sessions are P2P, the first valid response is the right one
+                case EOS_EResult::EOS_Sessions_NotAllowed:
+                {// If this peer doesn't know us yet, set the error code but do not stop the join request, someone might accept us
+                    LOG(Log::LogLevel::DEBUG, "(%s) Join request rejected: We don't know (yet?) the user.", msg.source_id().c_str());
+                }
+                break;
+
+                case EOS_EResult::EOS_Sessions_TooManyPlayers:
+                {
+                    LOG(Log::LogLevel::DEBUG, "(%s) Join rejected: This session is full.", msg.source_id().c_str());
+                    it->second->done = true;
+                    _sessions_join.erase(it);
+                    _sessions.erase(session_it);
+                }
+                break;
+                
+                case EOS_EResult::EOS_Success:
+                {
+                    LOG(Log::LogLevel::DEBUG, "(%s) Join accepted.", msg.source_id().c_str());
+                    it->second->done = true;
+                    _sessions_join.erase(it);
+                    // Add myself to the session
+                    //GetEOS_Connect().add_session(GetProductUserId(session_it->second.infos.session_id()), session_it->second.infos.session_name());
+
+                    session_it->second.state = session_state_t::state_e::joined;
+                    add_player_to_session(user_id, &session_it->second);
+                }
+                break;
+            }
+        }
+        else
+        {
+            LOG(Log::LogLevel::DEBUG, "Join request not found.");
         }
     }
-    else
+    else if(is_player_in_session(user_id, &session_it->second))
     {// We are not joining, so someone else is joining
         if (reason == EOS_EResult::EOS_Success)
         {// If the user has been accepted in the session
-            add_player_to_session(resp.user_id(), get_session_by_name(resp.session_name()));
+            LOG(Log::LogLevel::DEBUG, "Add new player (%s) to session.", resp.user_id().c_str());
+            add_player_to_session(resp.user_id(), &session_it->second);
         }
     }
 
@@ -1753,20 +1868,23 @@ bool EOSSDK_Sessions::on_session_invite(Network_Message_pb const& msg, Session_I
     TRACE_FUNC();
     GLOBAL_LOCK();
 
+    EOS_ProductUserId target_id = GetProductUserId(msg.source_id());
+    
+    session_invite_t invite_infos;
+    invite_infos.infos = invite.infos();
+    invite_infos.invite_id = std::move(generate_account_id());
+    invite_infos.peer_id = target_id;
+
+    _session_invites.emplace_back(std::move(invite_infos));
+    std::string const& invite_id = _session_invites.back().invite_id;
+
     std::vector<pFrameResult_t> notifs = std::move(GetCB_Manager().get_notifications(this, EOS_Sessions_SessionInviteReceivedCallbackInfo::k_iCallback));
     for (auto& notif : notifs)
     {
         EOS_Sessions_SessionInviteReceivedCallbackInfo& sirci = notif->GetCallback<EOS_Sessions_SessionInviteReceivedCallbackInfo>();
-        
-        auto invite_id(generate_account_id());
         strncpy(const_cast<char*>(sirci.InviteId), invite_id.c_str(), max_id_length);
-        sirci.TargetUserId = GetProductUserId(msg.source_id());
+        sirci.TargetUserId = target_id;
 
-        session_invite_t invite_infos;
-        invite_infos.infos = invite.infos();
-        invite_infos.invite_id = std::move(invite_id);
-        invite_infos.peer_id = sirci.TargetUserId;
-        _session_invites.emplace_back(std::move(invite_infos));
         notif->res.cb_func(notif->res.data);
     }
 
@@ -1801,8 +1919,9 @@ bool EOSSDK_Sessions::CBRunFrame()
 
     for (auto it = _session_searchs.begin(); it != _session_searchs.end();)
     {
-        if (it->released())
+        if ((*it)->released())
         {
+            delete* it;
             it = _session_searchs.erase(it);
         }
         else
@@ -1866,14 +1985,28 @@ bool EOSSDK_Sessions::RunCallbacks(pFrameResult_t res)
             if ((now - res->created_time) > join_timeout)
             {
                 EOS_Sessions_JoinSessionCallbackInfo& jsci = res->GetCallback<EOS_Sessions_JoinSessionCallbackInfo>();
-                jsci.ResultCode = EOS_EResult::EOS_TimedOut;
+                if (jsci.ResultCode == EOS_EResult::EOS_UnexpectedError)
+                {// If its the default error code, set the result code to TimedOut
+                    jsci.ResultCode = EOS_EResult::EOS_TimedOut;
+                }
 
-                auto it = std::find_if(_sessions_join.begin(), _sessions_join.end(), [&res]( std::pair<std::string const, pFrameResult_t> &join )
+                auto join_it = std::find_if(_sessions_join.begin(), _sessions_join.end(), [&res]( std::pair<std::string const, pFrameResult_t> &join )
                 {
                     return res == join.second;
                 });
-                if (it != _sessions_join.end())
-                    _sessions_join.erase(it);
+                if (join_it != _sessions_join.end())
+                {// We found the join callback
+                    auto session_it = std::find_if(_sessions.begin(), _sessions.end(), [join_it]( std::pair<const std::string, session_state_t>& item)
+                    {// Look if we can find the session
+                        return item.second.infos.session_id() == join_it->first;
+                    });
+                    if (session_it == _sessions.end())
+                    {// Session found, we got a timeout so remove it
+                        _sessions.erase(session_it);
+                    }
+
+                    _sessions_join.erase(join_it);
+                }
 
                 res->done = true;
             }

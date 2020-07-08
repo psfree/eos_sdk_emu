@@ -87,6 +87,39 @@ std::ostream& operator <<(std::ostream& os, EOS_EOwnershipStatus v)
     return (os << "Unknown enum value: " << (int32_t)v);
 }
 
+std::ostream& operator <<(std::ostream& os, EOS_EOnlineSessionPermissionLevel v)
+{
+    switch (v)
+    {
+#define ENUM_STR(X) case decltype(v)::X: return (os << #X)
+        ENUM_STR(EOS_OSPF_PublicAdvertised);
+        ENUM_STR(EOS_OSPF_JoinViaPresence);
+        ENUM_STR(EOS_OSPF_InviteOnly);
+#undef ENUM_STR
+    }
+
+    return (os << "Unknown enum value: " << (int32_t)v);
+}
+
+std::ostream& operator <<(std::ostream& os, EOS_EOnlineSessionState v)
+{
+    switch (v)
+    {
+#define ENUM_STR(X) case decltype(v)::X: return (os << #X)
+        ENUM_STR(EOS_OSS_NoSession);
+        ENUM_STR(EOS_OSS_Creating);
+        ENUM_STR(EOS_OSS_Pending);
+        ENUM_STR(EOS_OSS_Starting);
+        ENUM_STR(EOS_OSS_InProgress);
+        ENUM_STR(EOS_OSS_Ending);
+        ENUM_STR(EOS_OSS_Ended);
+        ENUM_STR(EOS_OSS_Destroying);
+#undef ENUM_STR
+    }
+
+    return (os << "Unknown enum value: " << (int32_t)v);
+}
+
 inline std::ostream& operator <<(std::ostream& os, EOS_EResult v)
 {
     return (os << EOS_EResult_ToString(v));

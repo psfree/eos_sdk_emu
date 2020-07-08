@@ -145,7 +145,7 @@ namespace sdk
         constexpr static auto join_timeout = std::chrono::milliseconds(5000);
 
         std::map<std::string, lobby_state_t> _lobbies;
-        std::list<EOSSDK_LobbySearch>        _lobbies_searchs;
+        std::list<EOSSDK_LobbySearch*>       _lobbies_searchs;
         std::list<lobby_invite_t>            _lobby_invites;
         std::map<int32_t, lobby_join_t>      _joins_requests;
 

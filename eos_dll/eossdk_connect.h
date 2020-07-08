@@ -53,8 +53,8 @@ namespace sdk
         std::pair<EOS_ProductUserId const, user_state_t>* get_user_by_productid(EOS_ProductUserId productid);
         std::pair<EOS_ProductUserId const, user_state_t>* get_user_by_name(std::string const& username);
 
-        void add_session(EOS_ProductUserId session_id, std::string const& session_name);
-        void remove_session(EOS_ProductUserId session_id, std::string const& session_name);
+        //void add_session(EOS_ProductUserId session_id, std::string const& session_name);
+        //void remove_session(EOS_ProductUserId session_id, std::string const& session_name);
 
         // Send Network messages
         bool send_connect_infos_request(Network::peer_t const& peerid, Connect_Request_Info_pb* req);

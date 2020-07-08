@@ -56,9 +56,9 @@ EOS_EResult EOSSDK_ActiveSession::CopyInfo(const EOS_ActiveSession_CopyInfoOptio
     copy_session_info->LocalUserId = GetEOS_Connect().product_id();
     copy_session_info->State = static_cast<EOS_EOnlineSessionState>(_infos.state());
     {
-        size_t len = _infos.session_name().length() + 1;
+        size_t len = _session_name.length() + 1;
         char* str = new char[len];
-        strncpy(str, _infos.session_name().c_str(), len);
+        strncpy(str, _session_name.c_str(), len);
         copy_session_info->SessionName = str;
     }
     copy_session_info->SessionDetails = session_details_info;

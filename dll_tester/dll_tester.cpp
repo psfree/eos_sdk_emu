@@ -19,6 +19,7 @@
 #include <eos_auth.h>
 #include <eos_logging.h>
 #include <eos_presence.h>
+#include <eos_sessions.h>
 
 #include <Windows.h>
 
@@ -647,10 +648,59 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CopySessionHandleForPresence(EOS_HSes
     auto res = _EOS_Sessions_CopySessionHandleForPresence(Handle, Options, OutSessionHandle);
     LOG(Log::LogLevel::DEBUG, "'%s': %p", EOS_EResult_ToString(res), OutSessionHandle);
 
-    //EOS_SessionDetails_CopyInfoOptions options;
-    //EOS_SessionDetails_Info* OutSessionInfo = new EOS_SessionDetails_Info;
-    //EOS_SessionDetails_CopyInfo(*OutSessionHandle, &options, &OutSessionInfo);
-    //EOS_SessionDetails_Info_Release(OutSessionInfo);
+    std::stringstream sstr;
+    sstr << std::endl;
+    sstr << "ApiVersion : " << Options->ApiVersion << std::endl;
+    sstr << "LocalUserId: " << Options->LocalUserId << std::endl;
+    if (res == EOS_EResult::EOS_Success)
+    {
+        EOS_SessionDetails_CopyInfoOptions options;
+        options.ApiVersion = EOS_SESSIONDETAILS_COPYINFO_API_LATEST;
+
+        EOS_SessionDetails_Info* details_infos;
+
+        if (EOS_SessionDetails_CopyInfo(*OutSessionHandle, &options, &details_infos) == EOS_EResult::EOS_Success)
+        {
+            sstr << "  ApiVersion    : " << details_infos->ApiVersion << std::endl;
+            switch (details_infos->ApiVersion)
+            {
+                case EOS_SESSIONDETAILS_INFO_API_001:
+                {
+                    auto v = reinterpret_cast<EOS_SessionDetails_Info001*>(details_infos);
+                    sstr << "  SessionId               : " << v->SessionId << std::endl;
+                    sstr << "  HostAddress             : " << v->HostAddress << std::endl;
+                    sstr << "  NumOpenPublicConnections: " << v->NumOpenPublicConnections << std::endl;
+                    switch (v->Settings->ApiVersion)
+                    {
+                        case EOS_SESSIONDETAILS_SETTINGS_API_002:
+                        {
+                            auto s = reinterpret_cast<const EOS_SessionDetails_Settings002*>(v->Settings);
+
+                            sstr << "  bInvitesAllowed         : " << s->bInvitesAllowed << std::endl;
+                        }
+                        break;
+
+                        case EOS_SESSIONDETAILS_SETTINGS_API_001:
+                        {
+                            auto s = reinterpret_cast<const EOS_SessionDetails_Settings001*>(v->Settings);
+
+                            sstr << "  BucketId                : " << s->BucketId << std::endl;
+                            sstr << "  NumPublicConnections    : " << s->NumPublicConnections << std::endl;
+                            sstr << "  PermissionLevel         : " << s->PermissionLevel << std::endl;
+                            sstr << "  bAllowJoinInProgress    : " << EOS_Bool_2_str(s->bAllowJoinInProgress) << std::endl;
+                        }
+                        break;
+                    }
+                }
+             }
+        }
+    }
+    else
+    {
+        sstr << "Failed" << std::endl;
+    }
+    LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
+    
     return res;
 }
 
@@ -736,7 +786,36 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ActiveSession_CopyInfo(EOS_HActiveSession Hand
 {
     LOG(Log::LogLevel::TRACE, "");
     ORIGINAL_FUNCTION(EOS_ActiveSession_CopyInfo);
-    return _EOS_ActiveSession_CopyInfo(Handle, Options, OutActiveSessionInfo);
+    auto res = _EOS_ActiveSession_CopyInfo(Handle, Options, OutActiveSessionInfo);
+
+    std::stringstream sstr;
+    sstr << std::endl;
+    sstr << "ApiVersion : " << Options->ApiVersion << std::endl;
+    if (res == EOS_EResult::EOS_Success)
+    {
+        sstr << "  SessionName             : " << (*OutActiveSessionInfo)->SessionName << std::endl;
+        sstr << "  State                   : " << (*OutActiveSessionInfo)->State << std::endl;
+        switch ((*OutActiveSessionInfo)->SessionDetails->ApiVersion)
+        {
+            case EOS_SESSIONDETAILS_INFO_API_001:
+            {
+                auto v = reinterpret_cast<const EOS_SessionDetails_Info001*>((*OutActiveSessionInfo)->SessionDetails);
+
+                sstr << "  HostAddress             : " << v->HostAddress << std::endl;
+                sstr << "  NumOpenPublicConnections: " << v->NumOpenPublicConnections << std::endl;
+                sstr << "  SessionId               : " << v->SessionId << std::endl;
+                //sstr << "  : " << v->Settings << std::endl;
+            }
+            break;
+        }
+    }
+    else
+    {
+        sstr << "Failed" << std::endl;
+    }
+    LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
+
+    return res;
 }
 
 EOS_DECLARE_FUNC(uint32_t) EOS_ActiveSession_GetRegisteredPlayerCount(EOS_HActiveSession Handle, const EOS_ActiveSession_GetRegisteredPlayerCountOptions* Options)
@@ -1046,14 +1125,20 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetStatus(EOS_HPresenceMo
     LOG(Log::LogLevel::TRACE, "");
     ORIGINAL_FUNCTION(EOS_PresenceModification_SetStatus);
     auto res = _EOS_PresenceModification_SetStatus(Handle, Options);
-    switch (Options->Status)
+
+    std::stringstream sstr;
+    sstr << std::endl;
+    sstr << "ApiVersion: " << Options->ApiVersion << std::endl;
+    if (res == EOS_EResult::EOS_Success)
     {
-        case EOS_Presence_EStatus::EOS_PS_Online      : LOG(Log::LogLevel::DEBUG, "%s: %s", EOS_EResult_ToString(res), "EOS_PS_Online"); break;
-        case EOS_Presence_EStatus::EOS_PS_Offline     : LOG(Log::LogLevel::DEBUG, "%s: %s", EOS_EResult_ToString(res), "EOS_PS_Offline"); break;
-        case EOS_Presence_EStatus::EOS_PS_Away        : LOG(Log::LogLevel::DEBUG, "%s: %s", EOS_EResult_ToString(res), "EOS_PS_Away"); break;
-        case EOS_Presence_EStatus::EOS_PS_DoNotDisturb: LOG(Log::LogLevel::DEBUG, "%s: %s", EOS_EResult_ToString(res), "EOS_PS_DoNotDisturb"); break;
-        case EOS_Presence_EStatus::EOS_PS_ExtendedAway: LOG(Log::LogLevel::DEBUG, "%s: %s", EOS_EResult_ToString(res), "EOS_PS_ExtendedAway"); break;
+        sstr << "Status    : " << Options->Status << std::endl;
     }
+    else
+    {
+        sstr << "Failed" << std::endl;
+    }
+    LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
+
     return res;
 }
 
