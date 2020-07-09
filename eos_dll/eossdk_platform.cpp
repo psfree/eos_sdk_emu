@@ -496,7 +496,10 @@ EOS_EResult EOSSDK_Platform::GetOverrideCountryCode(char* OutBuffer, int32_t* In
         return EOS_EResult::EOS_InvalidParameters;
 
     if (*InOutBufferLength < (_override_country_code.length() + 1))
+    {
+        *InOutBufferLength = _override_country_code.length() + 1;
         return EOS_EResult::EOS_LimitExceeded;
+    }
 
     strncpy(OutBuffer, _override_country_code.c_str(), _override_country_code.length() + 1);
 
@@ -528,7 +531,10 @@ EOS_EResult EOSSDK_Platform::GetOverrideLocaleCode(char* OutBuffer, int32_t* InO
         return EOS_EResult::EOS_InvalidParameters;
 
     if (*InOutBufferLength < (_override_locale_code.length() + 1))
+    {
+        *InOutBufferLength = _override_locale_code.length() + 1;
         return EOS_EResult::EOS_LimitExceeded;
+    }
 
     strncpy(OutBuffer, _override_locale_code.c_str(), _override_locale_code.length() + 1);
 
