@@ -123,3 +123,20 @@
 #include "callback_manager.h"
 
 static constexpr char emu_savepath[] = "NemirtingasEpicEmu";
+
+#if defined(__WINDOWS_32__)
+  #define _EMU_VARIANT_ "win32"
+#elif defined(__WINDOWS_64__)
+  #define _EMU_VARIANT_ "win64"
+#elif defined(__LINUX_32__)
+  #define _EMU_VARIANT_ "lin32"
+  #elif defined(__LINUX_64__)
+  #define _EMU_VARIANT_ "lin64"
+#elif defined(__APPLE_32__)
+  #define _EMU_VARIANT_ "mac32"
+  #elif defined(__APPLE_64__)
+  #define _EMU_VARIANT_ "mac64"
+#else
+  #define _EMU_VARIANT_ "unk"
+#endif
+constexpr char _EMU_VERSION_[] = "0.0.0" "-" _EMU_VARIANT_;

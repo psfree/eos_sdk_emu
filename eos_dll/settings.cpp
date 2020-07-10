@@ -141,6 +141,8 @@ void Settings::load_settings()
         LOG(Log::LogLevel::WARN, "Error while loading settings, building a default one");
     }
 
+    LOG(Log::LogLevel::INFO, "Emulator version %s", _EMU_VERSION_);
+
     username = get_setting(settings, "username", std::string(u8"DefaultName"));
     if (username.empty() || !utf8::is_valid(username.begin(), username.end()))
     {
