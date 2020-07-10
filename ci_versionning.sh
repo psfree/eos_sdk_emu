@@ -17,5 +17,5 @@ else
   EMU_VERSION="${MAJOR}.${MINOR}.${HOTFIX}"
 fi
 
-sed -i "/.*_EMU_VERSION_\[\] =.*/s/0\.0\.0/${EMU_VERSION:-0.0.0}/" "${CI_PROJECT_DIR}/steam_dll/common_includes.h"
-echo "Building emulator version $(grep _EMU_VERSION_ "${CI_PROJECT_DIR}/steam_dll/common_includes.h")"
+sed -i "/.*_EMU_VERSION_\[\] =.*/s/0\.0\.0/${EMU_VERSION:-0.0.0}/" "${CI_PROJECT_DIR}/eos_dll/common_includes.h"
+echo "Building emulator version $(grep _EMU_VERSION_ "${CI_PROJECT_DIR}/eos_dll/common_includes.h")"
