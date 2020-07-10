@@ -172,6 +172,7 @@ build:linux:
   script:
     - JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
     - test -z "${JOBS}" && JOBS=2
+    - ./ci_versionning.sh
     - echo "Building epic api with ${JOBS} jobs"
     #- ./build_epicapi.sh "Release" "linux32" || exit 1
     #- ./build_epicapi.sh "Debug"   "linux32" || exit 1
@@ -196,6 +197,7 @@ build:windows:
   script:
     - JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
     - test -z "${JOBS}" && JOBS=2
+    - ./ci_versionning.sh
     - echo "Building steamapi with ${JOBS} jobs"
     - export HOST_ARCH="x86"
     - ./build_epicapi.sh "Release" "win32" || exit 1
@@ -220,6 +222,7 @@ build:macosx:
   script:
     - JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
     - test -z "${JOBS}" && JOBS=2
+    - ./ci_versionning.sh
     - echo "Building steamapi with ${JOBS} jobs"
     #- export OSXCROSS_HOST="i386-apple-${OSXCROSS_TARGET}"
     #- ./build_epicapi.sh "Release" "macosx32" || exit 1

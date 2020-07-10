@@ -122,4 +122,15 @@
 #include "frame_result.h"
 #include "callback_manager.h"
 
+#if defined(__WINDOWS__)
+  #define _EMU_VARIANT_ "win"
+#elif defined(__LINUX__)
+  #define _EMU_VARIANT_ "lin"
+#elif defined(__APPLE__)
+  #define _EMU_VARIANT_ "mac"
+#else
+  #define _EMU_VARIANT_ "unk"
+#endif
+constexpr char _EMU_VERSION_[] = "0.0.0" "-" _EMU_VARIANT_;
+
 static constexpr char emu_savepath[] = "NemirtingasEpicEmu";
