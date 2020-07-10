@@ -39,7 +39,7 @@ static const char* ownership_status_to_string(EOS_EOwnershipStatus status)
 
 //constexpr decltype(EOSSDK_Ecom::calatog_db_filename)      EOSSDK_Ecom::calatog_db_filename;
 constexpr decltype(EOSSDK_Ecom::calatog_filename)         EOSSDK_Ecom::calatog_filename;
-constexpr decltype(EOSSDK_Ecom::entitlements_db_filename) EOSSDK_Ecom::entitlements_db_filename;
+//constexpr decltype(EOSSDK_Ecom::entitlements_db_filename) EOSSDK_Ecom::entitlements_db_filename;
 constexpr decltype(EOSSDK_Ecom::entitlements_filename)    EOSSDK_Ecom::entitlements_filename;
 
 EOSSDK_Ecom::EOSSDK_Ecom()
@@ -52,16 +52,15 @@ EOSSDK_Ecom::EOSSDK_Ecom()
     _catalog_filepath += PATH_SEPARATOR;
     _catalog_filepath += calatog_filename;
 
-    _entitlements_db_filepath = Settings::Inst().savepath;
-    _entitlements_db_filepath += PATH_SEPARATOR;
-    _entitlements_db_filepath += entitlements_db_filename;
+    //_entitlements_db_filepath = Settings::Inst().savepath;
+    //_entitlements_db_filepath += PATH_SEPARATOR;
+    //_entitlements_db_filepath += entitlements_db_filename;
 
     _entitlements_filepath = Settings::Inst().savepath;
     _entitlements_filepath += PATH_SEPARATOR;
     _entitlements_filepath += entitlements_filename;
 
     load_json(_catalog_filepath, _catalog);
-    load_json(_entitlements_db_filepath, _entitlements_db);
     load_json(_entitlements_filepath, _entitlements);
 
     GetCB_Manager().register_callbacks(this);
@@ -70,6 +69,62 @@ EOSSDK_Ecom::EOSSDK_Ecom()
 EOSSDK_Ecom::~EOSSDK_Ecom()
 {
     GetCB_Manager().unregister_callbacks(this);
+}
+
+EOS_EResult EOSSDK_Ecom::copy_entitlement(typename decltype(_queried_entitlements)::iterator it, EOS_Ecom_Entitlement** OutEntitlement)
+{
+    bool redeemed;
+    std::string const* entitlement_id = nullptr;
+    std::string const* entitlement_name = nullptr;
+    std::string const* catalog_item_id = nullptr;
+    bool error = false;
+
+    entitlement_id = &it->first;
+    try
+    {
+        entitlement_name = (*it->second)["entitlement_name"].get_ptr<std::string*>();
+    }
+    catch (...)
+    {
+        LOG(Log::LogLevel::ERR, "%s \"entitlement_name\" field was not found, it will not be owned", entitlement_id->c_str());
+        error = true;
+    }
+    try
+    {
+        catalog_item_id  = (*it->second)["catalog_item_id"].get_ptr<std::string*>();
+    }
+    catch (...)
+    {
+        LOG(Log::LogLevel::ERR, "%s \"catalog_item_id\" field was not found, it will not be owned", entitlement_id->c_str());
+        error = true;
+    }
+    try
+    {
+        redeemed = (*it->second)["redeemed"];
+    }
+    catch (...)
+    {
+        LOG(Log::LogLevel::ERR, "%s \"redeemed\" field was not found, it will not be redeemed", entitlement_id->c_str());
+        redeemed = false;
+    }
+
+    if (error)
+    {
+        *OutEntitlement = nullptr;
+        return EOS_EResult::EOS_NotFound;
+    }
+
+    EOS_Ecom_Entitlement002* entitlement = new EOS_Ecom_Entitlement002;
+    entitlement->ApiVersion = EOS_ECOM_ENTITLEMENT_API_002;
+    entitlement->EntitlementName = entitlement_name->c_str();
+    entitlement->EntitlementId = entitlement_id->c_str();
+    entitlement->CatalogItemId = catalog_item_id->c_str();
+    entitlement->ServerIndex = -1;
+    entitlement->bRedeemed = redeemed;
+    entitlement->EndTimestamp = -1;
+    *OutEntitlement = reinterpret_cast<decltype(*OutEntitlement)>(entitlement);
+
+    return EOS_EResult::EOS_Success;
 }
 
 /**
@@ -260,9 +315,9 @@ void EOSSDK_Ecom::QueryEntitlements(const EOS_Ecom_QueryEntitlementsOptions* Opt
     qeci.ClientData = ClientData;
     qeci.LocalUserId = Settings::Inst().userid;
 
+    _queried_entitlements.clear();
     if (Options != nullptr)
     {
-        _include_redeemed = Options->bIncludeRedeemed;
         switch (Options->ApiVersion)
         {
             case EOS_ECOM_QUERYENTITLEMENTS_API_002:
@@ -272,7 +327,32 @@ void EOSSDK_Ecom::QueryEntitlements(const EOS_Ecom_QueryEntitlementsOptions* Opt
                 LOG(Log::LogLevel::DEBUG, "EntitlementNameCount: %u", opts->EntitlementNameCount);
                 for (uint32_t i = 0; i < opts->EntitlementNameCount; ++i)
                 {
-                    LOG(Log::LogLevel::DEBUG, "EntitlementNames[%u]: %s", i, (opts->EntitlementNames[i] == nullptr ? "" : opts->EntitlementNames[i]));
+                    auto it = _entitlements.find(opts->EntitlementNames[i]);
+                    if (it != _entitlements.end())
+                    {
+                        bool redeemed;
+                        try
+                        {
+                            redeemed = it.value()["redeemed"];
+                        }
+                        catch (...)
+                        {
+                            redeemed = false;
+                        }
+                        if (!redeemed || Options->bIncludeRedeemed == EOS_TRUE)
+                        {
+                            LOG(Log::LogLevel::DEBUG, "EntitlementNames[%u]: %s - Found", i, (opts->EntitlementNames[i] == nullptr ? "" : opts->EntitlementNames[i]));
+                            _queried_entitlements[opts->EntitlementNames[i]] = &it.value();
+                        }
+                        else
+                        {
+                            LOG(Log::LogLevel::DEBUG, "EntitlementNames[%u]: %s - Found but was already redeemed and client asked for non-redeemed", i, (opts->EntitlementNames[i] == nullptr ? "" : opts->EntitlementNames[i]));
+                        }
+                    }
+                    else
+                    {
+                        LOG(Log::LogLevel::DEBUG, "EntitlementNames[%u]: %s - Not Found", i, (opts->EntitlementNames[i] == nullptr ? "" : opts->EntitlementNames[i]));
+                    }
                 }
             }
         }
@@ -368,6 +448,7 @@ void EOSSDK_Ecom::RedeemEntitlements(const EOS_Ecom_RedeemEntitlementsOptions* O
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
+    LOG(Log::LogLevel::INFO, "TODO");
 
     if (CompletionDelegate == nullptr)
         return;
@@ -403,7 +484,7 @@ uint32_t EOSSDK_Ecom::GetEntitlementsCount(const EOS_Ecom_GetEntitlementsCountOp
     if (Options == nullptr)
         return 0;
 
-    return 0;
+    return _queried_entitlements.size();
 }
 
 /**
@@ -425,7 +506,19 @@ uint32_t EOSSDK_Ecom::GetEntitlementsByNameCount(const EOS_Ecom_GetEntitlementsB
     if (Options == nullptr || Options->EntitlementName == nullptr)
         return 0;
 
-    return 0;
+    uint32_t count = std::count_if(_queried_entitlements.begin(), _queried_entitlements.end(), [Options]( std::pair<const std::string, fifo_json*> &item) 
+    {
+        try
+        {
+            return (*item.second)["entitlement_name"].get_ref<std::string&>() == Options->EntitlementName;
+        }
+        catch (...)
+        {
+            return false;
+        }
+    });
+
+    return count;
 }
 
 /**
@@ -446,92 +539,16 @@ EOS_EResult EOSSDK_Ecom::CopyEntitlementByIndex(const EOS_Ecom_CopyEntitlementBy
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    if (Options == nullptr || Options->EntitlementIndex >= _entitlements_db.size() || OutEntitlement == nullptr)
+    if (Options == nullptr || Options->EntitlementIndex >= _queried_entitlements.size() || OutEntitlement == nullptr)
     {
         set_nullptr(OutEntitlement);
         return EOS_EResult::EOS_InvalidParameters;
     }
 
-    auto db_it = _entitlements_db.begin();
-    std::advance(db_it, Options->EntitlementIndex);
+    auto it = _queried_entitlements.begin();
+    std::advance(it, Options->EntitlementIndex);
 
-    bool redeemed;
-    std::string const* entitlement_id = nullptr;
-    std::string const* entitlement_name = nullptr;
-    std::string const* catalog_item_id = nullptr;
-    bool error = false;
-
-    entitlement_id = &db_it.key();
-    try
-    {
-        entitlement_name = db_it.value()["entitlement_name"].get_ptr<std::string*>();
-    }
-    catch (...)
-    {
-        LOG(Log::LogLevel::ERR, "%s \"entitlement_name\" field was not found, it will not be owned", entitlement_id->c_str());
-        error = true;
-    }
-    try
-    {
-        catalog_item_id  = db_it.value()["catalog_item_id"].get_ptr<std::string*>();
-    }
-    catch (...)
-    {
-        LOG(Log::LogLevel::ERR, "%s \"catalog_item_id\" field was not found, it will not be owned", entitlement_id->c_str());
-        error = true;
-    }
-
-    if (error)
-    {
-        *OutEntitlement = nullptr;
-        return EOS_EResult::EOS_NotFound;
-    }
-    
-    auto it = _entitlements.find(*entitlement_id);
-    if (it == _entitlements.end())
-    {
-        redeemed = false;
-    }
-    else
-    {
-        try
-        {
-            redeemed = it.value()["redeemed"];
-        }
-        catch (...)
-        {
-            redeemed = false;
-        }
-    }
-
-    switch (Options->ApiVersion)
-    {
-        case EOS_ECOM_ENTITLEMENT_API_002:
-        {
-            EOS_Ecom_Entitlement002* entitlement = new EOS_Ecom_Entitlement002;
-            entitlement->ApiVersion = EOS_ECOM_ENTITLEMENT_API_002;
-            entitlement->EntitlementName = entitlement_name->c_str();
-            entitlement->EntitlementId = entitlement_id->c_str();
-            entitlement->CatalogItemId = catalog_item_id->c_str();
-            entitlement->ServerIndex = -1;
-            entitlement->bRedeemed = redeemed;
-            entitlement->EndTimestamp = -1;
-            *OutEntitlement = reinterpret_cast<decltype(*OutEntitlement)>(entitlement);
-        }
-        break;
-        
-        case EOS_ECOM_ENTITLEMENT_API_001:
-        {
-            EOS_Ecom_Entitlement001* entitlement = new EOS_Ecom_Entitlement001;
-            entitlement->ApiVersion = EOS_ECOM_ENTITLEMENT_API_001;
-            {
-                entitlement->Id = entitlement_id->c_str();
-            }
-            *OutEntitlement = reinterpret_cast<decltype(*OutEntitlement)>(entitlement);
-        }
-    }
-
-    return EOS_EResult::EOS_Success;
+    return copy_entitlement(it, OutEntitlement);
 }
 
 /**
@@ -554,8 +571,32 @@ EOS_EResult EOSSDK_Ecom::CopyEntitlementByNameAndIndex(const EOS_Ecom_CopyEntitl
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    set_nullptr(OutEntitlement);
-    return EOS_EResult::EOS_NotFound;
+    if (Options == nullptr || Options->EntitlementName == nullptr || OutEntitlement == nullptr)
+    {
+        set_nullptr(OutEntitlement);
+        return EOS_EResult::EOS_InvalidParameters;
+    }
+
+    int i = 0;
+    auto it = _queried_entitlements.begin();
+    for (; it != _queried_entitlements.end(); ++it)
+    {
+        if ((*it->second)["entitlement_name"].get_ref<std::string&>() == Options->EntitlementName)
+        {
+            if (i == Options->Index)
+            {
+                break;
+            }
+            ++i;
+        }
+    }
+    if (it == _queried_entitlements.end())
+    {
+        *OutEntitlement = nullptr;
+        return EOS_EResult::EOS_NotFound;
+    }
+    
+    return copy_entitlement(it, OutEntitlement);
 }
 
 /**
@@ -585,99 +626,14 @@ EOS_EResult EOSSDK_Ecom::CopyEntitlementById(const EOS_Ecom_CopyEntitlementByIdO
         return EOS_EResult::EOS_InvalidParameters;
     }
 
-    auto db_it = _entitlements_db.find(Options->EntitlementId);
-    if (db_it == _entitlements_db.end())
+    auto it = _queried_entitlements.find(Options->EntitlementId);
+    if (it == _queried_entitlements.end())
     {
         *OutEntitlement = nullptr;
         return EOS_EResult::EOS_NotFound;
     }
 
-    bool redeemed;
-    std::string const* entitlement_id = nullptr;
-    std::string const* entitlement_name = nullptr;
-    std::string const* catalog_item_id = nullptr;
-    bool error = false;
-
-    try
-    {
-        entitlement_id = &db_it.key();
-    }
-    catch (...)
-    {
-        LOG(Log::LogLevel::ERR, "Entitlement id %s was not found, it will not be owned", Options->EntitlementId);
-        error = true;
-    }
-    try
-    {
-        entitlement_name = db_it.value()["entitlement_name"].get_ptr<std::string*>();
-    }
-    catch (...)
-    {
-        LOG(Log::LogLevel::ERR, "%s \"entitlement_name\" field was not found, it will not be owned", Options->EntitlementId);
-        error = true;
-    }
-    try
-    {
-        catalog_item_id  = db_it.value()["catalog_item_id"].get_ptr<std::string*>();
-    }
-    catch (...)
-    {
-        LOG(Log::LogLevel::ERR, "%s \"catalog_item_id\" field was not found, it will not be owned", Options->EntitlementId);
-        error = true;
-    }
-
-    if (error)
-    {
-        *OutEntitlement = nullptr;
-        return EOS_EResult::EOS_NotFound;
-    }
-    
-
-    auto it = _entitlements.find(Options->EntitlementId);
-    if (it == _entitlements.end())
-    {
-        redeemed = false;
-    }
-    else
-    {
-        try
-        {
-            redeemed = it.value()["redeemed"];
-        }
-        catch (...)
-        {
-            redeemed = false;
-        }
-    }
-
-    switch (Options->ApiVersion)
-    {
-        case EOS_ECOM_ENTITLEMENT_API_002:
-        {
-            EOS_Ecom_Entitlement002* entitlement = new EOS_Ecom_Entitlement002;
-            entitlement->ApiVersion = EOS_ECOM_ENTITLEMENT_API_002;
-            entitlement->EntitlementName = entitlement_name->c_str();
-            entitlement->EntitlementId = entitlement_id->c_str();
-            entitlement->CatalogItemId = catalog_item_id->c_str();
-            entitlement->ServerIndex = -1;
-            entitlement->bRedeemed = redeemed;
-            entitlement->EndTimestamp = -1;
-            *OutEntitlement = reinterpret_cast<decltype(*OutEntitlement)>(entitlement);
-        }
-        break;
-        
-        case EOS_ECOM_ENTITLEMENT_API_001:
-        {
-            EOS_Ecom_Entitlement001* entitlement = new EOS_Ecom_Entitlement001;
-            entitlement->ApiVersion = EOS_ECOM_ENTITLEMENT_API_001;
-            {
-                entitlement->Id = entitlement_id->c_str();
-            }
-            *OutEntitlement = reinterpret_cast<decltype(*OutEntitlement)>(entitlement);
-        }
-    }
-
-    return EOS_EResult::EOS_Success;
+    return copy_entitlement(it, OutEntitlement);
 }
 
 /**

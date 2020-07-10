@@ -42,20 +42,22 @@ namespace sdk
     {
         //static constexpr const char calatog_db_filename[]      = "catalog_db.json";
         static constexpr const char calatog_filename[]         = "catalog.json";
-        static constexpr const char entitlements_db_filename[] = "entitlements_db.json";
+        //static constexpr const char entitlements_db_filename[] = "entitlements_db.json";
         static constexpr const char entitlements_filename[]    = "entitlements.json";
 
         //std::string _catalog_db_filepath;
         std::string _catalog_filepath;
-        std::string _entitlements_db_filepath;
+        //std::string _entitlements_db_filepath;
         std::string _entitlements_filepath;
 
         //fifo_json _catalog_db;
         fifo_json _catalog;
-        fifo_json _entitlements_db;
+        //fifo_json _entitlements_db;
         fifo_json _entitlements;
 
-        bool _include_redeemed;
+        std::map<std::string, fifo_json*> _queried_entitlements;
+
+        EOS_EResult copy_entitlement(typename decltype(_queried_entitlements)::iterator it, EOS_Ecom_Entitlement** OutEntitlement);
 
     public:
         EOSSDK_Ecom();
