@@ -23,7 +23,9 @@
 namespace sdk
 {
 
-EOSSDK_LobbyModification::EOSSDK_LobbyModification()
+EOSSDK_LobbyModification::EOSSDK_LobbyModification():
+    _lobby_modified(false),
+    _member_modified(false)
 {}
 
 EOSSDK_LobbyModification::~EOSSDK_LobbyModification()
@@ -54,6 +56,7 @@ EOS_EResult EOSSDK_LobbyModification::SetPermissionLevel(const EOS_LobbyModifica
 
     _infos.set_permission_level(get_enum_value(Options->PermissionLevel));
 
+    _lobby_modified = true;
     return EOS_EResult::EOS_Success;
 }
 
@@ -76,6 +79,7 @@ EOS_EResult EOSSDK_LobbyModification::SetMaxMembers(const EOS_LobbyModification_
 
     _infos.set_max_lobby_member(Options->MaxMembers);
 
+    _lobby_modified = true;
     return EOS_EResult::EOS_Success;
 }
 
@@ -120,6 +124,7 @@ EOS_EResult EOSSDK_LobbyModification::AddAttribute(const EOS_LobbyModification_A
         default                                       : return EOS_EResult::EOS_InvalidParameters;
     }
 
+    _lobby_modified = true;
     return EOS_EResult::EOS_Success;
 }
 
@@ -145,6 +150,7 @@ EOS_EResult EOSSDK_LobbyModification::RemoveAttribute(const EOS_LobbyModificatio
     if (it != attributes.end())
         attributes.erase(it);
 
+    _lobby_modified = true;
     return EOS_EResult::EOS_Success;
 }
 
@@ -163,7 +169,7 @@ EOS_EResult EOSSDK_LobbyModification::AddMemberAttribute(const EOS_LobbyModifica
     TRACE_FUNC();
     std::lock_guard<std::mutex> lk(_local_mutex);
 
-    if (Options == nullptr || Options->Attribute == nullptr || Options->Attribute->Key == nullptr ||
+    if (Options == nullptr || Options->Attribute == nullptr || Options->Attribute->Key == nullptr || *Options->Attribute->Key == '\0' ||
         (Options->Attribute->ValueType == EOS_ELobbyAttributeType::EOS_AT_STRING && Options->Attribute->Value.AsUtf8 == nullptr))
         return EOS_EResult::EOS_InvalidParameters;
 
@@ -191,6 +197,7 @@ EOS_EResult EOSSDK_LobbyModification::AddMemberAttribute(const EOS_LobbyModifica
         default                                       : return EOS_EResult::EOS_InvalidParameters;
     }
 
+    _member_modified = true;
     return EOS_EResult::EOS_Success;
 }
 
@@ -208,7 +215,7 @@ EOS_EResult EOSSDK_LobbyModification::RemoveMemberAttribute(const EOS_LobbyModif
     TRACE_FUNC();
     std::lock_guard<std::mutex> lk(_local_mutex);
 
-    if (Options == nullptr || Options->Key == nullptr)
+    if (Options == nullptr || Options->Key == nullptr || *Options->Key == '\0')
         return EOS_EResult::EOS_InvalidParameters;
 
     auto& member_attributes = (*_infos.mutable_members())[GetEOS_Connect().get_myself()->first->to_string()];
@@ -218,6 +225,7 @@ EOS_EResult EOSSDK_LobbyModification::RemoveMemberAttribute(const EOS_LobbyModif
     if (it != attributes.end())
         attributes.erase(it);
 
+    _member_modified = true;
     return EOS_EResult::EOS_Success;
 }
 

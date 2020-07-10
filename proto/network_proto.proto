@@ -137,6 +137,16 @@ message Session_Invite_Response_pb {
     bool accepted = 2;
 }
 
+message Session_Register_pb {
+    string session_id = 1;
+    repeated string member_ids = 2;
+}
+
+message Session_Unregister_pb {
+    string session_id = 1;
+    repeated string member_ids = 2;
+}
+
 // Base Sessions related message
 message Session_Message_pb {
     oneof message {
@@ -147,6 +157,8 @@ message Session_Message_pb {
         Session_Join_Response_pb session_join_response = 5;
         Session_Invite_pb session_invite = 6;
         Session_Invite_Response_pb session_invite_response = 7;
+        Session_Register_pb session_register = 8;
+        Session_Unregister_pb session_unregister = 9;
 	}
 }
 
@@ -237,7 +249,7 @@ message Lobby_Attribute {
     Lobby_Attr_Value value = 2;
 }
 
-message Lobby_Member_Attributes {
+message Lobby_Member_Infos_pb {
     map<string, Lobby_Attribute> attributes = 1;
 }
 
@@ -247,7 +259,7 @@ message Lobby_Infos_pb {
     int32 permission_level = 3;
     map<string, Lobby_Attribute> attributes = 4;
     string owner_id = 5;
-    map<string, Lobby_Member_Attributes> members = 6;
+    map<string, Lobby_Member_Infos_pb> members = 6;
 }
 
 message Lobby_Update_pb {
@@ -259,7 +271,7 @@ message Lobby_Update_pb {
 
 message Lobby_Member_Update_pb {
     string lobby_id = 1;
-    map<string, Lobby_Member_Attributes> member = 2;
+    map<string, Lobby_Member_Infos_pb> member = 2;
 }
 
 message Lobby_Join_Request_pb {
@@ -271,10 +283,6 @@ message Lobby_Join_Response_pb {
     Lobby_Infos_pb infos = 1;
     int32 reason = 2;
     int32 join_id = 3;
-}
-
-message Lobby_Join_pb {
-    string lobby_id = 1;
 }
 
 message Lobby_Invite_pb {
@@ -307,20 +315,20 @@ message Lobby_Message_pb {
         Lobby_Update_pb        lobby_update = 1;
         Lobby_Join_Request_pb  lobby_join_request = 2;
         Lobby_Join_Response_pb lobby_join_response = 3;
-        Lobby_Join_pb          lobby_join = 4;
-        Lobby_Invite_pb        lobby_invite = 5;
+        Lobby_Invite_pb        lobby_invite = 4;
 
-        Lobby_Member_Update_pb  member_update = 6;
-        Lobby_Member_Join_pb    member_join = 7;
-        Lobby_Member_Leave_pb   member_leave = 8;
-        Lobby_Member_Promote_pb member_promote = 9;
-        Lobby_Member_Kick_pb    member_kick = 10;
+        Lobby_Member_Update_pb  member_update = 5;
+        Lobby_Member_Join_pb    member_join = 6;
+        Lobby_Member_Leave_pb   member_leave = 7;
+        Lobby_Member_Promote_pb member_promote = 8;
+        Lobby_Member_Kick_pb    member_kick = 9;
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////
 //                       Lobbies Search messages                        //
 //////////////////////////////////////////////////////////////////////////
+// Search parameter, key is the comparison type
 message Lobby_Search_Parameter {
     map<int32, Lobby_Attr_Value> param = 1;
 }
