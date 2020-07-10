@@ -33,7 +33,93 @@
 #include "utils.h"
 
 static HMODULE original_dll = nullptr;
+#if defined(WIN64) || defined(_WIN64) || defined(__MINGW64__)
 static const char* original_dll_name = "EOSSDK-Win64-Shipping.original.dll";
+
+#define GET_PROC_ADDRESS(hModule, procName) GetProcAddress(hModule, procName)
+#define ORIGINAL_FUNCTION(NAME) static decltype(NAME)* _##NAME = (decltype(_##NAME))GET_PROC_ADDRESS(original_dll, #NAME)
+
+#define load_symbols(...)
+
+#elif defined(WIN32) || defined(_WIN32) || defined(__MINGW32__)
+
+static const char* original_dll_name = "EOSSDK-Win32-Shipping.original.dll";
+
+#if !defined(FIELD_OFFSET)
+	#define FIELD_OFFSET(type, field) ( (long)(long*) &( ((type*)0)->field) )
+#endif
+
+static std::map<std::string, void*> original_exported_funcs;
+static std::string original_exported_dll_name;
+
+// Minimalistic 32bits library exported functions loader
+void load_symbols(uint8_t* mem_addr)
+{
+    uint8_t* pAddr = (uint8_t*)mem_addr;
+
+    original_exported_funcs.clear();
+
+    IMAGE_DOS_HEADER   dos_header;
+    IMAGE_NT_HEADERS32 nt_header;
+
+    memcpy(&dos_header, pAddr, sizeof(dos_header));
+    pAddr += dos_header.e_lfanew;
+    memcpy(&nt_header, pAddr, sizeof(nt_header));
+
+    // ----- Read the exported symbols (if any) ----- //
+    if (nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress &&
+        nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].Size)
+    {
+        IMAGE_EXPORT_DIRECTORY exportDir;
+        int rva = nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+        unsigned short funcOrdinal;
+        // Goto export directory structure
+        pAddr = mem_addr + rva;
+        memcpy(&exportDir, pAddr, sizeof(IMAGE_EXPORT_DIRECTORY));
+        // Goto DLL name
+        pAddr = mem_addr + exportDir.Name;// +offset;
+        original_exported_dll_name = (const char*)pAddr;
+
+        // Read exported functions that have a name
+        for (unsigned int i = 0; i < exportDir.NumberOfNames; ++i)
+        {
+            // Goto the funcOrdinals offset
+            pAddr = mem_addr + exportDir.AddressOfNameOrdinals + sizeof(unsigned short) * i;
+            // Read the current func ordinal
+            memcpy(&funcOrdinal, pAddr, sizeof(unsigned short));
+            // Goto the nameAddr rva
+            pAddr = mem_addr + exportDir.AddressOfNames + sizeof(unsigned int) * i;
+            auto& addr = original_exported_funcs[(const char*)(mem_addr + *(int32_t*)pAddr)];
+            // Goto the funcAddr rva
+            pAddr = mem_addr + exportDir.AddressOfFunctions + sizeof(unsigned int) * i;
+            addr = (void*)(mem_addr + *(int32_t*)pAddr);
+        }
+    }
+}
+
+// Get the proc address from its name and not its exported name
+// __stdcall convention adds an '_' as prefix and "@<parameter size>" as suffix
+void* get_proc_address(HMODULE hModule, LPCSTR procName)
+{
+    size_t proc_len = strlen(procName);
+    for (auto& proc : original_exported_funcs)
+    {
+        auto pos = proc.first.find(procName);
+        if (pos == 0 || // Not __stdcall
+            (pos == 1 && proc.first[0] == '_' && proc.first[proc_len + 1] == '@') // __stdcall
+            )
+        {
+            return proc.second;
+        }
+    }
+
+    return nullptr;
+}
+
+#define GET_PROC_ADDRESS(hModule, procName) get_proc_address(hModule, procName)
+#define ORIGINAL_FUNCTION(NAME) static decltype(NAME)* _##NAME = (decltype(_##NAME))GET_PROC_ADDRESS(original_dll, #NAME)
+
+#endif
 static std::string exe_path;
 
 constexpr static char achievements_db_file[] = "achievements_db.json";
@@ -63,6 +149,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
         {
             original_dll = LoadLibrary(original_dll_name);
 
+            load_symbols((uint8_t*)original_dll);
+
             load_json(achievements_db_file, achievements_db);
             load_json(achievements_file, achievements);
             load_json(entitlements_file, entitlements);
@@ -88,8 +176,6 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 EOS_HPlatform hPlatform = nullptr;
 EOS_HMetrics  hMetrics  = nullptr;
 EOS_HUserInfo hUserInfo = nullptr;
-
-#define ORIGINAL_FUNCTION(NAME) static decltype(NAME)* _##NAME = (decltype(_##NAME))GetProcAddress(original_dll, #NAME)
 
 EOS_DECLARE_FUNC(EOS_Bool) EOS_AccountId_IsValid(EOS_AccountId AccountId);
 EOS_DECLARE_FUNC(EOS_EResult) EOS_AccountId_ToString(EOS_AccountId AccountId, char* OutBuffer, int32_t* InOutBufferLength);
@@ -224,6 +310,30 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_EpicAccountId_IsValid(EOS_EpicAccountId AccountId
     LOG(Log::LogLevel::TRACE, "");
     ORIGINAL_FUNCTION(EOS_EpicAccountId_IsValid);
     auto res = _EOS_EpicAccountId_IsValid(AccountId);
+
+    if (AccountId != (EOS_EpicAccountId)0x006E00690057002F)
+    {
+        auto res = _EOS_EpicAccountId_IsValid((EOS_EpicAccountId)0x006E00690057002F);
+        std::stringstream sstr;
+
+        sstr << "Epic Account Id 0x006E00690057002F: " << EOS_Bool_2_str(res) << " = ";
+
+        if (res == EOS_TRUE)
+        {
+            char buff[4096];
+            int32_t len = 4096;
+            if (EOS_EpicAccountId_ToString(AccountId, buff, &len) == EOS_EResult::EOS_Success)
+            {
+                sstr << buff << std::endl;
+            }
+            else
+            {
+                sstr << "FAILED !" << std::endl;
+            }
+        }
+
+        LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
+    }
 
     std::stringstream sstr;
     if (res == EOS_TRUE)
@@ -3084,14 +3194,14 @@ EOS_DECLARE_FUNC(EOS_ELoginStatus) EOS_Auth_GetLoginStatus(EOS_HAuth Handle, EOS
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthTokenOld(EOS_HAuth Handle, EOS_AccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken)
 {
     LOG(Log::LogLevel::TRACE, "");
-    static decltype(EOS_Auth_CopyUserAuthTokenOld)* _EOS_Auth_CopyUserAuthToken = (decltype(_EOS_Auth_CopyUserAuthToken))GetProcAddress(original_dll, "EOS_Auth_CopyUserAuthToken");
+    static decltype(EOS_Auth_CopyUserAuthTokenOld)* _EOS_Auth_CopyUserAuthToken = (decltype(_EOS_Auth_CopyUserAuthToken))GET_PROC_ADDRESS(original_dll, "EOS_Auth_CopyUserAuthToken");
     return _EOS_Auth_CopyUserAuthToken(Handle, LocalUserId, OutUserAuthToken);
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthTokenNew(EOS_HAuth Handle, const EOS_Auth_CopyUserAuthTokenOptions* Options, EOS_EpicAccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken)
 {
     LOG(Log::LogLevel::TRACE, "");
-    static decltype(EOS_Auth_CopyUserAuthTokenNew)* _EOS_Auth_CopyUserAuthToken = (decltype(_EOS_Auth_CopyUserAuthToken))GetProcAddress(original_dll, "EOS_Auth_CopyUserAuthToken");
+    static decltype(EOS_Auth_CopyUserAuthTokenNew)* _EOS_Auth_CopyUserAuthToken = (decltype(_EOS_Auth_CopyUserAuthToken))GET_PROC_ADDRESS(original_dll, "EOS_Auth_CopyUserAuthToken");
     return _EOS_Auth_CopyUserAuthToken(Handle, Options, LocalUserId, OutUserAuthToken);
 }
 
@@ -3121,14 +3231,14 @@ EOS_DECLARE_FUNC(EOS_EResult) CLANG_GCC_DONT_OPTIMIZE EOS_Auth_CopyUserAuthToken
 EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Auth_AddNotifyLoginStatusChangedOld(EOS_HAuth Handle, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification)
 {
     LOG(Log::LogLevel::TRACE, "");
-    static decltype(EOS_Auth_AddNotifyLoginStatusChangedOld)* _EOS_Auth_AddNotifyLoginStatusChanged = (decltype(_EOS_Auth_AddNotifyLoginStatusChanged))GetProcAddress(original_dll, "EOS_Auth_AddNotifyLoginStatusChanged");
+    static decltype(EOS_Auth_AddNotifyLoginStatusChangedOld)* _EOS_Auth_AddNotifyLoginStatusChanged = (decltype(_EOS_Auth_AddNotifyLoginStatusChanged))GET_PROC_ADDRESS(original_dll, "EOS_Auth_AddNotifyLoginStatusChanged");
     return _EOS_Auth_AddNotifyLoginStatusChanged(Handle, ClientData, Notification);
 }
 
 EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Auth_AddNotifyLoginStatusChangedNew(EOS_HAuth Handle, const EOS_Auth_AddNotifyLoginStatusChangedOptions* Options, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification)
 {
     LOG(Log::LogLevel::TRACE, "");
-    static decltype(EOS_Auth_AddNotifyLoginStatusChangedNew)* _EOS_Auth_AddNotifyLoginStatusChanged = (decltype(_EOS_Auth_AddNotifyLoginStatusChanged))GetProcAddress(original_dll, "EOS_Auth_AddNotifyLoginStatusChanged");
+    static decltype(EOS_Auth_AddNotifyLoginStatusChangedNew)* _EOS_Auth_AddNotifyLoginStatusChanged = (decltype(_EOS_Auth_AddNotifyLoginStatusChanged))GET_PROC_ADDRESS(original_dll, "EOS_Auth_AddNotifyLoginStatusChanged");
     return _EOS_Auth_AddNotifyLoginStatusChanged(Handle, Options, ClientData, Notification);
 }
 
