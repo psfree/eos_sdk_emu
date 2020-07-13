@@ -47,11 +47,44 @@ namespace sdk
         EOSSDK_Connect();
         ~EOSSDK_Connect();
 
-        EOS_ProductUserId product_id();
-        std::pair<EOS_ProductUserId const, user_state_t>* get_myself();
-        std::pair<EOS_ProductUserId const, user_state_t>* get_user_by_userid(EOS_EpicAccountId userid);
-        std::pair<EOS_ProductUserId const, user_state_t>* get_user_by_productid(EOS_ProductUserId productid);
-        std::pair<EOS_ProductUserId const, user_state_t>* get_user_by_name(std::string const& username);
+        inline EOS_ProductUserId product_id()
+        {
+            return get_myself()->first;
+        }
+        inline typename decltype(EOSSDK_Connect::_users)::iterator get_myself()
+        {
+            return _users.begin();
+        }
+        inline typename decltype(EOSSDK_Connect::_users)::iterator get_all_users()
+        {
+            return _users.begin();
+        }
+        inline typename decltype(EOSSDK_Connect::_users)::iterator get_other_users()
+        {
+            return ++(_users.begin());
+        }
+        inline typename decltype(EOSSDK_Connect::_users)::iterator get_user_by_userid(EOS_EpicAccountId userid)
+        {
+            return std::find_if(_users.begin(), _users.end(), [&userid](std::pair<EOS_ProductUserId const, user_state_t>& user)
+            {
+                return user.second.infos.userid() == userid->to_string();
+            });
+        }
+        inline typename decltype(EOSSDK_Connect::_users)::iterator get_user_by_productid(EOS_ProductUserId productid)
+        {
+            return _users.find(productid);
+        }
+        inline typename decltype(EOSSDK_Connect::_users)::iterator get_user_by_name(std::string const& username)
+        {
+            return std::find_if(_users.begin(), _users.end(), [&username](std::pair<EOS_ProductUserId const, user_state_t>& user)
+            {
+                return user.second.infos.displayname() == username;
+            });
+        }
+        inline typename decltype(EOSSDK_Connect::_users)::iterator get_end_users()
+        {
+            return _users.end();
+        }
 
         //void add_session(EOS_ProductUserId session_id, std::string const& session_name);
         //void remove_session(EOS_ProductUserId session_id, std::string const& session_name);

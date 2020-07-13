@@ -114,8 +114,8 @@ void EOSSDK_UserInfo::QueryUserInfo(const EOS_UserInfo_QueryUserInfoOptions* Opt
     {
         quici.TargetUserId = Options->TargetUserId;
 
-        auto *user = GetEOS_Connect().get_user_by_userid(Options->TargetUserId);
-        if (user == nullptr)
+        auto user = GetEOS_Connect().get_user_by_userid(Options->TargetUserId);
+        if (user == GetEOS_Connect().get_end_users())
         {
             quici.ResultCode = EOS_EResult::EOS_NotFound;
             res->done = true;
@@ -179,19 +179,29 @@ void EOSSDK_UserInfo::QueryUserInfoByDisplayName(const EOS_UserInfo_QueryUserInf
     }
     else
     {
-        auto* user = GetEOS_Connect().get_user_by_name(Options->DisplayName);
-        if (user == nullptr || !user->second.connected)
+        auto user = GetEOS_Connect().get_user_by_name(Options->DisplayName);
+        if (user == GetEOS_Connect().get_end_users())
         {
             quibdnci.ResultCode = EOS_EResult::EOS_NotFound;
             res->done = true;
         }
-        else
+        else if (user->first == GetEOS_Connect().product_id())
+        {
+            quibdnci.ResultCode = EOS_EResult::EOS_Success;
+            res->done = true;
+        }
+        else if(user->second.connected)
         {
             quibdnci.TargetUserId = GetEpicUserId(user->second.infos.userid());
             _userinfos_queries[quibdnci.TargetUserId].push_back(res);
 
             UserInfo_Info_Request_pb* request = new UserInfo_Info_Request_pb;
             send_userinfo_request(user->first->to_string(), request);
+        }
+        else
+        {
+            quibdnci.ResultCode = EOS_EResult::EOS_NotFound;
+            res->done = true;
         }
     }
 
@@ -381,7 +391,7 @@ bool EOSSDK_UserInfo::on_userinfo(Network_Message_pb const& msg, UserInfo_Info_p
     GLOBAL_LOCK();
 
     auto user = GetEOS_Connect().get_user_by_productid(GetProductUserId(msg.source_id()));
-    if (user != nullptr)
+    if (user != GetEOS_Connect().get_end_users())
     {
         EOS_EpicAccountId user_id = GetEpicUserId(user->second.infos.userid());
         _userinfos[user_id] = infos;

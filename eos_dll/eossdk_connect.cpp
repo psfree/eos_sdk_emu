@@ -62,52 +62,6 @@ EOSSDK_Connect::~EOSSDK_Connect()
     GetCB_Manager().remove_all_notifications(this);
 }
 
-EOS_ProductUserId EOSSDK_Connect::product_id()
-{
-    return get_myself()->first;
-}
-
-std::pair<EOS_ProductUserId const, user_state_t>* EOSSDK_Connect::get_myself()
-{
-    auto it = _users.begin();
-    return &(*it);
-}
-
-std::pair<EOS_ProductUserId const, user_state_t>* EOSSDK_Connect::get_user_by_userid(EOS_EpicAccountId userid)
-{
-    auto it = std::find_if(_users.begin(), _users.end(), [&userid]( std::pair<EOS_ProductUserId const, user_state_t> &user )
-    {
-        return user.second.infos.userid() == userid->to_string();
-    });
-    if (it == _users.end())
-    {
-        return nullptr;
-    }
-
-    return &(*it);
-}
-
-std::pair<EOS_ProductUserId const, user_state_t>* EOSSDK_Connect::get_user_by_productid(EOS_ProductUserId productid)
-{
-    auto it = _users.find(productid);
-    if (it == _users.end())
-        return nullptr;
-
-    return &(*it);
-}
-
-std::pair<EOS_ProductUserId const, user_state_t>* EOSSDK_Connect::get_user_by_name(std::string const& username)
-{
-    auto it = std::find_if(_users.begin(), _users.end(), [&username](std::pair<EOS_ProductUserId const, user_state_t>& user)
-    {
-        return user.second.infos.displayname() == username;
-    });
-    if (it == _users.end())
-        return nullptr;
-
-    return &(*it);
-}
-
 //void EOSSDK_Connect::add_session(EOS_ProductUserId session_id, std::string const& session_name)
 //{
 //    auto& sessions = *get_myself()->second.infos.mutable_sessions();

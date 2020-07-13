@@ -72,8 +72,7 @@ void EOSSDK_Friends::QueryFriends(const EOS_Friends_QueryFriendsOptions* Options
 
     _friends.clear();
 
-    auto& users = GetEOS_Connect()._users;
-    for (auto user_it = ++users.begin(); user_it != users.end(); ++user_it)
+    for (auto user_it = GetEOS_Connect().get_other_users(); user_it != GetEOS_Connect().get_end_users(); ++user_it)
     {
         if (user_it->second.authentified)
         {

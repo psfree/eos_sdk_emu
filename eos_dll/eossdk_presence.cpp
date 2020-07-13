@@ -145,8 +145,8 @@ void EOSSDK_Presence::QueryPresence( const EOS_Presence_QueryPresenceOptions* Op
     }
     else
     {
-        auto* user = GetEOS_Connect().get_user_by_userid(Options->TargetUserId);
-        if (user != nullptr)
+        auto user = GetEOS_Connect().get_user_by_userid(Options->TargetUserId);
+        if (user != GetEOS_Connect().get_end_users())
         {
             _presence_queries[Options->TargetUserId].emplace_back(res);
             Presence_Info_Request_pb* req = new Presence_Info_Request_pb;
@@ -557,8 +557,8 @@ bool EOSSDK_Presence::on_peer_connect(Network_Message_pb const& msg, Network_Pee
     GLOBAL_LOCK();
 
     EOS_ProductUserId product_id = GetProductUserId(msg.source_id());
-    std::pair<const EOS_ProductUserId, user_state_t>* pUser = GetEOS_Connect().get_user_by_productid(product_id);
-    if (pUser != nullptr && pUser->second.authentified)
+    auto pUser = GetEOS_Connect().get_user_by_productid(product_id);
+    if (pUser != GetEOS_Connect().get_end_users() && pUser->second.authentified)
     {
         EOS_EpicAccountId account_id = GetEpicUserId(pUser->second.infos.userid());
         if(account_id->IsValid())
@@ -574,8 +574,8 @@ bool EOSSDK_Presence::on_peer_disconnect(Network_Message_pb const& msg, Network_
     GLOBAL_LOCK();
 
     EOS_ProductUserId product_id = GetProductUserId(msg.source_id());
-    std::pair<const EOS_ProductUserId, user_state_t>* pUser = GetEOS_Connect().get_user_by_productid(product_id);
-    if (pUser != nullptr && pUser->second.authentified)
+    auto pUser = GetEOS_Connect().get_user_by_productid(product_id);
+    if (pUser != GetEOS_Connect().get_end_users() && pUser->second.authentified)
     {
         EOS_EpicAccountId account_id = GetEpicUserId(pUser->second.infos.userid());
         if (account_id->IsValid())

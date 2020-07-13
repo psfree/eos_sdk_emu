@@ -960,7 +960,7 @@ void EOSSDK_Sessions::SendInvite(const EOS_Sessions_SendInviteOptions* Options, 
     else
     {
         session_state_t* session = get_session_by_name(Options->SessionName);
-        if (session == nullptr || GetEOS_Connect().get_user_by_productid(Options->TargetUserId) == nullptr)
+        if (session == nullptr || GetEOS_Connect().get_user_by_productid(Options->TargetUserId) == GetEOS_Connect().get_end_users())
         {
             sici.ResultCode = EOS_EResult::EOS_NotFound;
         }
@@ -1458,7 +1458,7 @@ EOS_EResult EOSSDK_Sessions::IsUserInSession(const EOS_Sessions_IsUserInSessionO
     else
     {
         auto user_infos = GetEOS_Connect().get_user_by_productid(Options->TargetUserId);
-        if (user_infos != nullptr)
+        if (user_infos != GetEOS_Connect().get_end_users())
         {
             for (auto const& session : user_infos->second.infos.sessions())
             {
@@ -1814,7 +1814,7 @@ bool EOSSDK_Sessions::on_session_join_request(Network_Message_pb const& msg, Ses
     resp->set_user_id(msg.source_id());
 
     // If we know the user
-    if (GetEOS_Connect().get_user_by_productid(GetProductUserId(msg.source_id())) != nullptr)
+    if (GetEOS_Connect().get_user_by_productid(GetProductUserId(msg.source_id())) != GetEOS_Connect().get_end_users())
     {
         if (pSession->infos.max_players() - pSession->infos.players_size())
         {
