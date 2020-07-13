@@ -353,6 +353,7 @@ bool EOSSDK_UserInfo::send_userinfo_request(Network::peer_t const& peerid, UserI
 
     msg.set_source_id(userid);
     msg.set_dest_id(peerid);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     return GetNetwork().TCPSendTo(msg);
 }
@@ -369,6 +370,7 @@ bool EOSSDK_UserInfo::send_my_userinfo(Network::peer_t const& peerid)
 
     msg.set_source_id(userid);
     msg.set_dest_id(peerid);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     auto res = GetNetwork().TCPSendTo(msg);
     userinfo->release_userinfo_info();

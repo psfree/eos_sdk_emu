@@ -156,7 +156,7 @@ namespace sdk
         EOSSDK_Lobby();
         ~EOSSDK_Lobby();
 
-        lobby_state_t* get_lobby_by_id(std::string const& lobby_id);
+        inline lobby_state_t* get_lobby_by_id(std::string const& lobby_id);
         std::vector<lobby_state_t*> get_lobbies_from_attributes(google::protobuf::Map<std::string, Lobby_Search_Parameter> const& parameters);
         bool add_member_to_lobby(std::string const& member, lobby_state_t* lobby);
         bool remove_member_from_lobby(std::string const& member, lobby_state_t* lobby);

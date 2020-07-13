@@ -1470,6 +1470,7 @@ bool EOSSDK_Lobby::send_lobby_update(lobby_state_t* pLobby)
     msg.set_allocated_lobby(lobby);
 
     msg.set_source_id(user_id);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     return send_to_all_members(msg, pLobby);
 }
@@ -1487,6 +1488,7 @@ bool EOSSDK_Lobby::send_lobbies_search_response(Network::peer_t const& peerid, L
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     return GetNetwork().TCPSendTo(msg);
 }
@@ -1504,6 +1506,7 @@ bool EOSSDK_Lobby::send_lobby_join_request(Network::peer_t const& peerid, Lobby_
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     return GetNetwork().TCPSendTo(msg);
 }
@@ -1521,6 +1524,7 @@ bool EOSSDK_Lobby::send_lobby_join_response(Network::peer_t const& peerid, Lobby
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     return GetNetwork().TCPSendTo(msg);
 }
@@ -1538,6 +1542,7 @@ bool EOSSDK_Lobby::send_lobby_invite(Network::peer_t const& peerid, Lobby_Invite
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     return GetNetwork().TCPSendTo(msg);
 }
@@ -1560,6 +1565,7 @@ bool EOSSDK_Lobby::send_lobby_member_update(Network::peer_t const& member_id, lo
         lobby->set_allocated_member_update(update);
         msg.set_allocated_lobby(lobby);
         msg.set_source_id(user_id);
+        msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
         return send_to_all_members_or_owner(msg, pLobby);
     }
@@ -1581,6 +1587,7 @@ bool EOSSDK_Lobby::send_lobby_member_join(Network::peer_t const& member_id, lobb
     lobby_pb->set_allocated_member_join(join);
     msg.set_allocated_lobby(lobby_pb);
     msg.set_source_id(user_id);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     return send_to_all_members(msg, lobby);
 }
@@ -1601,6 +1608,7 @@ bool EOSSDK_Lobby::send_lobby_member_leave(Network::peer_t const& member_id, lob
     lobby_pb->set_allocated_member_leave(leave);
     msg.set_allocated_lobby(lobby_pb);
     msg.set_source_id(user_id);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     return send_to_all_members_or_owner(msg, lobby);
 }
@@ -1621,6 +1629,7 @@ bool EOSSDK_Lobby::send_lobby_member_promote(Network::peer_t const& member_id, l
     msg.set_allocated_lobby(lobby_pb);
 
     msg.set_source_id(user_id);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     // Only the lobby owner can promote, so send to all members
     return send_to_all_members(msg, lobby);

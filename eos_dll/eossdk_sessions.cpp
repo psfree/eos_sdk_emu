@@ -20,7 +20,6 @@
 #include "eossdk_sessions.h"
 #include "eossdk_platform.h"
 #include "eos_client_api.h"
-#include "settings.h"
 
 namespace sdk
 {
@@ -1497,14 +1496,11 @@ EOS_EResult EOSSDK_Sessions::DumpSessionState(const EOS_Sessions_DumpSessionStat
 bool EOSSDK_Sessions::send_to_all_members(Network_Message_pb & msg, session_state_t* session)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
-
     assert(session != nullptr);
 
-    msg.set_source_id(user_id);
     for (auto const& player : session->infos.players())
     {
-        if (player != user_id)
+        if (player != msg.source_id())
         {
             msg.set_dest_id(player);
             GetNetwork().TCPSendTo(msg);
@@ -1535,14 +1531,16 @@ bool EOSSDK_Sessions::send_session_info_request(Network::peer_t const& peerid, S
 bool EOSSDK_Sessions::send_session_info(session_state_t* session)
 {
     TRACE_FUNC();
-    if (session == nullptr)
-        return false;
+    assert(session != nullptr);
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
     Session_Message_pb* session_pb = new Session_Message_pb;
 
     session_pb->set_allocated_session_infos(&session->infos);
     msg.set_allocated_session(session_pb);
+    msg.set_source_id(user_id);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     bool res = send_to_all_members(msg, session);;
 
@@ -1554,8 +1552,8 @@ bool EOSSDK_Sessions::send_session_info(session_state_t* session)
 bool EOSSDK_Sessions::send_session_destroy(session_state_t *session)
 {
     TRACE_FUNC();
-    if (session == nullptr)
-        return false;
+    assert(session != nullptr);
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
     Session_Message_pb* session_pb = new Session_Message_pb;
@@ -1565,6 +1563,8 @@ bool EOSSDK_Sessions::send_session_destroy(session_state_t *session)
 
     session_pb->set_allocated_session_destroy(destr);
     msg.set_allocated_session(session_pb);
+    msg.set_source_id(user_id);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     return send_to_all_members(msg, session);
 }
@@ -1582,6 +1582,7 @@ bool EOSSDK_Sessions::send_sessions_search_response(Network::peer_t const& peeri
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     return GetNetwork().TCPSendTo(msg);
 }
@@ -1589,8 +1590,8 @@ bool EOSSDK_Sessions::send_sessions_search_response(Network::peer_t const& peeri
 bool EOSSDK_Sessions::send_session_join_request(session_state_t *session)
 {
     TRACE_FUNC();
-    if (session == nullptr)
-        return false;
+    assert(session != nullptr);
+    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
 
     Network_Message_pb msg;
     Session_Message_pb* session_pb = new Session_Message_pb;
@@ -1598,6 +1599,8 @@ bool EOSSDK_Sessions::send_session_join_request(session_state_t *session)
 
     session_pb->set_allocated_session_join_request(req);
     msg.set_allocated_session(session_pb);
+    msg.set_source_id(user_id);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     req->set_session_id(session->infos.session_id());
 
@@ -1617,6 +1620,7 @@ bool EOSSDK_Sessions::send_session_join_response(Network::peer_t const& peerid, 
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     session_state_t* pSession = get_session_by_id(resp->session_id());
 
@@ -1640,6 +1644,7 @@ bool EOSSDK_Sessions::send_session_invite(Network::peer_t const& peerid, Session
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     return GetNetwork().TCPSendTo(msg);
 }
@@ -1657,6 +1662,7 @@ bool EOSSDK_Sessions::send_session_invite_response(Network::peer_t const& peerid
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     return GetNetwork().TCPSendTo(msg);
 }
@@ -1673,6 +1679,7 @@ bool EOSSDK_Sessions::send_session_register(Session_Register_pb* register_, sess
     msg.set_allocated_session(session_pb);
 
     msg.set_source_id(user_id);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     return send_to_all_members(msg, session);
 }
@@ -1689,6 +1696,7 @@ bool EOSSDK_Sessions::send_session_unregister(Session_Unregister_pb* unregister,
     msg.set_allocated_session(session_pb);
 
     msg.set_source_id(user_id);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     return send_to_all_members(msg, session);
 }
@@ -1770,27 +1778,30 @@ bool EOSSDK_Sessions::on_sessions_search(Network_Message_pb const& msg, Sessions
     Sessions_Search_response_pb* resp = new Sessions_Search_response_pb;
     resp->set_search_id(search.search_id());
 
-    if (search.parameters_size() > 0)
+    if (msg.game_id() == EOSSDK_Client::Inst()._product_name)
     {
-        std::vector<session_state_t*> sessions = std::move(get_sessions_from_attributes(search.parameters()));
-        for (auto& session : sessions)
+        if (search.parameters_size() > 0)
         {
-            *resp->mutable_sessions()->Add() = session->infos;
+            std::vector<session_state_t*> sessions = std::move(get_sessions_from_attributes(search.parameters()));
+            for (auto& session : sessions)
+            {
+                *resp->mutable_sessions()->Add() = session->infos;
+            }
         }
-    }
-    else if (!search.session_id().empty())
-    {
-        session_state_t* pSession = get_session_by_id(search.session_id());
-        if (pSession != nullptr)
+        else if (!search.session_id().empty())
         {
-            *resp->mutable_sessions()->Add() = pSession->infos;
+            session_state_t* pSession = get_session_by_id(search.session_id());
+            if (pSession != nullptr)
+            {
+                *resp->mutable_sessions()->Add() = pSession->infos;
+            }
         }
-    }
-    else if (GetProductUserId(search.target_id()) == GetEOS_Connect().get_myself()->first)
-    {
-        for (auto& session : _sessions)
+        else if (GetProductUserId(search.target_id()) == GetEOS_Connect().get_myself()->first)
         {
-            *resp->mutable_sessions()->Add() = session.second.infos;
+            for (auto& session : _sessions)
+            {
+                *resp->mutable_sessions()->Add() = session.second.infos;
+            }
         }
     }
 
@@ -1981,7 +1992,7 @@ bool EOSSDK_Sessions::RunNetwork(Network_Message_pb const& msg)
     {
         case Network_Message_pb::MessagesCase::kSession:
         {
-            if (GetEpicUserId(msg.source_id()) == Settings::Inst().userid)
+            if (GetProductUserId(msg.source_id()) == GetEOS_Connect().get_myself()->first)
                 return true;
 
             Session_Message_pb const& session = msg.session();

@@ -19,6 +19,7 @@
 
 #include "eossdk_lobby.h"
 #include "eossdk_platform.h"
+#include "eos_client_api.h"
 
 namespace sdk
 {
@@ -293,6 +294,7 @@ bool EOSSDK_LobbySearch::send_lobbies_search(Lobbies_Search_pb* search)
     Lobbies_Search_Message_pb* search_msg = new Lobbies_Search_Message_pb();
 
     msg.set_source_id(user_id);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     search_msg->set_allocated_search(search);
     msg.set_allocated_lobbies_search(search_msg);

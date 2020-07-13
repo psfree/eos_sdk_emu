@@ -20,7 +20,6 @@
 #include "eossdk_sessions.h"
 #include "eossdk_platform.h"
 #include "eos_client_api.h"
-#include "settings.h"
 
 namespace sdk
 {
@@ -325,6 +324,7 @@ bool EOSSDK_SessionSearch::send_sessions_search(Sessions_Search_pb* search)
     Sessions_Search_Message_pb* search_msg = new Sessions_Search_Message_pb();
 
     msg.set_source_id(user_id);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     search_msg->set_allocated_search(search);
     msg.set_allocated_sessions_search(search_msg);

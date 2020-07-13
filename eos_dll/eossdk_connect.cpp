@@ -661,10 +661,11 @@ bool EOSSDK_Connect::send_connect_infos_request(Network::peer_t const& peerid, C
     Connect_Message_pb* conn = new Connect_Message_pb;
 
     conn->set_allocated_request(req);
+    msg.set_allocated_connect(conn);
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
-    msg.set_allocated_connect(conn);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     return GetNetwork().TCPSendTo(msg);
 }
@@ -678,10 +679,11 @@ bool EOSSDK_Connect::send_connect_infos(Network::peer_t const& peerid, Connect_I
     Connect_Message_pb* conn = new Connect_Message_pb;
 
     conn->set_allocated_infos(infos);
+    msg.set_allocated_connect(conn);
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
-    msg.set_allocated_connect(conn);
+    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
 
     return GetNetwork().TCPSendTo(msg);
 }

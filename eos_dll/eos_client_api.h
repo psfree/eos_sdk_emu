@@ -58,7 +58,7 @@ public:
     std::map<std::string, EOS_ProductUserId> _productuserids;
 
     int32_t api_version;
-    //std::string product_name;
+    std::string _product_name;
     std::string _product_version;
 
     EOSSDK_Client();
