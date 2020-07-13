@@ -516,7 +516,7 @@ void EOSSDK_Lobby::LeaveLobby(const EOS_Lobby_LeaveLobbyOptions* Options, void* 
         if (it != _lobbies.end())
         {
             // TODO: If we're the owner, destroy the lobby ?
-            send_lobby_member_leave(GetEOS_Connect().get_myself()->first->to_string(), &it->second);
+            send_lobby_member_leave(GetEOS_Connect().get_myself()->first->to_string(), &it->second, EOS_ELobbyMemberStatus::EOS_LMS_LEFT);
             llci.ResultCode = EOS_EResult::EOS_Success;
             _lobbies.erase(it);
         }
@@ -783,7 +783,7 @@ void EOSSDK_Lobby::KickMember(const EOS_Lobby_KickMemberOptions* Options, void* 
             {
                 if (is_member_in_lobby(Options->TargetUserId->to_string(), pLobby))
                 {
-                    send_lobby_member_kick(Options->TargetUserId->to_string(), pLobby);
+                    send_lobby_member_leave(Options->TargetUserId->to_string(), pLobby, EOS_ELobbyMemberStatus::EOS_LMS_KICKED);
                     kmci.ResultCode = EOS_EResult::EOS_Success;
                 }
                 else
@@ -1592,7 +1592,7 @@ bool EOSSDK_Lobby::send_lobby_member_join(Network::peer_t const& member_id, lobb
     return send_to_all_members(msg, lobby);
 }
 
-bool EOSSDK_Lobby::send_lobby_member_leave(Network::peer_t const& member_id, lobby_state_t* lobby)
+bool EOSSDK_Lobby::send_lobby_member_leave(Network::peer_t const& member_id, lobby_state_t* lobby, EOS_ELobbyMemberStatus reason)
 {
     TRACE_FUNC();
     std::string const& user_id = GetEOS_Connect().product_id()->to_string();
@@ -1603,7 +1603,7 @@ bool EOSSDK_Lobby::send_lobby_member_leave(Network::peer_t const& member_id, lob
 
     leave->set_lobby_id(lobby->infos.lobby_id());
     leave->set_member_id(member_id);
-    leave->set_reason(get_enum_value(EOS_ELobbyMemberStatus::EOS_LMS_LEFT));
+    leave->set_reason(get_enum_value(reason));
 
     lobby_pb->set_allocated_member_leave(leave);
     msg.set_allocated_lobby(lobby_pb);
@@ -1633,39 +1633,6 @@ bool EOSSDK_Lobby::send_lobby_member_promote(Network::peer_t const& member_id, l
 
     // Only the lobby owner can promote, so send to all members
     return send_to_all_members(msg, lobby);
-}
-
-bool EOSSDK_Lobby::send_lobby_member_kick(Network::peer_t const& member_id, lobby_state_t* lobby)
-{
-    TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
-
-    Network_Message_pb msg;
-    Lobby_Message_pb* lobby_pb = new Lobby_Message_pb;
-    Lobby_Member_Kick_pb* kick = new Lobby_Member_Kick_pb;
-
-    kick->set_lobby_id(lobby->infos.lobby_id());
-
-    lobby_pb->set_allocated_member_kick(kick);
-    msg.set_allocated_lobby(lobby_pb);
-
-    msg.set_source_id(user_id);
-    msg.set_dest_id(member_id);
-
-    auto res = GetNetwork().TCPSendTo(msg);
-    
-    Lobby_Member_Leave_pb* leave = new Lobby_Member_Leave_pb;
-
-    leave->set_lobby_id(lobby->infos.lobby_id());
-    leave->set_member_id(member_id);
-    leave->set_reason(get_enum_value(EOS_ELobbyMemberStatus::EOS_LMS_KICKED));
-
-    lobby_pb->set_allocated_member_leave(leave);
-    msg.set_source_id(user_id);
-
-    send_to_all_members(msg, lobby);
-
-    return res;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1917,6 +1884,18 @@ bool EOSSDK_Lobby::on_lobby_member_leave(Network_Message_pb const& msg, Lobby_Me
         }
 
         notify_lobby_member_status_update(leave.member_id(), (EOS_ELobbyMemberStatus)leave.reason(), pLobby);
+
+        switch ((EOS_ELobbyMemberStatus)leave.reason())
+        {
+            case EOS_ELobbyMemberStatus::EOS_LMS_KICKED:
+            {
+                if (GetProductUserId(leave.member_id()) == GetEOS_Connect().product_id())
+                {// If I am the one behing kicked
+                    _lobbies.erase(leave.lobby_id());
+                }
+            }
+            break;
+        }
     }
 
     return true;
@@ -1933,22 +1912,6 @@ bool EOSSDK_Lobby::on_lobby_member_promote(Network_Message_pb const& msg, Lobby_
         pLobby->infos.set_owner_id(promote.member_id());
 
         notify_lobby_member_status_update(promote.member_id(), EOS_ELobbyMemberStatus::EOS_LMS_PROMOTED, pLobby);
-    }
-
-    return true;
-}
-
-bool EOSSDK_Lobby::on_lobby_member_kick(Network_Message_pb const& msg, Lobby_Member_Kick_pb const& kick)
-{
-    TRACE_FUNC();
-    GLOBAL_LOCK();
-
-    auto it = _lobbies.find(kick.lobby_id());
-    if (it != _lobbies.end())
-    {
-        notify_lobby_member_status_update(msg.source_id(), EOS_ELobbyMemberStatus::EOS_LMS_KICKED, &it->second);
-
-        _lobbies.erase(it);
     }
 
     return true;
@@ -2009,7 +1972,6 @@ bool EOSSDK_Lobby::RunNetwork(Network_Message_pb const& msg)
                 case Lobby_Message_pb::MessageCase::kMemberJoin       : return on_lobby_member_join   (msg, lobby.member_join());
                 case Lobby_Message_pb::MessageCase::kMemberLeave      : return on_lobby_member_leave  (msg, lobby.member_leave());
                 case Lobby_Message_pb::MessageCase::kMemberPromote    : return on_lobby_member_promote(msg, lobby.member_promote());
-                case Lobby_Message_pb::MessageCase::kMemberKick       : return on_lobby_member_kick   (msg, lobby.member_kick());
             }
         }
         break;

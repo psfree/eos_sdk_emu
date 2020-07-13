@@ -305,10 +305,6 @@ message Lobby_Member_Promote_pb {
     string member_id = 2;
 }
 
-message Lobby_Member_Kick_pb {
-    string lobby_id = 1;
-}
-
 // Base Lobby related message
 message Lobby_Message_pb {
     oneof message {
@@ -321,7 +317,6 @@ message Lobby_Message_pb {
         Lobby_Member_Join_pb    member_join = 6;
         Lobby_Member_Leave_pb   member_leave = 7;
         Lobby_Member_Promote_pb member_promote = 8;
-        Lobby_Member_Kick_pb    member_kick = 9;
 	}
 }
 
@@ -429,7 +424,7 @@ message Network_Advertise_pb {
 message Network_Message_pb {
     string source_id = 1;
     string dest_id = 2;
-	string gameid = 3;
+	string game_id = 3;
     int64 timestamp = 4;
     oneof messages {
         Network_Advertise_pb network_advertise = 5;

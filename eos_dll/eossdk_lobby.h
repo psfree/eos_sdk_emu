@@ -178,9 +178,8 @@ namespace sdk
 
         bool send_lobby_member_update    (Network::peer_t const& member_id, lobby_state_t *lobby);
         bool send_lobby_member_join      (Network::peer_t const& member_id, lobby_state_t *lobby);
-        bool send_lobby_member_leave     (Network::peer_t const& member_id, lobby_state_t *lobby);
+        bool send_lobby_member_leave     (Network::peer_t const& member_id, lobby_state_t *lobby, EOS_ELobbyMemberStatus reason);
         bool send_lobby_member_promote   (Network::peer_t const& member_id, lobby_state_t *lobby);
-        bool send_lobby_member_kick      (Network::peer_t const& member_id, lobby_state_t *lobby);
 
         // Receive Network messages
         bool on_peer_disconnect     (Network_Message_pb const& msg, Network_Peer_Disconnect_pb const& peer);
@@ -194,7 +193,6 @@ namespace sdk
         bool on_lobby_member_join   (Network_Message_pb const& msg, Lobby_Member_Join_pb    const& join);
         bool on_lobby_member_leave  (Network_Message_pb const& msg, Lobby_Member_Leave_pb   const& leave);
         bool on_lobby_member_promote(Network_Message_pb const& msg, Lobby_Member_Promote_pb const& promote);
-        bool on_lobby_member_kick   (Network_Message_pb const& msg, Lobby_Member_Kick_pb    const& kick);
 
         virtual bool CBRunFrame();
         virtual bool RunNetwork(Network_Message_pb const& msg);
