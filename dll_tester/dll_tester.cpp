@@ -99,14 +99,16 @@ void load_symbols(uint8_t* mem_addr)
 
 // Get the proc address from its name and not its exported name
 // __stdcall convention adds an '_' as prefix and "@<parameter size>" as suffix
+// __fastcall convention adds an '@' as prefix and "@<parameter size>" as suffix
 void* get_proc_address(HMODULE hModule, LPCSTR procName)
 {
     size_t proc_len = strlen(procName);
     for (auto& proc : original_exported_funcs)
     {
         auto pos = proc.first.find(procName);
-        if (pos == 0 || // Not __stdcall
-            (pos == 1 && proc.first[0] == '_' && proc.first[proc_len + 1] == '@') // __stdcall
+        if (pos == 0 ||                                                              // __cdecl
+            (pos == 1 && proc.first[0] == '_' && proc.first[proc_len + 1] == '@') || // __stdcall
+            (pos == 1 && proc.first[0] == '@' && proc.first[proc_len + 1] == '@')    // __fastcall
             )
         {
             return proc.second;
