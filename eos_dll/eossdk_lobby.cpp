@@ -644,6 +644,8 @@ void EOSSDK_Lobby::UpdateLobby(const EOS_Lobby_UpdateLobbyOptions* Options, void
             else if (pLobbyModif->_member_modified)
             {
                 ulci.ResultCode = EOS_EResult::EOS_Success;
+
+                *pLobby->infos.mutable_members() = pLobbyModif->_infos.members();
                 send_lobby_member_update(GetEOS_Connect().get_myself()->first->to_string(), pLobby);
             }
         }
