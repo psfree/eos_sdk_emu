@@ -5,6 +5,7 @@
 #include "eos_common.h"
 
 enum { k_iP2PCallbackBase = 8000 };
+// next free callback_id: k_iP2PCallbackBase + 4
 
 #define EOS_P2P_SocketId                              EOS_P2P_SocketId001
 #define EOS_P2P_SendPacketOptions                     EOS_P2P_SendPacketOptions002

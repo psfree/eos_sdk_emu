@@ -6,6 +6,7 @@
 #include "eos_ui_types.h"
 
 enum { k_iPresenceCallbackBase = 10000 };
+// next free callback_id: k_iPresenceCallbackBase + 5
 
 #define EOS_Presence_DataRecord                        EOS_Presence_DataRecord001
 #define EOS_Presence_Info                              EOS_Presence_Info002

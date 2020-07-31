@@ -5,6 +5,7 @@
 #include "eos_common.h"
 
 enum { k_iLeaderboardsCallbackBase = 5000 };
+// next free callback_id: k_iLeaderboardsCallbackBase + 4
 
 #define EOS_Leaderboards_QueryLeaderboardDefinitionsOptions              EOS_Leaderboards_QueryLeaderboardDefinitionsOptions001
 #define EOS_Leaderboards_Definition                                      EOS_Leaderboards_Definition001

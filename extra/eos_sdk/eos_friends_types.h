@@ -4,6 +4,7 @@
 #include "eos_common.h"
 
 enum { k_iFriendsCallbackBase = 4000 };
+// next free callback_id: k_iFriendsCallbackBase + 7
 
 #define EOS_Friends_QueryFriendsOptions           EOS_Friends_QueryFriendsOptions001
 #define EOS_Friends_SendInviteOptions             EOS_Friends_SendInviteOptions001

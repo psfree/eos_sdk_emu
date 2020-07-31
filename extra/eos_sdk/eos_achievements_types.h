@@ -5,6 +5,7 @@
 #include "eos_common.h"
 
 enum { k_iAchievementsCallbacks = 1000 };
+// next free callback_id: k_iAchievementsCallbacks + 6
 
 #define EOS_Achievements_QueryDefinitionsOptions                           EOS_Achievements_QueryDefinitionsOptions001
 #define EOS_Achievements_StatThresholds                                    EOS_Achievements_StatThresholds001

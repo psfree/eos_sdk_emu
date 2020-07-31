@@ -5,6 +5,7 @@
 #include "eos_connect_types.h"
 
 enum { k_iAuthCallbackBase = 0 };
+// next free callback_id: k_iAuthCallbackBase + 6
 
 #define EOS_Auth_Token                              EOS_Auth_Token002
 #define EOS_Auth_Credentials                        EOS_Auth_Credentials003

@@ -5,6 +5,7 @@
 #include "eos_ui_types.h"
 
 enum { k_iLobbyCallbackBase = 6000 };
+// next free callback_id: k_iLobbyCallbackBase + 18
 
 #define EOS_LobbyDetails_Info                               EOS_LobbyDetails_Info001
 #define EOS_Lobby_CreateLobbyOptions                        EOS_Lobby_CreateLobbyOptions002

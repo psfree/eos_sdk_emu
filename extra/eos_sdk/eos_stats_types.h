@@ -5,6 +5,7 @@
 #include "eos_common.h"
 
 enum { k_iStatsCallbackBase = 12000 };
+// next free callback_id: k_iStatsCallbackBase + 3
 
 #define EOS_Stats_IngestData             EOS_Stats_IngestData001
 #define EOS_Stats_IngestStatOptions      EOS_Stats_IngestStatOptions001

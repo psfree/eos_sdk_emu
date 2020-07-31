@@ -5,6 +5,7 @@
 #include "eos_common.h"
 
 enum { k_iEcomCallbackBase = 3000 };
+// next free callback_id: k_iEcomCallbackBase + 7
 
 #define EOS_Ecom_Entitlement                               EOS_Ecom_Entitlement002
 #define EOS_Ecom_ItemOwnership                             EOS_Ecom_ItemOwnership001

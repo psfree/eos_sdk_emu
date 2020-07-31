@@ -6,6 +6,7 @@
 #include "eos_ui_types.h"
 
 enum { k_iSessionsCallbackBase = 11000 };
+// next free callback_id: k_iSessionsCallbackBase + 15
 
 #define EOS_Sessions_CreateSessionModificationOptions           EOS_Sessions_CreateSessionModificationOptions002
 #define EOS_Sessions_UpdateSessionModificationOptions           EOS_Sessions_UpdateSessionModificationOptions001

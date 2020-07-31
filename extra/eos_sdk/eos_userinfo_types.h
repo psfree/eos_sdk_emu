@@ -4,6 +4,7 @@
 #include "eos_common.h"
 
 enum { k_iUserInfoCallbackBase = 14000 };
+// next free callback_id: k_iUserInfoCallbackBase + 3
 
 #define EOS_UserInfo_QueryUserInfoOptions                     EOS_UserInfo_QueryUserInfoOptions001
 #define EOS_UserInfo_QueryUserInfoByDisplayNameOptions        EOS_UserInfo_QueryUserInfoByDisplayNameOptions001

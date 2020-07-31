@@ -4,6 +4,7 @@
 #include "eos_common.h"
 
 enum { k_iConnectCallbackBase = 2000 };
+// next free callback_id: k_iConnectCallbackBase + 10
 
 #define EOS_Connect_Credentials                                        EOS_Connect_Credentials001
 #define EOS_Connect_UserLoginInfo                                      EOS_Connect_UserLoginInfo001

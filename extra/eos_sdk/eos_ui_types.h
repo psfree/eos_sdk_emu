@@ -5,6 +5,7 @@
 #include "eos_common.h"
 
 enum { k_iUICallbackBase = 13000 };
+// next free callback_id: k_iUICallbackBase + 3
 
 #define EOS_UI_ShowFriendsOptions          EOS_UI_ShowFriendsOptions001
 #define EOS_UI_HideFriendsOptions          EOS_UI_HideFriendsOptions001
