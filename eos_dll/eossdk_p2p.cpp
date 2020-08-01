@@ -81,6 +81,18 @@ EOS_EResult EOSSDK_P2P::SendPacket(const EOS_P2P_SendPacketOptions* Options)
 
     switch(p2pstate.status)
     {
+        case p2p_state_t::status_e::requesting:
+        {
+            LOG(Log::LogLevel::INFO, "Implicit P2P acceptation");
+            // If we have been requested to connect, then its an implicit acceptation
+            p2pstate.status = p2p_state_t::status_e::connected;
+            for (auto& out_msgs : p2pstate.p2p_out_messages)
+            {// Send all previously stored messages
+                send_p2p_data(Options->RemoteUserId->to_string(), &out_msgs);
+            }
+            p2pstate.p2p_out_messages.clear();
+        }
+
         case p2p_state_t::status_e::connected:
         {// We're connected, send the message now
             send_p2p_data(Options->RemoteUserId->to_string(), &data);
@@ -88,7 +100,6 @@ EOS_EResult EOSSDK_P2P::SendPacket(const EOS_P2P_SendPacketOptions* Options)
         break;
 
         case p2p_state_t::status_e::connection_loss:
-        case p2p_state_t::status_e::requesting:
         case p2p_state_t::status_e::connecting:
         {
             // Save the message for later
@@ -823,10 +834,42 @@ bool EOSSDK_P2P::CBRunFrame()
     {
         switch(it->second.status)
         {
-            case p2p_state_t::status_e::connection_loss:
+            case p2p_state_t::status_e::requesting:
             {
                 auto now = std::chrono::steady_clock::now();
                 if ((now - it->second.connection_loss_start) > connecting_timeout)
+                {// We didn't accept the connection
+                    it->second.status = p2p_state_t::status_e::closed;
+                    it->second.p2p_out_messages.clear();
+                }
+            }
+            break;
+
+            case p2p_state_t::status_e::connecting:
+            {
+                auto now = std::chrono::steady_clock::now();
+                if ((now - it->second.connection_loss_start) > connecting_timeout)
+                {
+                    it->second.status = p2p_state_t::status_e::closed;
+                    it->second.p2p_out_messages.clear();
+
+                    std::vector<pFrameResult_t> notifs(std::move(GetCB_Manager().get_notifications(this, EOS_P2P_OnRemoteConnectionClosedInfo::k_iCallback)));
+                    for (auto& notif : notifs)
+                    {
+                        EOS_P2P_OnRemoteConnectionClosedInfo& orcci = notif->GetCallback<EOS_P2P_OnRemoteConnectionClosedInfo>();
+                        orcci.RemoteUserId = it->first;
+                        strncpy(const_cast<char*>(orcci.SocketId->SocketName), it->second.socket_name.c_str(), sizeof(orcci.SocketId->SocketName));
+                        const_cast<char*>(orcci.SocketId->SocketName)[sizeof(orcci.SocketId->SocketName) - 1] = '\0';
+                        orcci.Reason = EOS_EConnectionClosedReason::EOS_CCR_ConnectionFailed;
+                    }
+                }
+            }
+            break;
+
+            case p2p_state_t::status_e::connection_loss:
+            {
+                auto now = std::chrono::steady_clock::now();
+                if ((now - it->second.connection_loss_start) > connection_timeout)
                 {
                     it->second.status = p2p_state_t::status_e::closed;
                     it->second.p2p_out_messages.clear();
@@ -843,27 +886,6 @@ bool EOSSDK_P2P::CBRunFrame()
                 }
             }
             break;
-
-            case p2p_state_t::status_e::connecting:
-            {
-                auto now = std::chrono::steady_clock::now();
-                if ((now - it->second.connection_loss_start) > connection_timeout)
-                {
-                    it->second.status = p2p_state_t::status_e::closed;
-                    it->second.p2p_out_messages.clear();
-
-                    std::vector<pFrameResult_t> notifs(std::move(GetCB_Manager().get_notifications(this, EOS_P2P_OnRemoteConnectionClosedInfo::k_iCallback)));
-                    for (auto& notif : notifs)
-                    {
-                        EOS_P2P_OnRemoteConnectionClosedInfo& orcci = notif->GetCallback<EOS_P2P_OnRemoteConnectionClosedInfo>();
-                        orcci.RemoteUserId = it->first;
-                        strncpy(const_cast<char*>(orcci.SocketId->SocketName), it->second.socket_name.c_str(), sizeof(orcci.SocketId->SocketName));
-                        const_cast<char*>(orcci.SocketId->SocketName)[sizeof(orcci.SocketId->SocketName) - 1] = '\0';
-                        orcci.Reason = EOS_EConnectionClosedReason::EOS_CCR_ConnectionFailed;
-                    }
-                }
-            }
-
         }
     }
 
