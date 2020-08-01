@@ -333,6 +333,7 @@ EOS_EResult EOSSDK_P2P::AcceptConnection(const EOS_P2P_AcceptConnectionOptions* 
     }
     
     conn.status = p2p_state_t::status_e::connected;
+    conn.connection_loss_start = {};
     return EOS_EResult::EOS_Success;
 }
 
@@ -716,6 +717,7 @@ bool EOSSDK_P2P::on_p2p_connection_request(Network_Message_pb const& msg, P2P_Co
     if (conn.status != p2p_state_t::status_e::connected)
     {
         conn.status = p2p_state_t::status_e::requesting;
+        conn.connection_loss_start = std::chrono::steady_clock::now();
         conn.socket_name = req.socket_name();
         std::vector<pFrameResult_t> notifs = std::move(GetCB_Manager().get_notifications(this, EOS_P2P_OnIncomingConnectionRequestInfo::k_iCallback));
         for (auto& notif : notifs)
@@ -824,7 +826,7 @@ bool EOSSDK_P2P::CBRunFrame()
             case p2p_state_t::status_e::connection_loss:
             {
                 auto now = std::chrono::steady_clock::now();
-                if ((now - it->second.connection_loss_start) > connection_timeout)
+                if ((now - it->second.connection_loss_start) > connecting_timeout)
                 {
                     it->second.status = p2p_state_t::status_e::closed;
                     it->second.p2p_out_messages.clear();

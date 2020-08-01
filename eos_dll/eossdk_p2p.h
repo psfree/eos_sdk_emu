@@ -48,6 +48,7 @@ namespace sdk
     class EOSSDK_P2P :
         public IRunFrame
     {
+        constexpr static auto connecting_timeout = std::chrono::milliseconds(3000);
         constexpr static auto connection_timeout = std::chrono::milliseconds(10000);
 
         std::recursive_mutex local_mutex;
