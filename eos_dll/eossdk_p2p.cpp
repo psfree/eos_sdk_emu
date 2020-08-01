@@ -24,6 +24,7 @@
 namespace sdk
 {
 
+decltype(EOSSDK_P2P::connecting_timeout) EOSSDK_P2P::connecting_timeout;
 decltype(EOSSDK_P2P::connection_timeout) EOSSDK_P2P::connection_timeout;
 
 EOSSDK_P2P::EOSSDK_P2P():
