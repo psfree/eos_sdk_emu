@@ -1,0 +1,165 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="650" d:DesignHeight="450"
+        x:Class="NemirtingasEmuLauncher.Windows.Settings"
+        Title="Settings"
+        Icon="resm:NemirtingasEmuLauncher.Resources.steel_steam_32.ico"
+        Height="450"
+        Width="650"
+        HasSystemDecorations="True"
+        CanResize="False">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*" />
+      <RowDefinition Height="40" />
+    </Grid.RowDefinitions>
+    <TabControl x:Name="SettingsTab" Margin="0,0,20,20" Grid.Row="0">
+      <TabItem Header="Settings">
+        <StackPanel Margin="0,10,0,0">
+          <StackPanel Margin="10,0,0,10" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <TextBlock Text="UserName" VerticalAlignment="Center" Width="100" />
+            <TextBox x:Name="tbxUserName" Text="{Binding UserName}" VerticalAlignment="Center" Width="300" />
+          </StackPanel>
+          <StackPanel Margin="10,0,0,10" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <TextBlock Text="Epic ID" VerticalAlignment="Center" Width="100"/>
+            <TextBox x:Name="tbxEpicId" Text="{Binding EpicId}" VerticalAlignment="Center" Width="300" />
+            <Button Margin="10,0" Height="26" Content="Generate Random ID" Command="{Binding OnButtonGenerateId}"/>
+          </StackPanel>
+          <StackPanel Margin="10,0,0,10" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <TextBlock Text="Language" VerticalAlignment="Center" Width="100"/>
+            <ComboBox Width="300" Items="{Binding OverrideLanguageCombo}" SelectedItem="{Binding SelectedOverrideLanguage, Mode=TwoWay}" VerticalAlignment="Center" Height="24" />
+          </StackPanel>
+          <StackPanel Margin="10,0,0,10" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <TextBlock Text="Log Level" VerticalAlignment="Center" Width="100"/>
+            <ComboBox Width="300" Items="{Binding LogLevels}" SelectedItem="{Binding SelectedLogLevel, Mode=TwoWay}" VerticalAlignment="Center" Height="24" />
+          </StackPanel>
+          <StackPanel Margin="10,0,0,10" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <TextBlock Text="" VerticalAlignment="Center" Width="100"/>
+            <CheckBox IsThreeState="{Binding !IsDefaultApp}" IsChecked="{Binding EnableOverlay}" Content="Enable overlay" Margin="0,0,5,0" />
+            <CheckBox IsThreeState="{Binding !IsDefaultApp}" IsChecked="{Binding UnlockDlcs}" Content="Enable all DLC" Margin="0,0,5,0" />
+          </StackPanel>
+        </StackPanel>
+      </TabItem>
+      <TabItem Header="Game settings" IsVisible="{Binding !IsDefaultApp}">
+        <StackPanel Margin="0,10,0,0">
+          <StackPanel Margin="10,0,0,10" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <TextBlock Text="Game AppId" VerticalAlignment="Center" Width="100"/>
+            <TextBox Text="{Binding AppId}" VerticalAlignment="Center" Width="450" />
+          </StackPanel>
+          <StackPanel Margin="10,0,0,10" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <TextBlock Text="Game name" VerticalAlignment="Center" Width="100" />
+            <TextBox Text="{Binding GameName}" VerticalAlignment="Center" Width="450" />
+          </StackPanel>
+          <StackPanel Margin="10,0,0,10" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <TextBlock Text="Game exe" VerticalAlignment="Center" Width="100"/>
+            <TextBox Text="{Binding GameExePath}" VerticalAlignment="Center" Width="450" />
+            <Button Content="..." Command="{Binding OnButtonBrowseGameExe}" VerticalContentAlignment="Center" Width="30" Height="26" Margin="5,0" />
+          </StackPanel>
+          <StackPanel Margin="10,0,0,10" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <TextBlock Text="Game API path" VerticalAlignment="Center" Width="100"/>
+            <TextBox Text="{Binding GameApiPath}" VerticalAlignment="Center" Width="450" />
+            <Button Content="..." Command="{Binding OnButtonBrowseGameApi}" VerticalContentAlignment="Center" Width="30" Height="26" Margin="5,0" />
+          </StackPanel>
+          <StackPanel Margin="10,0,0,10" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <TextBlock Text="Game parameters" VerticalAlignment="Center" Width="100"/>
+            <TextBox Text="{Binding GameParameters}" Watermark="{Binding GameParametersWatermark}" VerticalAlignment="Center" Width="450" />
+          </StackPanel>
+          <StackPanel Margin="10,0,0,10" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <TextBlock Text="Start folder" VerticalAlignment="Center" Width="100"/>
+            <TextBox Text="{Binding GameStartFolder}" VerticalAlignment="Center" Width="450" />
+            <Button Content="..."  Command="{Binding OnButtonBrowseGameStartFolder}" VerticalContentAlignment="Center" Width="30" Height="26" Margin="5,0" />
+          </StackPanel>
+          <StackPanel Margin="10,0,0,10" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <TextBlock Text="" Width="100"/>
+            <CheckBox IsEnabled="{Binding GameIsX64Enabled}" IsChecked="{Binding GameIsX64}" Content="Use 64 bits" Margin="0,0,5,0" />
+          </StackPanel>
+          <StackPanel Margin="10,0,0,10" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <TextBlock Text="Game save path" VerticalAlignment="Center" Width="100"/>
+            <TextBox x:Name="tbxGameSavePath" Text="{Binding GameSavePath}" VerticalAlignment="Center" Width="450" />
+            <TextBlock Text=""/>
+          </StackPanel>
+        </StackPanel>
+      </TabItem>
+      <!--
+      <TabItem Header="Dlcs" IsVisible="{Binding !IsDefaultApp}">
+        <StackPanel Margin="0,10,0,0">
+          <StackPanel Margin="10,0,0,5" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <TextBlock Margin="0,0,10,0" Text="Dlc ID" Width="200"></TextBlock>
+            <TextBlock Text="Dlc Name"></TextBlock>
+          </StackPanel>
+          <StackPanel Margin="10,0,0,5" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <TextBox Text="{Binding DlcId}" Margin="0,0,10,0" Width="200"></TextBox>
+            <TextBox Text="{Binding DlcName}" Margin="0,0,10,0" Width="304"></TextBox>
+            <Button Command="{Binding OnDlcAdd}" Height="26" Width="52">Add</Button>
+          </StackPanel>
+          <StackPanel Margin="10,0,0,0" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <ListBox Width="514" Height="250" Items="{Binding Dlcs}" SelectionMode="Multiple" SelectedItems="{Binding SelectedDlcs, Mode=TwoWay}">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <StackPanel Orientation="Horizontal">
+                    <CheckBox Margin="0,2,5,2" IsChecked="{Binding Enabled}"/>
+                    <TextBlock VerticalAlignment="Center" Text="{Binding .}"/>
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <StackPanel>
+              <Button Command="{Binding OnDlcRemove}" Margin="10,0,0,5" Height="26">Remove</Button>
+              <Button Command="{Binding OnDlcClear}" Margin="10,0,0,5" Height="26">Clear</Button>
+            </StackPanel>
+          </StackPanel>
+        </StackPanel>
+      </TabItem>
+      -->
+      <TabItem Header="Custom" IsVisible="{Binding !IsDefaultApp}">
+        <StackPanel>
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Height="130">
+            <TextBlock Text="Custom Broadcast"  Margin="10" />
+            <StackPanel Margin="5" Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Stretch" Height="40">
+              <TextBox Margin="0,0,0,5" Text="" Width="100" />
+              <ListBox Height="100"></ListBox>
+            </StackPanel>
+            <StackPanel Margin="5" Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Stretch" Height="40">
+              <Button Margin="0,0,0,5" Height="26">Add</Button>
+              <Button Margin="0,0,0,5" Height="26">Remove</Button>
+              <Button Margin="0,0,0,5" Height="26">Clear</Button>
+            </StackPanel>
+            <TextBlock Text="Available Languages" Margin="10" />
+            <StackPanel Margin="5" Orientation="Vertical" VerticalAlignment="Top" Height="40" HorizontalAlignment="Stretch">
+              <DropDown Margin="0,0,0,5" Items="{Binding AvailableLanguagesCombo}" SelectedItem="{Binding SelectedAvailableLanguage, Mode=TwoWay}" Height="26" Width="100" />
+              <ListBox Items="{Binding SupportedLanguagesList}" SelectionMode="Multiple" SelectedItems="{Binding SelectedSupportedLanguages, Mode=TwoWay}" Height="100"/>
+            </StackPanel>
+            <StackPanel Margin="5" Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Stretch">
+              <Button Margin="0,0,0,5" Height="26" Command="{Binding OnAddLanguage}">Add</Button>
+              <Button Margin="0,0,0,5" Height="26" Command="{Binding OnRemoveLanguage}">Remove</Button>
+              <Button Margin="0,0,0,5" Height="26" Command="{Binding OnClearLanguage}">Clear</Button>
+            </StackPanel>
+          </StackPanel>
+          <StackPanel Margin="10,10,0,0" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <TextBlock Margin="0,0,10,0" Text="Custom Env Var" Width="200"></TextBlock>
+            <TextBlock Text="Custom Env Var Value"></TextBlock>
+          </StackPanel>
+          <StackPanel Margin="10,5,0,0" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <TextBox x:Name="tbxEnvVarKey" Text="{Binding CustomEnvVarKey}" Margin="0,0,10,0" Width="200"></TextBox>
+            <TextBox x:Name="tbxEnvVarValue" Text="{Binding CustomEnvVarValue}" Margin="0,0,10,0" Width="304"></TextBox>
+            <Button Command="{Binding OnEnvVarAdd}" Height="26" Width="52">Add</Button>
+          </StackPanel>
+          <StackPanel Margin="10,5,0,0" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <ListBox Width="514" Height="150" Items="{Binding CustomEnvVars}" SelectionMode="Multiple" SelectedItems="{Binding SelectedCustomEnvVars, Mode=TwoWay}">
+            </ListBox>
+            <StackPanel>
+              <Button Command="{Binding OnEnvVarRemove}" Margin="10,0,0,5" Height="26">Remove</Button>
+              <Button Command="{Binding OnEnvVarClear}" Margin="10,0,0,5" Height="26">Clear</Button>
+            </StackPanel>
+          </StackPanel>
+        </StackPanel>
+      </TabItem>
+    </TabControl>
+    <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right">
+      <Button Content="Save" Command="{Binding OnButtonSave}" Width="75" Height="30" Margin="0,0,10,10" />
+      <Button Content="Cancel" Command="{Binding OnButtonCancel}" Width="75" Height="30" Margin="0,0,10,10"/>
+    </StackPanel>
+  </Grid>
+</Window>

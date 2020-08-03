@@ -1,0 +1,203 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:c="clr-namespace:NemirtingasEmuLauncher.Windows"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
+        x:Class="NemirtingasEmuLauncher.Windows.MainWindow"
+        Title="NemirtingasEmuLauncher"
+        Icon="resm:NemirtingasEmuLauncher.Resources.steel_steam_32.ico"
+        Background="Black">
+  <Window.Resources>
+    <c:StringToBrushConverter x:Key="StringToBrushConverter" />
+    <Style x:Key="VerticalScrollBar" Selector="ScrollBar">
+      <Setter Property="Cursor" Value="Arrow" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Grid RowDefinitions="Auto,*,Auto">
+            <RepeatButton Name="PART_LineUpButton" HorizontalAlignment="Center"
+                          Classes="repeat"
+                          Grid.Row="0"
+                          Focusable="False"
+                          MinHeight="{DynamicResource ScrollBarThickness}"
+                          MinWidth="{DynamicResource ScrollBarThickness}"
+                          Background="LightGray">
+              <Path Data="M 0 10 L 10 10 L 5 0 Z"/>
+            </RepeatButton>
+            <Border Grid.Row="1"
+                      Grid.Column="1">
+              <Track
+                      Minimum="{TemplateBinding Minimum}"
+                      Maximum="{TemplateBinding Maximum}"
+                      Value="{TemplateBinding Value, Mode=TwoWay}"
+                      ViewportSize="{TemplateBinding ViewportSize}"
+                      Orientation="{TemplateBinding Orientation}"
+                      IsDirectionReversed="True">
+                <Track.DecreaseButton>
+                  <RepeatButton Name="PART_PageUpButton"
+                                Classes="repeattrack"
+                                Focusable="False"
+                                Background="DarkGray"/>
+                </Track.DecreaseButton>
+                <Track.IncreaseButton>
+                  <RepeatButton Name="PART_PageDownButton"
+                                Classes="repeattrack"
+                                Focusable="False"
+                                Background="DarkGray"/>
+                </Track.IncreaseButton>
+                <Thumb Name="thumb"
+                        Background="BurlyWood"
+                        MinWidth="{DynamicResource ScrollBarThickness}"/>
+              </Track>
+            </Border>
+            <RepeatButton Name="PART_LineDownButton" HorizontalAlignment="Center"
+                          Classes="repeat"
+                          Grid.Row="2"
+                          Grid.Column="2"
+                          Focusable="False"
+                          MinHeight="{DynamicResource ScrollBarThickness}"
+                          MinWidth="{DynamicResource ScrollBarThickness}"
+                          Background="LightGray">
+              <Path Data="M 0 0 L 10 0 L 5 10 Z"/>
+            </RepeatButton>
+          </Grid>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style x:Key="DefaultVerticalStyle" Selector="ScrollBar">
+      <Setter Property="Cursor" Value="Arrow" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="{DynamicResource ThemeControlMidBrush}"
+                  UseLayoutRounding="False">
+            <Grid RowDefinitions="Auto,*,Auto">
+              <RepeatButton Name="PART_LineUpButton" HorizontalAlignment="Center"
+                            Classes="repeat"
+                            Grid.Row="0"
+                            Focusable="False"
+                            MinHeight="{DynamicResource ScrollBarThickness}">
+                <Path Data="M 0 4 L 8 4 L 4 0 Z" />
+              </RepeatButton>
+              <Track Grid.Row="1"
+                      Grid.Column="1"
+                      Minimum="{TemplateBinding Minimum}"
+                      Maximum="{TemplateBinding Maximum}"
+                      Value="{TemplateBinding Value, Mode=TwoWay}"
+                      ViewportSize="{TemplateBinding ViewportSize}"
+                      Orientation="{TemplateBinding Orientation}"
+                      IsDirectionReversed="True">
+                <Track.DecreaseButton>
+                  <RepeatButton Name="PART_PageUpButton"
+                                Classes="repeattrack"
+                                Focusable="False"/>
+                </Track.DecreaseButton>
+                <Track.IncreaseButton>
+                  <RepeatButton Name="PART_PageDownButton"
+                                Classes="repeattrack"
+                                Focusable="False"/>
+                </Track.IncreaseButton>
+                <Thumb Name="thumb"/>
+              </Track>
+              <RepeatButton Name="PART_LineDownButton" HorizontalAlignment="Center"
+                            Classes="repeat"
+                            Grid.Row="2"
+                            Grid.Column="2"
+                            Focusable="False"
+                            MinHeight="{DynamicResource ScrollBarThickness}">
+                <Path Data="M 0 0 L 4 4 L 8 0 Z" />
+              </RepeatButton>
+            </Grid>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+  </Window.Resources>
+  <DockPanel Margin="0,8,0,0" LastChildFill="True">
+    <Menu DockPanel.Dock="Top" Foreground="White">
+      <MenuItem Header="_File" Background="Black">
+        <MenuItem Header="Add game" Command="{Binding OnMenuAddGame}"/>
+        <Separator />
+        <MenuItem Header="Settings" Command="{Binding OnMenuOpenSettings}"/>
+        <Separator />
+        <MenuItem Header="Exit" Command="{Binding OnMenuExit}"/>
+      </MenuItem>
+      <MenuItem Header="_About" Command="{Binding OnMenuOpenAbout}" Background="Black"/>
+    </Menu>
+
+    <ScrollViewer Margin="8,8,0,0" DragDrop.AllowDrop="True" Name="scvAppList" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Styles="{StaticResource ResourceKey=VerticalScrollBar}">
+      <ScrollViewer.ContextMenu>
+        <ContextMenu Foreground="White" Background="Black">
+          <MenuItem Header="_File" Background="Black">
+            <MenuItem Header="Add game" Command="{Binding OnMenuAddGame}"/>
+            <Separator />
+            <MenuItem Header="Settings" Command="{Binding OnMenuOpenSettings}"/>
+            <Separator />
+            <MenuItem Header="Exit" Command="{Binding OnMenuExit}"/>
+          </MenuItem>
+          <MenuItem Header="_About" Command="{Binding OnMenuOpenAbout}" Background="Black"/>
+        </ContextMenu>
+      </ScrollViewer.ContextMenu>
+      <ItemsControl Items="{Binding .}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel/>
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <StackPanel>
+              <TextBlock Foreground="White" HorizontalAlignment="Center" Text="{Binding AppName}"/>
+              <Border Margin="0,0,8,8" BorderThickness="2" BorderBrush="LightGray">
+                <Button Classes="AppImage" Command="{Binding $parent[Window].DataContext.OnGameClick}" CommandParameter="{Binding .}">
+                  <Button.Styles>
+                    <Style Selector="Button.AppImage /template/ ContentPresenter">
+                      <Setter Property="BorderThickness" Value="0"/>
+                      <Setter Property="Margin" Value="0"/>
+                      <Setter Property="Background" Value="Black"/>
+                      <Setter Property="Width" Value="{Binding AppImageWidth}"/>
+                      <Setter Property="Height" Value="{Binding AppImageHeight}"/>
+                    </Style>
+                    <Style Selector="Button.AppImage:pressed /template/ ContentPresenter">
+                      <Setter Property="BorderThickness" Value="0"/>
+                      <Setter Property="Margin" Value="0"/>
+                      <Setter Property="Background" Value="Black"/>
+                      <Setter Property="Opacity" Value="0.75"/>
+                      <Setter Property="Width" Value="{Binding AppImageWidth}"/>
+                      <Setter Property="Height" Value="{Binding AppImageHeight}"/>
+                    </Style>
+                  </Button.Styles>
+                  <Image Stretch="UniformToFill" Source="{Binding AppImage, Converter={StaticResource ResourceKey=StringToBrushConverter}}">
+                    <Image.Styles>
+                      <Style Selector="Image">
+                        <Setter Property="Width" Value="{Binding AppImageWidth}"/>
+                        <Setter Property="Height" Value="{Binding AppImageHeight}"/>
+                      </Style>
+                    </Image.Styles>
+                  </Image>
+                  <Button.ContextMenu>
+                    <ContextMenu>
+                      <MenuItem Header="Start Game" Command="{Binding $parent[Window].DataContext.OnMenuGameStart}" CommandParameter="{Binding .}"/>
+                      <Separator/>
+                      <MenuItem Header="Open game emu folder" Command="{Binding $parent[Window].DataContext.OnMenuGameOpenEmuFolder}" CommandParameter="{Binding .}"/>
+                      <MenuItem Header="Create Desktop shortcut" Command="{Binding $parent[Window].DataContext.OnMenuGameCreateShortcut}" CommandParameter="{Binding .}"/>
+                      <Separator/>
+                      <MenuItem Header="Generate game infos" Command="{Binding $parent[Window].DataContext.OnMenuGameGenInfos}" CommandParameter="{Binding .}"/>
+                      <!--
+                      <MenuItem Header="Generate game achievements" Command="{Binding $parent[Window].DataContext.OnMenuGameGenAchievements}" CommandParameter="{Binding .}"/>
+                      <MenuItem Header="Generate game DLCs" Command="{Binding $parent[Window].DataContext.OnMenuGameGenDlcs}" CommandParameter="{Binding .}"/>
+                      <MenuItem Header="Generate game items" Command="{Binding $parent[Window].DataContext.OnMenuGameGenItems}" CommandParameter="{Binding .}"/>
+                      -->
+                      <Separator/>
+                      <MenuItem Header="Remove" Command="{Binding $parent[Window].DataContext.OnMenuGameRemove}" CommandParameter="{Binding .}"/>
+                      <MenuItem Header="Properties" Command="{Binding $parent[Window].DataContext.OnMenuGameProperties}" CommandParameter="{Binding .}"/>
+                    </ContextMenu>
+                  </Button.ContextMenu>
+                </Button>
+              </Border>
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </DockPanel>
+</Window>

@@ -1,0 +1,81 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Update="**\*.xaml.cs">
+      <DependentUpon>%(Filename)</DependentUpon>
+    </Compile>
+    <AvaloniaResource Include="**\*.xaml">
+      <SubType>Designer</SubType>
+    </AvaloniaResource>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="README.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <EmbeddedResource Include="Resources\steel_steam_128.png" />
+    <EmbeddedResource Include="Resources\steel_steam_32.ico" />
+    <EmbeddedResource Include="Resources\no_image.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="0.9.11" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.9.11" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.11" />
+    <PackageReference Include="MessageBox.Avalonia" Version="0.9.6.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="3.1.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.6" />
+    <PackageReference Include="Microsoft.Win32.Registry" Version="4.7.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+  <Target Name="_HandlePackageFileConflicts" DependsOnTargets="GetReferenceAssemblyPaths">
+
+    <ItemGroup Condition="'$(CopyLocalLockFileAssemblies)' != 'true'">
+      <!-- We need to find all the files that will be loaded from deps for conflict resolution.
+          To do this, we look at the files that would be copied local when CopyLocalLockFileAssemblies is true.
+          However, if CopyLocalLockFileAssemblies is true, then we don't add these items, as they
+          will always be included in ReferenceCopyLocalPaths.
+          -->
+      <_LockFileAssemblies Include="@(RuntimeCopyLocalItems)" />
+      <_LockFileAssemblies Include="@(NativeCopyLocalItems)" />
+      <_LockFileAssemblies Include="@(ResourceCopyLocalItems)" />
+    </ItemGroup>
+
+    <!-- Also include RuntimeTarget items, which aren't ever included in ReferenceCopyLocalPaths, but need to be considered
+         for conflict resolution. -->
+    <ItemGroup>
+      <_LockFileAssemblies Include="@(ResolvedRuntimeTargets)" />
+    </ItemGroup>
+
+    <ResolvePackageFileConflicts References="@(Reference)" ReferenceCopyLocalPaths="@(ReferenceCopyLocalPaths)" OtherRuntimeItems="@(_LockFileAssemblies)" PlatformManifests="@(PackageConflictPlatformManifests)" TargetFrameworkDirectories="$(TargetFrameworkDirectory)" PackageOverrides="@(PackageConflictOverrides)" PreferredPackages="$(PackageConflictPreferredPackages)">
+      <Output TaskParameter="ReferencesWithoutConflicts" ItemName="_ReferencesWithoutConflicts" />
+      <Output TaskParameter="ReferenceCopyLocalPathsWithoutConflicts" ItemName="_ReferenceCopyLocalPathsWithoutConflicts" />
+      <Output TaskParameter="Conflicts" ItemName="_ConflictPackageFiles" />
+    </ResolvePackageFileConflicts>
+
+    <!-- Replace Reference / ReferenceCopyLocalPaths with the filtered lists.
+         We must remove all and include rather than just remove since removal is based
+         only on ItemSpec and duplicate ItemSpecs may exist with different metadata 
+         (eg: HintPath) -->
+    <ItemGroup>
+      <Reference Remove="@(Reference)" />
+      <Reference Include="@(_ReferencesWithoutConflicts)" />
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" />
+      <ReferenceCopyLocalPaths Include="@(_ReferenceCopyLocalPathsWithoutConflicts)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_HandlePublishFileConflicts" AfterTargets="RunResolvePublishAssemblies" DependsOnTargets="GetReferenceAssemblyPaths">
+    <ResolvePackageFileConflicts ReferenceCopyLocalPaths="@(ResolvedAssembliesToPublish)" PlatformManifests="@(PackageConflictPlatformManifests)" TargetFrameworkDirectories="$(TargetFrameworkDirectory)" PreferredPackages="$(PackageConflictPreferredPackages)">
+      <Output TaskParameter="ReferenceCopyLocalPathsWithoutConflicts" ItemName="_ResolvedAssembliesToPublishWithoutConflicts" />
+      <Output TaskParameter="Conflicts" ItemName="_PublishConflictPackageFiles" />
+    </ResolvePackageFileConflicts>
+    <ItemGroup>
+      <ResolvedAssembliesToPublish Remove="@(ResolvedAssembliesToPublish)" />
+      <ResolvedAssembliesToPublish Include="@(_ResolvedAssembliesToPublishWithoutConflicts)" />
+    </ItemGroup>
+  </Target>
+</Project>

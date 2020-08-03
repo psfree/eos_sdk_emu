@@ -1,0 +1,25 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="570" d:DesignHeight="230"
+        Width="570" Height="230" CanResize="False"
+        x:Class="NemirtingasEmuLauncher.Windows.About"
+        Title="About" Icon="resm:NemirtingasEmuLauncher.Resources.steel_steam_32.ico">
+
+    <Grid>
+        <Image Source="resm:NemirtingasEmuLauncher.Resources.steel_steam_128.png" VerticalAlignment="Top" HorizontalAlignment="Left" Height="128" Width="128" />
+        <TextBlock Margin="147,5,5,0" FontFamily="Microsoft Sans Serif" FontSize="12" VerticalAlignment="Top" HorizontalAlignment="Stretch" >
+Nemirtingas Emu Launcher.
+Made by Nemirtingas
+
+You can follow this app on gitlab:
+        </TextBlock>
+        <Button Margin="147,70,0,0" Background="Transparent" BorderThickness="0" VerticalAlignment="Top" HorizontalAlignment="Stretch" Height="30" HorizontalContentAlignment="Left" Command="{Binding OpenGitPage}">
+            <TextBlock Foreground="Blue" Cursor="Hand">https://gitlab.com/Nemirtingas/nemirtingas_epic_emu</TextBlock>
+        </Button>
+        <Button Margin="5,60,5,0" Height="30" IsVisible="{Binding Is32BitsVisible}" Content="{Binding EosApi}" Command="{Binding EosApi_Click}" />
+        <Button Margin="5,125,5,0" Height="30" IsVisible="{Binding Is64BitsVisible}" Content="{Binding EosApi64}" Command="{Binding EosApi64_Click}" />
+        <Button Margin="5,120,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="64" Height="30" Content="Close" Command="{Binding Close_Click}" />
+    </Grid>
+</Window>
