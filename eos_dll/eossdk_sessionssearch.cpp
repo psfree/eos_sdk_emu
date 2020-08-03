@@ -283,7 +283,7 @@ EOS_EResult EOSSDK_SessionSearch::CopySearchResultByIndex(const EOS_SessionSearc
 
     if (Options == nullptr || OutSessionHandle == nullptr || Options->SessionIndex >= _results.size())
     {
-        *OutSessionHandle == nullptr;
+        set_nullptr(OutSessionHandle);
         return EOS_EResult::EOS_InvalidParameters;
     }
 
