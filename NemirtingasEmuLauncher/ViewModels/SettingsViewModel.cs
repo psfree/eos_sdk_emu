@@ -89,6 +89,28 @@ namespace NemirtingasEmuLauncher.ViewModels
         }
         /////////////////////////////////////////////////
         /// "Game Settings" Tab
+
+        private string _ItemId = string.Empty;
+        public string ItemId
+        {
+            get => _ItemId;
+            set
+            {
+                RaiseAndSetIfChanged(ref _ItemId, value);
+                genParameterWatermark();
+            }
+        }
+
+        private string _AppId = string.Empty;
+        public string AppId
+        {
+            get => _AppId;
+            set
+            {
+                RaiseAndSetIfChanged(ref _AppId, value);
+                genParameterWatermark();
+            }
+        }
         private string _GameName = "";
         public string GameName
         {
@@ -126,17 +148,6 @@ namespace NemirtingasEmuLauncher.ViewModels
         {
             get => _GameStartFolder;
             set => RaiseAndSetIfChanged(ref _GameStartFolder, value);
-        }
-
-        private string _AppId = string.Empty;
-        public string AppId
-        {
-            get => _AppId;
-            set
-            {
-                RaiseAndSetIfChanged(ref _AppId, value);
-                genParameterWatermark();
-            }
         }
 
         public bool GameIsX64Enabled => OSDetector.IsWindows();
@@ -296,6 +307,7 @@ namespace NemirtingasEmuLauncher.ViewModels
                 _parent.TbxGameSavePath.Watermark = EpicEmulator.GameEmuFolder;
 
                 AppId           = game_app.AppId;
+                ItemId          = game_app.ItemId;
                 GameName        = game_app.AppName;
                 GameStartFolder = game_app.StartFolder;
                 GameExePath     = game_app.FullPath;
@@ -543,6 +555,7 @@ namespace NemirtingasEmuLauncher.ViewModels
                 }
 
                 game_app.AppId = AppId;
+                game_app.ItemId = ItemId;
                 game_app.UseX64 = GameIsX64;
                 game_app.AppName = GameName;
                 game_app.FullPath = GameExePath;

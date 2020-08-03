@@ -400,7 +400,7 @@ namespace NemirtingasEmuLauncher
             psi.UseShellExecute = false;
             psi.FileName = app.FullPath;
             psi.WindowStyle = ProcessWindowStyle.Normal;
-            psi.Arguments = app.Parameters;
+            psi.Arguments = string.IsNullOrWhiteSpace(app.Parameters) ? app.DefaultParameters : app.Parameters;
             psi.WorkingDirectory = app.StartFolder;
 
             foreach (EnvVar var in app.EnvVars)
@@ -480,25 +480,32 @@ namespace NemirtingasEmuLauncher
             if (json_cache == null)
             {// Clear cache or can't find the cache file
                 Directory.CreateDirectory(app_cache_directory);
-                string url = "https://raw.githubusercontent.com/EpicData-info/items-tracker/master/database/items/" + app.AppId + ".json";
+                string url = "https://raw.githubusercontent.com/EpicData-info/items-tracker/master/database/items/" + app.ItemId + ".json";
 
                 JObject json;
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                 request.MaximumAutomaticRedirections = 3;
                 request.AllowAutoRedirect = true;
 
-                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                try
                 {
-                    if (response.StatusCode != HttpStatusCode.OK)
+                    using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
                     {
-                        return new ApiResult { Success = false, Message = "Failed to connect to " + url };
-                    }
+                        if (response.StatusCode != HttpStatusCode.OK)
+                        {
+                            return new ApiResult { Success = false, Message = "Failed to connect to " + url };
+                        }
 
-                    Stream sresult = response.GetResponseStream();
-                    using (StreamReader streamReader = new StreamReader(sresult))
-                    {
-                        json = JObject.Parse(streamReader.ReadToEnd());
+                        Stream sresult = response.GetResponseStream();
+                        using (StreamReader streamReader = new StreamReader(sresult))
+                        {
+                            json = JObject.Parse(streamReader.ReadToEnd());
+                        }
                     }
+                }
+                catch(Exception)
+                {
+                    return new ApiResult { Success = false, Message = "Page not found " + url };
                 }
 
                 if (json.ContainsKey("keyImages"))
@@ -601,6 +608,14 @@ namespace NemirtingasEmuLauncher
 
                 json_cache = new JObject();
                 json_cache["name"] = json.Value<string>("title");
+                try
+                {
+                    json_cache["app_id"] = json["releaseInfo"][0].Value<string>("appId");
+                }
+                catch(Exception)
+                {
+                    json_cache["app_id"] = app.AppId;
+                }
 
                 using (StreamWriter streamWriter = new StreamWriter(new FileStream(app_cache_file, FileMode.Create), Encoding.UTF8))
                 {
@@ -609,7 +624,9 @@ namespace NemirtingasEmuLauncher
                 }
             }
 
+            app.AppName = string.Empty;
             app.AppName = json_cache.Value<string>("name");
+            app.AppId = json_cache.Value<string>("app_id");
 
             return new ApiResult { Success = true };
         }

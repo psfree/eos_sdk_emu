@@ -82,9 +82,7 @@ namespace NemirtingasEmuLauncher.ViewModels
             GameConfig app = new GameConfig();
             if (await openGameProperties(app, false) == DialogResult.DialogOk)
             {
-                genGameInfos(app);
-                AppList.Add(app);
-                EpicEmulator.Save(AppList);
+                addGame(app);
             }
         }
 
@@ -113,8 +111,7 @@ namespace NemirtingasEmuLauncher.ViewModels
 
                 if (await openGameProperties(app, false) == DialogResult.DialogOk)
                 {
-                    AppList.Add(app);
-                    EpicEmulator.Save(AppList);
+                    addGame(app);
                 }
             }
         }
@@ -155,6 +152,7 @@ namespace NemirtingasEmuLauncher.ViewModels
         public void OnMenuGameGenInfos(GameConfig app)
         {
             genGameInfos(app, true);
+            EpicEmulator.Save(AppList);
         }
 
         public void OnMenuGameGenAchievements(GameConfig app)
@@ -208,10 +206,10 @@ namespace NemirtingasEmuLauncher.ViewModels
 
         public async void OnMenuGameProperties(GameConfig app)
         {
-            string oldAppName = app.AppName;
+            string oldItemId = app.ItemId;
             if (await openGameProperties(app, false) == DialogResult.DialogOk)
             {
-                if(oldAppName != app.AppName)
+                if(oldItemId != app.ItemId)
                 {
                     genGameInfos(app);
                 }
@@ -234,6 +232,13 @@ namespace NemirtingasEmuLauncher.ViewModels
             }
         }
 
+        private void addGame(GameConfig app)
+        {
+            genGameInfos(app);
+            AppList.Add(app);
+            EpicEmulator.Save(AppList);
+        }
+
         private void genGameInfos(GameConfig app, bool clear_cache = false)
         {
             ApiResult res = EpicEmulator.GenerateGameInfos(app, clear_cache);
@@ -244,10 +249,6 @@ namespace NemirtingasEmuLauncher.ViewModels
                         "Failed to retrieve game Infos: " + res.Message,
                         ButtonEnum.Ok,
                         Icon.Error).ShowDialog(_parent);
-            }
-            else
-            {
-                EpicEmulator.Save(AppList);
             }
         }
 

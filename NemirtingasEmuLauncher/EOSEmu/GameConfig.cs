@@ -83,14 +83,49 @@ namespace NemirtingasEmuLauncher
             set => RaiseAndSetIfChanged(ref _appId, value);
         }
 
-        public string DefaultParameters => "-AUTH_LOGIN=unused " +
-                                           "-AUTH_PASSWORD=cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd " +
-                                           "-AUTH_TYPE=exchangecode " + 
-                                           "-epicapp=" + AppId + " " +
-                                           "-epicenv=Prod " +
-                                           "-EpicPortal " +
-                                           "-epicusername=\"" + (string.IsNullOrEmpty(EmuConfig.UserName) ? EmuConfig.DefaultEmuConfig.UserName : EmuConfig.UserName) + "\" " +
-                                           "-epicuserid=" + EmuConfig.EosId.ToString() ?? EmuConfig.DefaultEmuConfig.EosId.ToString();
+        private string _ItemId = string.Empty;
+        public string ItemId
+        {
+            get => _ItemId;
+            set => RaiseAndSetIfChanged(ref _ItemId, value);
+        }
+
+        public string DefaultParameters
+        {
+            get
+            {
+                string username = (string.IsNullOrEmpty(EmuConfig.UserName) ? EmuConfig.DefaultEmuConfig.UserName : EmuConfig.UserName);
+                string param = "-AUTH_LOGIN=unused " +
+                "-AUTH_PASSWORD=cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd " +
+                "-AUTH_TYPE=exchangecode " +
+                "-epicapp=" + AppId + " " +
+                "-epicenv=Prod " +
+                "-EpicPortal " +
+                "-epicusername=\"" + username + "\" " +
+                "-epicuserid=";
+
+                string id;
+                if (EmuConfig.EosId == null || string.IsNullOrWhiteSpace(EmuConfig.EosId.Id))
+                {
+                    if(EmuConfig.DefaultEmuConfig.EosId == null || string.IsNullOrWhiteSpace(EmuConfig.DefaultEmuConfig.EosId.Id))
+                    {
+                        id = EOSProductId.GenerateIdFromName(username);
+                    }
+                    else
+                    {
+                        id = EmuConfig.DefaultEmuConfig.EosId.Id;
+                    }
+                }
+                else
+                {
+                    id = EmuConfig.EosId.Id;
+                }
+
+                param += id;
+
+                return param;
+            }
+        }
 
         private string _Parameters;
         public string Parameters
