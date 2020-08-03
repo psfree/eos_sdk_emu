@@ -65,6 +65,8 @@ namespace sdk
         EOSSDK_P2P();
         ~EOSSDK_P2P();
 
+        void set_p2p_state_connected(EOS_ProductUserId remote_id, p2p_state_t& state);
+
         // Send Network messages
         bool send_p2p_connection_request(Network::peer_t const& peerid, P2P_Connect_Request_pb *req) const;
         bool send_p2p_connection_response(Network::peer_t const& peerid, P2P_Connect_Response_pb *resp) const;

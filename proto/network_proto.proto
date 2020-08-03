@@ -215,6 +215,7 @@ message P2P_Data_Message_pb {
 // P2P data acknowledge
 message P2P_Data_Acknowledge_pb {
     int32 channel = 1;
+    bool accepted = 2;
 }
 
 // P2P Connection close
