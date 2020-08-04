@@ -101,7 +101,7 @@ void Settings::build_save_path()
     savepath += PATH_SEPARATOR;
     savepath += userid->to_string();
     savepath += PATH_SEPARATOR;
-    savepath += gamename;
+    savepath += appid;
 }
 
 void Settings::load_settings()
@@ -171,6 +171,7 @@ void Settings::load_settings()
     language                  = get_setting(settings, "language", std::string("english"));
     languages                 = get_setting(settings, "languages", std::string("english"));
     gamename                  = get_setting(settings, "gamename", std::string("DefaultGameName"));
+    appid                     = get_setting(settings, "appid", std::string("InvalidAppid"));
     unlock_dlcs               = get_setting(settings, "unlock_dlcs", bool(true));
     enable_overlay            = get_setting(settings, "enable_overlay", bool(true));
     disable_online_networking = get_setting(settings, "disable_online_networking", bool(false));
@@ -193,6 +194,7 @@ void Settings::save_settings()
 
     build_save_path();
 
+    settings["appid"]                     = appid;
     settings["username"]                  = username;
     settings["epicid"]                    = userid->to_string();
     settings["language"]                  = language;
