@@ -432,7 +432,7 @@ namespace NemirtingasEmuLauncher
             // TODO: Restore original api
             try
             {
-                File.Copy(app.FullApiPath, Path.Combine(OSFuncs.GetEmuApiFolder(app.UseX64), OSFuncs.GetEpicAPIName(app.UseX64)), true);
+                File.Copy(Path.Combine(OSFuncs.GetEmuApiFolder(app.UseX64), app.AppId, OSFuncs.GetEpicAPIName(app.UseX64)), app.FullApiPath, true);
             }
             catch (Exception)
             { }
