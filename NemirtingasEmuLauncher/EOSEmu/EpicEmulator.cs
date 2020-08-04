@@ -229,6 +229,7 @@ namespace NemirtingasEmuLauncher
             {
                 return new ApiResult { Success = false, Message = "Invalid game name: must not be empty" };
             }
+            emu_cfg["appid"] = game_app.AppId;
             emu_cfg["gamename"] = game_app.AppName;
 
             emu_cfg["savepath"] = string.IsNullOrWhiteSpace(game_app.SavePath) ? GameEmuFolder + Path.DirectorySeparatorChar : game_app.SavePath;
