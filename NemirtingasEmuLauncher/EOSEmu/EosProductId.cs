@@ -23,30 +23,52 @@ namespace NemirtingasEmuLauncher
 {
     public class EOSProductId
     {
-        public string Id { get; set; }
+        private string _Id = string.Empty;
+        public string Id
+        {
+            get => _Id;
+            set
+            {
+                if(!IsValid(value))
+                {
+                    throw new ArgumentException("Invalid EOS Id, must be a 128 bits max hex string");
+                }
+                _Id = value;
+            }
+        }
 
         public EOSProductId()
         {
-            Id = RandomId();
         }
 
         public EOSProductId(string id)
         {
-            if(id.Length > 32)
+            Id = id;
+        }
+
+        public bool IsValid()
+        {
+            return IsValid(_Id);
+        }
+
+        public bool IsValid(string id)
+        {
+            if (id.Length > 32)
             {
-                throw new ArgumentException("Invalid EOS Id, must be a 128 bits max hex string");
+                return false;
             }
 
             foreach (var c in id)
             {
-                if((c < '0' || c > '9') &&
+                if ((c < '0' || c > '9') &&
                    (c < 'a' || c > 'f') &&
                    (c < 'A' || c > 'F'))
                 {
-                    throw new ArgumentException("Invalid EOS Id, must be a 128 bits hex string");
+                    return false;
                 }
             }
-            Id = id;
+
+            return true;
         }
 
         public static string RandomId()

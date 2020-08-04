@@ -151,6 +151,45 @@ namespace NemirtingasEmuLauncher
             }
         }
 
+        private static string getAppUsername(GameConfig app)
+        {
+            if (string.IsNullOrWhiteSpace(app.EmuConfig.UserName))
+            {
+                if (string.IsNullOrWhiteSpace(EmuConfig.DefaultEmuConfig.UserName))
+                {
+                    return null;
+                }
+                return EmuConfig.DefaultEmuConfig.UserName;
+            }
+            else
+            {
+                return app.EmuConfig.UserName;
+            }
+        }
+
+        private static EOSProductId getAppUserId(GameConfig app)
+        {
+            if (app.EmuConfig.EosId == null || string.IsNullOrWhiteSpace(app.EmuConfig.EosId.Id))
+            {
+                if (EmuConfig.DefaultEmuConfig.EosId == null || string.IsNullOrWhiteSpace(EmuConfig.DefaultEmuConfig.EosId.Id))
+                {
+                    string username = getAppUsername(app);
+                    if (string.IsNullOrWhiteSpace(username))
+                        return null;
+
+                    return new EOSProductId(EOSProductId.GenerateIdFromName(username));
+                }
+                else
+                {
+                    return EmuConfig.DefaultEmuConfig.EosId;
+                }
+            }
+            else
+            {
+                return app.EmuConfig.EosId;
+            }
+        }
+
         private static ApiResult BuildEmuJsonCfg(GameConfig game_app, out JObject emu_cfg)
         {
             string os_folder = OSFuncs.GetEmuApiFolder(game_app.UseX64);
@@ -196,39 +235,43 @@ namespace NemirtingasEmuLauncher
                 emu_cfg["log_level"] = game_app.EmuConfig.LogLevel;
             }
 
-            if (string.IsNullOrWhiteSpace(game_app.EmuConfig.UserName))
+            string username = getAppUsername(game_app);
+            if(string.IsNullOrWhiteSpace(username))
             {
-                if (string.IsNullOrWhiteSpace(EmuConfig.DefaultEmuConfig.UserName))
-                {
-                    return new ApiResult { Success = false, Message = "Invalid username: must not be empty" };
-                }
-                emu_cfg["username"] = EmuConfig.DefaultEmuConfig.UserName;
-            }
-            else
-            {
-                emu_cfg["username"] = game_app.EmuConfig.UserName;
+                return new ApiResult { Success = false, Message = "Invalid username: must not be empty" };
             }
 
-            if (game_app.EmuConfig.EosId == null)
+            emu_cfg["username"] = username;
+
+            EOSProductId epicid = getAppUserId(game_app);
+            if(!epicid.IsValid())
             {
-                if (EmuConfig.DefaultEmuConfig.EosId == null)
-                {
-                    emu_cfg["epicid"] = EOSProductId.GenerateIdFromName(emu_cfg.Value<string>("username"));
-                }
-                else
-                {
-                    emu_cfg["epicid"] = EmuConfig.DefaultEmuConfig.EosId.Id;
-                }
+                return new ApiResult { Success = false, Message = "Invalid epicid: must be a 128bits hex string" };
             }
-            else
-            {
-                emu_cfg["epicid"] = game_app.EmuConfig.EosId.Id;
-            }
+
+            emu_cfg["epicid"] = epicid.Id;
 
             if (string.IsNullOrWhiteSpace(game_app.AppName))
             {
                 return new ApiResult { Success = false, Message = "Invalid game name: must not be empty" };
             }
+
+            if(game_app.EmuConfig.EosProductId == null)
+            {
+                if(EmuConfig.DefaultEmuConfig.EosProductId == null)
+                {
+                    emu_cfg["productuserid"] = EOSProductId.GenerateIdFromName(game_app.AppName + epicid.Id);
+                }
+                else
+                {
+                    emu_cfg["productuserid"] = EmuConfig.DefaultEmuConfig.EosProductId.ToString();
+                }
+            }
+            else
+            {
+                emu_cfg["productuserid"] = game_app.EmuConfig.EosProductId.ToString();
+            }
+
             emu_cfg["appid"] = game_app.AppId;
             emu_cfg["gamename"] = game_app.AppName;
 

@@ -28,6 +28,10 @@
             <Button Margin="10,0" Height="26" Content="Generate Random ID" Command="{Binding OnButtonGenerateId}"/>
           </StackPanel>
           <StackPanel Margin="10,0,0,10" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <TextBlock Text="Product User ID" VerticalAlignment="Center" Width="100"/>
+            <TextBox Text="{Binding ProductUserId}" Watermark="Auto generated" VerticalAlignment="Center" Width="300" />
+          </StackPanel>
+          <StackPanel Margin="10,0,0,10" Orientation="Horizontal" HorizontalAlignment="Stretch">
             <TextBlock Text="Language" VerticalAlignment="Center" Width="100"/>
             <ComboBox Width="300" Items="{Binding OverrideLanguageCombo}" SelectedItem="{Binding SelectedOverrideLanguage, Mode=TwoWay}" VerticalAlignment="Center" Height="24" />
           </StackPanel>

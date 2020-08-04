@@ -43,6 +43,7 @@ namespace NemirtingasEmuLauncher
         public string UserName { get; set; } = string.Empty;
         public string Language { get; set; } = string.Empty;
         public EOSProductId EosId { get; set; }
+        public EOSProductId EosProductId { get; set; }
 
         public bool? UnlockEntitlements { get; set; }
 
@@ -52,15 +53,5 @@ namespace NemirtingasEmuLauncher
 
         public EmuConfig()
         { }
-
-        public EmuConfig(EmuConfig other)
-        {
-            UserName = other.UserName;
-            Language = other.Language;
-            EosId = other.EosId;
-            UnlockEntitlements = other.UnlockEntitlements;
-            EnableOverlay = other.EnableOverlay;
-        }
-
     }
 }

@@ -49,21 +49,32 @@ namespace NemirtingasEmuLauncher.ViewModels
             get => _EpicId;
             set
             {
-                //ulong id;
-                //if(!ulong.TryParse(value, out id))
-                //{
-                //    throw new InvalidDataException("SteamID should only contain digits");
-                //}
                 RaiseAndSetIfChanged(ref _EpicId, value);
-                if(string.IsNullOrWhiteSpace(_EpicId))
+                if (string.IsNullOrWhiteSpace(_EpicId))
                 {
-                    EpicIdWatermark.OnNext(EOSProductId.GenerateIdFromName(_UserName).ToString());
+                    string name_id = EOSProductId.GenerateIdFromName(_UserName).ToString();
+                    EpicIdWatermark.OnNext(name_id);
                 }
                 genParameterWatermark();
             }
         }
 
+        private string _ProductUserId = "";
+        public string ProductUserId
+        {
+            get => _ProductUserId;
+            set
+            {
+                RaiseAndSetIfChanged(ref _ProductUserId, value);
+                if (string.IsNullOrWhiteSpace(_ProductUserId))
+                {
+                    ProductUserIdWatermark.OnNext(EOSProductId.GenerateIdFromName(_EpicId).ToString());
+                }
+            }
+        }
+
         public Subject<string> EpicIdWatermark = new Subject<string>();
+        public Subject<string> ProductUserIdWatermark = new Subject<string>();
 
         public ObservableCollection<string> LogLevels { get; set; } = new ObservableCollection<string>();
 
@@ -331,6 +342,7 @@ namespace NemirtingasEmuLauncher.ViewModels
             }
 
             EpicId = game_app.EmuConfig.EosId != null ? game_app.EmuConfig.EosId.ToString() : string.Empty;
+            ProductUserId = game_app.EmuConfig.EosProductId != null ? game_app.EmuConfig.EosProductId.ToString() : string.Empty;
 
             //foreach (string ip in app.CustomBroadcasts)
             //{
