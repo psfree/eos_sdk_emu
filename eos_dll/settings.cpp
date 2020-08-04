@@ -167,7 +167,6 @@ void Settings::load_settings()
         }
     }
 
-    settings["epicid"]        = userid->to_string();
     language                  = get_setting(settings, "language", std::string("english"));
     languages                 = get_setting(settings, "languages", std::string("english"));
     gamename                  = get_setting(settings, "gamename", std::string("DefaultGameName"));
@@ -175,6 +174,9 @@ void Settings::load_settings()
     unlock_dlcs               = get_setting(settings, "unlock_dlcs", bool(true));
     enable_overlay            = get_setting(settings, "enable_overlay", bool(true));
     disable_online_networking = get_setting(settings, "disable_online_networking", bool(false));
+
+    std::string productuserid = get_setting(settings, "productuserid", generate_account_id_from_name(gamename + userid->to_string()));
+    this->productuserid = GetProductUserId(productuserid);
 
     try
     {
@@ -197,6 +199,7 @@ void Settings::save_settings()
     settings["appid"]                     = appid;
     settings["username"]                  = username;
     settings["epicid"]                    = userid->to_string();
+    settings["productuserid"]             = productuserid->to_string();
     settings["language"]                  = language;
     settings["languages"]                 = languages;
     settings["gamename"]                  = gamename;

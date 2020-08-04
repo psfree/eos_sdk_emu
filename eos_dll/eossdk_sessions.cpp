@@ -20,6 +20,7 @@
 #include "eossdk_sessions.h"
 #include "eossdk_platform.h"
 #include "eos_client_api.h"
+#include "settings.h"
 
 namespace sdk
 {
@@ -461,8 +462,8 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
                     );
 
                     session.infos.set_state(get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Pending));
-                    *session.infos.add_players() = GetEOS_Connect().product_id()->to_string();
-                    *session.infos.add_registered_players() = GetEOS_Connect().product_id()->to_string();
+                    *session.infos.add_players() = Settings::Inst().productuserid->to_string();
+                    *session.infos.add_registered_players() = Settings::Inst().productuserid->to_string();
                     //GetEOS_Connect().add_session(GetProductUserId(session.infos.session_id()), session.infos.session_name());
 
                     usci.ResultCode = EOS_EResult::EOS_Success;
@@ -810,7 +811,7 @@ void EOSSDK_Sessions::RegisterPlayers(const EOS_Sessions_RegisterPlayersOptions*
         }
         else
         {
-            if (is_player_registered(GetEOS_Connect().product_id()->to_string(), session))
+            if (is_player_registered(Settings::Inst().productuserid->to_string(), session))
             {
                 google::protobuf::RepeatedPtrField<std::string> registered;
                 for (uint32_t i = 0; i < Options->PlayersToRegisterCount; ++i)
@@ -828,7 +829,7 @@ void EOSSDK_Sessions::RegisterPlayers(const EOS_Sessions_RegisterPlayersOptions*
                 {
                     rpci.ResultCode = EOS_EResult::EOS_Success;
 
-                    std::string const& user_id = GetEOS_Connect().product_id()->to_string();                    
+                    std::string const& user_id = Settings::Inst().productuserid->to_string();                    
 
                     Session_Register_pb* register_ = new Session_Register_pb;
 
@@ -888,7 +889,7 @@ void EOSSDK_Sessions::UnregisterPlayers(const EOS_Sessions_UnregisterPlayersOpti
         }
         else
         {
-            if (is_player_registered(GetEOS_Connect().product_id()->to_string(), session))
+            if (is_player_registered(Settings::Inst().productuserid->to_string(), session))
             {
                 google::protobuf::RepeatedPtrField<std::string> unregistered;
                 for (uint32_t i = 0; i < Options->PlayersToUnregisterCount; ++i)
@@ -906,7 +907,7 @@ void EOSSDK_Sessions::UnregisterPlayers(const EOS_Sessions_UnregisterPlayersOpti
                 {
                     upci.ResultCode = EOS_EResult::EOS_Success;
 
-                    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+                    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
                     Session_Unregister_pb* unregister = new Session_Unregister_pb;
 
@@ -1436,7 +1437,7 @@ EOS_EResult EOSSDK_Sessions::IsUserInSession(const EOS_Sessions_IsUserInSessionO
     if (Options == nullptr || Options->TargetUserId == nullptr || Options->SessionName == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
-    if (Options->TargetUserId == GetEOS_Connect().product_id())
+    if (Options->TargetUserId == Settings::Inst().productuserid)
     {
         session_state_t* session = get_session_by_name(Options->SessionName);
         if (session != nullptr)
@@ -1513,7 +1514,7 @@ bool EOSSDK_Sessions::send_session_info_request(Network::peer_t const& peerid, S
 {
     TRACE_FUNC();
     // TODO: Make it P2P, send it to all, will have to filter results
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Session_Message_pb* session = new Session_Message_pb;
@@ -1532,7 +1533,7 @@ bool EOSSDK_Sessions::send_session_info(session_state_t* session)
 {
     TRACE_FUNC();
     assert(session != nullptr);
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Session_Message_pb* session_pb = new Session_Message_pb;
@@ -1553,7 +1554,7 @@ bool EOSSDK_Sessions::send_session_destroy(session_state_t *session)
 {
     TRACE_FUNC();
     assert(session != nullptr);
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Session_Message_pb* session_pb = new Session_Message_pb;
@@ -1572,7 +1573,7 @@ bool EOSSDK_Sessions::send_session_destroy(session_state_t *session)
 bool EOSSDK_Sessions::send_sessions_search_response(Network::peer_t const& peerid, Sessions_Search_response_pb* resp)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Sessions_Search_Message_pb* search = new Sessions_Search_Message_pb;
@@ -1591,7 +1592,7 @@ bool EOSSDK_Sessions::send_session_join_request(session_state_t *session)
 {
     TRACE_FUNC();
     assert(session != nullptr);
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Session_Message_pb* session_pb = new Session_Message_pb;
@@ -1610,7 +1611,7 @@ bool EOSSDK_Sessions::send_session_join_request(session_state_t *session)
 bool EOSSDK_Sessions::send_session_join_response(Network::peer_t const& peerid, Session_Join_Response_pb* resp)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Session_Message_pb* session = new Session_Message_pb;
@@ -1634,7 +1635,7 @@ bool EOSSDK_Sessions::send_session_join_response(Network::peer_t const& peerid, 
 bool EOSSDK_Sessions::send_session_invite(Network::peer_t const& peerid, Session_Invite_pb* invite)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Session_Message_pb* session = new Session_Message_pb;
@@ -1652,7 +1653,7 @@ bool EOSSDK_Sessions::send_session_invite(Network::peer_t const& peerid, Session
 bool EOSSDK_Sessions::send_session_invite_response(Network::peer_t const& peerid, Session_Invite_Response_pb* resp)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Session_Message_pb* session = new Session_Message_pb;
@@ -1670,7 +1671,7 @@ bool EOSSDK_Sessions::send_session_invite_response(Network::peer_t const& peerid
 bool EOSSDK_Sessions::send_session_register(Session_Register_pb* register_, session_state_t* session)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Session_Message_pb* session_pb = new Session_Message_pb;
@@ -1687,7 +1688,7 @@ bool EOSSDK_Sessions::send_session_register(Session_Register_pb* register_, sess
 bool EOSSDK_Sessions::send_session_unregister(Session_Unregister_pb* unregister, session_state_t* session)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Session_Message_pb* session_pb = new Session_Message_pb;
@@ -1740,7 +1741,7 @@ bool EOSSDK_Sessions::on_session_info_request(Network_Message_pb const& msg, Ses
     session_pb->set_allocated_session_infos(infos);
     resp.set_allocated_session(session_pb);
 
-    resp.set_source_id(GetEOS_Connect().product_id()->to_string());
+    resp.set_source_id(Settings::Inst().productuserid->to_string());
     resp.set_dest_id(msg.source_id());
 
     return GetNetwork().TCPSendTo(resp);
@@ -1814,7 +1815,7 @@ bool EOSSDK_Sessions::on_session_join_request(Network_Message_pb const& msg, Ses
     GLOBAL_LOCK();
 
     session_state_t* pSession = get_session_by_id(req.session_id());
-    if (!is_player_registered(GetEOS_Connect().product_id()->to_string(), pSession))
+    if (!is_player_registered(Settings::Inst().productuserid->to_string(), pSession))
     {// We are not in the session or we are not registered, we cannot accept the session join
         return true;
     }
@@ -1853,14 +1854,14 @@ bool EOSSDK_Sessions::on_session_join_response(Network_Message_pb const& msg, Se
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
     auto session_it = std::find_if(_sessions.begin(), _sessions.end(), [&resp]( std::pair<const std::string, session_state_t>& item)
     {
         return item.second.infos.session_id() == resp.session_id();
     });
 
     auto reason = static_cast<EOS_EResult>(resp.reason());
-    if (resp.user_id() == GetEOS_Connect().product_id()->to_string())
+    if (resp.user_id() == Settings::Inst().productuserid->to_string())
     {
         auto it = _sessions_join.find(resp.session_id());
         if (it != _sessions_join.end())

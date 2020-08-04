@@ -20,6 +20,7 @@
 #include "eossdk_lobby.h"
 #include "eossdk_platform.h"
 #include "eos_client_api.h"
+#include "settings.h"
 
 namespace sdk
 {
@@ -1457,7 +1458,7 @@ bool EOSSDK_Lobby::send_to_all_members_or_owner(Network_Message_pb& msg, lobby_s
 bool EOSSDK_Lobby::send_lobby_update(lobby_state_t* pLobby)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
     
     Network_Message_pb msg;
     Lobby_Message_pb* lobby = new Lobby_Message_pb;
@@ -1480,7 +1481,7 @@ bool EOSSDK_Lobby::send_lobby_update(lobby_state_t* pLobby)
 bool EOSSDK_Lobby::send_lobbies_search_response(Network::peer_t const& peerid, Lobbies_Search_response_pb* resp)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Lobbies_Search_Message_pb* search = new Lobbies_Search_Message_pb;
@@ -1498,7 +1499,7 @@ bool EOSSDK_Lobby::send_lobbies_search_response(Network::peer_t const& peerid, L
 bool EOSSDK_Lobby::send_lobby_join_request(Network::peer_t const& peerid, Lobby_Join_Request_pb* req)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Lobby_Message_pb* lobby_pb = new Lobby_Message_pb;
@@ -1516,7 +1517,7 @@ bool EOSSDK_Lobby::send_lobby_join_request(Network::peer_t const& peerid, Lobby_
 bool EOSSDK_Lobby::send_lobby_join_response(Network::peer_t const& peerid, Lobby_Join_Response_pb* resp)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Lobby_Message_pb* lobby_pb = new Lobby_Message_pb;
@@ -1534,7 +1535,7 @@ bool EOSSDK_Lobby::send_lobby_join_response(Network::peer_t const& peerid, Lobby
 bool EOSSDK_Lobby::send_lobby_invite(Network::peer_t const& peerid, Lobby_Invite_pb* invite)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Lobby_Message_pb* lobby_pb = new Lobby_Message_pb;
@@ -1552,7 +1553,7 @@ bool EOSSDK_Lobby::send_lobby_invite(Network::peer_t const& peerid, Lobby_Invite
 bool EOSSDK_Lobby::send_lobby_member_update(Network::peer_t const& member_id, lobby_state_t* pLobby)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     auto it = pLobby->infos.members().find(member_id);
     if (it != pLobby->infos.members().end())
@@ -1577,7 +1578,7 @@ bool EOSSDK_Lobby::send_lobby_member_update(Network::peer_t const& member_id, lo
 bool EOSSDK_Lobby::send_lobby_member_join(Network::peer_t const& member_id, lobby_state_t* lobby)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Lobby_Message_pb* lobby_pb = new Lobby_Message_pb;
@@ -1597,7 +1598,7 @@ bool EOSSDK_Lobby::send_lobby_member_join(Network::peer_t const& member_id, lobb
 bool EOSSDK_Lobby::send_lobby_member_leave(Network::peer_t const& member_id, lobby_state_t* lobby, EOS_ELobbyMemberStatus reason)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Lobby_Message_pb* lobby_pb = new Lobby_Message_pb;
@@ -1618,7 +1619,7 @@ bool EOSSDK_Lobby::send_lobby_member_leave(Network::peer_t const& member_id, lob
 bool EOSSDK_Lobby::send_lobby_member_promote(Network::peer_t const& member_id, lobby_state_t* lobby)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Lobby_Message_pb* lobby_pb = new Lobby_Message_pb;
@@ -1651,7 +1652,7 @@ bool EOSSDK_Lobby::on_peer_disconnect(Network_Message_pb const& msg, Network_Pee
         {
             if (remove_member_from_lobby(msg.source_id(), &lobby.second))
             {
-                std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+                std::string const& user_id = Settings::Inst().productuserid->to_string();
 
                 Network_Message_pb msg_resp;
                 Lobby_Message_pb* lobby_pb = new Lobby_Message_pb;
@@ -1871,7 +1872,7 @@ bool EOSSDK_Lobby::on_lobby_member_leave(Network_Message_pb const& msg, Lobby_Me
     {
         if (i_am_owner(pLobby))
         {// If I am the lobby owner, send the leave message to all clients
-            std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+            std::string const& user_id = Settings::Inst().productuserid->to_string();
 
             Network_Message_pb msg_resp;
             Lobby_Message_pb* lobby_pb = new Lobby_Message_pb;
@@ -1891,7 +1892,7 @@ bool EOSSDK_Lobby::on_lobby_member_leave(Network_Message_pb const& msg, Lobby_Me
         {
             case EOS_ELobbyMemberStatus::EOS_LMS_KICKED:
             {
-                if (GetProductUserId(leave.member_id()) == GetEOS_Connect().product_id())
+                if (GetProductUserId(leave.member_id()) == Settings::Inst().productuserid)
                 {// If I am the one behing kicked
                     _lobbies.erase(leave.lobby_id());
                 }

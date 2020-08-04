@@ -47,10 +47,6 @@ namespace sdk
         EOSSDK_Connect();
         ~EOSSDK_Connect();
 
-        inline EOS_ProductUserId product_id()
-        {
-            return get_myself()->first;
-        }
         inline typename decltype(EOSSDK_Connect::_users)::iterator get_myself()
         {
             return _users.begin();

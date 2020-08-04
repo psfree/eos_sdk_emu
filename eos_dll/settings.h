@@ -42,6 +42,7 @@ private:
 
 public:
     EOS_EpicAccountId userid;
+    EOS_ProductUserId productuserid;
     std::string username;
     std::string languages;
     std::string language;

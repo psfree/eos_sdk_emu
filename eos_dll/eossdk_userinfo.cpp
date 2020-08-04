@@ -120,7 +120,7 @@ void EOSSDK_UserInfo::QueryUserInfo(const EOS_UserInfo_QueryUserInfoOptions* Opt
             quici.ResultCode = EOS_EResult::EOS_NotFound;
             res->done = true;
         }
-        else if (user->first == GetEOS_Connect().product_id())
+        else if (user->first == Settings::Inst().productuserid)
         {
             quici.ResultCode = EOS_EResult::EOS_Success;
             res->done = true;
@@ -185,7 +185,7 @@ void EOSSDK_UserInfo::QueryUserInfoByDisplayName(const EOS_UserInfo_QueryUserInf
             quibdnci.ResultCode = EOS_EResult::EOS_NotFound;
             res->done = true;
         }
-        else if (user->first == GetEOS_Connect().product_id())
+        else if (user->first == Settings::Inst().productuserid)
         {
             quibdnci.ResultCode = EOS_EResult::EOS_Success;
             res->done = true;
@@ -346,7 +346,7 @@ bool EOSSDK_UserInfo::send_userinfo_request(Network::peer_t const& peerid, UserI
     Network_Message_pb msg;
     UserInfo_Message_pb* userinfo = new UserInfo_Message_pb;
 
-    std::string const& userid = GetEOS_Connect().product_id()->to_string();
+    std::string const& userid = Settings::Inst().productuserid->to_string();
 
     userinfo->set_allocated_userinfo_info_request(req);
     msg.set_allocated_userinfo(userinfo);
@@ -363,7 +363,7 @@ bool EOSSDK_UserInfo::send_my_userinfo(Network::peer_t const& peerid)
     Network_Message_pb msg;
     UserInfo_Message_pb* userinfo = new UserInfo_Message_pb;
 
-    std::string const& userid = GetEOS_Connect().product_id()->to_string();
+    std::string const& userid = Settings::Inst().productuserid->to_string();
 
     userinfo->set_allocated_userinfo_info(&get_myself());
     msg.set_allocated_userinfo(userinfo);

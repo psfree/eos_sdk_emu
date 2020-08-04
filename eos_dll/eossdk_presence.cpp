@@ -487,7 +487,7 @@ EOS_EResult EOSSDK_Presence::GetJoinInfo( const EOS_Presence_GetJoinInfoOptions*
 bool EOSSDK_Presence::send_presence_info_request(Network::peer_t const& peerid, Presence_Info_Request_pb* req)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Presence_Message_pb* presence = new Presence_Message_pb;
@@ -505,7 +505,7 @@ bool EOSSDK_Presence::send_presence_info_request(Network::peer_t const& peerid, 
 bool EOSSDK_Presence::send_my_presence_info(Network::peer_t const& peerid)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Presence_Message_pb* presence = new Presence_Message_pb;
@@ -526,7 +526,7 @@ bool EOSSDK_Presence::send_my_presence_info(Network::peer_t const& peerid)
 bool EOSSDK_Presence::send_my_presence_info_to_all_peers()
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Presence_Message_pb* presence = new Presence_Message_pb;
@@ -599,7 +599,7 @@ bool EOSSDK_Presence::on_presence_request(Network_Message_pb const& msg, Presenc
 
 bool EOSSDK_Presence::on_presence_infos(Network_Message_pb const& msg, Presence_Info_pb const& infos)
 {
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
     if (msg.source_id() == user_id)
         return true;
 

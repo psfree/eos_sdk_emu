@@ -305,7 +305,7 @@ void EOSSDK_Friends::RemoveNotifyFriendsUpdate(EOS_NotificationId NotificationId
 bool EOSSDK_Friends::send_friend_info_request(Network::peer_t const& peerid, Friend_Info_Request_pb* req)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Friends_Message_pb* frd = new Friends_Message_pb;
@@ -323,7 +323,7 @@ bool EOSSDK_Friends::send_friend_info_request(Network::peer_t const& peerid, Fri
 bool EOSSDK_Friends::send_friend_info(Network::peer_t const& peerid, Friend_Info_pb* infos)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Friends_Message_pb* frd = new Friends_Message_pb;

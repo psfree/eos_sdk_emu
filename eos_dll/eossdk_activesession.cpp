@@ -20,6 +20,7 @@
 #include "eossdk_sessions.h"
 #include "eossdk_platform.h"
 #include "eos_client_api.h"
+#include "settings.h"
 
 namespace sdk
 {
@@ -53,7 +54,7 @@ EOS_EResult EOSSDK_ActiveSession::CopyInfo(const EOS_ActiveSession_CopyInfoOptio
 
     // ActiveSession_Info
     copy_session_info->ApiVersion = EOS_ACTIVESESSION_INFO_API_LATEST;
-    copy_session_info->LocalUserId = GetEOS_Connect().product_id();
+    copy_session_info->LocalUserId = Settings::Inst().productuserid;
     copy_session_info->State = static_cast<EOS_EOnlineSessionState>(_infos.state());
     {
         size_t len = _session_name.length() + 1;

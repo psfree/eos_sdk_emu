@@ -29,7 +29,7 @@ decltype(EOSSDK_Connect::user_infos_rate)      EOSSDK_Connect::user_infos_rate;
 
 EOSSDK_Connect::EOSSDK_Connect()
 {
-    auto userProductId = GetProductUserId(generate_account_id_from_name(Settings::Inst().gamename + Settings::Inst().userid->to_string()));
+    auto userProductId = Settings::Inst().productuserid;
     auto& myself = _users[userProductId];
     myself.connected = false;
     myself.infos.set_userid(Settings::Inst().userid->to_string());
@@ -108,7 +108,7 @@ void EOSSDK_Connect::Login(const EOS_Connect_LoginOptions* Options, void* Client
 
     lci.ClientData = ClientData;
     lci.ContinuanceToken = nullptr;
-    lci.LocalUserId = product_id();
+    lci.LocalUserId = Settings::Inst().productuserid;
     lci.ResultCode = EOS_EResult::EOS_Success;
     
     res->done = true;
@@ -135,7 +135,7 @@ void EOSSDK_Connect::CreateUser(const EOS_Connect_CreateUserOptions* Options, vo
     EOS_Connect_CreateUserCallbackInfo& cuci = res->CreateCallback<EOS_Connect_CreateUserCallbackInfo>((CallbackFunc)CompletionDelegate);
 
     cuci.ClientData = ClientData;
-    cuci.LocalUserId = product_id();
+    cuci.LocalUserId = Settings::Inst().productuserid;
     cuci.ResultCode = EOS_EResult::EOS_Connect_UserAlreadyExists;
 
     res->done = true;
@@ -284,7 +284,7 @@ void EOSSDK_Connect::QueryExternalAccountMappings(const EOS_Connect_QueryExterna
     pFrameResult_t res(new FrameResult);
     EOS_Connect_QueryExternalAccountMappingsCallbackInfo& qeamci = res->CreateCallback<EOS_Connect_QueryExternalAccountMappingsCallbackInfo>((CallbackFunc)CompletionDelegate);
     qeamci.ClientData = ClientData;
-    qeamci.LocalUserId = product_id();
+    qeamci.LocalUserId = Settings::Inst().productuserid;
 
     if (Options == nullptr || Options->ExternalAccountIds == nullptr)
     {
@@ -434,7 +434,7 @@ EOS_ProductUserId EOSSDK_Connect::GetLoggedInUserByIndex(int32_t Index)
     TRACE_FUNC();
 
     if (Index == 0)
-        return product_id();
+        return Settings::Inst().productuserid;
 
     return GetInvalidProductUserId();
 }
@@ -450,7 +450,7 @@ EOS_ELoginStatus EOSSDK_Connect::GetLoginStatus(EOS_ProductUserId LocalUserId)
 {
     TRACE_FUNC();
 
-    if (LocalUserId == product_id())
+    if (LocalUserId == Settings::Inst().productuserid)
         return (get_myself()->second.connected ? EOS_ELoginStatus::EOS_LS_LoggedIn : EOS_ELoginStatus::EOS_LS_NotLoggedIn);
 
     return EOS_ELoginStatus::EOS_LS_NotLoggedIn;
@@ -482,7 +482,7 @@ EOS_NotificationId EOSSDK_Connect::AddNotifyAuthExpiration(const EOS_Connect_Add
     EOS_Connect_AuthExpirationCallbackInfo& aeci = res->CreateCallback<EOS_Connect_AuthExpirationCallbackInfo>((CallbackFunc)Notification);
 
     aeci.ClientData = ClientData;
-    aeci.LocalUserId = product_id();
+    aeci.LocalUserId = Settings::Inst().productuserid;
 
     return GetCB_Manager().add_notification(this, res);
 }
@@ -525,7 +525,7 @@ EOS_NotificationId EOSSDK_Connect::AddNotifyLoginStatusChanged(const EOS_Connect
     lscci.ClientData = ClientData;
     lscci.PreviousStatus = EOS_ELoginStatus::EOS_LS_LoggedIn;
     lscci.CurrentStatus = EOS_ELoginStatus::EOS_LS_LoggedIn;
-    lscci.LocalUserId = product_id();
+    lscci.LocalUserId = Settings::Inst().productuserid;
 
     return GetCB_Manager().add_notification(this, res);
 }
@@ -655,7 +655,7 @@ EOS_EResult EOSSDK_Connect::CopyProductUserInfo(const EOS_Connect_CopyProductUse
 bool EOSSDK_Connect::send_connect_infos_request(Network::peer_t const& peerid, Connect_Request_Info_pb* req)
 {
     //TRACE_FUNC();
-    std::string const& user_id = product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Connect_Message_pb* conn = new Connect_Message_pb;
@@ -673,7 +673,7 @@ bool EOSSDK_Connect::send_connect_infos_request(Network::peer_t const& peerid, C
 bool EOSSDK_Connect::send_connect_infos(Network::peer_t const& peerid, Connect_Infos_pb* infos)
 {
     //TRACE_FUNC();
-    std::string const& user_id = product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Connect_Message_pb* conn = new Connect_Message_pb;
@@ -799,7 +799,7 @@ bool EOSSDK_Connect::CBRunFrame()
 
 bool EOSSDK_Connect::RunNetwork(Network_Message_pb const& msg)
 {
-    if (GetProductUserId(msg.source_id()) == product_id())
+    if (GetProductUserId(msg.source_id()) == Settings::Inst().productuserid)
         return true;
 
     switch (msg.messages_case())

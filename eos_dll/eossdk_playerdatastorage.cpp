@@ -462,7 +462,7 @@ EOS_HPlayerDataStorageFileTransferRequest EOSSDK_PlayerDataStorage::ReadFile(con
 
     EOS_PlayerDataStorage_ReadFileCallbackInfo& rfci = res->CreateCallback<EOS_PlayerDataStorage_ReadFileCallbackInfo>((CallbackFunc)CompletionCallback);
     rfci.ClientData = ClientData;
-    rfci.LocalUserId = GetEOS_Connect().product_id();
+    rfci.LocalUserId = Settings::Inst().productuserid;
 
     if (ReadOptions == nullptr || ReadOptions->Filename == nullptr)
     {

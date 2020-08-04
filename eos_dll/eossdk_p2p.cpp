@@ -20,6 +20,7 @@
 #include "eossdk_p2p.h"
 #include "eossdk_platform.h"
 #include "eos_client_api.h"
+#include "settings.h"
 
 namespace sdk
 {
@@ -263,7 +264,7 @@ EOS_NotificationId EOSSDK_P2P::AddNotifyPeerConnectionRequest(const EOS_P2P_AddN
     
     EOS_P2P_OnIncomingConnectionRequestInfo& oicri = res->CreateCallback<EOS_P2P_OnIncomingConnectionRequestInfo>((CallbackFunc)ConnectionRequestHandler);
     oicri.ClientData = ClientData;
-    oicri.LocalUserId = GetEOS_Connect().product_id();
+    oicri.LocalUserId = Settings::Inst().productuserid;
     oicri.RemoteUserId = GetProductUserId(sdk::NULL_USER_ID);
     oicri.SocketId = new EOS_P2P_SocketId;
 
@@ -303,7 +304,7 @@ EOS_NotificationId EOSSDK_P2P::AddNotifyPeerConnectionClosed(const EOS_P2P_AddNo
 
     EOS_P2P_OnRemoteConnectionClosedInfo& orcci = res->CreateCallback<EOS_P2P_OnRemoteConnectionClosedInfo>((CallbackFunc)ConnectionClosedHandler);
     orcci.ClientData = ClientData;
-    orcci.LocalUserId = GetEOS_Connect().product_id();
+    orcci.LocalUserId = Settings::Inst().productuserid;
     orcci.RemoteUserId = GetProductUserId(sdk::NULL_USER_ID);
     orcci.SocketId = new EOS_P2P_SocketId;
     orcci.Reason = EOS_EConnectionClosedReason::EOS_CCR_Unknown;
@@ -588,7 +589,7 @@ EOS_EResult EOSSDK_P2P::GetPortRange(const EOS_P2P_GetPortRangeOptions* Options,
 bool EOSSDK_P2P::send_p2p_connection_request(Network::peer_t const& peerid, P2P_Connect_Request_pb* req) const
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     P2P_Message_pb* p2p = new P2P_Message_pb;
@@ -607,7 +608,7 @@ bool EOSSDK_P2P::send_p2p_connection_request(Network::peer_t const& peerid, P2P_
 bool EOSSDK_P2P::send_p2p_connection_response(Network::peer_t const& peerid, P2P_Connect_Response_pb* resp) const
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     P2P_Message_pb* p2p = new P2P_Message_pb;
@@ -626,7 +627,7 @@ bool EOSSDK_P2P::send_p2p_connection_response(Network::peer_t const& peerid, P2P
 bool EOSSDK_P2P::send_p2p_data(Network::peer_t const& peerid, P2P_Data_Message_pb* data) const
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     P2P_Message_pb* p2p = new P2P_Message_pb;
@@ -648,7 +649,7 @@ bool EOSSDK_P2P::send_p2p_data(Network::peer_t const& peerid, P2P_Data_Message_p
 bool EOSSDK_P2P::send_p2p_data_ack(Network::peer_t const& peerid, P2P_Data_Acknowledge_pb* ack) const
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     P2P_Message_pb* p2p = new P2P_Message_pb;
@@ -667,7 +668,7 @@ bool EOSSDK_P2P::send_p2p_data_ack(Network::peer_t const& peerid, P2P_Data_Ackno
 bool EOSSDK_P2P::send_p2p_connetion_close(Network::peer_t const& peerid, P2P_Connection_Close_pb* close) const
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     P2P_Message_pb* p2p = new P2P_Message_pb;

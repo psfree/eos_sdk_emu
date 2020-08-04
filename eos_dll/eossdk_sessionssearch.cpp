@@ -20,6 +20,7 @@
 #include "eossdk_sessions.h"
 #include "eossdk_platform.h"
 #include "eos_client_api.h"
+#include "settings.h"
 
 namespace sdk
 {
@@ -318,7 +319,7 @@ void EOSSDK_SessionSearch::Release()
 bool EOSSDK_SessionSearch::send_sessions_search(Sessions_Search_pb* search)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Sessions_Search_Message_pb* search_msg = new Sessions_Search_Message_pb();

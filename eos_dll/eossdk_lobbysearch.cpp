@@ -20,6 +20,7 @@
 #include "eossdk_lobby.h"
 #include "eossdk_platform.h"
 #include "eos_client_api.h"
+#include "settings.h"
 
 namespace sdk
 {
@@ -288,7 +289,7 @@ void EOSSDK_LobbySearch::Release()
 bool EOSSDK_LobbySearch::send_lobbies_search(Lobbies_Search_pb* search)
 {
     TRACE_FUNC();
-    std::string const& user_id = GetEOS_Connect().product_id()->to_string();
+    std::string const& user_id = Settings::Inst().productuserid->to_string();
 
     Network_Message_pb msg;
     Lobbies_Search_Message_pb* search_msg = new Lobbies_Search_Message_pb();
