@@ -510,20 +510,21 @@ namespace NemirtingasEmuLauncher
 
             if (!clear_cache && File.Exists(app_cache_file))
             {// Try to read the cache file
-                using (StreamReader streamReader = new StreamReader(File.OpenRead(app_cache_file)))
+                try
                 {
-                    try
+                    using (StreamReader streamReader = new StreamReader(File.OpenRead(app_cache_file)))
                     {
+
                         json_cache = JObject.Parse(streamReader.ReadToEnd());
+
                     }
-                    catch (Exception)
-                    { }
                 }
+                catch (Exception)
+                { }
             }
 
             if (json_cache == null)
             {// Clear cache or can't find the cache file
-                Directory.CreateDirectory(app_cache_directory);
                 string url = "https://raw.githubusercontent.com/EpicData-info/items-tracker/master/database/items/" + app.ItemId + ".json";
 
                 JObject json;
@@ -551,6 +552,20 @@ namespace NemirtingasEmuLauncher
                 {
                     return new ApiResult { Success = false, Message = "Page not found " + url };
                 }
+
+                try
+                {
+                    app_cache_directory = Path.Combine(EpicEmulator.LauncherAppsCacheFolder, json["releaseInfo"][0].Value<string>("appId"));
+                }
+                catch(Exception)
+                {
+                    return new ApiResult { Success = false, Message = "No releaseInfo at " + url };
+                }
+
+                app_cache_file = Path.Combine(app_cache_directory, "infos.json");
+                app_cache_image = Path.Combine(app_cache_directory, "background.jpg");
+
+                Directory.CreateDirectory(app_cache_directory);
 
                 if (json.ContainsKey("keyImages"))
                 {
@@ -652,14 +667,7 @@ namespace NemirtingasEmuLauncher
 
                 json_cache = new JObject();
                 json_cache["name"] = json.Value<string>("title");
-                try
-                {
-                    json_cache["app_id"] = json["releaseInfo"][0].Value<string>("appId");
-                }
-                catch(Exception)
-                {
-                    json_cache["app_id"] = app.AppId;
-                }
+                json_cache["app_id"] = json["releaseInfo"][0].Value<string>("appId");
 
                 using (StreamWriter streamWriter = new StreamWriter(new FileStream(app_cache_file, FileMode.Create), Encoding.UTF8))
                 {
