@@ -65,7 +65,7 @@ enum { k_iSessionsCallbackBase = 11000 };
  * Input parameters for the EOS_Sessions_CopySessionHandleByUiEventId Function.
  */
 
-#include <eos_sessions_types1.7.0.h>
+#include <eos_sessions_types1.7.1.h>
 #include <eos_sessions_types1.5.0.h>
 #include <eos_sessions_types1.3.1.h>
 

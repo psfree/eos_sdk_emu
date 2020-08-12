@@ -58,7 +58,7 @@ enum { k_iLobbyCallbackBase = 6000 };
 #define EOS_Lobby_AddNotifyJoinLobbyAcceptedOptions         EOS_Lobby_AddNotifyJoinLobbyAcceptedOptions001
 #define EOS_Lobby_CopyLobbyDetailsHandleByUiEventIdOptions  EOS_Lobby_CopyLobbyDetailsHandleByUiEventIdOptions001
 
-#include "eos_lobby_types1.7.0.h"
+#include "eos_lobby_types1.7.1.h"
 #include "eos_lobby_types1.6.0.h"
 
 #define EOS_LOBBYDETAILS_INFO_API_LATEST                        EOS_LOBBYDETAILS_INFO_API_001
