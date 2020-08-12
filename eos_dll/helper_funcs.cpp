@@ -232,6 +232,7 @@ LOCAL_API std::string get_callback_name(int iCallback)
         // UI
         I_CALLBACK(EOS_UI_ShowFriendsCallbackInfo);
         I_CALLBACK(EOS_UI_HideFriendsCallbackInfo);
+        I_CALLBACK(EOS_UI_OnDisplaySettingsUpdatedCallbackInfo);
         // UserInfo
         I_CALLBACK(EOS_UserInfo_QueryUserInfoCallbackInfo);
         I_CALLBACK(EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo);

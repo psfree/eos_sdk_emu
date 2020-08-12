@@ -94,6 +94,43 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_UI_GetFriendsVisible(EOS_HUI Handle, const EOS_UI
 }
 
 /**
+ * Register to receive notifications when the overlay display settings are updated.
+ * Newly registered handlers will always be called the next tick with the current state.
+ * @note must call RemoveNotifyDisplaySettingsUpdated to remove the notification.
+ *
+ * @param Options Structure containing information about the request.
+ * @param ClientData Arbitrary data that is passed back to you in the NotificationFn.
+ * @param Notification A callback that is fired when the overlay display settings are updated.
+ *
+ * @return handle representing the registered callback
+ */
+EOS_DECLARE_FUNC(EOS_NotificationId) EOS_UI_AddNotifyDisplaySettingsUpdated(EOS_HUI Handle, const EOS_UI_AddNotifyDisplaySettingsUpdatedOptions* Options, void* ClientData, const EOS_UI_OnDisplaySettingsUpdatedCallback NotificationFn)
+{
+    TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
+    auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
+    return EOS_INVALID_NOTIFICATIONID;
+}
+
+/**
+ * Unregister from receiving notifications when the overlay display settings are updated.
+ *
+ * @param InId Handle representing the registered callback
+ */
+EOS_DECLARE_FUNC(void) EOS_UI_RemoveNotifyDisplaySettingsUpdated(EOS_HUI Handle, EOS_NotificationId Id)
+{
+    TRACE_FUNC();
+
+    if (Handle == nullptr)
+        return;
+
+    auto pInst = reinterpret_cast<EOSSDK_UI*>(Handle);
+}
+
+/**
  * Updates the current Toggle Friends Key.  This key can be used by the user to toggle the friends
  * overlay when available. The default value represents `shift + tab` as `((int32_t)EOS_UIK_EShift | (int32_t)EOS_UIK_ETab)`.
  * The provided key should be a single key with zero or more modifier keys.  It should satisfy

@@ -160,6 +160,21 @@ EOS_EResult EOSSDK_LobbySearch::SetParameter(const EOS_LobbySearch_SetParameterO
     if (Options == nullptr || Options->Parameter == nullptr || Options->Parameter->Key == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
+    switchstr(Options->Parameter->Key)
+    {
+        casestr(EOS_LOBBY_SEARCH_MINCURRENTMEMBERS):
+        casestr(EOS_LOBBY_SEARCH_MINSLOTSAVAILABLE):
+        {
+            LOG(Log::LogLevel::INFO, "TODO: Check if the new parameters comparison op is ignored or not: Operator = %u", get_enum_value(Options->ComparisonOp));
+            if (Options->Parameter->ValueType != EOS_ESessionAttributeType::EOS_AT_INT64 ||
+                Options->ComparisonOp != EOS_EComparisonOp::EOS_CO_GREATERTHANOREQUAL)
+            {
+                return EOS_EResult::EOS_InvalidParameters;
+            }
+        }
+        break;
+    }
+
     auto &params = *_search_infos.mutable_parameters();
     auto& param = *params[Options->Parameter->Key].mutable_param();
     Lobby_Attr_Value& value = param[static_cast<int32_t>(Options->ComparisonOp)];

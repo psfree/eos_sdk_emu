@@ -89,73 +89,102 @@ std::vector<lobby_state_t*> EOSSDK_Lobby::get_lobbies_from_attributes(google::pr
         for (auto& param : parameters)
         {
             // Well known parameters
-            //if (param.first == "bucket")
-            //{
-            //    auto& comparison = *param.second.param().begin();
-            //
-            //    switch (comparison.second.value_case())
-            //    {
-            //    case Session_Attr_Value::ValueCase::kS:
-            //    {
-            //        std::string const& s_session = session.second.infos.bucket_id();
-            //        std::string const& s_search = comparison.second.s();
-            //        found = compare_attribute_values(s_session, static_cast<EOS_EOnlineComparisonOp>(comparison.first), s_search);
-            //    }
-            //    break;
-            //    default: found = false;
-            //    }
-            //}
-            //else// Standard parameters
+            switchstr(param.first)
             {
-                auto it = lobby.second.infos.attributes().find(param.first);
-                if (it == lobby.second.infos.attributes().end())
+                casestr(EOS_LOBBY_SEARCH_MINCURRENTMEMBERS) :
                 {
-                    found = false;
-                }
-                else
-                {
-                    for (auto& comparisons : param.second.param())
-                    {
-                        // comparisons.first// Comparison type
-                        if (comparisons.second.value_case() != it->second.value().value_case())
-                        {
-                            found = false;
-                            break;
-                        }
-
-                        switch (comparisons.second.value_case())
-                        {
-                            case Session_Attr_Value::ValueCase::kB:
-                            {
-                                bool b_session = it->second.value().b();
-                                bool b_search = comparisons.second.b();
-                                found = compare_attribute_values(b_session, static_cast<EOS_EOnlineComparisonOp>(comparisons.first), b_search);
-                            }
-                            break;
+                    auto it = param.second.param().find(get_enum_value(EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL));
+                    if (it != param.second.param().end())
+                    {// Wrong comparison type should never happen, it's already tested in the search.
+                        switch(it->second.value_case())
+                        {// Wrong parameter type should never happen, it's already tested in the search.
                             case Session_Attr_Value::ValueCase::kI:
                             {
-                                int64_t i_session = it->second.value().i();
-                                int64_t i_search = comparisons.second.i();
-                                found = compare_attribute_values(i_session, static_cast<EOS_EOnlineComparisonOp>(comparisons.first), i_search);
+                                int64_t session_current_members = lobby.second.infos.members_size();
+                                int64_t min_current_members = it->second.i();
+                                
+                                found = compare_attribute_values(session_current_members, EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL, min_current_members);
                             }
                             break;
-                            case Session_Attr_Value::ValueCase::kD:
-                            {
-                                double i_session = it->second.value().d();
-                                double i_search = comparisons.second.d();
-                                found = compare_attribute_values(i_session, static_cast<EOS_EOnlineComparisonOp>(comparisons.first), i_search);
-                            }
-                            break;
-                            case Session_Attr_Value::ValueCase::kS:
-                            {
-                                std::string const& s_session = it->second.value().s();
-                                std::string const& s_search = comparisons.second.s();
-                                found = compare_attribute_values(s_session, static_cast<EOS_EOnlineComparisonOp>(comparisons.first), s_search);
-                            }
-                            break;
+
+                            default: found = false;
                         }
                     }
                 }
+                break;
+
+                casestr(EOS_LOBBY_SEARCH_MINSLOTSAVAILABLE) :
+                {
+                    auto it = param.second.param().find(get_enum_value(EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL));
+                    if (it != param.second.param().end())
+                    {// Wrong comparison type should never happen, it's already tested in the search.
+                        switch(it->second.value_case())
+                        {// Wrong parameter type should never happen, it's already tested in the search.
+                            case Session_Attr_Value::ValueCase::kI:
+                            {
+                                int64_t session_slots_available = lobby.second.infos.max_lobby_member() - lobby.second.infos.members_size();
+                                int64_t min_slots_available = it->second.i();
+
+                                found = compare_attribute_values(session_slots_available, EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL, min_slots_available);
+                            }
+                            break;
+
+                            default: found = false;
+                        }
+                    }
+                }
+                break;
+
+                default:
+                    auto it = lobby.second.infos.attributes().find(param.first);
+                    if (it == lobby.second.infos.attributes().end())
+                    {
+                        found = false;
+                    }
+                    else
+                    {
+                        for (auto& comparisons : param.second.param())
+                        {
+                            // comparisons.first// Comparison type
+                            if (comparisons.second.value_case() != it->second.value().value_case())
+                            {
+                                found = false;
+                                break;
+                            }
+
+                            switch (comparisons.second.value_case())
+                            {
+                                case Session_Attr_Value::ValueCase::kB:
+                                {
+                                    bool b_session = it->second.value().b();
+                                    bool b_search = comparisons.second.b();
+                                    found = compare_attribute_values(b_session, static_cast<EOS_EOnlineComparisonOp>(comparisons.first), b_search);
+                                }
+                                break;
+                                case Session_Attr_Value::ValueCase::kI:
+                                {
+                                    int64_t i_session = it->second.value().i();
+                                    int64_t i_search = comparisons.second.i();
+                                    found = compare_attribute_values(i_session, static_cast<EOS_EOnlineComparisonOp>(comparisons.first), i_search);
+                                }
+                                break;
+                                case Session_Attr_Value::ValueCase::kD:
+                                {
+                                    double i_session = it->second.value().d();
+                                    double i_search = comparisons.second.d();
+                                    found = compare_attribute_values(i_session, static_cast<EOS_EOnlineComparisonOp>(comparisons.first), i_search);
+                                }
+                                break;
+                                case Session_Attr_Value::ValueCase::kS:
+                                {
+                                    std::string const& s_session = it->second.value().s();
+                                    std::string const& s_search = comparisons.second.s();
+                                    found = compare_attribute_values(s_session, static_cast<EOS_EOnlineComparisonOp>(comparisons.first), s_search);
+                                }
+                                break;
+                            }
+                        }
+                    }
             }
             if (found == false)
                 break;
