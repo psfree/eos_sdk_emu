@@ -122,7 +122,7 @@ std::vector<lobby_state_t*> EOSSDK_Lobby::get_lobbies_from_attributes(google::pr
                         {// Wrong parameter type should never happen, it's already tested in the search.
                             case Session_Attr_Value::ValueCase::kI:
                             {
-                                int64_t session_slots_available = lobby.second.infos.max_lobby_member() - lobby.second.infos.members_size();
+                                int64_t session_slots_available = static_cast<int64_t>(lobby.second.infos.max_lobby_member()) - lobby.second.infos.members_size();
                                 int64_t min_slots_available = it->second.i();
 
                                 found = compare_attribute_values(session_slots_available, EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL, min_slots_available);
