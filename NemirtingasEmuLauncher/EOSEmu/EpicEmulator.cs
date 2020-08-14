@@ -256,7 +256,7 @@ namespace NemirtingasEmuLauncher
             {
                 if(EmuConfig.DefaultEmuConfig.EosProductId == null)
                 {
-                    emu_cfg["productuserid"] = EOSProductId.GenerateIdFromName(game_app.AppName + epicid.Id);
+                    emu_cfg["productuserid"] = EOSProductId.GenerateIdFromName(game_app.AppId + epicid.Id);
                 }
                 else
                 {

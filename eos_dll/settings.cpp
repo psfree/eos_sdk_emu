@@ -175,7 +175,7 @@ void Settings::load_settings()
     enable_overlay            = get_setting(settings, "enable_overlay", bool(true));
     disable_online_networking = get_setting(settings, "disable_online_networking", bool(false));
 
-    std::string productuserid = get_setting(settings, "productuserid", generate_account_id_from_name(gamename + userid->to_string()));
+    std::string productuserid = get_setting(settings, "productuserid", generate_account_id_from_name(appid + userid->to_string()));
     this->productuserid = GetProductUserId(productuserid);
 
     try
