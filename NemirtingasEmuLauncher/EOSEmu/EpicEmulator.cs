@@ -56,14 +56,10 @@ namespace NemirtingasEmuLauncher
 
         private static ApiResult getGameSavePath(GameConfig app)
         {
-            EOSProductId eos_id = app.EmuConfig.EosId;
-            if (eos_id == null)
+            EOSProductId eos_id = getAppUserId(app);
+            if (!eos_id.IsValid())
             {
-                eos_id = EmuConfig.DefaultEmuConfig.EosId;
-                if(eos_id == null)
-                {
-                    return new ApiResult { Success = false, Message = "Invalid EosId: not a 128 bits hex string" };
-                }
+                return new ApiResult { Success = false, Message = "Invalid EosId: not a 128 bits hex string" };
             }
 
             string save_path;
@@ -80,7 +76,7 @@ namespace NemirtingasEmuLauncher
                 save_path = Path.Combine(app.StartFolder, app.SavePath);
             }
 
-            string game_folder = Path.Combine(save_path, "NemirtingasEpicEmu", eos_id.ToString(), app.AppName);
+            string game_folder = Path.Combine(save_path, "NemirtingasEpicEmu", eos_id.ToString(), app.AppId);
             Directory.CreateDirectory(game_folder);
             return new ApiResult { Success = true, Message = game_folder };
         }
