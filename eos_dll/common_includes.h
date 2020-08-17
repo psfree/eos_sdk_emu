@@ -130,11 +130,11 @@ static constexpr char emu_savepath[] = "NemirtingasEpicEmu";
   #define _EMU_VARIANT_ "win64"
 #elif defined(__LINUX_32__)
   #define _EMU_VARIANT_ "lin32"
-  #elif defined(__LINUX_64__)
+#elif defined(__LINUX_64__)
   #define _EMU_VARIANT_ "lin64"
 #elif defined(__APPLE_32__)
   #define _EMU_VARIANT_ "mac32"
-  #elif defined(__APPLE_64__)
+#elif defined(__APPLE_64__)
   #define _EMU_VARIANT_ "mac64"
 #else
   #define _EMU_VARIANT_ "unk"

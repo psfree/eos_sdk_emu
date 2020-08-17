@@ -223,6 +223,10 @@ EOS_EResult EOSSDK_P2P::ReceivePacket(const EOS_P2P_ReceivePacketOptions* Option
     else
     {
         queue = &_p2p_in_messages[next_requested_channel];
+        if (queue->empty())
+        {
+            queue = nullptr;
+        }
     }
     if (queue == nullptr)
     {
