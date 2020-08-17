@@ -25,7 +25,7 @@ OFF  : no logs     , saves cpu usage when running the debug versions
     3. If it is not invalid or missing, it will be left untouched, so you can modify it to any **valid** epicid you want
 - **[MUST BE UNIQUE][AUTO GENERATED]** { "productuserid": "156abc156f1c5487f91c" }: is generated if it is missing or invalid. Is it used to identify a peer on the network allowing multiplayer. An productuserid is invalid if it does contain non-hex chars (Anything not 0,1,2,3,4,5,6,7,8,9,a,b,c,d,e,f)
   - If the "productuserid" is missing or invalid, it will be generated based on some rules
-    1. If the product user id is invalid or missing, it will be generated with the gamename + epicid as a seed.
+    1. If the product user id is invalid or missing, it will be generated with the appid + epicid as a seed.
     2. If it is not invalid or missing, it will be left untouched, so you can modify it to any **valid** epicid you want
 - { "appid": "CrabTest" }: This **will** be used to search friends and lobbies that use the same appid. It can be retrieved on https://epicdata.info/items/ For example, for Satisfactory experimental, search for Satisfactory and click on the main game's item. The appid is in the "releaseInfo", the "appId" field.
 - { "savepath": "xxxxx" }: it is used to decide where your "cloud" saves, achievements, items, dlcs go. It has 1 special value:
@@ -36,6 +36,6 @@ OFF  : no logs     , saves cpu usage when running the debug versions
   2. { "savepath": "something" }: (savepath can be empty like { "savepath": "" }), saves will go in the directory specified by savepath, relative to the game's working directory. In the example, it could be "game dir"\something\NemirtingasEpicEmu or "game dir"\NemirtingasEpicEmu.
 - { "disable_online_networking": true|false }: it will try to disable all **online** networking, not lan or vpn. This prevents games to go on the internet. If your game crash and you've set this to true, try to set it to false. I use my own solution to override the classic network functions, it can be buggy.
 - { "enable_overlay": true|false}: For **for future use**, it will allow you to have an overlay like the EOS social overlay, invite people to games and receive notifications like achievements unlocked.
-- { "gamename": "DefaultGameName" }: If the gamename is "DefaultGameName" or missing, the emulator will replace it with what the game provides it. It is important, don't modify it, you could not be able to load your saves, see Epic_ProductUserId to understand why.
+- { "gamename": "DefaultGameName" }: If the gamename is "DefaultGameName" or missing, the emulator will replace it with what the game provides it.
 - { "unlock_dlcs": true|false }: This will try to enable all dlcs/items that the game requests. If the game wants more infos on em it might not work. (Like unlock_all_dlcs on a steam emu, some need you to provide the appid = name).
 - { "log_level": "OFF|FATAL|ERR|WARN|INFO|DEBUG|TRACE" }: Decides how verbose the emulator will be, for debugging purpose. Defaults to OFF
