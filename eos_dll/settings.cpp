@@ -167,8 +167,7 @@ void Settings::load_settings()
         }
     }
 
-    language                  = get_setting(settings, "language", std::string("english"));
-    languages                 = get_setting(settings, "languages", std::string("english"));
+    language                  = get_setting(settings, "language", std::string("en"));
     gamename                  = get_setting(settings, "gamename", std::string("DefaultGameName"));
     appid                     = get_setting(settings, "appid", std::string("InvalidAppid"));
     unlock_dlcs               = get_setting(settings, "unlock_dlcs", bool(true));
@@ -201,7 +200,6 @@ void Settings::save_settings()
     settings["epicid"]                    = userid->to_string();
     settings["productuserid"]             = productuserid->to_string();
     settings["language"]                  = language;
-    settings["languages"]                 = languages;
     settings["gamename"]                  = gamename;
     settings["unlock_dlcs"]               = unlock_dlcs;
     settings["enable_overlay"]            = enable_overlay;

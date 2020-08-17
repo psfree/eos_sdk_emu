@@ -272,8 +272,7 @@ namespace NemirtingasEmuLauncher
             emu_cfg["gamename"] = game_app.AppName;
 
             emu_cfg["savepath"] = string.IsNullOrWhiteSpace(game_app.SavePath) ? GameEmuFolder + Path.DirectorySeparatorChar : game_app.SavePath;
-
-            emu_cfg["languages"] = string.Join(",", game_app.Languages);
+ 
             emu_cfg["disable_online_networking"] = game_app.DisableOnlineNetworking;
 
             emu_cfg["enable_overlay"] = game_app.EmuConfig.EnableOverlay ?? EmuConfig.DefaultEmuConfig.EnableOverlay;
