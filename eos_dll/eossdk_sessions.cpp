@@ -1779,7 +1779,7 @@ bool EOSSDK_Sessions::on_sessions_search(Network_Message_pb const& msg, Sessions
     Sessions_Search_response_pb* resp = new Sessions_Search_response_pb;
     resp->set_search_id(search.search_id());
 
-    if (msg.game_id() == EOSSDK_Client::Inst()._product_name)
+    if (msg.game_id() == Settings::Inst().appid)
     {
         if (search.parameters_size() > 0)
         {

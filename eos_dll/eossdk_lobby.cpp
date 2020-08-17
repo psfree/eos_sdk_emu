@@ -1751,32 +1751,35 @@ bool EOSSDK_Lobby::on_lobbies_search(Network_Message_pb const& msg, Lobbies_Sear
     Lobbies_Search_response_pb* resp = new Lobbies_Search_response_pb;
     resp->set_search_id(search.search_id());
 
-    if (search.parameters_size() > 0)
+    if (msg.game_id() == Settings::Inst().appid)
     {
-        std::vector<lobby_state_t*> lobbies = std::move(get_lobbies_from_attributes(search.parameters()));
-        for (auto& lobby : lobbies)
+        if (search.parameters_size() > 0)
         {
-            if (i_am_owner(lobby))
+            std::vector<lobby_state_t*> lobbies = std::move(get_lobbies_from_attributes(search.parameters()));
+            for (auto& lobby : lobbies)
             {
-                *resp->mutable_lobbies()->Add() = lobby->infos;
+                if (i_am_owner(lobby))
+                {
+                    *resp->mutable_lobbies()->Add() = lobby->infos;
+                }
             }
         }
-    }
-    else if(!search.lobby_id().empty())
-    {
-        lobby_state_t* pLobby = get_lobby_by_id(search.lobby_id());
-        if (pLobby != nullptr && i_am_owner(pLobby))
+        else if (!search.lobby_id().empty())
         {
-            *resp->mutable_lobbies()->Add() = pLobby->infos;
-        }
-    }
-    else if (GetProductUserId(search.target_id()) == GetEOS_Connect().get_myself()->first)
-    {
-        for (auto& lobby : _lobbies)
-        {
-            if (i_am_owner(&lobby.second))
+            lobby_state_t* pLobby = get_lobby_by_id(search.lobby_id());
+            if (pLobby != nullptr && i_am_owner(pLobby))
             {
-                *resp->mutable_lobbies()->Add() = lobby.second.infos;
+                *resp->mutable_lobbies()->Add() = pLobby->infos;
+            }
+        }
+        else if (GetProductUserId(search.target_id()) == GetEOS_Connect().get_myself()->first)
+        {
+            for (auto& lobby : _lobbies)
+            {
+                if (i_am_owner(&lobby.second))
+                {
+                    *resp->mutable_lobbies()->Add() = lobby.second.infos;
+                }
             }
         }
     }
