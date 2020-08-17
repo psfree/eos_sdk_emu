@@ -665,7 +665,7 @@ bool EOSSDK_Connect::send_connect_infos_request(Network::peer_t const& peerid, C
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     return GetNetwork().TCPSendTo(msg);
 }
@@ -683,7 +683,7 @@ bool EOSSDK_Connect::send_connect_infos(Network::peer_t const& peerid, Connect_I
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     return GetNetwork().TCPSendTo(msg);
 }

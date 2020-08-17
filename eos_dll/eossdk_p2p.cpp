@@ -602,7 +602,7 @@ bool EOSSDK_P2P::send_p2p_connection_request(Network::peer_t const& peerid, P2P_
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     msg.set_allocated_p2p(p2p);
 
@@ -621,7 +621,7 @@ bool EOSSDK_P2P::send_p2p_connection_response(Network::peer_t const& peerid, P2P
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     msg.set_allocated_p2p(p2p);
 
@@ -640,7 +640,7 @@ bool EOSSDK_P2P::send_p2p_data(Network::peer_t const& peerid, P2P_Data_Message_p
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     msg.set_allocated_p2p(p2p);
     auto res = GetNetwork().UDPSendTo(msg);
@@ -662,7 +662,7 @@ bool EOSSDK_P2P::send_p2p_data_ack(Network::peer_t const& peerid, P2P_Data_Ackno
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     msg.set_allocated_p2p(p2p);
 
@@ -681,7 +681,7 @@ bool EOSSDK_P2P::send_p2p_connetion_close(Network::peer_t const& peerid, P2P_Con
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     msg.set_allocated_p2p(p2p);
 

@@ -497,7 +497,7 @@ bool EOSSDK_Presence::send_presence_info_request(Network::peer_t const& peerid, 
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     return GetNetwork().TCPSendTo(msg);
 }
@@ -515,7 +515,7 @@ bool EOSSDK_Presence::send_my_presence_info(Network::peer_t const& peerid)
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     auto res = GetNetwork().TCPSendTo(msg);
     presence->release_presence_info();
@@ -535,7 +535,7 @@ bool EOSSDK_Presence::send_my_presence_info_to_all_peers()
     msg.set_allocated_presence(presence);
 
     msg.set_source_id(user_id);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     auto& users = GetEOS_Connect()._users;
     for (auto user_it = ++users.begin(); user_it != users.end(); ++user_it)

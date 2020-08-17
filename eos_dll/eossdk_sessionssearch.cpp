@@ -325,7 +325,7 @@ bool EOSSDK_SessionSearch::send_sessions_search(Sessions_Search_pb* search)
     Sessions_Search_Message_pb* search_msg = new Sessions_Search_Message_pb();
 
     msg.set_source_id(user_id);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     search_msg->set_allocated_search(search);
     msg.set_allocated_sessions_search(search_msg);

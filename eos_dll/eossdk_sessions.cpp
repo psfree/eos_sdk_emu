@@ -1541,7 +1541,7 @@ bool EOSSDK_Sessions::send_session_info(session_state_t* session)
     session_pb->set_allocated_session_infos(&session->infos);
     msg.set_allocated_session(session_pb);
     msg.set_source_id(user_id);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     bool res = send_to_all_members(msg, session);;
 
@@ -1565,7 +1565,7 @@ bool EOSSDK_Sessions::send_session_destroy(session_state_t *session)
     session_pb->set_allocated_session_destroy(destr);
     msg.set_allocated_session(session_pb);
     msg.set_source_id(user_id);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     return send_to_all_members(msg, session);
 }
@@ -1583,7 +1583,7 @@ bool EOSSDK_Sessions::send_sessions_search_response(Network::peer_t const& peeri
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     return GetNetwork().TCPSendTo(msg);
 }
@@ -1601,7 +1601,7 @@ bool EOSSDK_Sessions::send_session_join_request(session_state_t *session)
     session_pb->set_allocated_session_join_request(req);
     msg.set_allocated_session(session_pb);
     msg.set_source_id(user_id);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     req->set_session_id(session->infos.session_id());
 
@@ -1621,7 +1621,7 @@ bool EOSSDK_Sessions::send_session_join_response(Network::peer_t const& peerid, 
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     session_state_t* pSession = get_session_by_id(resp->session_id());
 
@@ -1645,7 +1645,7 @@ bool EOSSDK_Sessions::send_session_invite(Network::peer_t const& peerid, Session
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     return GetNetwork().TCPSendTo(msg);
 }
@@ -1663,7 +1663,7 @@ bool EOSSDK_Sessions::send_session_invite_response(Network::peer_t const& peerid
 
     msg.set_source_id(user_id);
     msg.set_dest_id(peerid);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     return GetNetwork().TCPSendTo(msg);
 }
@@ -1680,7 +1680,7 @@ bool EOSSDK_Sessions::send_session_register(Session_Register_pb* register_, sess
     msg.set_allocated_session(session_pb);
 
     msg.set_source_id(user_id);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     return send_to_all_members(msg, session);
 }
@@ -1697,7 +1697,7 @@ bool EOSSDK_Sessions::send_session_unregister(Session_Unregister_pb* unregister,
     msg.set_allocated_session(session_pb);
 
     msg.set_source_id(user_id);
-    msg.set_game_id(EOSSDK_Client::Inst()._product_name);
+    msg.set_game_id(Settings::Inst().appid);
 
     return send_to_all_members(msg, session);
 }
