@@ -39,3 +39,4 @@ OFF  : no logs     , saves cpu usage when running the debug versions
 - { "gamename": "DefaultGameName" }: If the gamename is "DefaultGameName" or missing, the emulator will replace it with what the game provides it.
 - { "unlock_dlcs": true|false }: This will try to enable all dlcs/items that the game requests. If the game wants more infos on em it might not work. (Like unlock_all_dlcs on a steam emu, some need you to provide the appid = name).
 - { "log_level": "OFF|FATAL|ERR|WARN|INFO|DEBUG|TRACE" }: Decides how verbose the emulator will be, for debugging purpose. Defaults to OFF
+- { "language": "en" }: Sets the user language. It follows the ISO639 language codes. Search on the web for your language code if needed. Defaults to "en".
