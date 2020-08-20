@@ -1939,7 +1939,7 @@ bool EOSSDK_Sessions::on_session_invite(Network_Message_pb const& msg, Session_I
         strncpy(const_cast<char*>(sirci.InviteId), invite_id.c_str(), max_id_length);
         sirci.TargetUserId = target_id;
 
-        notif->res.cb_func(notif->res.data);
+        notif->GetFunc()(notif->GetFuncParam());
     }
 
     return true;
@@ -1958,7 +1958,7 @@ bool EOSSDK_Sessions::on_session_invite_response(Network_Message_pb const& msg, 
         siacbi.TargetUserId = GetProductUserId(msg.source_id());
         strncpy(const_cast<char*>(siacbi.SessionId), resp.session_id().c_str(), max_id_length);
 
-        notif->res.cb_func(notif->res.data);
+        notif->GetFunc()(notif->GetFuncParam());
     }
 
     return true;
@@ -2031,7 +2031,7 @@ bool EOSSDK_Sessions::RunCallbacks(pFrameResult_t res)
 {
     GLOBAL_LOCK();
 
-    switch (res->res.m_iCallback)
+    switch (res->ICallback())
     {
         case EOS_Sessions_JoinSessionCallbackInfo::k_iCallback:
         {
@@ -2075,7 +2075,7 @@ void EOSSDK_Sessions::FreeCallback(pFrameResult_t res)
 {
     GLOBAL_LOCK();
 
-    switch (res->res.m_iCallback)
+    switch (res->ICallback())
     {
         /////////////////////////////
         //        Callbacks        //

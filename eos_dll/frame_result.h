@@ -25,65 +25,54 @@ using CallbackFunc = void(EOS_CALL *)(void*);
 
 struct CallbackMessage_t
 {
-    int m_iCallback;
-    uint8_t* data;
+    int callback_type_id;
+    uint8_t* func_param;
+    size_t func_param_size;
     CallbackFunc cb_func;
 };
 
-struct FrameResult
+class FrameResult
 {
-    const std::chrono::time_point<std::chrono::steady_clock> created_time;
     std::chrono::milliseconds ok_timeout;
-    bool done;    // Set this to true will tell the callback_manager to fire the callback/apicall
-    bool network; // Used in the callback functions, not used by callback_manager
     bool remove_on_timeout; // Remove the result if the api didn't read it fast enought
     CallbackMessage_t res;
+public:
+    const std::chrono::time_point<std::chrono::steady_clock> created_time;
+    bool done;    // Set this to true will tell the callback_manager to fire the callback/apicall
 
-    FrameResult() :
-        created_time(std::chrono::steady_clock::now()),
-        ok_timeout(std::chrono::milliseconds(0)),
-        done(false),
-        network(false),
-        remove_on_timeout(true),
-        res({})
-    {
-    }
+    FrameResult();
+    FrameResult(FrameResult const& other);
+    ~FrameResult();
 
-    ~FrameResult()
-    {
-        delete[] res.data;
-    }
+    void* AllocCallback(CallbackFunc func, size_t func_param_size, int i_callback, std::chrono::milliseconds ok_timeout = std::chrono::milliseconds(100));
+    void SetCallback(CallbackFunc func, uint8_t* func_param, size_t func_param_size, int i_callback, std::chrono::milliseconds ok_timeout = std::chrono::milliseconds(100));
 
-    inline bool CallbackOKTimeout()
-    {
-        return ((std::chrono::steady_clock::now() - created_time) >= ok_timeout);
-    }
+    inline CallbackMessage_t const& GetCallbackMsg() const { return res; }
+    inline int ICallback() const { return res.callback_type_id; }
+    inline void* GetFuncParam() const { return res.func_param; }
+    inline size_t CallbackSize() const { return res.func_param_size; }
+    inline CallbackFunc GetFunc() const { return res.cb_func; }
 
+    inline bool CallbackOKTimeout() { return ((std::chrono::steady_clock::now() - created_time) >= ok_timeout); }
 
     template<typename T>
-    inline void SetCallback(CallbackFunc func, T* cb)
+    inline void SetCallback(CallbackFunc func, T* func_param, std::chrono::milliseconds ok_timeout = std::chrono::milliseconds(100))
     {
-        delete[] res.data;
-        res.m_iCallback = T::k_iCallback;
-        res.cb_func = func;
-        res.data = reinterpret_cast<uint8_t*>(cb);
+        SetCallback(func, reinterpret_cast<uint8_t*>(func_param), sizeof(T), T::k_iCallback, ok_timeout);
     }
 
     template<typename T>
     inline T& GetCallback()
     {
-        assert((res.m_iCallback == T::k_iCallback));
-        return *reinterpret_cast<T*>(res.data);
+        assert((res.callback_type_id == T::k_iCallback));
+        return *reinterpret_cast<T*>(res.func_param);
     }
 
     template<typename T>
     inline T& CreateCallback(CallbackFunc func, std::chrono::milliseconds ok_timeout = std::chrono::milliseconds(100))
     {
-        this->ok_timeout = ok_timeout;
-        uint8_t* buff = new uint8_t[sizeof(T)];
+        void* buff = AllocCallback(func, sizeof(T), T::k_iCallback, ok_timeout);
         T* cb = new (buff) T;
-        SetCallback(func, cb);
-        res.data = buff;
         return *cb;
     }
 };

@@ -82,7 +82,7 @@ void EOSSDK_Presence::trigger_presence_change(EOS_EpicAccountId userid)
     {
         auto& pcci = notif->GetCallback<EOS_Presence_PresenceChangedCallbackInfo>();
         pcci.PresenceUserId = userid;
-        notif->res.cb_func(notif->res.data);
+        notif->GetFunc()(notif->GetFuncParam());
     }
 }
 
@@ -693,7 +693,7 @@ bool EOSSDK_Presence::RunCallbacks(pFrameResult_t res)
 {
     GLOBAL_LOCK();
 
-    switch (res->res.m_iCallback)
+    switch (res->ICallback())
     {
         case EOS_Presence_QueryPresenceCallbackInfo::k_iCallback:
         {

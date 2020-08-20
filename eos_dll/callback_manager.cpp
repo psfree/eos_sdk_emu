@@ -134,7 +134,7 @@ std::vector<pFrameResult_t> Callback_Manager::get_notifications(IRunFrame* obj, 
     results.reserve(notifs.size()); // Reserve the maximum we would need, avoid reallocations
     for (auto& notifs : notifs)
     {
-        if (notifs.second->res.m_iCallback == callback_id)
+        if (notifs.second->ICallback() == callback_id)
             results.push_back(notifs.second);
     }
 
@@ -176,9 +176,9 @@ void Callback_Manager::run_callbacks()
             {
                 if (res->done || frame->RunCallbacks(res))
                 {
-                    LOG(Log::LogLevel::DEBUG, "Callback ready: %s", get_callback_name(res->res.m_iCallback).c_str());
-                    if (res->res.cb_func != nullptr)
-                        res->res.cb_func(res->res.data);
+                    LOG(Log::LogLevel::DEBUG, "Callback ready: %s", get_callback_name(res->ICallback()).c_str());
+                    if (res->GetFunc() != nullptr)
+                        res->GetFunc()(res->GetFuncParam());
 
                     frame->FreeCallback(res);
                     result_it = results.erase(result_it);

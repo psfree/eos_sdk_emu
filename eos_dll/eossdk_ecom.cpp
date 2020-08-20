@@ -964,7 +964,7 @@ void EOSSDK_Ecom::FreeCallback(pFrameResult_t res)
 {
     GLOBAL_LOCK();
 
-    switch (res->res.m_iCallback)
+    switch (res->ICallback())
     {
         /////////////////////////////
         //        Callbacks        //

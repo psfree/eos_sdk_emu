@@ -747,7 +747,7 @@ bool EOSSDK_P2P::on_p2p_connection_request(Network_Message_pb const& msg, P2P_Co
             oicrc.RemoteUserId = peer_id;
             strncpy(const_cast<char*>(oicrc.SocketId->SocketName), req.socket_name().c_str(), sizeof(EOS_P2P_SocketId::SocketName));
 
-            notif->res.cb_func(notif->res.data);
+            notif->GetFunc()(notif->GetFuncParam());
         }
     }
     else
@@ -779,7 +779,7 @@ bool EOSSDK_P2P::on_p2p_connection_response(Network_Message_pb const& msg, P2P_C
             orcci.Reason = EOS_EConnectionClosedReason::EOS_CCR_ClosedByPeer;
             orcci.RemoteUserId = remote_id;
 
-            notif->res.cb_func(notif->res.data);
+            notif->GetFunc()(notif->GetFuncParam());
         }
     }
 
@@ -839,7 +839,7 @@ bool EOSSDK_P2P::on_p2p_connection_close(Network_Message_pb const& msg, P2P_Conn
         orcci.Reason = EOS_EConnectionClosedReason::EOS_CCR_ClosedByPeer;
         orcci.RemoteUserId = GetProductUserId(msg.source_id());
 
-        notif->res.cb_func(notif->res.data);
+        notif->GetFunc()(notif->GetFuncParam());
     }
 
     _p2p_connections[GetProductUserId(msg.source_id())].status = p2p_state_t::status_e::closed;
@@ -949,7 +949,7 @@ void EOSSDK_P2P::FreeCallback(pFrameResult_t res)
 {
     GLOBAL_LOCK();
 
-    switch (res->res.m_iCallback)
+    switch (res->ICallback())
     {
         /////////////////////////////
         //        Callbacks        //

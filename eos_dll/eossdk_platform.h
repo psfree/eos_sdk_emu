@@ -21,6 +21,7 @@
 
 #include "common_includes.h"
 
+#include "callback_manager.h"
 #include "network.h"
 
 #include "eossdk_metrics.h"

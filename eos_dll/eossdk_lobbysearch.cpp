@@ -385,7 +385,7 @@ bool EOSSDK_LobbySearch::RunCallbacks(pFrameResult_t res)
     if (_released)
         return res->done;
 
-    switch (res->res.m_iCallback)
+    switch (res->ICallback())
     {
         case EOS_LobbySearch_FindCallbackInfo::k_iCallback:
         {
@@ -412,7 +412,7 @@ void EOSSDK_LobbySearch::FreeCallback(pFrameResult_t res)
 {
     std::lock_guard<std::mutex> lk(_local_mutex);
 
-    switch (res->res.m_iCallback)
+    switch (res->ICallback())
     {
         /////////////////////////////
         //        Callbacks        //

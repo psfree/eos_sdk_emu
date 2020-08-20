@@ -401,7 +401,7 @@ bool EOSSDK_UserInfo::on_userinfo(Network_Message_pb const& msg, UserInfo_Info_p
         if (it != _userinfos_queries.end())
         {
             auto result_it = it->second.begin();
-            switch ((*result_it)->res.m_iCallback)
+            switch ((*result_it)->ICallback())
             {
             case EOS_UserInfo_QueryUserInfoCallbackInfo::k_iCallback:
             {
@@ -439,7 +439,7 @@ bool EOSSDK_UserInfo::CBRunFrame()
         {
             if ((std::chrono::steady_clock::now() - (*query_it)->created_time) > userinfo_query_timeout)
             {
-                switch ((*query_it)->res.m_iCallback)
+                switch ((*query_it)->ICallback())
                 {
                     case EOS_UserInfo_QueryUserInfoCallbackInfo::k_iCallback:
                     {

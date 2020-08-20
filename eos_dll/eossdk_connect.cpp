@@ -760,7 +760,7 @@ bool EOSSDK_Connect::on_connect_infos(Network_Message_pb const& msg, Connect_Inf
         {
             EOS_Friends_OnFriendsUpdateInfo& ofui = notif->GetCallback<EOS_Friends_OnFriendsUpdateInfo>();
             ofui.TargetUserId = GetEpicUserId(user.infos.userid());
-            notif->res.cb_func(notif->res.data);
+            notif->GetFunc()(notif->GetFuncParam());
         }
     }
 

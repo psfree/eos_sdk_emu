@@ -172,7 +172,7 @@ void EOSSDK_Auth::DeletePersistentAuth(const EOS_Auth_DeletePersistentAuthOption
 
     dpaci.ClientData = ClientData;
 
-    if (Options == nullptr | Options->RefreshToken == nullptr)
+    if (Options == nullptr || Options->RefreshToken == nullptr)
     {
         dpaci.ResultCode = EOS_EResult::EOS_InvalidParameters;
     }

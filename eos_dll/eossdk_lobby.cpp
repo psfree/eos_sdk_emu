@@ -256,7 +256,7 @@ void EOSSDK_Lobby::notify_lobby_update(lobby_state_t* lobby)
         EOS_Lobby_LobbyUpdateReceivedCallbackInfo& lurci = notif->GetCallback<EOS_Lobby_LobbyUpdateReceivedCallbackInfo>();
         strncpy(const_cast<char*>(lurci.LobbyId), lobby->infos.lobby_id().c_str(), max_id_length);
 
-        notif->res.cb_func(notif->res.data);
+        notif->GetFunc()(notif->GetFuncParam());
     }
 }
 
@@ -273,7 +273,7 @@ void EOSSDK_Lobby::notify_lobby_member_status_update(std::string const& member, 
         lmsrci.TargetUserId = member_id;
         lmsrci.CurrentStatus = new_status;
 
-        notif->res.cb_func(notif->res.data);
+        notif->GetFunc()(notif->GetFuncParam());
     }
 }
 
@@ -288,7 +288,7 @@ void EOSSDK_Lobby::notify_lobby_member_update(std::string const& member, lobby_s
         EOS_Lobby_LobbyMemberUpdateReceivedCallbackInfo& lmurci = notif->GetCallback<EOS_Lobby_LobbyMemberUpdateReceivedCallbackInfo>();
         strncpy(const_cast<char*>(lmurci.LobbyId), lobby->infos.lobby_id().c_str(), max_id_length);
         lmurci.TargetUserId = member_id;
-        notif->res.cb_func(notif->res.data);
+        notif->GetFunc()(notif->GetFuncParam());
     }
 }
 
@@ -300,7 +300,7 @@ void EOSSDK_Lobby::notify_lobby_invite_received(std::string const& invite_id, EO
         EOS_Lobby_LobbyInviteReceivedCallbackInfo& lirci = notif->GetCallback<EOS_Lobby_LobbyInviteReceivedCallbackInfo>();
         strncpy(const_cast<char*>(lirci.InviteId), invite_id.c_str(), max_id_length);
         lirci.TargetUserId = from_id;
-        notif->res.cb_func(notif->res.data);
+        notif->GetFunc()(notif->GetFuncParam());
     }
 }
 
@@ -2036,7 +2036,7 @@ void EOSSDK_Lobby::FreeCallback(pFrameResult_t res)
 {
     GLOBAL_LOCK();
 
-    switch (res->res.m_iCallback)
+    switch (res->ICallback())
     {
         /////////////////////////////
         //        Callbacks        //

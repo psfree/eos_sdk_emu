@@ -605,7 +605,7 @@ bool EOSSDK_PlayerDataStorage::RunCallbacks(pFrameResult_t res)
 {
     GLOBAL_LOCK();
 
-    switch (res->res.m_iCallback)
+    switch (res->ICallback())
     {
         case EOS_PlayerDataStorage_ReadFileCallbackInfo::k_iCallback:
         {
@@ -755,7 +755,7 @@ void EOSSDK_PlayerDataStorage::FreeCallback(pFrameResult_t res)
 {
     GLOBAL_LOCK();
 
-    switch (res->res.m_iCallback)
+    switch (res->ICallback())
     {
         /////////////////////////////
         //        Callbacks        //

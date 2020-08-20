@@ -120,7 +120,6 @@
 #include "Log.h"
 #include "helper_funcs.h"
 #include "frame_result.h"
-#include "callback_manager.h"
 
 static constexpr char emu_savepath[] = "NemirtingasEpicEmu";
 
