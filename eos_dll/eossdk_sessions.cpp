@@ -95,20 +95,6 @@ session_state_t* EOSSDK_Sessions::get_session_by_name(std::string const& session
     return &it->second;
 }
 
-const char* search_attr_to_string(EOS_EOnlineComparisonOp comp)
-{
-    switch (comp)
-    {
-        case EOS_EOnlineComparisonOp::EOS_CO_EQUAL             : return "==";
-        case EOS_EOnlineComparisonOp::EOS_CO_NOTEQUAL          : return "!=";
-        case EOS_EOnlineComparisonOp::EOS_CO_GREATERTHAN       : return ">";
-        case EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL: return ">=";
-        case EOS_EOnlineComparisonOp::EOS_CO_LESSTHAN          : return "<";
-        case EOS_EOnlineComparisonOp::EOS_CO_LESSTHANOREQUAL   : return "<=";
-    }
-    return "?";
-}
-
 std::vector<session_state_t*> EOSSDK_Sessions::get_sessions_from_attributes(google::protobuf::Map<std::string, Session_Search_Parameter> const& parameters)
 {
     std::vector<session_state_t*> res;
@@ -197,7 +183,7 @@ std::vector<session_state_t*> EOSSDK_Sessions::get_sessions_from_attributes(goog
             }
             if (found == false)
             {
-                LOG(Log::LogLevel::DEBUG, "This session didn't match.");
+                LOG(Log::LogLevel::DEBUG, "This session didn't match: %s(%s)", session.second.infos.session_id().c_str(), session.first.c_str());
                 break;
             }
         }
