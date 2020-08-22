@@ -42,6 +42,7 @@ LOCAL_API std::string generate_epic_id_user_from_name(std::string const& usernam
 LOCAL_API void fatal_throw(const char* msg);
 
 LOCAL_API std::string get_callback_name(int iCallback);
+LOCAL_API const char* search_attr_to_string(EOS_EOnlineComparisonOp comp);
 
 template<typename T>
 constexpr inline void set_nullptr(T& v) { if (v != nullptr) *v = nullptr; }

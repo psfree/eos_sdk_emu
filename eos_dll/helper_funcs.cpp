@@ -241,3 +241,17 @@ LOCAL_API std::string get_callback_name(int iCallback)
 
     return "";
 }
+
+LOCAL_API const char* search_attr_to_string(EOS_EOnlineComparisonOp comp)
+{
+    switch (comp)
+    {
+        case EOS_EOnlineComparisonOp::EOS_CO_EQUAL             : return "==";
+        case EOS_EOnlineComparisonOp::EOS_CO_NOTEQUAL          : return "!=";
+        case EOS_EOnlineComparisonOp::EOS_CO_GREATERTHAN       : return ">";
+        case EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL: return ">=";
+        case EOS_EOnlineComparisonOp::EOS_CO_LESSTHAN          : return "<";
+        case EOS_EOnlineComparisonOp::EOS_CO_LESSTHANOREQUAL   : return "<=";
+    }
+    return "?";
+}
