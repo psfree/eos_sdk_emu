@@ -51,27 +51,27 @@ EOSSDK_Sessions::~EOSSDK_Sessions()
 }
 
 template<typename T>
-bool compare_attribute_values(T&& v1, EOS_EOnlineComparisonOp op, T&& v2)
+bool compare_attribute_values(T&& v1, EOS_EOnlineComparisonOp op, T&& v2, std::string const& attr_name)
 {
+    bool res = false;
     try
     {
         switch (op)
         {
-            case EOS_EOnlineComparisonOp::EOS_CO_EQUAL             : return v1 == v2;
-            case EOS_EOnlineComparisonOp::EOS_CO_NOTEQUAL          : return v1 != v2;
-            case EOS_EOnlineComparisonOp::EOS_CO_GREATERTHAN       : return v1 >  v2;
-            case EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL: return v1 >= v2;
-            case EOS_EOnlineComparisonOp::EOS_CO_LESSTHAN          : return v1 <  v2;
-            case EOS_EOnlineComparisonOp::EOS_CO_LESSTHANOREQUAL   : return v1 <= v2;
+            case EOS_EOnlineComparisonOp::EOS_CO_EQUAL             : res = v1 == v2; break;
+            case EOS_EOnlineComparisonOp::EOS_CO_NOTEQUAL          : res = v1 != v2; break;
+            case EOS_EOnlineComparisonOp::EOS_CO_GREATERTHAN       : res = v1 >  v2; break;
+            case EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL: res = v1 >= v2; break;
+            case EOS_EOnlineComparisonOp::EOS_CO_LESSTHAN          : res = v1 <  v2; break;
+            case EOS_EOnlineComparisonOp::EOS_CO_LESSTHANOREQUAL   : res = v1 <= v2; break;
+            default: res = true;
         }
     }
     catch (...)
-    {
-        return false;
-    }
+    {}
 
-    // Default return true
-    return true;
+    LOG(Log::LogLevel::DEBUG, "Testing Lobby Attr: %s: (session)%s %s (search)%s, result: %s", attr_name.c_str(), std::to_string(v1).c_str(), search_attr_to_string(op), std::to_string(v2).c_str(), res ? "true" : "false");
+    return res;
 }
 
 session_state_t* EOSSDK_Sessions::get_session_by_id(std::string const& session_id)
@@ -115,9 +115,7 @@ std::vector<session_state_t*> EOSSDK_Sessions::get_sessions_from_attributes(goog
                     {
                         std::string const& s_session = session.second.infos.bucket_id();
                         std::string const& s_search  = comparison.second.s();
-
-                        LOG(Log::LogLevel::DEBUG, "Testing Session Attr: %s: (session)%s %s (search)%s", param.first.c_str(), s_session.c_str(), search_attr_to_string(comp), s_search.c_str());
-                        found = compare_attribute_values(s_session, comp, s_search);
+                        found = compare_attribute_values(s_session, comp, s_search, param.first);
                     }
                     break;
                     default: found = false;
@@ -149,32 +147,28 @@ std::vector<session_state_t*> EOSSDK_Sessions::get_sessions_from_attributes(goog
                             {
                                 bool b_session = it->second.value().b();
                                 bool b_search = comparisons.second.b();
-                                LOG(Log::LogLevel::DEBUG, "Testing Session Attr: %s: (session)%d %s (search)%d", param.first.c_str(), (int)b_session, search_attr_to_string(comp), (int)b_search);
-                                found = compare_attribute_values(b_session, comp, b_search);
+                                found = compare_attribute_values(b_session, comp, b_search, param.first);
                             }
                             break;
                             case Session_Attr_Value::ValueCase::kI:
                             {
                                 int64_t i_session = it->second.value().i();
                                 int64_t i_search = comparisons.second.i();
-                                LOG(Log::LogLevel::DEBUG, "Testing Session Attr: %s: (session)%lld %s (search)%lld", param.first.c_str(), i_session, search_attr_to_string(comp), i_search);
-                                found = compare_attribute_values(i_session, comp, i_search);
+                                found = compare_attribute_values(i_session, comp, i_search, param.first);
                             }
                             break;
                             case Session_Attr_Value::ValueCase::kD:
                             {
                                 double d_session = it->second.value().d();
                                 double d_search = comparisons.second.d();
-                                LOG(Log::LogLevel::DEBUG, "Testing Session Attr: %s: (session)%.2f %s (search)%.2f", param.first.c_str(), d_session, search_attr_to_string(comp), d_search);
-                                found = compare_attribute_values(d_session, comp, d_search);
+                                found = compare_attribute_values(d_session, comp, d_search, param.first);
                             }
                             break;
                             case Session_Attr_Value::ValueCase::kS:
                             {
                                 std::string const& s_session = it->second.value().s();
                                 std::string const& s_search = comparisons.second.s();
-                                LOG(Log::LogLevel::DEBUG, "Testing Session Attr: %s: (session)%s %s (search)%s", param.first.c_str(), s_session.c_str(), search_attr_to_string(comp), s_search.c_str());
-                                found = compare_attribute_values(s_session, comp, s_search);
+                                found = compare_attribute_values(s_session, comp, s_search, param.first);
                             }
                             break;
                         }

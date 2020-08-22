@@ -57,27 +57,27 @@ lobby_state_t* EOSSDK_Lobby::get_lobby_by_id(std::string const& lobby_id)
 }
 
 template<typename T>
-bool compare_attribute_values(T&& v1, EOS_EOnlineComparisonOp op, T&& v2)
+bool compare_attribute_values(T&& v1, EOS_EOnlineComparisonOp op, T&& v2, std::string const& attr_name)
 {
+    bool res = false;
     try
     {
         switch (op)
         {
-            case EOS_EOnlineComparisonOp::EOS_CO_EQUAL             : return v1 == v2;
-            case EOS_EOnlineComparisonOp::EOS_CO_NOTEQUAL          : return v1 != v2;
-            case EOS_EOnlineComparisonOp::EOS_CO_GREATERTHAN       : return v1 > v2;
-            case EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL: return v1 >= v2;
-            case EOS_EOnlineComparisonOp::EOS_CO_LESSTHAN          : return v1 < v2;
-            case EOS_EOnlineComparisonOp::EOS_CO_LESSTHANOREQUAL   : return v1 <= v2;
+            case EOS_EOnlineComparisonOp::EOS_CO_EQUAL             : res = v1 == v2; break;
+            case EOS_EOnlineComparisonOp::EOS_CO_NOTEQUAL          : res = v1 != v2; break;
+            case EOS_EOnlineComparisonOp::EOS_CO_GREATERTHAN       : res = v1 >  v2; break;
+            case EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL: res = v1 >= v2; break;
+            case EOS_EOnlineComparisonOp::EOS_CO_LESSTHAN          : res = v1 <  v2; break;
+            case EOS_EOnlineComparisonOp::EOS_CO_LESSTHANOREQUAL   : res = v1 <= v2; break;
+            default: res = true;
         }
     }
     catch (...)
-    {
-        return false;
-    }
+    {}
 
-    // Default return true
-    return true;
+    LOG(Log::LogLevel::DEBUG, "Testing Lobby Attr: %s: (lobby)%s %s (search)%s, result: %s", attr_name.c_str(), std::to_string(v1).c_str(), search_attr_to_string(op), std::to_string(v2).c_str(), res ? "true" : "false");
+    return res;
 }
 
 std::vector<lobby_state_t*> EOSSDK_Lobby::get_lobbies_from_attributes(google::protobuf::Map<std::string, Lobby_Search_Parameter> const& parameters)
@@ -102,13 +102,15 @@ std::vector<lobby_state_t*> EOSSDK_Lobby::get_lobbies_from_attributes(google::pr
                             {
                                 int64_t lobby_current_members = lobby.second.infos.members_size();
                                 int64_t min_current_members = it->second.i();
-                                
-                                LOG(Log::LogLevel::DEBUG, "Testing Lobby Attr: %s: (lobby)%lld %s (lobby)%lld", param.first.c_str(), lobby_current_members, search_attr_to_string(EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL), min_current_members);
-                                found = compare_attribute_values(lobby_current_members, EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL, min_current_members);
+                                found = compare_attribute_values(lobby_current_members, EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL, min_current_members, param.first);
                             }
                             break;
 
-                            default: found = false;
+                            default:
+                            {
+                                LOG(Log::LogLevel::INFO, "Triied " EOS_LOBBY_SEARCH_MINCURRENTMEMBERS " with a comparator different than EOS_CO_GREATERTHANOREQUAL: FIX ME!");
+                                found = false;
+                            }
                         }
                     }
                 }
@@ -125,13 +127,15 @@ std::vector<lobby_state_t*> EOSSDK_Lobby::get_lobbies_from_attributes(google::pr
                             {
                                 int64_t lobby_slots_available = static_cast<int64_t>(lobby.second.infos.max_lobby_member()) - lobby.second.infos.members_size();
                                 int64_t min_slots_available = it->second.i();
-
-                                LOG(Log::LogLevel::DEBUG, "Testing Lobby Attr: %s: (lobby)%lld %s (lobby)%lld", param.first.c_str(), lobby_slots_available, search_attr_to_string(EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL), min_slots_available);
-                                found = compare_attribute_values(lobby_slots_available, EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL, min_slots_available);
+                                found = compare_attribute_values(lobby_slots_available, EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL, min_slots_available, param.first);
                             }
                             break;
 
-                            default: found = false;
+                            default:
+                            {
+                                LOG(Log::LogLevel::INFO, "Triied " EOS_LOBBY_SEARCH_MINSLOTSAVAILABLE " with a comparator different than EOS_CO_GREATERTHANOREQUAL: FIX ME!");
+                                found = false;
+                            }
                         }
                     }
                 }
@@ -162,32 +166,28 @@ std::vector<lobby_state_t*> EOSSDK_Lobby::get_lobbies_from_attributes(google::pr
                                 {
                                     bool b_session = it->second.value().b();
                                     bool b_search = comparisons.second.b();
-                                    LOG(Log::LogLevel::DEBUG, "Testing Lobby Attr: %s: (lobby)%d %s (lobby)%d", param.first.c_str(), (int)b_session, search_attr_to_string(comp), (int)b_search);
-                                    found = compare_attribute_values(b_session, comp, b_search);
+                                    found = compare_attribute_values(b_session, comp, b_search, param.first);
                                 }
                                 break;
                                 case Session_Attr_Value::ValueCase::kI:
                                 {
                                     int64_t i_lobby = it->second.value().i();
                                     int64_t i_search = comparisons.second.i();
-                                    LOG(Log::LogLevel::DEBUG, "Testing Lobby Attr: %s: (lobby)%lld %s (lobby)%lld", param.first.c_str(), i_lobby, search_attr_to_string(comp), i_search);
-                                    found = compare_attribute_values(i_lobby, comp, i_search);
+                                    found = compare_attribute_values(i_lobby, comp, i_search, param.first);
                                 }
                                 break;
                                 case Session_Attr_Value::ValueCase::kD:
                                 {
                                     double d_lobby = it->second.value().d();
                                     double d_search = comparisons.second.d();
-                                    LOG(Log::LogLevel::DEBUG, "Testing Lobby Attr: %s: (lobby)%.2f %s (lobby)%.2f", param.first.c_str(), d_lobby, search_attr_to_string(comp), d_search);
-                                    found = compare_attribute_values(d_lobby, comp, d_search);
+                                    found = compare_attribute_values(d_lobby, comp, d_search, param.first);
                                 }
                                 break;
                                 case Session_Attr_Value::ValueCase::kS:
                                 {
                                     std::string const& s_lobby = it->second.value().s();
                                     std::string const& s_search = comparisons.second.s();
-                                    LOG(Log::LogLevel::DEBUG, "Testing Lobby Attr: %s: (lobby)%s %s (lobby)%s", param.first.c_str(), s_lobby.c_str(), search_attr_to_string(comp), s_search.c_str());
-                                    found = compare_attribute_values(s_lobby, comp, s_search);
+                                    found = compare_attribute_values(s_lobby, comp, s_search, param.first);
                                 }
                                 break;
                             }
