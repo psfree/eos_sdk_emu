@@ -21,14 +21,6 @@
 
 using namespace PortableAPI;
 
-namespace std
-{
-    inline std::string to_string(std::string const& str)
-    {
-        return str;
-    }
-}
-
 Network::Network():
     _advertise(false),
     _advertise_rate(2000),
