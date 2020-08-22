@@ -14,7 +14,7 @@ else
   curl -s -f --request PUT --header "PRIVATE-TOKEN: ${VERSIONNING_TOKEN}" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables/MINOR" --form "value=${MINOR}" >/dev/null 2>&1
   curl -s -f --request PUT --header "PRIVATE-TOKEN: ${VERSIONNING_TOKEN}" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables/MAJOR" --form "value=${MAJOR}" >/dev/null 2>&1
 
-  EMU_VERSION="${MAJOR}.${MINOR}.${HOTFIX}"
+  EMU_VERSION="${MAJOR}.${MINOR}.${HOTFIX}-${CI_COMMIT_SHA}"
 fi
 
 sed -i "/.*_EMU_VERSION_\[\] =.*/s/0\.0\.0/${EMU_VERSION:-0.0.0}/" "${CI_PROJECT_DIR}/eos_dll/common_includes.h"
