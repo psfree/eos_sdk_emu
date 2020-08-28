@@ -481,6 +481,7 @@ EOS_HPlayerDataStorageFileTransferRequest EOSSDK_PlayerDataStorage::ReadFile(con
     if (ReadOptions == nullptr || ReadOptions->Filename == nullptr || ReadOptions->ReadFileDataCallback == nullptr)
     {
         rfci.ResultCode = EOS_EResult::EOS_InvalidParameters;
+        res->done = true;
     }
     else
     {
@@ -504,6 +505,8 @@ EOS_HPlayerDataStorageFileTransferRequest EOSSDK_PlayerDataStorage::ReadFile(con
         {
             LOG(Log::LogLevel::INFO, "File not found: %s", file_path.c_str());
             rfci.ResultCode = EOS_EResult::EOS_NotFound;
+
+            res->done = true;
         }
     }
 
@@ -557,6 +560,7 @@ EOS_HPlayerDataStorageFileTransferRequest EOSSDK_PlayerDataStorage::WriteFile(co
     if (WriteOptions == nullptr || WriteOptions->Filename == nullptr || WriteOptions->WriteFileDataCallback == nullptr)
     {
         wfci.ResultCode = EOS_EResult::EOS_InvalidParameters;
+        res->done = true;
     }
     else
     {
