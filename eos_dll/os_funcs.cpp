@@ -443,7 +443,7 @@ LOCAL_API bool create_folder(std::string const& _folder)
     if (folder.empty())
         return true;
 
-    if (folder.length() >= 3 && folder[1] == ':' && folder[2] == PATH_SEPARATOR)
+    if (folder.length() >= 3 && folder[1] == ':' && (folder[2] == '\\' || folder[2] == '/'))
         pos = 3;
 
     do
