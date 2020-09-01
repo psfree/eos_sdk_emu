@@ -11,6 +11,8 @@
 #include <random>
 #include <thread>
 #include <iomanip>
+#include <thread>
+#include <mutex>
 
 #define EOS_BUILD_DLL 1
 
@@ -20,6 +22,8 @@
 #include <eos_logging.h>
 #include <eos_presence.h>
 #include <eos_sessions.h>
+#include <eos_achievements.h>
+#include <eos_leaderboards.h>
 
 #include <Windows.h>
 
@@ -32,7 +36,87 @@
 #include "mini_detour/mini_detour.h"
 #include "utils.h"
 
+#include "utfcpp/utf8.h"
+
+#define CURL_STATICLIB
+#include <curl/curl.h>
+
 static HMODULE original_dll = nullptr;
+
+#if defined(WIN32) || defined(_WIN32)
+#define PATH_SEPARATOR '\\'
+
+static bool create_folder(std::string const& _folder)
+{
+    size_t pos = 0;
+    struct _stat sb;
+
+    std::wstring sub_dir;
+    std::wstring folder;
+    utf8::utf8to16(_folder.begin(), _folder.end(), std::back_inserter(folder));
+    if (folder.empty())
+        return true;
+
+    if (folder.length() >= 3 && folder[1] == ':' && (folder[2] == '\\' || folder[2] == '/'))
+        pos = 3;
+
+    do
+    {
+        pos = folder.find_first_of(L"\\/", pos + 1);
+        sub_dir = std::move(folder.substr(0, pos));
+        if (_wstat(sub_dir.c_str(), &sb) == 0)
+        {
+            if (!(sb.st_mode & _S_IFDIR))
+            {// A subpath in the target is not a folder
+                return false;
+            }
+            // Folder exists
+        }
+        else if (CreateDirectoryW(folder.substr(0, pos).c_str(), NULL))
+        {// Failed to create folder (no permission?)
+}
+    } while (pos != std::string::npos);
+
+    return true;
+}
+
+#elif defined(__linux__)
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#define PATH_SEPARATOR '/'
+
+static bool create_folder(std::string const& _folder)
+{
+    size_t pos = 0;
+    struct stat sb;
+
+    std::string sub_dir;
+    std::string folder = _folder;
+
+    do
+    {
+        pos = folder.find_first_of("\\/", pos + 1);
+        sub_dir = std::move(folder.substr(0, pos));
+        if (stat(sub_dir.c_str(), &sb) == 0)
+        {
+            if (!S_ISDIR(sb.st_mode))
+            {// A subpath in the target is not a folder
+                return false;
+            }
+            // Folder exists
+        }
+        else if (mkdir(sub_dir.c_str(), 0755) < 0)
+        {// Failed to create folder (no permission?)
+        }
+    } while (pos != std::string::npos);
+
+    return true;
+}
+
+#endif
+
 #if defined(WIN64) || defined(_WIN64) || defined(__MINGW64__)
 static const char* original_dll_name = "EOSSDK-Win64-Shipping.original.dll";
 
@@ -124,11 +208,13 @@ void* get_proc_address(HMODULE hModule, LPCSTR procName)
 #endif
 static std::string exe_path;
 
+constexpr static char leaderboards_db_file[] = "leaderboards_db.json";
 constexpr static char achievements_db_file[] = "achievements_db.json";
 constexpr static char achievements_file[] = "achievements.json";
 constexpr static char entitlements_file[] = "entitlements.json";
 constexpr static char catalog_file[] = "catalog.json";
 
+static nlohmann::json leaderboards_db;
 static nlohmann::json achievements_db;
 static nlohmann::json achievements;
 static nlohmann::json entitlements;
@@ -153,7 +239,6 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 
             load_symbols((uint8_t*)original_dll);
 
-            load_json(achievements_db_file, achievements_db);
             load_json(achievements_file, achievements);
             load_json(entitlements_file, entitlements);
             load_json(catalog_file, catalog);
@@ -162,6 +247,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 
             LOG(Log::LogLevel::INFO, "Original dll load (%s): %p", original_dll_name, original_dll);
             LOG(Log::LogLevel::INFO, "command line: %s", GetCommandLine());
+
+            curl_global_init(CURL_GLOBAL_ALL);
         }
         break;
 
@@ -175,9 +262,41 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
     return TRUE;
 }
 
-EOS_HPlatform hPlatform = nullptr;
-EOS_HMetrics  hMetrics  = nullptr;
-EOS_HUserInfo hUserInfo = nullptr;
+// Since V1.0.0
+static EOS_HPlatform          hPlatform = nullptr;
+static EOS_HAuth              hAuth = nullptr;
+static EOS_HFriends           hFriends = nullptr;
+static EOS_HMetrics           hMetrics = nullptr;
+static EOS_HPresence          hPresence = nullptr;
+static EOS_HUserInfo          hUserInfo = nullptr;
+// Since V1.1.0
+static EOS_HEcom              hEcom = nullptr;
+// Since V1.2.0
+static EOS_HConnect           hConnect = nullptr;
+static EOS_HP2P               hP2P = nullptr;
+static EOS_HSessions          hSessions = nullptr;
+// Since V1.3.0
+static EOS_HAchievements      hAchievements = nullptr;
+static EOS_HPlayerDataStorage hPlayerDataStorage = nullptr;
+static EOS_HStats             hStats = nullptr;
+// Since V1.4.0 
+// ??
+// Since V1.5.0
+static EOS_HLeaderboards      hLeaderboards = nullptr;
+static EOS_HLobby             hLobby = nullptr;
+static EOS_HUI                hUI = nullptr;
+
+static EOS_EpicAccountId get_epic_account_id(int32_t index = 0)
+{
+    static EOS_EpicAccountId result = EOS_Auth_GetLoggedInAccountByIndex(hAuth, index);
+    return result;
+}
+
+static EOS_ProductUserId get_product_user_id(int32_t index = 0)
+{
+    static EOS_ProductUserId result = EOS_Connect_GetLoggedInUserByIndex(hConnect, index);
+    return result;
+}
 
 EOS_DECLARE_FUNC(EOS_Bool) EOS_AccountId_IsValid(EOS_AccountId AccountId);
 EOS_DECLARE_FUNC(EOS_EResult) EOS_AccountId_ToString(EOS_AccountId AccountId, char* OutBuffer, int32_t* InOutBufferLength);
@@ -187,6 +306,237 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthTokenOld(EOS_HAuth Handle, EO
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthTokenNew(EOS_HAuth Handle, const EOS_Auth_CopyUserAuthTokenOptions* Options, EOS_EpicAccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken);
 EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Auth_AddNotifyLoginStatusChangedOld(EOS_HAuth Handle, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification);
 EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Auth_AddNotifyLoginStatusChangedNew(EOS_HAuth Handle, const EOS_Auth_AddNotifyLoginStatusChangedOptions* Options, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification);
+
+static void download_icon(std::string const& url, std::string filename)
+{
+    FILE* file_handle;
+    CURL* curl_handle = curl_easy_init();
+    int err;
+
+    size_t pos = filename.find_last_of("/\\");
+    if (pos != std::string::npos)
+    {
+        create_folder(filename.substr(0, pos));
+    }
+    
+    {
+        FILE* f;
+        err = fopen_s(&f, filename.c_str(), "r");
+        if (!err && f != nullptr)
+        {
+            fclose(f);
+            return;
+        }
+    }
+
+    LOG(Log::LogLevel::INFO, "Downloading %s", filename.c_str());
+    err = fopen_s(&file_handle, filename.c_str(), "wb");
+    if (!err && file_handle != nullptr)
+    {
+        curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, file_handle);
+        curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
+        curl_easy_perform(curl_handle);
+        fclose(file_handle);
+    }
+    else
+    {
+        LOG(Log::LogLevel::ERR, "Failed to open file for writing: %s", filename.c_str());
+    }
+
+    curl_easy_cleanup(curl_handle);
+}
+
+static std::mutex achievements_mutex;
+
+static void dump_achievements_definitionv1()
+{
+    EOS_Achievements_GetAchievementDefinitionCountOptions Options;
+    Options.ApiVersion = EOS_ACHIEVEMENTS_GETACHIEVEMENTDEFINITIONCOUNT_API_LATEST;
+    uint32_t count = EOS_Achievements_GetAchievementDefinitionCount(hAchievements, &Options);
+
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        EOS_Achievements_CopyAchievementDefinitionByIndexOptions DefinitionOptions;
+        DefinitionOptions.ApiVersion = EOS_ACHIEVEMENTS_COPYDEFINITIONBYINDEX_API_LATEST;
+        DefinitionOptions.AchievementIndex = i;
+
+        EOS_Achievements_Definition* OutDefinition;
+        if (EOS_Achievements_CopyAchievementDefinitionByIndex(hAchievements, &DefinitionOptions, &OutDefinition) == EOS_EResult::EOS_Success)
+        {
+            std::string url("achievements_images/" + std::string(OutDefinition->AchievementId) + ".jpg");
+            std::string url_locked("achievements_images/" + std::string(OutDefinition->AchievementId) + "_locked.jpg");
+
+            achievements_db[OutDefinition->AchievementId]["achievement_id"] = str_or_empty(OutDefinition->AchievementId);
+            achievements_db[OutDefinition->AchievementId]["unlocked_display_name"] = str_or_empty(OutDefinition->DisplayName);
+            achievements_db[OutDefinition->AchievementId]["unlocked_description"] = str_or_empty(OutDefinition->Description);
+            achievements_db[OutDefinition->AchievementId]["locked_display_name"] = str_or_empty(OutDefinition->LockedDisplayName);
+            achievements_db[OutDefinition->AchievementId]["locked_description"] = str_or_empty(OutDefinition->LockedDescription);
+            achievements_db[OutDefinition->AchievementId]["hidden_description"] = str_or_empty(OutDefinition->HiddenDescription);
+            achievements_db[OutDefinition->AchievementId]["flavor_text"] = str_or_empty("");
+            achievements_db[OutDefinition->AchievementId]["completion_description"] = str_or_empty(OutDefinition->CompletionDescription);
+            achievements_db[OutDefinition->AchievementId]["unlocked_icon_url"] = str_or_empty(url.c_str());
+            achievements_db[OutDefinition->AchievementId]["locked_icon_url"] = str_or_empty(url_locked.c_str());
+            achievements_db[OutDefinition->AchievementId]["is_hidden"] = (bool)OutDefinition->bIsHidden;
+
+            //download_icon(OutDefinition->UnlockedIconURL, url);
+            //download_icon(OutDefinition->LockedIconURL, url_locked);
+
+            for (int i = 0; i < OutDefinition->StatThresholdsCount; ++i)
+            {
+                achievements_db[OutDefinition->AchievementId]["stats_thresholds"][OutDefinition->StatThresholds[i].Name]["name"] = str_or_empty(OutDefinition->StatThresholds[i].Name);
+                achievements_db[OutDefinition->AchievementId]["stats_thresholds"][OutDefinition->StatThresholds[i].Name]["threshold"] = OutDefinition->StatThresholds[i].Threshold;
+            }
+
+            EOS_Achievements_Definition_Release(OutDefinition);
+        }
+    }
+
+    save_json(achievements_db_file, achievements_db);
+}
+
+static void dump_achievements_definitionv2()
+{
+    EOS_Achievements_GetAchievementDefinitionCountOptions Options;
+    Options.ApiVersion = EOS_ACHIEVEMENTS_GETACHIEVEMENTDEFINITIONCOUNT_API_LATEST;
+    uint32_t count = EOS_Achievements_GetAchievementDefinitionCount(hAchievements, &Options);
+
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        EOS_Achievements_CopyAchievementDefinitionV2ByIndexOptions DefinitionOptions;
+        DefinitionOptions.ApiVersion = EOS_ACHIEVEMENTS_COPYDEFINITIONV2BYINDEX_API_LATEST;
+        DefinitionOptions.AchievementIndex = i;
+
+        EOS_Achievements_DefinitionV2* OutDefinition;
+        if (EOS_Achievements_CopyAchievementDefinitionV2ByIndex(hAchievements, &DefinitionOptions, &OutDefinition) == EOS_EResult::EOS_Success)
+        {
+            std::string url("achievements_images/" + std::string(OutDefinition->AchievementId) + ".jpg");
+            std::string url_locked("achievements_images/" + std::string(OutDefinition->AchievementId) + "_locked.jpg");
+
+            achievements_db[OutDefinition->AchievementId]["achievement_id"] = str_or_empty(OutDefinition->AchievementId);
+            achievements_db[OutDefinition->AchievementId]["unlocked_display_name"] = str_or_empty(OutDefinition->UnlockedDisplayName);
+            achievements_db[OutDefinition->AchievementId]["unlocked_description"] = str_or_empty(OutDefinition->UnlockedDescription);
+            achievements_db[OutDefinition->AchievementId]["locked_display_name"] = str_or_empty(OutDefinition->LockedDisplayName);
+            achievements_db[OutDefinition->AchievementId]["locked_description"] = str_or_empty(OutDefinition->LockedDescription);
+            achievements_db[OutDefinition->AchievementId]["hidden_description"] = str_or_empty("");
+            achievements_db[OutDefinition->AchievementId]["flavor_text"] = str_or_empty(OutDefinition->FlavorText);
+            achievements_db[OutDefinition->AchievementId]["completion_description"] = str_or_empty("");
+            achievements_db[OutDefinition->AchievementId]["unlocked_icon_url"] = str_or_empty(url.c_str());
+            achievements_db[OutDefinition->AchievementId]["locked_icon_url"] = str_or_empty(url_locked.c_str());
+            achievements_db[OutDefinition->AchievementId]["is_hidden"] = (bool)OutDefinition->bIsHidden;
+
+            download_icon(OutDefinition->UnlockedIconURL, url);
+            download_icon(OutDefinition->LockedIconURL, url_locked);
+
+            for (int i = 0; i < OutDefinition->StatThresholdsCount; ++i)
+            {
+                achievements_db[OutDefinition->AchievementId]["stats_thresholds"][OutDefinition->StatThresholds[i].Name]["name"] = str_or_empty(OutDefinition->StatThresholds[i].Name);
+                achievements_db[OutDefinition->AchievementId]["stats_thresholds"][OutDefinition->StatThresholds[i].Name]["threshold"] = OutDefinition->StatThresholds[i].Threshold;
+            }
+
+            EOS_Achievements_DefinitionV2_Release(OutDefinition);
+        }
+    }
+
+    save_json(achievements_db_file, achievements_db);
+}
+
+static void EOS_CALL query_achievements_complete(const EOS_Achievements_OnQueryDefinitionsCompleteCallbackInfo* Data)
+{
+    if (Data->ResultCode != EOS_EResult::EOS_Success)
+    {
+        achievements_mutex.unlock();
+        return;
+    }
+
+    std::thread([]()
+    {
+
+        static int version = 0;
+        if (version == 0)
+        {
+            if (GET_PROC_ADDRESS(original_dll, "EOS_Achievements_CopyAchievementDefinitionV2ByIndex") != nullptr)
+            {
+                version = 2;
+            }
+            else if (GET_PROC_ADDRESS(original_dll, "EOS_Achievements_CopyAchievementDefinitionByIndex") != nullptr)
+            {
+                version = 1;
+            }
+        }
+
+        switch (version)
+        {
+            case 1: dump_achievements_definitionv1(); break;
+            case 2: dump_achievements_definitionv2(); break;
+            default: LOG(Log::LogLevel::ERR, "Unable to find the achievement function.");
+        }
+    }).detach();
+}
+
+static void dump_achievements_def()
+{
+    if (achievements_mutex.try_lock())
+    {
+        EOS_Achievements_QueryDefinitionsOptions Options;
+        Options.ApiVersion = EOS_ACHIEVEMENTS_QUERYDEFINITIONS_API_LATEST;
+        Options.UserId = get_product_user_id();
+        Options.EpicUserId = get_epic_account_id();
+        Options.HiddenAchievementIds = nullptr;
+        Options.HiddenAchievementsCount = 0;
+
+        EOS_Achievements_QueryDefinitions(hAchievements, &Options, nullptr, query_achievements_complete);
+    }
+}
+
+static std::mutex leaderboards_mutex;
+
+static void EOS_CALL query_leaderboards_complete(const EOS_Leaderboards_OnQueryLeaderboardDefinitionsCompleteCallbackInfo* Data)
+{
+    if (Data->ResultCode != EOS_EResult::EOS_Success)
+    {
+        leaderboards_mutex.unlock();
+        return;
+    }
+
+    EOS_Leaderboards_GetLeaderboardDefinitionCountOptions Options;
+    Options.ApiVersion = EOS_LEADERBOARDS_GETLEADERBOARDDEFINITIONCOUNT_API_LATEST;
+
+    uint32_t count = EOS_Leaderboards_GetLeaderboardDefinitionCount(hLeaderboards, &Options);
+
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        EOS_Leaderboards_CopyLeaderboardDefinitionByIndexOptions DefinitionOptions;
+        DefinitionOptions.ApiVersion = EOS_LEADERBOARDS_COPYLEADERBOARDDEFINITIONBYINDEX_API_LATEST;
+        DefinitionOptions.LeaderboardIndex = i;
+
+        EOS_Leaderboards_Definition *OutLeaderboard;
+        if (EOS_Leaderboards_CopyLeaderboardDefinitionByIndex(hLeaderboards, &DefinitionOptions, &OutLeaderboard) == EOS_EResult::EOS_Success)
+        {
+            leaderboards_db[OutLeaderboard->LeaderboardId]["leaderboard_id"] = OutLeaderboard->LeaderboardId;
+            leaderboards_db[OutLeaderboard->LeaderboardId]["stat_name"]      = OutLeaderboard->StatName;
+            leaderboards_db[OutLeaderboard->LeaderboardId]["aggregation"]    = static_cast<int32_t>(OutLeaderboard->Aggregation);
+            leaderboards_db[OutLeaderboard->LeaderboardId]["start_time"]     = OutLeaderboard->StartTime;
+            leaderboards_db[OutLeaderboard->LeaderboardId]["end_time"]       = OutLeaderboard->EndTime;
+
+            EOS_Leaderboards_LeaderboardDefinition_Release(OutLeaderboard);
+        }
+    }
+
+    save_json(leaderboards_db_file, leaderboards_db);
+}
+
+static void dump_leaderboards_def()
+{
+    if (leaderboards_mutex.try_lock())
+    {
+        EOS_Leaderboards_QueryLeaderboardDefinitionsOptions Options;
+        Options.ApiVersion = EOS_LEADERBOARDS_QUERYLEADERBOARDDEFINITIONS_API_LATEST;
+        Options.StartTime = EOS_LEADERBOARDS_TIME_UNDEFINED;
+        Options.EndTime = EOS_LEADERBOARDS_TIME_UNDEFINED;
+
+        EOS_Leaderboards_QueryLeaderboardDefinitions(hLeaderboards, &Options, nullptr, query_leaderboards_complete);
+    }
+}
 
 static bool set_eos_compat(int32_t compat_version)
 {
@@ -1573,45 +1923,135 @@ EOS_DECLARE_FUNC(EOS_HPlatform) EOS_Platform_Create(const EOS_Platform_Options* 
     ORIGINAL_FUNCTION(EOS_Platform_Create);
     hPlatform = _EOS_Platform_Create(Options);
 
-    std::stringstream sstr;
-    sstr << std::endl;
-    sstr << "ApiVersion                     : " << Options->ApiVersion << std::endl;
-    switch (Options->ApiVersion)
+    if (hPlatform != nullptr)
     {
-        case EOS_PLATFORM_OPTIONS_API_007:
+        std::stringstream sstr;
+        sstr << std::endl;
+        sstr << "ApiVersion                     : " << Options->ApiVersion << std::endl;
+        switch (Options->ApiVersion)
         {
-            auto* v = reinterpret_cast<const EOS_Platform_Options007*>(Options);
-            sstr << "TickBudgetInMilliseconds       : " << Options->TickBudgetInMilliseconds << std::endl;
-        }
+            case EOS_PLATFORM_OPTIONS_API_008:
+            {
 
-        case EOS_PLATFORM_OPTIONS_API_006:
-        {
-            auto* v = reinterpret_cast<const EOS_Platform_Options006*>(Options);
-            sstr << "CacheDirectory                 : " << str_or_empty(Options->CacheDirectory) << std::endl;
-        }
+            }
 
-        case EOS_PLATFORM_OPTIONS_API_005:
-        {
-            auto* v = reinterpret_cast<const EOS_Platform_Options005*>(Options);
-            sstr << "EncryptionKey                  : " << str_or_empty(Options->EncryptionKey) << std::endl;
-            sstr << "OverrideCountryCode            : " << str_or_empty(Options->OverrideCountryCode) << std::endl;
-            sstr << "OverrideLocaleCode             : " << str_or_empty(Options->OverrideLocaleCode) << std::endl;
-            sstr << "DeploymentId                   : " << str_or_empty(Options->DeploymentId) << std::endl;
-            sstr << "Flags                          : " << Options->Flags << std::endl;
-        }
+            case EOS_PLATFORM_OPTIONS_API_007:
+            {
+                auto* v = reinterpret_cast<const EOS_Platform_Options007*>(Options);
+                sstr << "TickBudgetInMilliseconds       : " << Options->TickBudgetInMilliseconds << std::endl;
+            }
 
-        case EOS_PLATFORM_OPTIONS_API_001:
+            case EOS_PLATFORM_OPTIONS_API_006:
+            {
+                auto* v = reinterpret_cast<const EOS_Platform_Options006*>(Options);
+                sstr << "CacheDirectory                 : " << str_or_empty(Options->CacheDirectory) << std::endl;
+            }
+
+            case EOS_PLATFORM_OPTIONS_API_005:
+            {
+                auto* v = reinterpret_cast<const EOS_Platform_Options005*>(Options);
+                sstr << "EncryptionKey                  : " << str_or_empty(Options->EncryptionKey) << std::endl;
+                sstr << "OverrideCountryCode            : " << str_or_empty(Options->OverrideCountryCode) << std::endl;
+                sstr << "OverrideLocaleCode             : " << str_or_empty(Options->OverrideLocaleCode) << std::endl;
+                sstr << "DeploymentId                   : " << str_or_empty(Options->DeploymentId) << std::endl;
+                sstr << "Flags                          : " << Options->Flags << std::endl;
+            }
+
+            case EOS_PLATFORM_OPTIONS_API_001:
+            {
+                
+
+                auto* v = reinterpret_cast<const EOS_Platform_Options001*>(Options);
+                sstr << "Reserved                       : " << Options->Reserved << std::endl;
+                sstr << "ProductId                      : " << str_or_empty(Options->ProductId) << std::endl;
+                sstr << "SandboxId                      : " << str_or_empty(Options->SandboxId) << std::endl;
+                sstr << "ClientCredentials::ClientId    : " << str_or_empty(Options->ClientCredentials.ClientId) << std::endl;
+                sstr << "ClientCredentials::ClientSecret: " << str_or_empty(Options->ClientCredentials.ClientSecret) << std::endl;
+                sstr << "bIsServer                      : " << EOS_Bool_2_str(Options->bIsServer) << std::endl;
+            }
+        }
+        LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
+
+        if (GET_PROC_ADDRESS(original_dll, "EOS_Platform_GetAuthInterface") != nullptr)
         {
-            auto* v = reinterpret_cast<const EOS_Platform_Options001*>(Options);
-            sstr << "Reserved                       : " << Options->Reserved << std::endl;
-            sstr << "ProductId                      : " << str_or_empty(Options->ProductId) << std::endl;
-            sstr << "SandboxId                      : " << str_or_empty(Options->SandboxId) << std::endl;
-            sstr << "ClientCredentials::ClientId    : " << str_or_empty(Options->ClientCredentials.ClientId) << std::endl;
-            sstr << "ClientCredentials::ClientSecret: " << str_or_empty(Options->ClientCredentials.ClientSecret) << std::endl;
-            sstr << "bIsServer                      : " << EOS_Bool_2_str(Options->bIsServer) << std::endl;
+            hAuth = EOS_Platform_GetAuthInterface(hPlatform);
+            LOG(Log::LogLevel::DEBUG, "Has EOS_Platform_GetAuthInterface");
+        }
+        if (GET_PROC_ADDRESS(original_dll, "EOS_Platform_GetFriendsInterface") != nullptr)
+        {
+            hFriends = EOS_Platform_GetFriendsInterface(hPlatform);
+            LOG(Log::LogLevel::DEBUG, "Has EOS_Platform_GetFriendsInterface");
+        }
+        if (GET_PROC_ADDRESS(original_dll, "EOS_Platform_GetMetricsInterface") != nullptr)
+        {
+            hMetrics = EOS_Platform_GetMetricsInterface(hPlatform);
+            LOG(Log::LogLevel::DEBUG, "Has EOS_Platform_GetMetricsInterface");
+        }
+        if (GET_PROC_ADDRESS(original_dll, "EOS_Platform_GetPresenceInterface") != nullptr)
+        {
+            hPresence = EOS_Platform_GetPresenceInterface(hPlatform);
+            LOG(Log::LogLevel::DEBUG, "Has EOS_Platform_GetPresenceInterface");
+        }
+        if (GET_PROC_ADDRESS(original_dll, "EOS_Platform_GetUserInfoInterface") != nullptr)
+        {
+            hUserInfo = EOS_Platform_GetUserInfoInterface(hPlatform);
+            LOG(Log::LogLevel::DEBUG, "Has EOS_Platform_GetUserInfoInterface");
+        }
+        if (GET_PROC_ADDRESS(original_dll, "EOS_Platform_GetEcomInterface") != nullptr)
+        {
+            hEcom = EOS_Platform_GetEcomInterface(hPlatform);
+            LOG(Log::LogLevel::DEBUG, "Has EOS_Platform_GetEcomInterface");
+        }
+        if (GET_PROC_ADDRESS(original_dll, "EOS_Platform_GetConnectInterface") != nullptr)
+        {
+            hConnect = EOS_Platform_GetConnectInterface(hPlatform);
+            LOG(Log::LogLevel::DEBUG, "Has EOS_Platform_GetConnectInterface");
+        }
+        if (GET_PROC_ADDRESS(original_dll, "EOS_Platform_GetP2PInterface") != nullptr)
+        {
+            hP2P = EOS_Platform_GetP2PInterface(hPlatform);
+            LOG(Log::LogLevel::DEBUG, "Has EOS_Platform_GetP2PInterface");
+        }
+        if (GET_PROC_ADDRESS(original_dll, "EOS_Platform_GetSessionsInterface") != nullptr)
+        {
+            hSessions = EOS_Platform_GetSessionsInterface(hPlatform);
+            LOG(Log::LogLevel::DEBUG, "Has EOS_Platform_GetSessionsInterface");
+        }
+        if (GET_PROC_ADDRESS(original_dll, "EOS_Platform_GetAchievementsInterface") != nullptr)
+        {
+            hAchievements = EOS_Platform_GetAchievementsInterface(hPlatform);
+            LOG(Log::LogLevel::DEBUG, "Has EOS_Platform_GetAchievementsInterface");
+
+            dump_achievements_def();
+        }
+        if (GET_PROC_ADDRESS(original_dll, "EOS_Platform_GetPlayerDataStorageInterface") != nullptr)
+        {
+            hPlayerDataStorage = EOS_Platform_GetPlayerDataStorageInterface(hPlatform);
+            LOG(Log::LogLevel::DEBUG, "Has EOS_Platform_GetPlayerDataStorageInterface");
+        }
+        if (GET_PROC_ADDRESS(original_dll, "EOS_Platform_GetStatsInterface") != nullptr)
+        {
+            hStats = EOS_Platform_GetStatsInterface(hPlatform);
+            LOG(Log::LogLevel::DEBUG, "Has EOS_Platform_GetStatsInterface");
+        }
+        if (GET_PROC_ADDRESS(original_dll, "EOS_Platform_GetLeaderboardsInterface") != nullptr)
+        {
+            hLeaderboards = EOS_Platform_GetLeaderboardsInterface(hPlatform);
+            LOG(Log::LogLevel::DEBUG, "Has EOS_Platform_GetLeaderboardsInterface");
+
+            dump_leaderboards_def();
+        }
+        if (GET_PROC_ADDRESS(original_dll, "EOS_Platform_GetLobbyInterface") != nullptr)
+        {
+            hLobby = EOS_Platform_GetLobbyInterface(hPlatform);
+            LOG(Log::LogLevel::DEBUG, "Has EOS_Platform_GetLobbyInterface");
+        }
+        if (GET_PROC_ADDRESS(original_dll, "EOS_Platform_GetUIInterface") != nullptr)
+        {
+            hUI = EOS_Platform_GetUIInterface(hPlatform);
+            LOG(Log::LogLevel::DEBUG, "Has EOS_Platform_GetUIInterface");
         }
     }
-    LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
 
     return hPlatform;
 }
@@ -2506,7 +2946,7 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_QueryOwnership(EOS_HEcom Handle, const EOS_Ecom_
             for (int i = 0; i < cbinfo->ItemOwnershipCount; ++i)
             {
                 sstr << "ItemOwnership[" << i << "]: " << cbinfo->ItemOwnership[i].Id << " = " << cbinfo->ItemOwnership[i].OwnershipStatus << std::endl;
-                //const_cast<EOS_Ecom_ItemOwnership*>(cbinfo->ItemOwnership)[i].OwnershipStatus = EOS_EOwnershipStatus::EOS_OS_Owned;
+                const_cast<EOS_Ecom_ItemOwnership*>(cbinfo->ItemOwnership)[i].OwnershipStatus = EOS_EOwnershipStatus::EOS_OS_Owned;
             }
             LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
         }
@@ -3306,6 +3746,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByIndex(
     sstr << std::endl;
     sstr << "ApiVersion           : " << Options->ApiVersion << std::endl;
     sstr << "AchievementIndex     : " << Options->AchievementIndex << std::endl;
+
     if (res == EOS_EResult::EOS_Success)
     {
         sstr << "  ApiVersion           : " << (*OutDefinition)->ApiVersion << std::endl;
@@ -3325,32 +3766,15 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByIndex(
                 sstr << "  LockedIconId         : " << str_or_empty((*OutDefinition)->LockedIconId         ) << std::endl;
                 sstr << "  bIsHidden            : " << EOS_Bool_2_str((*OutDefinition)->bIsHidden)           << std::endl;
 
-                achievements_db[(*OutDefinition)->AchievementId]["achievement_id"]         = str_or_empty((*OutDefinition)->AchievementId);
-                achievements_db[(*OutDefinition)->AchievementId]["unlocked_display_name"]  = str_or_empty((*OutDefinition)->DisplayName);
-                achievements_db[(*OutDefinition)->AchievementId]["unlocked_description"]   = str_or_empty((*OutDefinition)->Description);
-                achievements_db[(*OutDefinition)->AchievementId]["locked_display_name"]    = str_or_empty((*OutDefinition)->LockedDisplayName);
-                achievements_db[(*OutDefinition)->AchievementId]["locked_description"]     = str_or_empty((*OutDefinition)->LockedDescription);
-                achievements_db[(*OutDefinition)->AchievementId]["hidden_description"]     = str_or_empty((*OutDefinition)->HiddenDescription);
-                achievements_db[(*OutDefinition)->AchievementId]["flavor_text"]            = str_or_empty("");
-                achievements_db[(*OutDefinition)->AchievementId]["completion_description"] = str_or_empty((*OutDefinition)->CompletionDescription);
-                achievements_db[(*OutDefinition)->AchievementId]["unlocked_icon_url"]      = str_or_empty((*OutDefinition)->UnlockedIconId);
-                achievements_db[(*OutDefinition)->AchievementId]["locked_icon_url"]        = str_or_empty((*OutDefinition)->LockedIconId);
-                achievements_db[(*OutDefinition)->AchievementId]["is_hidden"]              = (bool)(*OutDefinition)->bIsHidden;
-
                 for (int i = 0; i < (*OutDefinition)->StatThresholdsCount; ++i)
                 {
                     sstr << "  StatThresholds[" << i << "]" << std::endl;
                     sstr << "    Name     : " << str_or_empty((*OutDefinition)->StatThresholds[i].Name) << std::endl;
                     sstr << "    Threshold: " << (*OutDefinition)->StatThresholds[i].Threshold << std::endl;
-
-                    achievements_db[(*OutDefinition)->AchievementId]["stats_thresholds"][(*OutDefinition)->StatThresholds[i].Name]["name"] = str_or_empty((*OutDefinition)->StatThresholds[i].Name);
-                    achievements_db[(*OutDefinition)->AchievementId]["stats_thresholds"][(*OutDefinition)->StatThresholds[i].Name]["threshold"] = (*OutDefinition)->StatThresholds[i].Threshold;
                 }
             }
             break;
         }
-
-        save_json(achievements_db_file, achievements_db);
     }
     else
     {
@@ -3371,6 +3795,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionV2ByInde
     sstr << std::endl;
     sstr << "ApiVersion           : " << Options->ApiVersion << std::endl;
     sstr << "AchievementIndex     : " << Options->AchievementIndex << std::endl;
+
     if (res == EOS_EResult::EOS_Success)
     {
         sstr << "  ApiVersion           : " << (*OutDefinition)->ApiVersion << std::endl;
@@ -3389,32 +3814,15 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionV2ByInde
                 sstr << "  LockedIconURL        : " << str_or_empty(v->LockedIconURL      ) << std::endl;
                 sstr << "  bIsHidden            : " << EOS_Bool_2_str(v->bIsHidden)         << std::endl;
 
-                achievements_db[(*OutDefinition)->AchievementId]["achievement_id"]         = str_or_empty((*OutDefinition)->AchievementId);
-                achievements_db[(*OutDefinition)->AchievementId]["unlocked_display_name"]  = str_or_empty((*OutDefinition)->UnlockedDisplayName);
-                achievements_db[(*OutDefinition)->AchievementId]["unlocked_description"]   = str_or_empty((*OutDefinition)->UnlockedDescription);
-                achievements_db[(*OutDefinition)->AchievementId]["locked_display_name"]    = str_or_empty((*OutDefinition)->LockedDisplayName);
-                achievements_db[(*OutDefinition)->AchievementId]["locked_description"]     = str_or_empty((*OutDefinition)->LockedDescription);
-                achievements_db[(*OutDefinition)->AchievementId]["flavor_text"]            = str_or_empty((*OutDefinition)->FlavorText);
-                achievements_db[(*OutDefinition)->AchievementId]["hidden_description"]     = str_or_empty("");
-                achievements_db[(*OutDefinition)->AchievementId]["completion_description"] = str_or_empty("");
-                achievements_db[(*OutDefinition)->AchievementId]["unlocked_icon_url"]      = str_or_empty((*OutDefinition)->UnlockedIconURL);
-                achievements_db[(*OutDefinition)->AchievementId]["locked_icon_url"]        = str_or_empty((*OutDefinition)->LockedIconURL);
-                achievements_db[(*OutDefinition)->AchievementId]["is_hidden"]              = (bool)(*OutDefinition)->bIsHidden;
-
                 for (int i = 0; i < v->StatThresholdsCount; ++i)
                 {
                     sstr << "  StatThresholds[" << i << "]" << std::endl;
                     sstr << "    Name     : " << str_or_empty(v->StatThresholds[i].Name) << std::endl;
                     sstr << "    Threshold: " << v->StatThresholds[i].Threshold << std::endl;
-
-                    achievements_db[(*OutDefinition)->AchievementId]["stats_thresholds"][(*OutDefinition)->StatThresholds[i].Name]["name"] = str_or_empty((*OutDefinition)->StatThresholds[i].Name);
-                    achievements_db[(*OutDefinition)->AchievementId]["stats_thresholds"][(*OutDefinition)->StatThresholds[i].Name]["threshold"] = (*OutDefinition)->StatThresholds[i].Threshold;
                 }
             }
             break;
         }
-
-        save_json(achievements_db_file, achievements_db);
     }
     else
     {
@@ -3435,6 +3843,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByAchiev
     std::stringstream sstr;
     sstr << std::endl;
     sstr << "ApiVersion           : " << Options->ApiVersion << std::endl;
+
     if (res == EOS_EResult::EOS_Success)
     {
         sstr << "  ApiVersion           : " << (*OutDefinition)->ApiVersion << std::endl;
@@ -3454,26 +3863,11 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByAchiev
                 sstr << "  LockedIconId         : " << str_or_empty(v->LockedIconId         ) << std::endl;
                 sstr << "  bIsHidden            : " << EOS_Bool_2_str(v->bIsHidden)           << std::endl;
 
-                achievements_db[(*OutDefinition)->AchievementId]["achievement_id"]         = str_or_empty((*OutDefinition)->AchievementId);
-                achievements_db[(*OutDefinition)->AchievementId]["unlocked_display_name"]  = str_or_empty((*OutDefinition)->DisplayName);
-                achievements_db[(*OutDefinition)->AchievementId]["unlocked_description"]   = str_or_empty((*OutDefinition)->Description);
-                achievements_db[(*OutDefinition)->AchievementId]["locked_display_name"]    = str_or_empty((*OutDefinition)->LockedDisplayName);
-                achievements_db[(*OutDefinition)->AchievementId]["locked_description"]     = str_or_empty((*OutDefinition)->LockedDescription);
-                achievements_db[(*OutDefinition)->AchievementId]["hidden_description"]     = str_or_empty((*OutDefinition)->HiddenDescription);
-                achievements_db[(*OutDefinition)->AchievementId]["flavor_text"]            = str_or_empty("");
-                achievements_db[(*OutDefinition)->AchievementId]["completion_description"] = str_or_empty((*OutDefinition)->CompletionDescription);
-                achievements_db[(*OutDefinition)->AchievementId]["unlocked_icon_url"]      = str_or_empty((*OutDefinition)->UnlockedIconId);
-                achievements_db[(*OutDefinition)->AchievementId]["locked_icon_url"]        = str_or_empty((*OutDefinition)->LockedIconId);
-                achievements_db[(*OutDefinition)->AchievementId]["is_hidden"]              = (bool)(*OutDefinition)->bIsHidden;
-
                 for (int i = 0; i < v->StatThresholdsCount; ++i)
                 {
                     sstr << "  Threshold[" << i << "]" << std::endl;
                     sstr << "    Name     : " << str_or_empty(v->StatThresholds[i].Name) << std::endl;
                     sstr << "    Threshold: " << v->StatThresholds[i].Threshold << std::endl;
-
-                    achievements_db[(*OutDefinition)->AchievementId]["stats_thresholds"][(*OutDefinition)->StatThresholds[i].Name]["name"] = str_or_empty((*OutDefinition)->StatThresholds[i].Name);
-                    achievements_db[(*OutDefinition)->AchievementId]["stats_thresholds"][(*OutDefinition)->StatThresholds[i].Name]["threshold"] = (*OutDefinition)->StatThresholds[i].Threshold;
                 }
             }
             break;
@@ -3499,6 +3893,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionV2ByAchi
     std::stringstream sstr;
     sstr << std::endl;
     sstr << "ApiVersion           : " << Options->ApiVersion << std::endl;
+
     if (res == EOS_EResult::EOS_Success)
     {
         sstr << "  ApiVersion           : " << (*OutDefinition)->ApiVersion << std::endl;
@@ -3517,26 +3912,11 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionV2ByAchi
                 sstr << "  LockedIconURL        : " << str_or_empty(v->LockedIconURL      ) << std::endl;
                 sstr << "  bIsHidden            : " << EOS_Bool_2_str(v->bIsHidden)         << std::endl;
 
-                achievements_db[(*OutDefinition)->AchievementId]["achievement_id"]         = str_or_empty((*OutDefinition)->AchievementId);
-                achievements_db[(*OutDefinition)->AchievementId]["unlocked_display_name"]  = str_or_empty((*OutDefinition)->UnlockedDisplayName);
-                achievements_db[(*OutDefinition)->AchievementId]["unlocked_description"]   = str_or_empty((*OutDefinition)->UnlockedDescription);
-                achievements_db[(*OutDefinition)->AchievementId]["locked_display_name"]    = str_or_empty((*OutDefinition)->LockedDisplayName);
-                achievements_db[(*OutDefinition)->AchievementId]["locked_description"]     = str_or_empty((*OutDefinition)->LockedDescription);
-                achievements_db[(*OutDefinition)->AchievementId]["flavor_text"]            = str_or_empty((*OutDefinition)->FlavorText);
-                achievements_db[(*OutDefinition)->AchievementId]["hidden_description"]     = str_or_empty("");
-                achievements_db[(*OutDefinition)->AchievementId]["completion_description"] = str_or_empty("");
-                achievements_db[(*OutDefinition)->AchievementId]["unlocked_icon_url"]      = str_or_empty((*OutDefinition)->UnlockedIconURL);
-                achievements_db[(*OutDefinition)->AchievementId]["locked_icon_url"]        = str_or_empty((*OutDefinition)->LockedIconURL);
-                achievements_db[(*OutDefinition)->AchievementId]["is_hidden"]              = (bool)(*OutDefinition)->bIsHidden;
-
                 for (int i = 0; i < v->StatThresholdsCount; ++i)
                 {
                     sstr << "  Threshold[" << i << "]" << std::endl;
                     sstr << "    Name     : " << str_or_empty(v->StatThresholds[i].Name) << std::endl;
                     sstr << "    Threshold: " << v->StatThresholds[i].Threshold << std::endl;
-
-                    achievements_db[(*OutDefinition)->AchievementId]["stats_thresholds"][(*OutDefinition)->StatThresholds[i].Name]["name"] = str_or_empty((*OutDefinition)->StatThresholds[i].Name);
-                    achievements_db[(*OutDefinition)->AchievementId]["stats_thresholds"][(*OutDefinition)->StatThresholds[i].Name]["threshold"] = (*OutDefinition)->StatThresholds[i].Threshold;
                 }
             }
             break;
@@ -3589,11 +3969,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyPlayerAchievementByIndex(EOS_
                 sstr << "  Description  : " << str_or_empty(v->Description) << std::endl;
                 sstr << "  IconURL      : " << str_or_empty(v->IconURL    ) << std::endl;
                 sstr << "  FlavorText   : " << str_or_empty(v->FlavorText ) << std::endl;
-
-                achievements[v->AchievementId]["display_name"] = str_or_empty(v->DisplayName);
-                achievements[v->AchievementId]["description"]  = str_or_empty(v->Description);
-                achievements[v->AchievementId]["icon_url"]     = str_or_empty(v->IconURL);
-                achievements[v->AchievementId]["flavor_text"]  = str_or_empty(v->FlavorText);
             }
 
             case EOS_ACHIEVEMENTS_PLAYERACHIEVEMENT_API_001:
@@ -3602,10 +3977,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyPlayerAchievementByIndex(EOS_
                 sstr << "  AchievementId: " << str_or_empty(v->AchievementId) << std::endl;
                 sstr << "  Progress     : " << v->Progress << std::endl;
                 sstr << "  UnlockTime   : " << v->UnlockTime << std::endl;
-
-                achievements[v->AchievementId]["achievement_id"] = str_or_empty(v->AchievementId);
-                achievements[v->AchievementId]["progress"]       = v->Progress;
-                achievements[v->AchievementId]["unlock_time"]    = v->UnlockTime;
 
                 for (int i = 0; i < v->StatInfoCount; ++i)
                 {
@@ -3617,18 +3988,12 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyPlayerAchievementByIndex(EOS_
                             sstr << "    Name          :" << str_or_empty(v->StatInfo[i].Name) << std::endl;
                             sstr << "    CurrentValue  :" << v->StatInfo[i].CurrentValue << std::endl;
                             sstr << "    ThresholdValue:" << v->StatInfo[i].ThresholdValue << std::endl;
-
-                            achievements[v->AchievementId]["stat_info"][v->StatInfo[i].Name]["name"]            = str_or_empty(v->StatInfo[i].Name);
-                            achievements[v->AchievementId]["stat_info"][v->StatInfo[i].Name]["current_value"]   = v->StatInfo[i].CurrentValue;
-                            achievements[v->AchievementId]["stat_info"][v->StatInfo[i].Name]["threshold_value"] = v->StatInfo[i].ThresholdValue;
                         }
                     }
                 }
             }
             break;
         }
-
-        save_json(achievements_file, achievements);
     }
     else
     {
@@ -3660,11 +4025,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyPlayerAchievementByAchievemen
                 sstr << "  Description  : " << str_or_empty(v->Description) << std::endl;
                 sstr << "  IconURL      : " << str_or_empty(v->IconURL    ) << std::endl;
                 sstr << "  FlavorText   : " << str_or_empty(v->FlavorText ) << std::endl;
-
-                achievements[v->AchievementId]["display_name"] = str_or_empty(v->DisplayName);
-                achievements[v->AchievementId]["description"]  = str_or_empty(v->Description);
-                achievements[v->AchievementId]["icon_url"]     = str_or_empty(v->IconURL);
-                achievements[v->AchievementId]["flavor_text"]  = str_or_empty(v->FlavorText);
             }
 
             case EOS_ACHIEVEMENTS_PLAYERACHIEVEMENT_API_001:
@@ -3673,10 +4033,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyPlayerAchievementByAchievemen
                 sstr << "  AchievementId: " << str_or_empty(v->AchievementId) << std::endl;
                 sstr << "  Progress     : " << v->Progress << std::endl;
                 sstr << "  UnlockTime   : " << v->UnlockTime << std::endl;
-
-                achievements[v->AchievementId]["achievement_id"] = str_or_empty(v->AchievementId);
-                achievements[v->AchievementId]["progress"]       = v->Progress;
-                achievements[v->AchievementId]["unlock_time"]    = v->UnlockTime;
 
                 for (int i = 0; i < v->StatInfoCount; ++i)
                 {
@@ -3688,18 +4044,12 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyPlayerAchievementByAchievemen
                             sstr << "    Name          :" << str_or_empty(v->StatInfo[i].Name) << std::endl;
                             sstr << "    CurrentValue  :" << v->StatInfo[i].CurrentValue << std::endl;
                             sstr << "    ThresholdValue:" << v->StatInfo[i].ThresholdValue << std::endl;
-
-                            achievements[v->AchievementId]["stat_info"][v->StatInfo[i].Name]["name"]            = str_or_empty(v->StatInfo[i].Name);
-                            achievements[v->AchievementId]["stat_info"][v->StatInfo[i].Name]["current_value"]   = v->StatInfo[i].CurrentValue;
-                            achievements[v->AchievementId]["stat_info"][v->StatInfo[i].Name]["threshold_value"] = v->StatInfo[i].ThresholdValue;
                         }
                     }
                 }
             }
             break;
         }
-
-        save_json(achievements_file, achievements);
     }
     else
     {
