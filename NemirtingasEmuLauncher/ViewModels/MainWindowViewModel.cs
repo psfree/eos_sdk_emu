@@ -206,10 +206,10 @@ namespace NemirtingasEmuLauncher.ViewModels
 
         public async void OnMenuGameProperties(GameConfig app)
         {
-            string oldItemId = app.ItemId;
+            string oldAppId = app.AppId;
             if (await openGameProperties(app, false) == DialogResult.DialogOk)
             {
-                if(oldItemId != app.ItemId)
+                if(oldAppId != app.AppId)
                 {
                     genGameInfos(app);
                 }

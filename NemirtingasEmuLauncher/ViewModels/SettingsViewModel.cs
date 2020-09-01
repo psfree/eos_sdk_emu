@@ -318,7 +318,6 @@ namespace NemirtingasEmuLauncher.ViewModels
                 _parent.TbxGameSavePath.Watermark = EpicEmulator.GameEmuFolder;
 
                 AppId           = game_app.AppId;
-                ItemId          = game_app.ItemId;
                 GameName        = game_app.AppName;
                 GameStartFolder = game_app.StartFolder;
                 GameExePath     = game_app.FullPath;
@@ -567,7 +566,6 @@ namespace NemirtingasEmuLauncher.ViewModels
                 }
 
                 game_app.AppId = AppId;
-                game_app.ItemId = ItemId;
                 game_app.UseX64 = GameIsX64;
                 game_app.AppName = GameName;
                 game_app.FullPath = GameExePath;

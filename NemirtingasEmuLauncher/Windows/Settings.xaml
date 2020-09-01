@@ -49,10 +49,6 @@
       <TabItem Header="Game settings" IsVisible="{Binding !IsDefaultApp}">
         <StackPanel Margin="0,10,0,0">
           <StackPanel Margin="10,0,0,10" Orientation="Horizontal" HorizontalAlignment="Stretch">
-            <TextBlock Text="Game ItemId" VerticalAlignment="Center" Width="100"/>
-            <TextBox Text="{Binding ItemId}" VerticalAlignment="Center" Width="450" />
-          </StackPanel>
-          <StackPanel Margin="10,0,0,10" Orientation="Horizontal" HorizontalAlignment="Stretch">
             <TextBlock Text="Game AppId" VerticalAlignment="Center" Width="100"/>
             <TextBox Text="{Binding AppId}" VerticalAlignment="Center" Width="450" />
           </StackPanel>

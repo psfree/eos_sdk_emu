@@ -83,13 +83,6 @@ namespace NemirtingasEmuLauncher
             set => RaiseAndSetIfChanged(ref _appId, value);
         }
 
-        private string _ItemId = string.Empty;
-        public string ItemId
-        {
-            get => _ItemId;
-            set => RaiseAndSetIfChanged(ref _ItemId, value);
-        }
-
         public string DefaultParameters
         {
             get

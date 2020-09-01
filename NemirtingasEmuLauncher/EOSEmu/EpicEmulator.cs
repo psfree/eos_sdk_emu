@@ -548,121 +548,50 @@ namespace NemirtingasEmuLauncher
                     return new ApiResult { Success = false, Message = "Page not found " + url };
                 }
 
-                try
-                {
-                    app_cache_directory = Path.Combine(EpicEmulator.LauncherAppsCacheFolder, json["releaseInfo"][0].Value<string>("appId"));
-                }
-                catch(Exception)
-                {
-                    return new ApiResult { Success = false, Message = "No releaseInfo at " + url };
-                }
-
                 app_cache_file = Path.Combine(app_cache_directory, "infos.json");
-                app_cache_image = Path.Combine(app_cache_directory, "background.jpg");
 
-                Directory.CreateDirectory(app_cache_directory);
+                request = (HttpWebRequest)WebRequest.Create(json.Value<string>("ImageUrl"));
+                request.Headers.Add("Accept-encoding:gzip, deflate, br");
+                request.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
 
-                if (json.ContainsKey("keyImages"))
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
                 {
-                    string best_image = null;
-                    int found_value = 0;
-                    int img_width = 0;
-                    int img_height = 0;
-                    foreach (var image in json.Value<JArray>("keyImages"))
+                    if (response.StatusCode == HttpStatusCode.OK)
                     {
+                        SKBitmap img = SKBitmap.Decode(response.GetResponseStream());
+                        if (!Directory.Exists(app_cache_directory))
+                        {
+                            Directory.CreateDirectory(app_cache_directory);
+                        }
+
+                        // Qualite de 0 - 100
                         try
                         {
-                            if (image.Value<string>("type") == "DieselGameBox")
+                            using (SKWStream write_stream = new SKFileWStream(app_cache_image))
                             {
-                                img_width = image.Value<int>("width");
-                                img_height = image.Value<int>("height");
-                                best_image = image.Value<string>("url");
-                                
-                                break;
-                            }
-                            else if(image.Value<string>("type") == "DieselGameBoxTall" && found_value < 2)
-                            {
-                                img_width = image.Value<int>("width");
-                                img_height = image.Value<int>("height");
-                                best_image = image.Value<string>("url");
-                                found_value = 2;
-                            }
-                            else if (image.Value<string>("type") == "Thumbnail" && found_value < 1)
-                            {
-                                img_width = image.Value<int>("width");
-                                img_height = image.Value<int>("height");
-                                best_image = image.Value<string>("url");
-                                found_value = 1;
-                            }
-                        }
-                        catch(Exception)
-                        { }
-                    }
-
-                    if (best_image != null)
-                    {
-                        if (img_width > img_height)
-                        {
-                            double ratio = (double)img_width / (double)img_height;
-                            img_height = 215;
-                            img_width = (int)(img_height * ratio);
-                        }
-                        else
-                        {
-                            double ratio = (double)img_width / (double)img_height;
-                            img_height = 280;
-                            img_width = (int)(img_height * ratio);
-                        }
-
-                        request = (HttpWebRequest)WebRequest.Create(best_image);
-                        request.Headers.Add("Accept-encoding:gzip, deflate, br");
-                        request.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
-
-                        using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-                        {
-                            if (response.StatusCode == HttpStatusCode.OK)
-                            {
-                                SKBitmap img = SKBitmap.Decode(response.GetResponseStream());
-                                if (!Directory.Exists(app_cache_directory))
+                                if (!SKPixmap.Encode(write_stream, img, SKEncodedImageFormat.Jpeg, 90))
                                 {
-                                    Directory.CreateDirectory(app_cache_directory);
-                                }
-
-                                SKBitmap resized_img = new SKBitmap(img_width, img_height);
-
-                                img.ScalePixels(resized_img, SKFilterQuality.High);
-
-                                // Qualite de 0 - 100
-                                try
-                                {
-                                    using (SKWStream write_stream = new SKFileWStream(app_cache_image))
-                                    {
-                                        if (!SKPixmap.Encode(write_stream, resized_img, SKEncodedImageFormat.Jpeg, 90))
-                                        {
-                                            File.Delete(app_cache_image);
-                                        }
-                                    }
-
-                                    app.AppImageHeight = img_height;
-                                    app.AppImageWidth = img_width;
-                                }
-                                catch (Exception)
-                                {
-                                    try
-                                    {
-                                        File.Delete(app_cache_image);
-                                    }
-                                    catch(Exception)
-                                    { }
+                                    File.Delete(app_cache_image);
                                 }
                             }
+
+                            app.AppImageSize = new Size(img.Width, img.Height);
+                        }
+                        catch (Exception)
+                        {
+                            try
+                            {
+                                File.Delete(app_cache_image);
+                            }
+                            catch(Exception)
+                            { }
                         }
                     }
                 }
 
                 json_cache = new JObject();
-                json_cache["name"] = json.Value<string>("title");
-                json_cache["app_id"] = json["releaseInfo"][0].Value<string>("appId");
+                json_cache["name"] = json.Value<string>("Name");
+                json_cache["app_id"] = json.Value<string>("AppId");
 
                 using (StreamWriter streamWriter = new StreamWriter(new FileStream(app_cache_file, FileMode.Create), Encoding.UTF8))
                 {
