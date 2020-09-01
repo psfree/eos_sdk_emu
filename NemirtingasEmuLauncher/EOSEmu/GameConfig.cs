@@ -21,6 +21,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Collections.ObjectModel;
+using Avalonia;
+using System.Xml.Serialization;
 
 namespace NemirtingasEmuLauncher
 {
@@ -53,18 +55,50 @@ namespace NemirtingasEmuLauncher
             }
         }
 
-        private int _AppImageWidth = 460;
-        public int AppImageWidth
+        private const double _maxWidth = 460;
+        private const double _maxHeight = 215;
+        private static readonly Size _defaultSize = new Size(_maxWidth, _maxHeight);
+
+        private Size _appImageSize = _defaultSize;
+        public double AppImageWidth
         {
-            get => _AppImageWidth;
-            set => RaiseAndSetIfChanged(ref _AppImageWidth, value);
+            get => _appImageSize.Width;
         }
 
-        private int _AppImageHeight = 215;
-        public int AppImageHeight
+        public double AppImageHeight
         {
-            get => _AppImageHeight;
-            set => RaiseAndSetIfChanged(ref _AppImageHeight, value);
+            get => _appImageSize.Height;
+        }
+
+        [XmlIgnore]
+        public Size AppImageSize
+        {
+            get => _appImageSize;
+            set
+            {
+                if (value.Width == 0 || value.Height == 0)
+                {
+                    value = _defaultSize;
+                }
+                if (value.Width > value.Height)
+                {
+                    double ratio = value.Height / value.Width;
+                    if (value.Height * ratio > _maxHeight)
+                    {
+                        value = new Size(_maxHeight / ratio, _maxHeight);
+                    }
+                    else
+                    {
+                        value = new Size(_maxWidth, _maxWidth * ratio);
+                    }
+                }
+                else if(value.Height > _maxHeight)
+                {
+                    double ratio = value.Width / value.Height;
+                    value = new Size(_maxHeight * ratio, _maxHeight);
+                }
+                RaiseAndSetIfChanged(ref _appImageSize, value);
+            }
         }
 
         public EmuConfig EmuConfig { get; set; }

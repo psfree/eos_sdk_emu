@@ -29,6 +29,7 @@ using Newtonsoft.Json.Linq;
 using System.Net;
 using SkiaSharp;
 using Avalonia.Media.Imaging;
+using Avalonia;
 
 namespace NemirtingasEmuLauncher
 {
@@ -101,8 +102,7 @@ namespace NemirtingasEmuLauncher
                             {
                                 string app_cache_image = Path.Combine(EpicEmulator.LauncherAppsCacheFolder, app.AppId.ToString(), "background.jpg");
                                 Bitmap img = new Bitmap(app_cache_image);
-                                app.AppImageWidth = (int)img.Size.Width;
-                                app.AppImageHeight = (int)img.Size.Height;
+                                app.AppImageSize = img.Size;
                             }
                             catch(Exception)
                             { }
@@ -520,7 +520,7 @@ namespace NemirtingasEmuLauncher
 
             if (json_cache == null)
             {// Clear cache or can't find the cache file
-                string url = "https://raw.githubusercontent.com/EpicData-info/items-tracker/master/database/items/" + app.ItemId + ".json";
+                string url = "https://raw.githubusercontent.com/Nemirtingas/epic_games_infos/master/" + app.AppId + ".json";
 
                 JObject json;
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
