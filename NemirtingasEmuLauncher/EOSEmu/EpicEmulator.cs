@@ -434,7 +434,7 @@ namespace NemirtingasEmuLauncher
             }
 
             ProcessStartInfo psi = new ProcessStartInfo();
-
+            
             psi.CreateNoWindow = false;
             psi.UseShellExecute = false;
             psi.FileName = app.FullPath;
@@ -520,7 +520,7 @@ namespace NemirtingasEmuLauncher
 
             if (json_cache == null)
             {// Clear cache or can't find the cache file
-                string url = "https://raw.githubusercontent.com/Nemirtingas/epic_games_infos/master/" + app.AppId + ".json";
+                string url = string.Format("https://raw.githubusercontent.com/Nemirtingas/games-infos/master/epic/{0}/{1}.json", app.AppId, app.AppId);
 
                 JObject json;
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
@@ -543,14 +543,14 @@ namespace NemirtingasEmuLauncher
                         }
                     }
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     return new ApiResult { Success = false, Message = "Page not found " + url };
                 }
 
                 app_cache_file = Path.Combine(app_cache_directory, "infos.json");
 
-                request = (HttpWebRequest)WebRequest.Create(json.Value<string>("ImageUrl"));
+                request = (HttpWebRequest)WebRequest.Create((string)json["ImageUrl"]);
                 request.Headers.Add("Accept-encoding:gzip, deflate, br");
                 request.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
 
@@ -583,15 +583,15 @@ namespace NemirtingasEmuLauncher
                             {
                                 File.Delete(app_cache_image);
                             }
-                            catch(Exception)
+                            catch (Exception)
                             { }
                         }
                     }
                 }
 
                 json_cache = new JObject();
-                json_cache["name"] = json.Value<string>("Name");
-                json_cache["app_id"] = json.Value<string>("AppId");
+                json_cache["name"] = (string)json["Name"];
+                json_cache["app_id"] = (string)json["AppId"];
 
                 using (StreamWriter streamWriter = new StreamWriter(new FileStream(app_cache_file, FileMode.Create), Encoding.UTF8))
                 {
@@ -601,8 +601,8 @@ namespace NemirtingasEmuLauncher
             }
 
             app.AppName = string.Empty;
-            app.AppName = json_cache.Value<string>("name");
-            app.AppId = json_cache.Value<string>("app_id");
+            app.AppName = (string)json_cache["name"];
+            app.AppId = (string)json_cache["app_id"];
 
             return new ApiResult { Success = true };
         }
