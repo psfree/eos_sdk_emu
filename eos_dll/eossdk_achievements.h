@@ -34,7 +34,7 @@ namespace sdk
 
         fifo_json _achievements_db;
         fifo_json _achievements;
-        std::map<std::string, fifo_json*> _unlocked_achievements;
+        std::unordered_map<std::string, fifo_json*> _unlocked_achievements;
 
     public:
         EOSSDK_Achievements();

@@ -64,7 +64,7 @@ namespace sdk
         uint32_t                  _max_results;
         Lobbies_Search_pb         _search_infos;
         pFrameResult_t            _search_cb;
-        std::set<std::string>     _search_peers;
+        std::set<Network::peer_t> _search_peers;
         std::list<Lobby_Infos_pb> _results;
 
     public:
@@ -147,10 +147,10 @@ namespace sdk
         static int32_t join_id;
         constexpr static auto join_timeout = std::chrono::milliseconds(5000);
 
-        std::map<std::string, lobby_state_t> _lobbies;
-        std::list<EOSSDK_LobbySearch*>       _lobbies_searchs;
-        std::list<lobby_invite_t>            _lobby_invites;
-        std::map<int32_t, lobby_join_t>      _joins_requests;
+        std::unordered_map<std::string, lobby_state_t> _lobbies;
+        std::list<EOSSDK_LobbySearch*>                 _lobbies_searchs;
+        std::list<lobby_invite_t>                      _lobby_invites;
+        std::unordered_map<int32_t, lobby_join_t>      _joins_requests;
 
     public:
         EOSSDK_Lobby();

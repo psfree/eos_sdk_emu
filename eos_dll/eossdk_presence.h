@@ -48,7 +48,7 @@ namespace sdk
         static constexpr auto presence_query_timeout = std::chrono::milliseconds(1000);
 
         nlohmann::fifo_map<EOS_EpicAccountId, Presence_Info_pb> _presences;
-        std::map<EOS_EpicAccountId, std::list<pFrameResult_t>> _presence_queries;
+        std::unordered_map<EOS_EpicAccountId, std::list<pFrameResult_t>> _presence_queries;
 
     public:
         EOSSDK_Presence();

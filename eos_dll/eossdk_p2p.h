@@ -54,8 +54,8 @@ namespace sdk
         std::recursive_mutex local_mutex;
 
         int32_t next_requested_channel;
-        std::map<uint8_t, std::list<P2P_Data_Message_pb>> _p2p_in_messages;
-        std::map<EOS_ProductUserId, p2p_state_t> _p2p_connections;
+        std::unordered_map<uint8_t, std::list<P2P_Data_Message_pb>> _p2p_in_messages;
+        std::unordered_map<EOS_ProductUserId, p2p_state_t> _p2p_connections;
 
         EOS_ERelayControl _relay_control;
         uint16_t _p2p_port;

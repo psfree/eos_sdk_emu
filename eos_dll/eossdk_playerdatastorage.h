@@ -79,8 +79,8 @@ namespace sdk
     {
         std::string _game_save_folder;
 
-        std::map<pFrameResult_t, EOSSDK_PlayerDataStorageFileTransferRequest*> _transferts;
-        std::map<std::string, file_metadata_t> _files_cache;
+        std::unordered_map<pFrameResult_t, EOSSDK_PlayerDataStorageFileTransferRequest*> _transferts;
+        std::unordered_map<std::string, file_metadata_t> _files_cache;
 
         bool get_metadata(std::string const& filename);
 

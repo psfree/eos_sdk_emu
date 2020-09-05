@@ -29,8 +29,8 @@ namespace sdk
     {
         static constexpr auto userinfo_query_timeout = std::chrono::milliseconds(20000);
 
-        std::map<EOS_EpicAccountId, UserInfo_Info_pb> _userinfos;
-        std::map<EOS_EpicAccountId, std::list<pFrameResult_t>> _userinfos_queries;
+        std::unordered_map<EOS_EpicAccountId, UserInfo_Info_pb> _userinfos;
+        std::unordered_map<EOS_EpicAccountId, std::list<pFrameResult_t>> _userinfos_queries;
 
     public:
         EOSSDK_UserInfo();

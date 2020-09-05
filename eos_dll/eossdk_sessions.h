@@ -156,7 +156,7 @@ namespace sdk
 
         static constexpr auto join_timeout = std::chrono::milliseconds(5000);
         // key: session_id
-        std::map<std::string, pFrameResult_t> _sessions_join;
+        std::unordered_map<std::string, pFrameResult_t> _sessions_join;
         std::list<session_invite_t>           _session_invites;
         std::list<EOSSDK_SessionSearch*>      _session_searchs;
 
