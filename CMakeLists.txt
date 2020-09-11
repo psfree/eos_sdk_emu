@@ -3,16 +3,21 @@
 project(nemirtingas_epic_emu)
 cmake_minimum_required(VERSION 3.0)
 
-if(WIN32) # Setup some variables for Windows build
-  # Detect arch on Windows
-  if(NOT X64 AND NOT X86 )
-    if( ${CMAKE_SIZEOF_VOID_P} EQUAL 8)
-      set(X64 ON)
-    else()
-      set(X86 ON)
-    endif()
-  endif()
+# Workaround because cross-compiling with CMake + vcpkg fucks up this variable
+# making the 'find_*' functions/macros somehow fail to find the right arch.
+# There are conditions like
+#  CMAKE_SIZEOF_VOID_P = "4" then look for i386 libraries...
+# or
+#  CMAKE_SIZEOF_VOID_P = "8" then look for x86_64 libraries...
+if(X86 AND NOT X64)
+  set(CMAKE_SIZEOF_VOID_P "4")
+elseif(X64 AND NOT X86)
+  set(CMAKE_SIZEOF_VOID_P "8")
+else()
+  message(FATAL_ERROR "Please define either -DX86=ON or -DX64=ON")
+endif()
 
+if(WIN32) # Setup some variables for Windows build
   if(MSVC) # If building with MSVC
     add_definitions(-D_CRT_SECURE_NO_WARNINGS) # Disable warning about strncpy_s and his friends
     #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:\"msvcrtd.lib\"")       # Disable this linkage
@@ -47,15 +52,19 @@ elseif(APPLE)
   message(STATUS "CMake for APPLE is experimental")
   if(X64)
     # Global flags for building steamapi (64bits)
-    set(CMAKE_EXE_LINKER_FLAGS -m64)
-    set(CMAKE_SHARED_LINKER_FLAGS -m64)
-    set(CMAKE_STATIC_LINKER_FLAGS -m64)
+    set(CMAKE_C_FLAGS             "${CMAKE_C_FLAGS} -m64")
+    set(CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -m64")
+    set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} -m64")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m64")
+    set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m64")
 	set(OUT_DIR macosx64)
   elseif(X86)
     # Global flags for building steamapi (32bits)
-    set(CMAKE_EXE_LINKER_FLAGS -m32)
-    set(CMAKE_SHARED_LINKER_FLAGS -m32)
-    set(CMAKE_STATIC_LINKER_FLAGS -m32)
+    set(CMAKE_C_FLAGS             "${CMAKE_C_FLAGS} -m32")
+    set(CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -m32")
+    set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} -m32")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32")
+    set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32")
 	set(OUT_DIR macosx32)
   else()
     message(FATAL_ERROR "Arch unknown")
@@ -68,15 +77,19 @@ elseif(APPLE)
 elseif(UNIX)
   if(X64)
     # Global flags for building steamapi (64bits)
-    set(CMAKE_EXE_LINKER_FLAGS -m64)
-    set(CMAKE_SHARED_LINKER_FLAGS -m64)
-    set(CMAKE_STATIC_LINKER_FLAGS -m64)
+    set(CMAKE_C_FLAGS             "${CMAKE_C_FLAGS} -m64")
+    set(CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -m64")
+    set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} -m64")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m64")
+    set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m64")
 	set(OUT_DIR linux64)
   elseif(X86)
     # Global flags for building steamapi (32bits)
-    set(CMAKE_EXE_LINKER_FLAGS -m32)
-    set(CMAKE_SHARED_LINKER_FLAGS -m32)
-    set(CMAKE_STATIC_LINKER_FLAGS -m32)
+    set(CMAKE_C_FLAGS             "${CMAKE_C_FLAGS} -m32")
+    set(CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -m32")
+    set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} -m32")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32")
+    set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32")
 	set(OUT_DIR linux32)
   else()
     message(FATAL_ERROR "Arch unknown")
@@ -96,44 +109,29 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-
-set(Protobuf_SRC_ROOT_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/protobuf-src/" CACHE PATH "Protobuf root folder")
-
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Debug or Release")
 
 option(DISABLE_LOG "Disable all logging. Will reduce emu size and will speed it up (a bit)" OFF)
 
 option(USE_ZSTD_COMPRESS "Use zstd to compress network messages" ON)
 
-set(ZSTD_INCLUDE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/zstd-src/lib/" CACHE PATH "zstd include folder")
-
-set(EOSSDK_INCLUDE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/eos_sdk/" CACHE PATH "Epic Online Service SDK include folder")
-
-set(Protobuf_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/${OUT_DIR}" CACHE PATH "Protobuf build directory")
-set(ZSTD_BUILD_FOLDER     "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/${OUT_DIR}"     CACHE PATH "zstd build directory")
-
-set(CMAKE_INCLUDE_PATH "${ZSTD_INCLUDE_FOLDER};${EOSSDK_INCLUDE_FOLDER};${CMAKE_INCLUDE_PATH}" CACHE PATH "Where to find prebuilt includes")
-set(CMAKE_PREFIX_PATH "${ZSTD_BUILD_FOLDER};${Protobuf_BUILD_FOLDER};${CMAKE_PREFIX_PATH}" CACHE PATH "Where to find prebuilt dependencies")
-
+set(Protobuf_USE_STATIC_LIBS ON)
 include(FindProtobuf)
-find_package(Protobuf REQUIRED)
+find_package(Protobuf CONFIG REQUIRED)
+#find_package(CURL CONFIG REQUIRED)
+#find_package(ZLIB REQUIRED)
+
+#if(NOT APPLE)
+#  find_package(GLEW REQUIRED)
+#endif()
+
+#if(UNIX AND NOT APPLE)
+#  find_package(OpenSSL REQUIRED)
+#endif()
 
 if(USE_ZSTD_COMPRESS)
-  find_package(ZSTD REQUIRED)
+  find_package(zstd CONFIG REQUIRED)
 endif()
-
-find_path(
-  EOSSDK_INCLUDE
-  eos_base.h
-)
-
-########################################
-## global includes dir to add
-include_directories(
-  ${CMAKE_CURRENT_BINARY_DIR} # For net.pb.h (built by protobuf_generate_cpp)
-  ${Protobuf_INCLUDE_DIRS}    # For protobuf headers
-)
 
 ########################################
 ## net.h net.cc
@@ -187,11 +185,6 @@ add_library(
   ${mini_detour_sources}
   ${socket_sources}
   ${utils_sources}
-  ${gamepad_sources}
-  
-  ${overlay_sources}
-  ${overlay_pf_sources}
-  $<$<BOOL:${WIN32}>:${detours_sources}>
 )
 
 if(UNIX)
@@ -200,10 +193,11 @@ endif()
 
 target_link_libraries(
   ${EPIC_API}
-  ${Protobuf_LITE_LIBRARIES}
-  ${GLEW_LIBRARIES}
-  ${CURL_LIBRARIES}
-  $<$<BOOL:${USE_ZSTD_COMPRESS}>:${ZSTD_LIBRARIES}>
+  #$<$<NOT:$<BOOL:${APPLE}>>:GLEW::GLEW>
+  #ZLIB::ZLIB
+  protobuf::libprotobuf-lite
+  #CURL::libcurl
+  $<$<BOOL:${USE_ZSTD_COMPRESS}>:libzstd>
 
   # For gamepad open-source xinput
   #$<$<BOOL:${WIN32}>:setupapi>
@@ -217,7 +211,6 @@ target_link_libraries(
   $<$<BOOL:${WIN32}>:iphlpapi>
   # For library play .wav
   #$<$<BOOL:${WIN32}>:winmm>
-  $<$<BOOL:${WIN32}>:comdlg32>
   $<$<BOOL:${WIN32}>:shell32>
   $<$<BOOL:${WIN32}>:user32>
 
@@ -235,17 +228,24 @@ target_link_libraries(
 target_include_directories(
   ${EPIC_API}
   PRIVATE
-  ${EOSSDK_INCLUDE}
-  ${ZSTD_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_BINARY_DIR}
   
   eos_dll/
-  
   managers/
   
   extra/
+  extra/eos_sdk/
+  extra/mini_detour/
+  #extra/ImGui/
+  #extra/gamepad/
   extra/nlohmann/
-  extra/utils/include/
-  extra/Socket/include/
+  #extra/stb/
+  extra/utils/include
+  extra/Socket/include
+  
+  #resources/
+  
+  #${overlay_includes}
 )
 
 target_compile_options(
@@ -267,7 +267,9 @@ target_compile_definitions(
   __EXPORT_SYMBOLS__
   EPIC_SHARED_LIBRARY
   EPIC_EXPORT
-  #CURL_STATICLIB
+  #GLEW_STATIC
+  #GLEW_NO_GLU
+  #STBI_NO_SIMD
 
   $<$<BOOL:${USE_ZSTD_COMPRESS}>:NETWORK_COMPRESS>
   
