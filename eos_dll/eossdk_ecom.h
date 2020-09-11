@@ -40,15 +40,8 @@ namespace sdk
     class EOSSDK_Ecom :
         public IRunFrame
     {
-        //static constexpr const char calatog_db_filename[]      = "catalog_db.json";
-        static constexpr const char calatog_filename[]         = "catalog.json";
-        //static constexpr const char entitlements_db_filename[] = "entitlements_db.json";
-        static constexpr const char entitlements_filename[]    = "entitlements.json";
-
-        //std::string _catalog_db_filepath;
-        std::string _catalog_filepath;
-        //std::string _entitlements_db_filepath;
-        std::string _entitlements_filepath;
+        static const std::string catalog_filename;
+        static const std::string entitlements_filename;
 
         //fifo_json _catalog_db;
         fifo_json _catalog;

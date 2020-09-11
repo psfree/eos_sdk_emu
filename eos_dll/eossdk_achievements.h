@@ -26,11 +26,8 @@ namespace sdk
     class EOSSDK_Achievements :
         public IRunFrame
     {
-        static constexpr const char achievements_filename[]    = "achievements.json";
-        static constexpr const char achievements_db_filename[] = "achievements_db.json";
-
-        std::string _achievements_db_filepath;
-        std::string _achievements_filepath;
+        static const std::string achievements_filename;
+        static const std::string achievements_db_filename;
 
         fifo_json _achievements_db;
         fifo_json _achievements;

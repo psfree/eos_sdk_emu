@@ -23,11 +23,6 @@ using namespace PortableAPI;
 
 static void* hmodule;
 
-LOCAL_API std::string get_path_folder(std::string const& path)
-{
-    return std::string(path.begin(), path.begin() + path.find_last_of(PATH_SEPARATOR));
-}
-
 LOCAL_API std::chrono::microseconds get_uptime()
 {
     return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - get_boottime());
@@ -47,7 +42,7 @@ LOCAL_API std::vector<ipv4_addr> const& get_broadcasts()
         {
             addr.set_ip(iface.ip | (~iface.mask));
             broadcasts.emplace_back(addr);
-            LOG(Log::LogLevel::INFO, "%s", addr.to_string().c_str());
+            APP_LOG(Log::LogLevel::INFO, "%s", addr.to_string().c_str());
         }
     }
 
@@ -64,7 +59,7 @@ LOCAL_API bool is_iface_ip(const sockaddr* sock_addr, int namelen)
 
     if (sock_addr->sa_family == AF_INET)
     {
-        uint32_t target_ip = Socket::net_swap(((struct sockaddr_in*)sock_addr)->sin_addr.s_addr);
+        uint32_t target_ip = utils::Endian::net_swap(((struct sockaddr_in*)sock_addr)->sin_addr.s_addr);
 
         //ipv4_addr addr, mask, target;
 
@@ -74,7 +69,7 @@ LOCAL_API bool is_iface_ip(const sockaddr* sock_addr, int namelen)
             //mask.set_ip(iface.mask);
             //target.set_ip(target_ip);
             //
-            //LOG(Log::LogLevel::INFO, "Checking %s | %s against %s", addr.to_string().c_str(), mask.to_string().c_str(), target.to_string().c_str());
+            //APP_LOG(Log::LogLevel::INFO, "Checking %s | %s against %s", addr.to_string().c_str(), mask.to_string().c_str(), target.to_string().c_str());
 
             if ((iface.ip & iface.mask) == (target_ip & iface.mask))
             {
@@ -94,7 +89,7 @@ LOCAL_API bool is_lan_ip(const sockaddr* addr, int namelen)
         struct sockaddr_in* addr_in = (struct sockaddr_in*)addr;
         unsigned char ip[4];
         memcpy(ip, &addr_in->sin_addr, sizeof(ip));
-        //LOG(Log::LogLevel::DEBUG, "CHECK LAN IP %hhu.%hhu.%hhu.%hhu:%u", ip[0], ip[1], ip[2], ip[3], ntohs(addr_in->sin_port));
+        //APP_LOG(Log::LogLevel::DEBUG, "CHECK LAN IP %hhu.%hhu.%hhu.%hhu:%u", ip[0], ip[1], ip[2], ip[3], ntohs(addr_in->sin_port));
         if (is_iface_ip(addr, namelen)) return true;
         if (ip[0] == 127) return true;
         if (ip[0] == 10) return true;
@@ -112,7 +107,7 @@ LOCAL_API bool is_lan_ip(const sockaddr* addr, int namelen)
         unsigned char ip[16];
         unsigned char zeroes[16] = {};
         memcpy(ip, &addr_in6->sin6_addr, sizeof(ip));
-        //LOG(Log::LogLevel::DEBUG, "CHECK LAN IP6 %hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu...%hhu", ip[0], ip[1], ip[2], ip[3], ip[4], ip[5], ip[6], ip[7], ip[15]);
+        //APP_LOG(Log::LogLevel::DEBUG, "CHECK LAN IP6 %hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu.%hhu...%hhu", ip[0], ip[1], ip[2], ip[3], ip[4], ip[5], ip[6], ip[7], ip[15]);
         if (is_iface_ip(addr, namelen)) return true;
         if (((ip[0] == 0xFF) && (ip[1] < 3) && (ip[15] == 1)) ||
             ((ip[0] == 0xFE) && ((ip[1] & 0xC0) == 0x80))) return true;
@@ -232,15 +227,15 @@ LOCAL_API void disable_online_networking()
     mini_detour::transaction_begin();
 
     if (mini_detour::detour_func((void**)&_sendto           , (void*)&Mysendto))
-        LOG(Log::LogLevel::WARN, "Failed to hook sendto");
+        APP_LOG(Log::LogLevel::WARN, "Failed to hook sendto");
     if(mini_detour::detour_func((void**)&_connect           , (void*)&Myconnect))
-        LOG(Log::LogLevel::WARN, "Failed to hook connect");
+        APP_LOG(Log::LogLevel::WARN, "Failed to hook connect");
     if(mini_detour::detour_func((void**)&_WSAConnect        , (void*)&MyWSAConnect))
-        LOG(Log::LogLevel::WARN, "Failed to hook wsaconnect");
+        APP_LOG(Log::LogLevel::WARN, "Failed to hook wsaconnect");
     if(mini_detour::detour_func((void**)&_WinHttpConnect    , (void*)&MyWinHttpConnect))
-        LOG(Log::LogLevel::WARN, "Failed to hook winhttpconnect");
+        APP_LOG(Log::LogLevel::WARN, "Failed to hook winhttpconnect");
     if(mini_detour::detour_func((void**)&_WinHttpOpenRequest, (void*)&MyWinHttpOpenRequest))
-        LOG(Log::LogLevel::WARN, "Failed to hook winhttpopenrequest");
+        APP_LOG(Log::LogLevel::WARN, "Failed to hook winhttpopenrequest");
 
     mini_detour::transaction_commit();
 }
@@ -260,66 +255,6 @@ LOCAL_API std::chrono::system_clock::time_point get_boottime()
 {
     static std::chrono::system_clock::time_point boottime(std::chrono::system_clock::now() - std::chrono::milliseconds(GetTickCount64()));
     return boottime;
-}
-
-LOCAL_API std::string clean_path(std::string const& path)
-{
-    std::string canonicalized_path(path);
-    size_t pos;
-    size_t size;
-
-    std::replace(canonicalized_path.begin(), canonicalized_path.end(), '/', '\\');
-
-    while ((pos = canonicalized_path.find("\\\\")) != std::string::npos)
-        canonicalized_path.replace(pos, 2, "\\");
-
-    while ((pos = canonicalized_path.find("\\.\\")) != std::string::npos)
-        canonicalized_path.replace(pos, 3, "\\");
-
-    while ((pos = canonicalized_path.find("\\..")) != std::string::npos)
-    {
-        if (pos == 0)
-            size = 3;
-        else
-        {
-            size_t parent_pos = canonicalized_path.rfind("\\", pos - 1);
-            if (parent_pos == std::string::npos)
-            {
-                size = pos + 3;
-                pos = 0;
-            }
-            else
-            {
-                size = 3 + pos - parent_pos;
-                pos = parent_pos;
-            }
-        }
-
-        canonicalized_path.replace(pos, size, "");
-    }
-
-    while ((pos = canonicalized_path.find("\\.")) != std::string::npos)
-        canonicalized_path.replace(pos, 2, "");
-
-    return canonicalized_path;
-}
-
-LOCAL_API std::string canonical_path(std::string const& path)
-{
-    WCHAR pathout[4096];
-
-    std::wstring wide;
-    utf8::utf8to16(path.begin(), path.end(), std::back_inserter(wide));
-
-    DWORD ret = GetFullPathNameW(wide.c_str(), sizeof(pathout) / sizeof(*pathout), pathout, nullptr);
-    if (ret > 0)
-    {
-        std::string res;
-        utf8::utf16to8(pathout, pathout + ret, std::back_inserter(res));
-        return res;
-    }
-
-    throw std::exception("Failed retrieve canonincal path\n");
 }
 
 LOCAL_API std::string get_env_var(std::string const& var)
@@ -354,25 +289,34 @@ LOCAL_API std::string get_userdata_path()
 
 LOCAL_API std::string get_executable_path()
 {
-    std::string exec_path;
+    std::string path;
+    std::wstring wpath(4096, '\0');
 
-    char* pgm_path;
-    _get_pgmptr(&pgm_path);
+    DWORD size = GetModuleFileNameW(nullptr, &wpath[0], wpath.length());
+    utf8::utf16to8(wpath.begin(), wpath.begin() + size, std::back_inserter(path));
 
-    exec_path = pgm_path;
-    exec_path = exec_path.substr(0, exec_path.rfind(PATH_SEPARATOR) + 1);
-    LOG(Log::LogLevel::INFO, "%s", exec_path.c_str());
-    return exec_path;
+    APP_LOG(Log::LogLevel::INFO, "%s", path.c_str());
+    return path;
 }
 
 LOCAL_API std::string get_module_path()
 {
-    std::string program_path;
-    char DllPath[MAX_PATH] = { 0 };
-    GetModuleFileNameA((HINSTANCE)hmodule, DllPath, MAX_PATH-1);
-    program_path = DllPath;
-    program_path = program_path.substr(0, program_path.rfind(PATH_SEPARATOR)+1);
-    return program_path;
+    std::string path;
+    std::wstring wpath(4096, '\0');
+
+    DWORD size = GetModuleFileNameW((HINSTANCE)hmodule, &wpath[0], wpath.length());
+    utf8::utf16to8(wpath.begin(), wpath.begin() + size, std::back_inserter(path));
+
+    APP_LOG(Log::LogLevel::INFO, "%s", path.c_str());
+    return path;
+}
+
+LOCAL_API void* get_module_handle(std::string const& name)
+{
+    std::wstring wname;
+    utf8::utf8to16(name.begin(), name.end(), std::back_inserter(wname));
+
+    return GetModuleHandleW(wname.c_str());
 }
 
 LOCAL_API std::vector<iface_ip_t> const& get_ifaces_ip()
@@ -414,7 +358,7 @@ LOCAL_API std::vector<iface_ip_t> const& get_ifaces_ip()
 
                         if (sock_addr->sin_addr.s_addr != 0 && pAddr->OnLinkPrefixLength != 0)
                         {
-                            ifaces.emplace_back(iface_ip_t{ Socket::net_swap(ip), Socket::net_swap(mask) });
+                            ifaces.emplace_back(iface_ip_t{ utils::Endian::net_swap(ip), utils::Endian::net_swap(mask) });
                         }
                     }
                     //else if (pAddr->Address.lpSockaddr->sa_family == AF_INET6)
@@ -430,112 +374,6 @@ LOCAL_API std::vector<iface_ip_t> const& get_ifaces_ip()
     }
 
     return ifaces;
-}
-
-LOCAL_API bool create_folder(std::string const& _folder)
-{
-    size_t pos = 0;
-    struct _stat sb;
-
-    std::wstring sub_dir;
-    std::wstring folder;
-    utf8::utf8to16(_folder.begin(), _folder.end(), std::back_inserter(folder));
-    if (folder.empty())
-        return true;
-
-    if (folder.length() >= 3 && folder[1] == ':' && (folder[2] == '\\' || folder[2] == '/'))
-        pos = 3;
-
-    do
-    {
-        pos = folder.find_first_of(L"\\/", pos + 1);
-        sub_dir = std::move(folder.substr(0, pos));
-        if(_wstat(sub_dir.c_str(), &sb) == 0)
-        {
-            if(!(sb.st_mode & _S_IFDIR))
-            {// A subpath in the target is not a folder
-                return false;
-            }
-            // Folder exists
-        }
-        else if(CreateDirectoryW(folder.substr(0, pos).c_str(), NULL) )
-        {// Failed to create folder (no permission?)
-        }
-    } while (pos != std::string::npos);
-
-    return true;
-}
-
-LOCAL_API bool delete_file(std::string const& _path)
-{
-    std::wstring path;
-    utf8::utf8to16(_path.begin(), _path.end(), std::back_inserter(path));
-    return DeleteFileW(path.c_str()) == TRUE;
-}
-
-static std::vector<std::wstring> list_files(std::wstring const& path, bool recursive)
-{
-    std::vector<std::wstring> files;
-    WIN32_FIND_DATAW hfind_data;
-    HANDLE hfind = INVALID_HANDLE_VALUE;
-
-    std::wstring search_path = path;
-
-    if (*path.rbegin() != L'\\')
-        search_path += L'\\';
-
-    search_path += L'*';
-
-    // Start iterating over the files in the path directory.
-    hfind = FindFirstFileW(search_path.c_str(), &hfind_data);
-    if (hfind != INVALID_HANDLE_VALUE)
-    {
-        search_path.pop_back();
-        do // Managed to locate and create an handle to that folder.
-        {
-            if (wcscmp(L".", hfind_data.cFileName) == 0
-                || wcscmp(L"..", hfind_data.cFileName) == 0)
-                continue;
-
-            if (hfind_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-            {
-                if (recursive)
-                {
-                    std::wstring dir_name = hfind_data.cFileName;
-
-                    std::vector<std::wstring> sub_files = std::move(list_files(search_path + dir_name, true));
-                    std::transform(sub_files.begin(), sub_files.end(), std::back_inserter(files), [&dir_name](std::wstring& file_name)
-                    {
-                        return dir_name + L'\\' + file_name;
-                    });
-                }
-            }
-            else
-            {
-                files.emplace_back(hfind_data.cFileName);
-            }
-        } while (FindNextFileW(hfind, &hfind_data) == TRUE);
-        FindClose(hfind);
-    }
-
-    return files;
-}
-
-LOCAL_API std::vector<std::string> list_files(std::string const& path, bool recursive)
-{
-    std::vector<std::string> files;
-    std::wstring wpath;
-    utf8::utf8to16(path.begin(), path.end(), std::back_inserter(wpath));
-    std::vector<std::wstring> wfiles = std::move(list_files(wpath, recursive));
-    
-    std::transform(wfiles.begin(), wfiles.end(), std::back_inserter(files), [](std::wstring const& wfile_name)
-    {
-        std::string file_name;
-        utf8::utf16to8(wfile_name.begin(), wfile_name.end(), std::back_inserter(file_name));
-        return file_name;
-    });
-
-    return files;
 }
 
 #elif defined(__LINUX__) || defined(__APPLE__)
@@ -583,7 +421,7 @@ LOCAL_API std::string get_executable_path()
         return exec_path;
 
 
-    std::string self = "/proc/self/map_files";
+    std::string self = "/proc/self/map_files/";
     DIR* dir;
     struct dirent* ep;
 
@@ -613,7 +451,7 @@ LOCAL_API std::string get_executable_path()
 
         if( start <= hexecutable && hexecutable <= end )
         {
-            std::string path = self + PATH_SEPARATOR + ep->d_name;
+            std::string path = self + ep->d_name;
             char link[1024] = {};
             if (readlink(path.c_str(), link, sizeof(link)) > 0)
             {
@@ -625,10 +463,51 @@ LOCAL_API std::string get_executable_path()
 
     closedir(dir);
     dlclose(hexecutable);
-    
-    exec_path = exec_path.substr(0, exec_path.rfind(PATH_SEPARATOR) + 1);
-    LOG(Log::LogLevel::INFO, "%s", exec_path.c_str());
+
+    APP_LOG(Log::LogLevel::INFO, "%s", exec_path.c_str());
     return exec_path;
+}
+
+LOCAL_API void* get_module_handle(std::string const& name)
+{
+    std::string const self("/proc/self/map_files/");
+    DIR* dir;
+    struct dirent* dir_entry;
+    char buff[4096];
+    size_t buff_len = 4095;
+
+    void* res = nullptr;
+
+    dir = opendir(self.c_str());
+    if (dir != nullptr)
+    {
+        while((dir_entry = readdir(dir)) != nullptr)
+        {
+            ssize_t name_len = readlink((self + dir_entry->d_name).c_str(), buff, buff_len);
+            if (name_len > 0)
+            {
+                buff[name_len] = '\0';
+                char* pos = strrchr(buff, '/');
+                if (pos != nullptr)
+                {
+                    ++pos;
+                    if (strncmp(pos, name.c_str(), name.length()) == 0)
+                    {
+                        res = dlopen(buff, RTLD_NOW);
+                        if(res != nullptr)
+                        {// Like Windows' GetModuleHandle, we don't want to increment the ref counter
+                            dlclose(res);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        closedir(dir);
+    }
+
+    return res;
 }
 
 LOCAL_API std::string get_userdata_path()
@@ -695,8 +574,43 @@ LOCAL_API std::string get_executable_path()
         }
     }
 
-    exec_path = exec_path.substr(0, exec_path.rfind(PATH_SEPARATOR) + 1);
     return exec_path;
+}
+
+LOCAL_API void* get_module_handle(std::string const& name)
+{
+    void* res = nullptr;
+
+    task_dyld_info dyld_info;
+    task_t t;
+    pid_t pid = getpid();
+    task_for_pid(mach_task_self(), pid, &t);
+    mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
+
+    if (task_info(t, TASK_DYLD_INFO, reinterpret_cast<task_info_t>(&dyld_info), &count) == KERN_SUCCESS)
+    {
+        const char* pos;
+        dyld_all_image_infos *dyld_img_infos = reinterpret_cast<dyld_all_image_infos*>(dyld_info.all_image_info_addr);
+        for (int i = 0; i < dyld_img_infos->infoArrayCount; ++i)
+        {
+            pos = strrchr(dyld_img_infos->infoArray[i].imageFilePath, '/');
+            if(pos != nullptr)
+            {
+                ++pos;
+                if(strncmp(pos, name.c_str(), name.length()) == 0)
+                {
+                    res = dlopen(dyld_img_infos->infoArray[i].imageFilePath, RTLD_NOW);
+                    if(res != nullptr)
+                    {// Like Windows' GetModuleHandle, we don't want to increment the ref counter
+                        dlclose(res);
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    return res;
 }
 
 LOCAL_API std::string get_userdata_path()
@@ -750,9 +664,9 @@ LOCAL_API void disable_online_networking()
 {
     mini_detour::transaction_begin();
     if (mini_detour::detour_func((void**)&_sendto, (void*)&Mysendto))
-        LOG(Log::LogLevel::WARN, "Failed to hook sendto");
+        APP_LOG(Log::LogLevel::WARN, "Failed to hook sendto");
     if (mini_detour::detour_func((void**)&_connect, (void*)&Myconnect))
-        LOG(Log::LogLevel::WARN, "Failed to hook connect");
+        APP_LOG(Log::LogLevel::WARN, "Failed to hook connect");
     mini_detour::transaction_commit();
 }
 
@@ -764,51 +678,6 @@ LOCAL_API void enable_online_networking()
     mini_detour::transaction_commit();
 }
 
-LOCAL_API std::string clean_path(std::string const& path)
-{
-    std::string canonicalized_path(path);
-    size_t pos;
-    size_t size;
-
-    while ((pos = canonicalized_path.find("//")) != std::string::npos)
-        canonicalized_path.replace(pos, 2, "/");
-
-    while ((pos = canonicalized_path.find("/./")) != std::string::npos)
-        canonicalized_path.replace(pos, 3, "/");
-
-    while ((pos = canonicalized_path.find("/..")) != std::string::npos)
-    {
-        if (pos == 0)
-            size = 3;
-        else
-        {
-            size_t parent_pos = canonicalized_path.rfind("/", pos - 1);
-            if (parent_pos == std::string::npos)
-            {
-                size = pos + 3;
-                pos = 0;
-            }
-            else
-            {
-                size = 3 + pos - parent_pos;
-                pos = parent_pos;
-            }
-        }
-
-        canonicalized_path.replace(pos, size, "");
-    }
-
-    while ((pos = canonicalized_path.find("/.")) != std::string::npos)
-        canonicalized_path.replace(pos, 2, "");
-
-    return canonicalized_path;
-}
-
-LOCAL_API std::string canonical_path(std::string const& path)
-{
-    return clean_path(path);
-}
-
 LOCAL_API std::string get_env_var(std::string const& name)
 {
     char* env = getenv(name.c_str());
@@ -818,12 +687,12 @@ LOCAL_API std::string get_env_var(std::string const& name)
 LOCAL_API std::string get_module_path()
 {
     std::string library_path = "./";
-    
+
     Dl_info infos;
     dladdr(hmodule, &infos);
     library_path = infos.dli_fname;
 
-    LOG(Log::LogLevel::INFO, "%s", library_path.c_str());
+    APP_LOG(Log::LogLevel::INFO, "%s", library_path.c_str());
     return library_path;
 }
 
@@ -849,7 +718,7 @@ LOCAL_API std::vector<iface_ip_t> const& get_ifaces_ip()
                         uint32_t ip = reinterpret_cast<const sockaddr_in*>(pIface->ifa_addr)->sin_addr.s_addr;
                         uint32_t mask = reinterpret_cast<const sockaddr_in*>(pIface->ifa_netmask)->sin_addr.s_addr;
 
-                        ifaces.emplace_back(iface_ip_t{ Socket::net_swap(ip), Socket::net_swap(mask) });
+                        ifaces.emplace_back(iface_ip_t{ utils::Endian::net_swap(ip), utils::Endian::net_swap(mask) });
                     }
                 }
                 // IPV6
@@ -863,83 +732,6 @@ LOCAL_API std::vector<iface_ip_t> const& get_ifaces_ip()
     }
 
     return ifaces;
-}
-
-LOCAL_API bool create_folder(std::string const& _folder)
-{
-    size_t pos = 0;
-    struct stat sb;
-
-    std::string sub_dir;
-    std::string folder = _folder;
-
-    do
-    {
-        pos = folder.find_first_of("\\/", pos + 1);
-        sub_dir = std::move(folder.substr(0, pos));
-        if (stat(sub_dir.c_str(), &sb) == 0)
-        {
-            if (!S_ISDIR(sb.st_mode))
-            {// A subpath in the target is not a folder
-                return false;
-            }
-            // Folder exists
-        }
-        else if (mkdir(sub_dir.c_str(), 0755) < 0)
-        {// Failed to create folder (no permission?)
-        }
-    } while (pos != std::string::npos);
-
-    return true;
-}
-
-LOCAL_API bool delete_file(std::string const& path)
-{
-    return unlink(path.c_str()) == 0;
-}
-
-LOCAL_API std::vector<std::string> list_files(std::string const& path, bool recursive)
-{
-    std::vector<std::string> files;
-
-    std::string search_path = path;
-
-    if (*path.rbegin() != PATH_SEPARATOR)
-        search_path += PATH_SEPARATOR;
-
-    DIR* dir = opendir(search_path.c_str());
-    struct dirent* entry;
-
-    if (dir == nullptr)
-        return files;
-
-    while ((entry = readdir(dir)) != nullptr)
-    {
-        if (strcmp(entry->d_name, ".")  == 0
-         || strcmp(entry->d_name, "..") == 0)
-            continue;
-
-        if(entry->d_type == DT_DIR)
-        {
-            if (recursive)
-            {
-                std::string dir_name = entry->d_name;
-                std::vector<std::string> sub_files = std::move(list_files(search_path + dir_name, true));
-                std::transform(sub_files.begin(), sub_files.end(), std::back_inserter(files), [&dir_name](std::string& file_name)
-                {
-                    return dir_name + PATH_SEPARATOR + file_name;
-                });
-            }
-        }
-        else if(entry->d_type == DT_REG)
-        {
-            files.emplace_back(entry->d_name);
-        }
-    }
-
-    closedir(dir);   
-
-    return files;
 }
 
 #endif

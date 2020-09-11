@@ -102,7 +102,7 @@ static bool set_eos_compat(int32_t compat_version)
 #if ! defined(__WINDOWS_32__)
     if (compat_version == 1)
     {
-        LOG(Log::LogLevel::DEBUG, "Tryiing to replace EOS_Auth_CopyUserAuthToken(%p) with EOS_Auth_CopyUserAuthTokenOld(%p)", EOS_Auth_CopyUserAuthToken, EOS_Auth_CopyUserAuthTokenOld);
+        APP_LOG(Log::LogLevel::DEBUG, "Tryiing to replace EOS_Auth_CopyUserAuthToken(%p) with EOS_Auth_CopyUserAuthTokenOld(%p)", EOS_Auth_CopyUserAuthToken, EOS_Auth_CopyUserAuthTokenOld);
         if (mini_detour::replace_func((void*)EOS_Auth_CopyUserAuthToken, (void*)EOS_Auth_CopyUserAuthTokenOld) ||
             mini_detour::replace_func((void*)EOS_Auth_AddNotifyLoginStatusChanged, (void*)EOS_Auth_AddNotifyLoginStatusChangedOld))
         {
@@ -111,7 +111,7 @@ static bool set_eos_compat(int32_t compat_version)
     }
     else
     {
-        LOG(Log::LogLevel::DEBUG, "Tryiing to replace EOS_Auth_CopyUserAuthToken(%p) with EOS_Auth_CopyUserAuthTokenNew(%p)", EOS_Auth_CopyUserAuthToken, EOS_Auth_CopyUserAuthTokenNew);
+        APP_LOG(Log::LogLevel::DEBUG, "Tryiing to replace EOS_Auth_CopyUserAuthToken(%p) with EOS_Auth_CopyUserAuthTokenNew(%p)", EOS_Auth_CopyUserAuthToken, EOS_Auth_CopyUserAuthTokenNew);
         if (mini_detour::replace_func((void*)EOS_Auth_CopyUserAuthToken, (void*)EOS_Auth_CopyUserAuthTokenNew) ||
             mini_detour::replace_func((void*)EOS_Auth_AddNotifyLoginStatusChanged, (void*)EOS_Auth_AddNotifyLoginStatusChangedNew))
         {
@@ -144,7 +144,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
 
     if (set_eos_compat(Options->ApiVersion))
     {
-        LOG(Log::LogLevel::FATAL, "Couldn't replace our dummy EOS_Auth_CopyUserAuthToken, the function will not work and thus we terminate.");
+        APP_LOG(Log::LogLevel::FATAL, "Couldn't replace our dummy EOS_Auth_CopyUserAuthToken, the function will not work and thus we terminate.");
         abort();
     }
 
@@ -153,24 +153,24 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
         case EOS_INITIALIZE_API_003:
         {
             auto p = reinterpret_cast<const EOS_InitializeOptions003*>(Options);
-            LOG(Log::LogLevel::DEBUG, "SystemInitializeOptions = %p", p->SystemInitializeOptions);
+            APP_LOG(Log::LogLevel::DEBUG, "SystemInitializeOptions = %p", p->SystemInitializeOptions);
         }
 
         case EOS_INITIALIZE_API_002:
         {
             auto p = reinterpret_cast<const EOS_InitializeOptions002*>(Options);
-            LOG(Log::LogLevel::DEBUG, "Reserved = %p", p->Reserved);
+            APP_LOG(Log::LogLevel::DEBUG, "Reserved = %p", p->Reserved);
         }
 
         case EOS_INITIALIZE_API_001:
         {
             auto p = reinterpret_cast<const EOS_InitializeOptions001*>(Options);
-            LOG(Log::LogLevel::DEBUG, "ApiVersion = %u", p->ApiVersion);
-            LOG(Log::LogLevel::DEBUG, "AllocateMemoryFunction = %p", p->AllocateMemoryFunction);
-            LOG(Log::LogLevel::DEBUG, "ReallocateMemoryFunction = %p", p->ReallocateMemoryFunction);
-            LOG(Log::LogLevel::DEBUG, "ReleaseMemoryFunction = %p", p->ReleaseMemoryFunction);
-            LOG(Log::LogLevel::DEBUG, "ProductName = %s", p->ProductName);
-            LOG(Log::LogLevel::DEBUG, "ProductVersion = %s", p->ProductVersion);
+            APP_LOG(Log::LogLevel::DEBUG, "ApiVersion = %u", p->ApiVersion);
+            APP_LOG(Log::LogLevel::DEBUG, "AllocateMemoryFunction = %p", p->AllocateMemoryFunction);
+            APP_LOG(Log::LogLevel::DEBUG, "ReallocateMemoryFunction = %p", p->ReallocateMemoryFunction);
+            APP_LOG(Log::LogLevel::DEBUG, "ReleaseMemoryFunction = %p", p->ReleaseMemoryFunction);
+            APP_LOG(Log::LogLevel::DEBUG, "ProductName = %s", p->ProductName);
+            APP_LOG(Log::LogLevel::DEBUG, "ProductVersion = %s", p->ProductVersion);
 
             inst._allocate_memory_func = p->AllocateMemoryFunction;
             inst._reallocate_memory_func = p->ReallocateMemoryFunction;
@@ -196,7 +196,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
         break;
 
         default:
-            LOG(Log::LogLevel::FATAL, "Unmanaged API version %d", Options->ApiVersion);
+            APP_LOG(Log::LogLevel::FATAL, "Unmanaged API version %d", Options->ApiVersion);
             abort();
     }
 
@@ -445,7 +445,7 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_EResult_IsOperationComplete(EOS_EResult Result)
 EOS_DECLARE_FUNC(EOS_EResult) EOS_ByteArray_ToString(const uint8_t* ByteArray, const uint32_t Length, char* OutBuffer, uint32_t* InOutBufferLength)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
+    APP_LOG(Log::LogLevel::INFO, "TODO");
 
     return EOS_EResult::EOS_Success;
 }
@@ -474,7 +474,7 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_EpicAccountId_IsValid(EOS_EpicAccountId AccountId
     });
     if (it == user_ids.end())
     {
-        LOG(Log::LogLevel::WARN, "Epic User Id (%p) not found in the cache, wrong parameter returned in a function ?", AccountId);
+        APP_LOG(Log::LogLevel::WARN, "Epic User Id (%p) not found in the cache, wrong parameter returned in a function ?", AccountId);
         return EOS_FALSE;
     }
 
@@ -514,7 +514,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_EpicAccountId_ToString(EOS_EpicAccountId Accou
     });
     if (it == user_ids.end())
     {
-        LOG(Log::LogLevel::WARN, "Epic User Id (%p) not found in the cache, wrong parameter returned in a function ?", AccountId);
+        APP_LOG(Log::LogLevel::WARN, "Epic User Id (%p) not found in the cache, wrong parameter returned in a function ?", AccountId);
         return EOS_EResult::EOS_InvalidUser;
     }
 
@@ -560,7 +560,7 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_ProductUserId_IsValid(EOS_ProductUserId AccountId
     });
     if (it == product_ids.end())
     {
-        LOG(Log::LogLevel::WARN, "Product User Id (%p) not found in the cache, wrong parameter returned in a function ?", AccountId);
+        APP_LOG(Log::LogLevel::WARN, "Product User Id (%p) not found in the cache, wrong parameter returned in a function ?", AccountId);
         return EOS_FALSE;
     }
 
@@ -596,7 +596,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ProductUserId_ToString(EOS_ProductUserId Accou
     });
     if (it == product_ids.end())
     {
-        LOG(Log::LogLevel::WARN, "Product User Id (%p) not found in the cache, wrong parameter returned in a function ?", AccountId);
+        APP_LOG(Log::LogLevel::WARN, "Product User Id (%p) not found in the cache, wrong parameter returned in a function ?", AccountId);
         return EOS_EResult::EOS_InvalidUser;
     }
 

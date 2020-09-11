@@ -73,7 +73,7 @@ void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, 
     }
     else
     {
-        LOG(Log::LogLevel::DEBUG, "ApiVersion = %u", Options->ApiVersion);
+        APP_LOG(Log::LogLevel::DEBUG, "ApiVersion = %u", Options->ApiVersion);
         switch (Options->ApiVersion)
         {
             case EOS_AUTH_LOGIN_API_002:
@@ -83,14 +83,14 @@ void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, 
 
             case EOS_AUTH_LOGIN_API_001:
             {
-                LOG(Log::LogLevel::DEBUG, "Credentials ApiVersion = %u", Options->Credentials->ApiVersion);
+                APP_LOG(Log::LogLevel::DEBUG, "Credentials ApiVersion = %u", Options->Credentials->ApiVersion);
                 switch (Options->Credentials->ApiVersion)
                 {
                     case EOS_AUTH_CREDENTIALS_API_003:
                     {
                         auto* v = reinterpret_cast<const EOS_Auth_Credentials003*>(Options->Credentials);
-                        LOG(Log::LogLevel::DEBUG, "SystemAuthCredentialsOptions = %p", v->SystemAuthCredentialsOptions);
-                        LOG(Log::LogLevel::DEBUG, "ExternalType                 = %d", v->ExternalType);
+                        APP_LOG(Log::LogLevel::DEBUG, "SystemAuthCredentialsOptions = %p", v->SystemAuthCredentialsOptions);
+                        APP_LOG(Log::LogLevel::DEBUG, "ExternalType                 = %d", v->ExternalType);
                     }
                     case EOS_AUTH_CREDENTIALS_API_002:
                     {
@@ -99,9 +99,9 @@ void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, 
                     case EOS_AUTH_CREDENTIALS_API_001:
                     {
                         auto* v = reinterpret_cast<const EOS_Auth_Credentials001*>(Options->Credentials);
-                        LOG(Log::LogLevel::DEBUG, "Id                           = %s", v->Id);
-                        LOG(Log::LogLevel::DEBUG, "Token                        = %s", v->Token);
-                        LOG(Log::LogLevel::DEBUG, "Type                         = %u", v->Type);
+                        APP_LOG(Log::LogLevel::DEBUG, "Id                           = %s", v->Id);
+                        APP_LOG(Log::LogLevel::DEBUG, "Token                        = %s", v->Token);
+                        APP_LOG(Log::LogLevel::DEBUG, "Type                         = %u", v->Type);
                     }
                 }
             }
@@ -333,7 +333,7 @@ EOS_EResult EOSSDK_Auth::CopyUserAuthToken(const EOS_Auth_CopyUserAuthTokenOptio
         return EOS_EResult::EOS_Success;
     }
     
-    LOG(Log::LogLevel::DEBUG, "Accountid not found: %p %s", LocalUserId, (LocalUserId == nullptr ? "" : LocalUserId->to_string().c_str()));
+    APP_LOG(Log::LogLevel::DEBUG, "Accountid not found: %p %s", LocalUserId, (LocalUserId == nullptr ? "" : LocalUserId->to_string().c_str()));
     return EOS_EResult::EOS_NotFound;
 }
 

@@ -96,7 +96,7 @@ void EOSSDK_UserInfo::QueryUserInfo(const EOS_UserInfo_QueryUserInfoOptions* Opt
     if (CompletionDelegate == nullptr)
         return;
 
-    LOG(Log::LogLevel::DEBUG, "Query infos of %s", Options->TargetUserId->to_string().c_str());
+    APP_LOG(Log::LogLevel::DEBUG, "Query infos of %s", Options->TargetUserId->to_string().c_str());
 
     pFrameResult_t res(new FrameResult);
     EOS_UserInfo_QueryUserInfoCallbackInfo& quici = res->CreateCallback<EOS_UserInfo_QueryUserInfoCallbackInfo>((CallbackFunc)CompletionDelegate);
@@ -163,7 +163,7 @@ void EOSSDK_UserInfo::QueryUserInfoByDisplayName(const EOS_UserInfo_QueryUserInf
     if (CompletionDelegate == nullptr)
         return;
 
-    LOG(Log::LogLevel::DEBUG, "Query infos of %s", Options->DisplayName);
+    APP_LOG(Log::LogLevel::DEBUG, "Query infos of %s", Options->DisplayName);
 
     pFrameResult_t res(new FrameResult);
     EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo& quibdnci = res->CreateCallback<EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo>((CallbackFunc)CompletionDelegate);
@@ -235,7 +235,7 @@ EOS_EResult EOSSDK_UserInfo::CopyUserInfo(const EOS_UserInfo_CopyUserInfoOptions
         return EOS_EResult::EOS_InvalidParameters;
     }
 
-    LOG(Log::LogLevel::DEBUG, "Copy infos of %s", Options->TargetUserId->to_string().c_str());
+    APP_LOG(Log::LogLevel::DEBUG, "Copy infos of %s", Options->TargetUserId->to_string().c_str());
 
     UserInfo_Info_pb* userinfo = get_userinfo(Options->TargetUserId);
 

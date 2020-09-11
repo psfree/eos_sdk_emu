@@ -24,10 +24,9 @@
 namespace sdk
 {
 
-constexpr decltype(EOSSDK_PlayerDataStorage::remote_folder) EOSSDK_PlayerDataStorage::remote_folder;
+decltype(EOSSDK_PlayerDataStorage::remote_directory) EOSSDK_PlayerDataStorage::remote_directory("remote");
 
-EOSSDK_PlayerDataStorage::EOSSDK_PlayerDataStorage():
-    _game_save_folder(Settings::Inst().savepath)
+EOSSDK_PlayerDataStorage::EOSSDK_PlayerDataStorage()
 {
     GetCB_Manager().register_callbacks(this);
     GetCB_Manager().register_frame(this);
@@ -41,7 +40,7 @@ EOSSDK_PlayerDataStorage::~EOSSDK_PlayerDataStorage()
 
 bool EOSSDK_PlayerDataStorage::get_metadata(std::string const& filename)
 {
-    std::string file_path(std::move(build_path_string(remote_folder, ".") + PATH_SEPARATOR + filename));
+    std::string file_path(FileManager::canonical_path(FileManager::join(remote_directory, FileManager::clean_path(filename))));
     std::ifstream in_file(file_path, std::ios::in | std::ios::binary);
     if (in_file)
     {
@@ -65,27 +64,6 @@ bool EOSSDK_PlayerDataStorage::get_metadata(std::string const& filename)
     {// Couldn't open the file, remove it from known files
         _files_cache.erase(it);
     }
-
-    return false;
-}
-
-std::string EOSSDK_PlayerDataStorage::build_path_string(std::string const& base_folder, std::string file)
-{
-    std::string path_str(_game_save_folder);
-    path_str += PATH_SEPARATOR;
-    path_str += base_folder;
-    path_str += PATH_SEPARATOR;
-    path_str += clean_path(file);
-
-    return path_str;
-}
-
-bool EOSSDK_PlayerDataStorage::file_exists(std::string const& base_folder, std::string const& file)
-{
-    std::string file_path = std::move(build_path_string(base_folder, file));
-    std::ifstream in_file(file_path);
-    if (in_file)
-        return true;
 
     return false;
 }
@@ -126,7 +104,7 @@ void EOSSDK_PlayerDataStorage::QueryFile(const EOS_PlayerDataStorage_QueryFileOp
     }
     else
     {
-        std::vector<std::string> files(std::move(list_files(build_path_string(remote_folder, "."), true)));
+        std::vector<std::string> files(std::move(FileManager::list_files(remote_directory, true)));
 
         auto it = std::find(files.begin(), files.end(), std::string(QueryFileOptions->Filename));
 
@@ -180,7 +158,7 @@ void EOSSDK_PlayerDataStorage::QueryFileList(const EOS_PlayerDataStorage_QueryFi
     }
     else
     {
-        std::vector<std::string> files(std::move(list_files(build_path_string(remote_folder, "."), true)));
+        std::vector<std::string> files(std::move(FileManager::list_files(remote_directory, true)));
 
         for (auto& file_name : files)
         {
@@ -348,12 +326,12 @@ void EOSSDK_PlayerDataStorage::DuplicateFile(const EOS_PlayerDataStorage_Duplica
     }
     else
     {
-        std::string src_file(std::move(build_path_string(remote_folder, DuplicateOptions->SourceFilename)));
+        std::string src_file(std::move(FileManager::canonical_path(FileManager::join(remote_directory, FileManager::clean_path(DuplicateOptions->SourceFilename)))));
 
         std::ifstream in_file(src_file, std::ios::in | std::ios::binary);
         if (in_file)
         {
-            std::string dst_file(std::move(build_path_string(remote_folder, DuplicateOptions->DestinationFilename)));
+            std::string dst_file(std::move(FileManager::canonical_path(FileManager::join(remote_directory, FileManager::clean_path(DuplicateOptions->DestinationFilename)))));
             std::ofstream out_file(dst_file, std::ios::out | std::ios::binary | std::ios::trunc);
             if (out_file)
             {
@@ -415,15 +393,13 @@ void EOSSDK_PlayerDataStorage::DeleteFile(const EOS_PlayerDataStorage_DeleteFile
     }
     else
     {
-        std::string src_file(std::move(build_path_string(remote_folder, DeleteOptions->Filename)));
-
         auto it = _files_cache.find(DeleteOptions->Filename);
         if (it != _files_cache.end())
         {
             _files_cache.erase(it);
         }
 
-        if (delete_file(src_file))
+        if (FileManager::delete_file(FileManager::join(remote_directory, DeleteOptions->Filename)))
         {
             dfci.ResultCode = EOS_EResult::EOS_Success;
         }
@@ -451,7 +427,7 @@ void EOSSDK_PlayerDataStorage::DeleteFile(const EOS_PlayerDataStorage_DeleteFile
  */
 EOS_HPlayerDataStorageFileTransferRequest EOSSDK_PlayerDataStorage::ReadFile(const EOS_PlayerDataStorage_ReadFileOptions* ReadOptions, void* ClientData, const EOS_PlayerDataStorage_OnReadFileCompleteCallback CompletionCallback)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    APP_LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
     if (CompletionCallback == nullptr)
@@ -490,10 +466,10 @@ EOS_HPlayerDataStorageFileTransferRequest EOSSDK_PlayerDataStorage::ReadFile(con
         strncpy(str, ReadOptions->Filename, len);
         rfci.Filename = str;
 
-        std::string file_path = std::move(build_path_string(remote_folder, rfci.Filename));
-        if (file_exists(remote_folder, rfci.Filename))
+        std::string file_path(FileManager::canonical_path(FileManager::join(remote_directory, FileManager::clean_path(rfci.Filename))));
+        if (FileManager::is_file(FileManager::join(remote_directory, FileManager::clean_path(rfci.Filename))))
         {
-            LOG(Log::LogLevel::INFO, "Start Reading file: %s", file_path.c_str());
+            APP_LOG(Log::LogLevel::INFO, "Start Reading file: %s", file_path.c_str());
 
             EOSSDK_PlayerDataStorageFileTransferRequest*& res_obj = _transferts[res];
             res_obj = new EOSSDK_PlayerDataStorageFileTransferRequest;
@@ -503,7 +479,7 @@ EOS_HPlayerDataStorageFileTransferRequest EOSSDK_PlayerDataStorage::ReadFile(con
         }
         else
         {
-            LOG(Log::LogLevel::INFO, "File not found: %s", file_path.c_str());
+            APP_LOG(Log::LogLevel::INFO, "File not found: %s", file_path.c_str());
             rfci.ResultCode = EOS_EResult::EOS_NotFound;
 
             res->done = true;
@@ -528,7 +504,7 @@ EOS_HPlayerDataStorageFileTransferRequest EOSSDK_PlayerDataStorage::ReadFile(con
  */
 EOS_HPlayerDataStorageFileTransferRequest EOSSDK_PlayerDataStorage::WriteFile(const EOS_PlayerDataStorage_WriteFileOptions* WriteOptions, void* ClientData, const EOS_PlayerDataStorage_OnWriteFileCompleteCallback CompletionCallback)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    APP_LOG(Log::LogLevel::TRACE, "");
     GLOBAL_LOCK();
 
     if (CompletionCallback == nullptr)
@@ -568,7 +544,7 @@ EOS_HPlayerDataStorageFileTransferRequest EOSSDK_PlayerDataStorage::WriteFile(co
         res_obj = new EOSSDK_PlayerDataStorageFileTransferRequest;
         res_obj->set_write_transfert(WriteOptions);
 
-        LOG(Log::LogLevel::INFO, "Start Writing file: %s", res_obj->_file_path.c_str());
+        APP_LOG(Log::LogLevel::INFO, "Start Writing file: %s", res_obj->_file_name.c_str());
 
         func_result = reinterpret_cast<EOS_HPlayerDataStorageFileTransferRequest>(res_obj);
     }
@@ -724,8 +700,7 @@ bool EOSSDK_PlayerDataStorage::RunCallbacks(pFrameResult_t res)
                     {
                         transfert._file_buffer.resize(offset + buff_len);
                         transfert._done = true;
-                        create_folder(get_path_folder(transfert._file_path));
-                        std::ofstream out_file(transfert._file_path, std::ios::out | std::ios::binary | std::ios::trunc);
+                        std::ofstream out_file(FileManager::open_write(FileManager::join(remote_directory, FileManager::clean_path(transfert._file_name)), std::ios::binary | std::ios::trunc));
                         if (out_file)
                         {
                             out_file.write((const char*)transfert._file_buffer.data(), transfert._file_buffer.size());
@@ -736,7 +711,7 @@ bool EOSSDK_PlayerDataStorage::RunCallbacks(pFrameResult_t res)
                             }
                             else
                             {
-                                delete_file(transfert._file_path);
+                                FileManager::delete_file(FileManager::join(remote_directory, transfert._file_name));
                                 callback.ResultCode = EOS_EResult::EOS_UnexpectedError;
                             }
                         }

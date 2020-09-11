@@ -95,7 +95,7 @@ EOS_EResult EOSSDK_P2P::SendPacket(const EOS_P2P_SendPacketOptions* Options)
     {
         case p2p_state_t::status_e::requesting:
         {
-            LOG(Log::LogLevel::INFO, "Implicit P2P acceptation on send");
+            APP_LOG(Log::LogLevel::INFO, "Implicit P2P acceptation on send");
             // If we have been requested to connect, then its an implicit acceptation
             set_p2p_state_connected(Options->RemoteUserId, p2p_state);
         }
@@ -368,7 +368,7 @@ EOS_EResult EOSSDK_P2P::AcceptConnection(const EOS_P2P_AcceptConnectionOptions* 
 EOS_EResult EOSSDK_P2P::CloseConnection(const EOS_P2P_CloseConnectionOptions* Options)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::DEBUG, "TODO");
+    APP_LOG(Log::LogLevel::DEBUG, "TODO");
     GLOBAL_LOCK();
     
     if (Options == nullptr || Options->RemoteUserId == nullptr)
@@ -461,7 +461,7 @@ EOS_EResult EOSSDK_P2P::CloseConnections(const EOS_P2P_CloseConnectionsOptions* 
 void EOSSDK_P2P::QueryNATType(const EOS_P2P_QueryNATTypeOptions* Options, void* ClientData, const EOS_P2P_OnQueryNATTypeCompleteCallback NATTypeQueriedHandler)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::DEBUG, "TODO");
+    APP_LOG(Log::LogLevel::DEBUG, "TODO");
     GLOBAL_LOCK();
 
     if (NATTypeQueriedHandler == nullptr)
@@ -498,7 +498,7 @@ void EOSSDK_P2P::QueryNATType(const EOS_P2P_QueryNATTypeOptions* Options, void* 
 EOS_EResult EOSSDK_P2P::GetNATType(const EOS_P2P_GetNATTypeOptions* Options, EOS_ENATType* OutNATType)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::DEBUG, "TODO");
+    APP_LOG(Log::LogLevel::DEBUG, "TODO");
     GLOBAL_LOCK();
 
     *OutNATType = EOS_ENATType::EOS_NAT_Moderate;
@@ -800,7 +800,7 @@ bool EOSSDK_P2P::on_p2p_data(Network_Message_pb const& msg, P2P_Data_Message_pb 
     {
         case p2p_state_t::status_e::connecting:
         {
-            LOG(Log::LogLevel::INFO, "Implicit P2P acceptation on receive");
+            APP_LOG(Log::LogLevel::INFO, "Implicit P2P acceptation on receive");
             set_p2p_state_connected(remote_id, p2p_state);
         }
 
@@ -930,7 +930,7 @@ bool EOSSDK_P2P::RunNetwork(Network_Message_pb const& msg)
                 case P2P_Message_pb::MessageCase::kDataMessage    : return on_p2p_data(msg, p2p.data_message());
                 case P2P_Message_pb::MessageCase::kDataAcknowledge: return on_p2p_data_ack(msg, p2p.data_acknowledge());
                 case P2P_Message_pb::MessageCase::kConnectionClose: return on_p2p_connection_close(msg, p2p.connection_close());
-                default: LOG(Log::LogLevel::WARN, "Unhandled network message %d", p2p.message_case());
+                default: APP_LOG(Log::LogLevel::WARN, "Unhandled network message %d", p2p.message_case());
             }
         }
     }

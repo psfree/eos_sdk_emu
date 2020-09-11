@@ -151,7 +151,7 @@ void Callback_Manager::run_frames()
         frame->CBRunFrame();
         //if (_max_tick_budget.count() && (std::chrono::steady_clock::now() - _frame_start_time) > _max_tick_budget)
         //{
-        //    LOG(Log::LogLevel::WARN, "Exiting because of budget");
+        //    APP_LOG(Log::LogLevel::WARN, "Exiting because of budget");
         //    return;
         //}
     }
@@ -176,7 +176,7 @@ void Callback_Manager::run_callbacks()
             {
                 if (res->done || frame->RunCallbacks(res))
                 {
-                    LOG(Log::LogLevel::DEBUG, "Callback ready: %s", get_callback_name(res->ICallback()).c_str());
+                    APP_LOG(Log::LogLevel::DEBUG, "Callback ready: %s", get_callback_name(res->ICallback()).c_str());
                     if (res->GetFunc() != nullptr)
                         res->GetFunc()(res->GetFuncParam());
 
@@ -191,7 +191,7 @@ void Callback_Manager::run_callbacks()
         }
         //if (_max_tick_budget.count() && (std::chrono::steady_clock::now() - _frame_start_time) > _max_tick_budget)
         //{
-        //    LOG(Log::LogLevel::WARN, "Exiting because of budget");
+        //    APP_LOG(Log::LogLevel::WARN, "Exiting because of budget");
         //    return;
         //}
     }

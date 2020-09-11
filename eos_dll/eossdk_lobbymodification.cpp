@@ -54,7 +54,7 @@ EOS_EResult EOSSDK_LobbyModification::SetPermissionLevel(const EOS_LobbyModifica
     if (Options == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
-    _infos.set_permission_level(get_enum_value(Options->PermissionLevel));
+    _infos.set_permission_level(utils::get_enum_value(Options->PermissionLevel));
 
     _lobby_modified = true;
     return EOS_EResult::EOS_Success;
@@ -113,7 +113,7 @@ EOS_EResult EOSSDK_LobbyModification::AddAttribute(const EOS_LobbyModification_A
         return EOS_EResult::EOS_InvalidParameters;
 
     auto& attribute = (*_infos.mutable_attributes())[Options->Attribute->Key];
-    attribute.set_visibility_type(get_enum_value(Options->Visibility));
+    attribute.set_visibility_type(utils::get_enum_value(Options->Visibility));
     
     switch (Options->Attribute->ValueType)
     {
@@ -186,7 +186,7 @@ EOS_EResult EOSSDK_LobbyModification::AddMemberAttribute(const EOS_LobbyModifica
 
     auto& attribute = (*member_attributes.mutable_attributes())[Options->Attribute->Key];
         
-    attribute.set_visibility_type(get_enum_value(Options->Visibility));
+    attribute.set_visibility_type(utils::get_enum_value(Options->Visibility));
     
     switch (Options->Attribute->ValueType)
     {

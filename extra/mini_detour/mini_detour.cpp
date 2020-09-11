@@ -477,54 +477,42 @@ bool read_mod_reg_rm_opcode(uint8_t** ppCode, bool ignore_displacement)
     {
         case register_addressing_mode      : *ppCode += s_opcodes[*pCode].base_size; break; // register addressing mode [opcode] [R/M] [XX]
         case four_bytes_signed_displacement:
-            //if (ignore_displacement)
+        {
+            switch (pCode[1] & rm_mask)
             {
-                LOG(Log::LogLevel::DEBUG, "Ignored four bytes signed displacement");
-                switch (pCode[1] & rm_mask)
-                {
-                    case sib_with_no_displacement: *ppCode += s_opcodes[*pCode].base_size + 5; break; // address mode byte + 4 bytes displacement
-                    default: *ppCode += s_opcodes[*pCode].base_size + 4; break; // 4 bytes displacement
-                }
+                case sib_with_no_displacement: *ppCode += s_opcodes[*pCode].base_size + 5; break; // address mode byte + 4 bytes displacement
+                default: *ppCode += s_opcodes[*pCode].base_size + 4; break; // 4 bytes displacement
             }
-            //else
-            //{
-            //    LOG(Log::LogLevel::DEBUG, "Failed on four bytes signed displacement");
-            //    return false; // There is a relative displacement, can't move this opcode
-            //}
-            break;
+        }
+        break;
 
         case one_byte_signed_displacement:
-            //if (ignore_displacement)
+        {
+            switch (pCode[1] & rm_mask)
             {
-                LOG(Log::LogLevel::DEBUG, "Ignored one byte signed displacement");
-                switch (pCode[1] & rm_mask)
-                {
-                    case sib_with_no_displacement: *ppCode += s_opcodes[*pCode].base_size + 2; break; // address mode byte + 1 byte displacement
-                    default: *ppCode += s_opcodes[*pCode].base_size + 1; break; // 1 byte displacement
-                }
+                case sib_with_no_displacement: *ppCode += s_opcodes[*pCode].base_size + 2; break; // address mode byte + 1 byte displacement
+                default: *ppCode += s_opcodes[*pCode].base_size + 1; break; // 1 byte displacement
             }
-            //else
-            //{
-            //    LOG(Log::LogLevel::DEBUG, "Failed on one byte signed displacement");
-            //    return false; // There is a displacement, can't move this opcode
-            //}
-            break;
+        }
+        break;
 
         default:
             switch (pCode[1] & rm_mask)
             {
                 case displacement_only_addressing:
-                    //if (ignore_displacement)
+                {
+                    if (ignore_displacement)
                     {
-                        LOG(Log::LogLevel::DEBUG, "Ignored displacement only addressing");
+                        APP_LOG(Log::LogLevel::DEBUG, "Ignored displacement only addressing");
                         *ppCode += s_opcodes[*pCode].base_size + 4; break; // 4 bytes Displacement only addressing mode
                     }
-                    //else
-                    //{
-                    //    LOG(Log::LogLevel::DEBUG, "Failed on displacement only addressing");
-                    //    return false; // There is a displacement, can't move this opcode
-                    //}
-                    break;
+                    else
+                    {
+                        APP_LOG(Log::LogLevel::DEBUG, "Failed on displacement only addressing");
+                        return false; // There is a displacement, can't move this opcode
+                    }
+                }
+                break;
                     
                 case sib_with_no_displacement         : *ppCode += s_opcodes[*pCode].base_size + 1; break; // SIB with no displacement
                 case register_indirect_addressing_mode: // Register indirect addressing mode
@@ -554,13 +542,13 @@ int find_space_for_trampoline(uint8_t** func, int bytes_needed, bool ignore_jump
         }
         else // Not filler
         {
-            LOG(Log::LogLevel::DEBUG, "Opcode %s, base_size: %d, has_r_m: %d", s_opcodes[*pCode].desc, s_opcodes[*pCode].base_size, (int)s_opcodes[*pCode].has_r_m);
+            APP_LOG(Log::LogLevel::DEBUG, "Opcode %s, base_size: %d, has_r_m: %d", s_opcodes[*pCode].desc, s_opcodes[*pCode].base_size, (int)s_opcodes[*pCode].has_r_m);
 
             if (s_opcodes[*pCode].has_r_m)
             {
                 auto bkpCode = pCode;
                 search = read_mod_reg_rm_opcode(&pCode, ignore_jump);
-                LOG(Log::LogLevel::DEBUG, "Read %d bytes for opcode 0x%02X", pCode - bkpCode, (unsigned int)*bkpCode);
+                APP_LOG(Log::LogLevel::DEBUG, "Read %d bytes for opcode 0x%02X", pCode - bkpCode, (unsigned int)*bkpCode);
             }
             else if (s_opcodes[*pCode].base_size)
             {
@@ -637,8 +625,8 @@ int find_space_for_trampoline(uint8_t** func, int bytes_needed, bool ignore_jump
                     break;
 
                     default:
-                        LOG(Log::LogLevel::DEBUG, "Unknown opcode 0x%02X", (unsigned int)*pCode);
-                        LOG(Log::LogLevel::DEBUG, "Next opcodes: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
+                        APP_LOG(Log::LogLevel::DEBUG, "Unknown opcode 0x%02X", (unsigned int)*pCode);
+                        APP_LOG(Log::LogLevel::DEBUG, "Next opcodes: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
                             pCode[1], pCode[2], pCode[3], pCode[4], pCode[5], pCode[6], pCode[7], pCode[8]);
                         search = false;
                 }
@@ -872,13 +860,13 @@ int mini_detour::transaction_commit()
             // Write a  jump to the trampoline relative or absolute address
             if (trampoline->nOriginalBytes >= absolute_jmp_size)
             {
-                LOG(Log::LogLevel::DEBUG, "Attaching function %p with Absolute Jmp to %p", *ppOriginalFunc, trampoline->hookJump);
+                APP_LOG(Log::LogLevel::DEBUG, "Attaching function %p with Absolute Jmp to %p", *ppOriginalFunc, trampoline->hookJump);
                 // We've got place for an absolute jump
                 gen_absolute_jmp(reinterpret_cast<uint8_t*>(*ppOriginalFunc), trampoline->hookJump);
             }
             else
             {
-                LOG(Log::LogLevel::DEBUG, "Attaching function %p with Relative Jmp to %p", *ppOriginalFunc, trampoline->hookJump);
+                APP_LOG(Log::LogLevel::DEBUG, "Attaching function %p with Relative Jmp to %p", *ppOriginalFunc, trampoline->hookJump);
                 // The trampoline jump should be next to the original function for a relative jump
                 gen_relative_jmp(reinterpret_cast<uint8_t*>(*ppOriginalFunc), trampoline->hookJump);
             }
@@ -962,7 +950,7 @@ int hook_func(void** ppOriginalFunc, void* _hook, bool replace)
     // If we got less space than we need for a relative jump, the function is too short anyway.
     if (code_len < relative_jmp_size)
     {
-        LOG(Log::LogLevel::DEBUG, "Didn't find enought space for code rewrite: %d/%d", code_len, relative_jmp_size);
+        APP_LOG(Log::LogLevel::DEBUG, "Didn't find enought space for code rewrite: %d/%d", code_len, relative_jmp_size);
         return -ENOSPC;
     }
 
@@ -970,11 +958,11 @@ int hook_func(void** ppOriginalFunc, void* _hook, bool replace)
     trampoline_t* trampoline = get_free_trampoline(*ppOriginalFunc, code_len < absolute_jmp_size);
     if (trampoline == nullptr)
     {
-        LOG(Log::LogLevel::DEBUG, "Didn't find any free trampoline");
+        APP_LOG(Log::LogLevel::DEBUG, "Didn't find any free trampoline");
         return -EFAULT;
     }
 
-    LOG(Log::LogLevel::DEBUG, "Found space for trampoline: %d/%d/%d", code_len, relative_jmp_size, absolute_jmp_size);
+    APP_LOG(Log::LogLevel::DEBUG, "Found space for trampoline: %d/%d/%d", code_len, relative_jmp_size, absolute_jmp_size);
     uint8_t* pTrampolineCode = trampoline->trampolineBytes;
 
     void* trampoline_page = page_addr(trampoline, page_size());
@@ -992,7 +980,7 @@ int hook_func(void** ppOriginalFunc, void* _hook, bool replace)
         uint8_t* func_abs_addr = relative_addr_to_absolute(*(int32_t*)(pOriginalFunc + 1), pOriginalFunc);
         gen_absolute_jmp(pTrampolineCode, func_abs_addr);
 
-        LOG(Log::LogLevel::DEBUG, "Making absolute address(%p) from relative address(%p)", pOriginalFunc, func_abs_addr);
+        APP_LOG(Log::LogLevel::DEBUG, "Making absolute address(%p) from relative address(%p)", pOriginalFunc, func_abs_addr);
     }
     else
     {
@@ -1001,7 +989,7 @@ int hook_func(void** ppOriginalFunc, void* _hook, bool replace)
         // Create the absolute jmp to original
         gen_absolute_jmp(pTrampolineCode, pOriginalFunc + code_len);
 
-        LOG(Log::LogLevel::DEBUG, "Making absolute jump to address(%p)", pOriginalFunc + code_len);
+        APP_LOG(Log::LogLevel::DEBUG, "Making absolute jump to address(%p)", pOriginalFunc + code_len);
     }
 
     trampoline->originalAddr = pOriginalFunc;
@@ -1016,13 +1004,13 @@ int hook_func(void** ppOriginalFunc, void* _hook, bool replace)
 
 int mini_detour::detour_func(void** ppOriginalFunc, void* _hook)
 {
-    LOG(Log::LogLevel::DEBUG, "");
+    APP_LOG(Log::LogLevel::DEBUG, "");
     return hook_func(ppOriginalFunc, _hook, false);
 }
 
 int mini_detour::replace_func(void* pOriginalFunc, void* _hook)
 {
-    LOG(Log::LogLevel::DEBUG, "");
+    APP_LOG(Log::LogLevel::DEBUG, "");
     
     if (pOriginalFunc == nullptr || _hook == nullptr)
         return -EINVAL;
@@ -1034,11 +1022,11 @@ int mini_detour::replace_func(void* pOriginalFunc, void* _hook)
     // If we got less space than we need for a relative jump, the function is too short anyway.
     if (code_len < relative_jmp_size)
     {
-        LOG(Log::LogLevel::DEBUG, "Didn't find enought space for code rewrite: %d/%d", code_len, relative_jmp_size);
+        APP_LOG(Log::LogLevel::DEBUG, "Didn't find enought space for code rewrite: %d/%d", code_len, relative_jmp_size);
         return -ENOSPC;
     }
 
-    LOG(Log::LogLevel::DEBUG, "Found space for replace: %d/%d/%d", code_len, relative_jmp_size, absolute_jmp_size);
+    APP_LOG(Log::LogLevel::DEBUG, "Found space for replace: %d/%d/%d", code_len, relative_jmp_size, absolute_jmp_size);
 
     void* replace_page = page_addr(pOriginalFunc, page_size());
 

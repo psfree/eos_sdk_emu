@@ -79,7 +79,7 @@ void EOSSDK_Platform::Init(const EOS_Platform_Options* Options)
                     if (pf->CacheDirectory != nullptr)
                         _ticket_budget_in_milliseconds = pf->TickBudgetInMilliseconds;
 
-                    LOG(Log::LogLevel::DEBUG, "TickBudgetInMilliseconds = '%d'", _ticket_budget_in_milliseconds);
+                    APP_LOG(Log::LogLevel::DEBUG, "TickBudgetInMilliseconds = '%d'", _ticket_budget_in_milliseconds);
                 }                
                 case EOS_PLATFORM_OPTIONS_API_006:
                 {
@@ -87,7 +87,7 @@ void EOSSDK_Platform::Init(const EOS_Platform_Options* Options)
                     if (pf->CacheDirectory != nullptr)
                         _cache_directory = pf->CacheDirectory;
 
-                    LOG(Log::LogLevel::DEBUG, "CacheDirectory = '%s'", _cache_directory.c_str());
+                    APP_LOG(Log::LogLevel::DEBUG, "CacheDirectory = '%s'", _cache_directory.c_str());
                 }
                 case EOS_PLATFORM_OPTIONS_API_005:
                 {
@@ -106,11 +106,11 @@ void EOSSDK_Platform::Init(const EOS_Platform_Options* Options)
 
                     _flags = pf->Flags;
 
-                    LOG(Log::LogLevel::DEBUG, "EncryptionKey = '%s'", _encryption_key.c_str());
-                    LOG(Log::LogLevel::DEBUG, "OverrideCountryCode = '%s'", _override_country_code.c_str());
-                    LOG(Log::LogLevel::DEBUG, "OverrideLocaleCode = '%s'", _override_locale_code.c_str());
-                    LOG(Log::LogLevel::DEBUG, "DeploymentId = '%s'", _deployment_id.c_str());
-                    LOG(Log::LogLevel::DEBUG, "Flags = %llu", _flags);
+                    APP_LOG(Log::LogLevel::DEBUG, "EncryptionKey = '%s'", _encryption_key.c_str());
+                    APP_LOG(Log::LogLevel::DEBUG, "OverrideCountryCode = '%s'", _override_country_code.c_str());
+                    APP_LOG(Log::LogLevel::DEBUG, "OverrideLocaleCode = '%s'", _override_locale_code.c_str());
+                    APP_LOG(Log::LogLevel::DEBUG, "DeploymentId = '%s'", _deployment_id.c_str());
+                    APP_LOG(Log::LogLevel::DEBUG, "Flags = %llu", _flags);
                 }
                 case EOS_PLATFORM_OPTIONS_API_001:
                 {
@@ -131,16 +131,16 @@ void EOSSDK_Platform::Init(const EOS_Platform_Options* Options)
 
                     _is_server = pf->bIsServer;
 
-                    LOG(Log::LogLevel::DEBUG, "ProductId = '%s'", _product_id.c_str());
-                    LOG(Log::LogLevel::DEBUG, "SandboxId = '%s'", _sandbox_id.c_str());
-                    LOG(Log::LogLevel::DEBUG, "ClientId = '%s'", _client_id.c_str());
-                    LOG(Log::LogLevel::DEBUG, "ClientSecret = '%s'", _client_secret.c_str());
-                    LOG(Log::LogLevel::DEBUG, "ApiVersion = %u", pf->ApiVersion);
+                    APP_LOG(Log::LogLevel::DEBUG, "ProductId = '%s'", _product_id.c_str());
+                    APP_LOG(Log::LogLevel::DEBUG, "SandboxId = '%s'", _sandbox_id.c_str());
+                    APP_LOG(Log::LogLevel::DEBUG, "ClientId = '%s'", _client_id.c_str());
+                    APP_LOG(Log::LogLevel::DEBUG, "ClientSecret = '%s'", _client_secret.c_str());
+                    APP_LOG(Log::LogLevel::DEBUG, "ApiVersion = %u", pf->ApiVersion);
                 }
                 break;
 
                 default:
-                    LOG(Log::LogLevel::FATAL, "Unmanaged API version %d", Options->ApiVersion);
+                    APP_LOG(Log::LogLevel::FATAL, "Unmanaged API version %d", Options->ApiVersion);
                     abort();
             }
         }
@@ -428,10 +428,10 @@ EOS_EResult EOSSDK_Platform::GetActiveCountryCode(EOS_EpicAccountId LocalUserId,
     if (OutBuffer == nullptr || InOutBufferLength == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
-    if (*InOutBufferLength < (static_strlen("") + 1))
+    if (*InOutBufferLength < (utils::static_strlen("") + 1))
         return EOS_EResult::EOS_LimitExceeded;
 
-    strncpy(OutBuffer, "", static_strlen("") + 1);
+    strncpy(OutBuffer, "", utils::static_strlen("") + 1);
 
     return EOS_EResult::EOS_Success;
 }
@@ -463,10 +463,10 @@ EOS_EResult EOSSDK_Platform::GetActiveLocaleCode(EOS_EpicAccountId LocalUserId, 
     if (OutBuffer == nullptr || InOutBufferLength == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
-    if (*InOutBufferLength < (static_strlen("en") + 1))
+    if (*InOutBufferLength < (utils::static_strlen("en") + 1))
         return EOS_EResult::EOS_LimitExceeded;
 
-    strncpy(OutBuffer, "en", static_strlen("en") + 1);
+    strncpy(OutBuffer, "en", utils::static_strlen("en") + 1);
 
     return EOS_EResult::EOS_Success;
 }
@@ -559,7 +559,7 @@ EOS_EResult EOSSDK_Platform::SetOverrideCountryCode(const char* NewCountryCode)
     if (NewCountryCode == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
-    LOG(Log::LogLevel::DEBUG, "%s", NewCountryCode);
+    APP_LOG(Log::LogLevel::DEBUG, "%s", NewCountryCode);
 
     _override_country_code = NewCountryCode;
 
@@ -584,7 +584,7 @@ EOS_EResult EOSSDK_Platform::SetOverrideLocaleCode(const char* NewLocaleCode)
     if (NewLocaleCode == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
 
-    LOG(Log::LogLevel::DEBUG, "%s", NewLocaleCode);
+    APP_LOG(Log::LogLevel::DEBUG, "%s", NewLocaleCode);
 
     _override_locale_code = NewLocaleCode;
 

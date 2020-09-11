@@ -20,38 +20,41 @@
 #ifndef DISABLE_LOG
 
 #include "Log.h"
-#include <thread>
-#include <mutex>
 #include <fstream>
 #include <cstdarg>
-#include <Windows.h>
 
-void default_log_func(Log::LogLevel lv, const char* log_message);
+decltype(Log::_log_user_param) Log::_log_user_param;
+decltype(Log::_log_level)      Log::_log_level = Log::LogLevel::OFF;
+decltype(Log::_log_func)       Log::_log_func  = default_log_func;
 
-decltype(Log::_log_level) Log::_log_level = Log::LogLevel::OFF;
-decltype(Log::_log_func)  Log::_log_func = default_log_func;
-
-void default_log_func(Log::LogLevel lv, const char* log_message)
+void Log::default_log_func(void* user_param, Log::LogLevel lv, const char* log_message)
 {
-    static std::ofstream log_file;
-    static std::once_flag log_file_once;
+    static std::ofstream log_file("nemirtingassteamemu.log", std::ios::trunc | std::ios::out);
 
-    std::call_once(log_file_once, []()
+#if defined(__WINDOWS__)
+    if (IsDebuggerPresent())
     {
-        std::string exe_path;
-        char pgm_path[4096];
-        GetModuleFileNameA(nullptr, pgm_path, 4095);
+        OutputDebugString(log_message);
+    }
+    else
+    {
+        static bool console = false;
+        if (!console)
+        {
+            AllocConsole();
+            freopen("CONOUT$", "w", stdout);
+        }
 
-        exe_path = pgm_path;
-        exe_path = exe_path.substr(0, exe_path.rfind('\\') + 1);
-        log_file.open(exe_path + "wrapper.log", std::ios::trunc | std::ios::out);
-    });
+        fprintf(stdout, "%s", log_message);
+    }
+#endif
 
     log_file << log_message;
     log_file.flush();
+    fprintf(stderr, "%s", log_message);
 }
 
-bool _trace(const char* format, va_list argptr)
+bool Log::_trace(const char* format, va_list argptr)
 {
     std::string fmt = format;
     if (*fmt.rbegin() != '\n')
@@ -67,13 +70,13 @@ bool _trace(const char* format, va_list argptr)
     va_end(argptr);
     va_end(argptr2);
 
-    Log::get_log_func()(Log::get_loglevel(), buffer);
+    _log_func(_log_user_param, _log_level, buffer);
 
     delete[]buffer;
     return true;
 }
 
-void Log::L(LogLevel lv, const char* format, ...)
+void Log::Format(LogLevel lv, const char* format, ...)
 {
     if (lv >= _log_level && _log_level < LogLevel::MAX)
     {

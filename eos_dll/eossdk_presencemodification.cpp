@@ -59,7 +59,7 @@ EOS_EResult EOSSDK_PresenceModification::SetRawRichText(const EOS_PresenceModifi
 
     if (Options != nullptr && Options->RichText != nullptr)
     {
-        LOG(Log::LogLevel::DEBUG, "%s", Options->RichText);
+        APP_LOG(Log::LogLevel::DEBUG, "%s", Options->RichText);
         infos.set_richtext(Options->RichText);
         return EOS_EResult::EOS_Success;
     }
@@ -97,7 +97,7 @@ EOS_EResult EOSSDK_PresenceModification::SetData(const EOS_PresenceModification_
         auto &records = *infos.mutable_records();
         for (int i = 0; i < Options->RecordsCount; ++i)
         {
-            LOG(Log::LogLevel::DEBUG, "%s = %s", Options->Records[i].Key, Options->Records[i].Value);
+            APP_LOG(Log::LogLevel::DEBUG, "%s = %s", Options->Records[i].Key, Options->Records[i].Value);
             records[Options->Records[i].Key] = Options->Records[i].Value;
         }
         return EOS_EResult::EOS_Success;
