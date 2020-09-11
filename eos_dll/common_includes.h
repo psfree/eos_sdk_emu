@@ -89,6 +89,12 @@
 
 #include <utfcpp/utf8.h>
 
+// Workaround to use fifo_map in json
+// A workaround to use fifo_map as map, we are just ignoring the 'less' compare
+template<class K, class V, class dummy_compare, class A>
+using my_fifo_map = nlohmann::fifo_map<K, V, nlohmann::fifo_map_compare<K>, A>;
+using fifo_json = nlohmann::basic_json<my_fifo_map>;
+
 #include <thread>
 #include <mutex>
 #include <limits>
@@ -114,6 +120,8 @@
 #include <ipv4/udp_socket.h>
 
 #include <mini_detour/mini_detour.h>
+
+#include <file_manager.h>
 
 #include "md5.h"
 #include "os_funcs.h"

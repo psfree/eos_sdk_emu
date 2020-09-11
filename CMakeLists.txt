@@ -43,15 +43,6 @@ if(WIN32) # Setup some variables for Windows build
     message(FATAL_ERROR "Arch unknown")
   endif()
 
-  #file(
-  #  GLOB
-  #  overlay_pf_sources
-  #  overlay/Base_Hook.cpp
-  #  #overlay/windows/*
-  #  #extra/ImGui/impls/*.cpp
-  #  #extra/ImGui/impls/windows/*
-  #)
-
 elseif(APPLE)
   message(STATUS "CMake for APPLE is experimental")
   if(X64)
@@ -74,12 +65,6 @@ elseif(APPLE)
 
   set(EPIC_API libEOSSDK-Mac-Shipping)
 
-  #file(
-  #  GLOB
-  #  overlay_pf_sources
-  #  overlay/macosx/*
-  #)
-
 elseif(UNIX)
   if(X64)
     # Global flags for building steamapi (64bits)
@@ -97,13 +82,6 @@ elseif(UNIX)
     message(FATAL_ERROR "Arch unknown")
   endif()
   set(EPIC_API libEOSSDK-Linux-Shipping)
-
-  #file(
-  #  GLOB
-  #  overlay_pf_sources
-  #  overlay/linux/*
-  #  extra/ImGui/impls/linux/*
-  #)
 
 else()
   message(FATAL_ERROR "No CMake for other platforms")
@@ -128,25 +106,14 @@ option(DISABLE_LOG "Disable all logging. Will reduce emu size and will speed it 
 
 option(USE_ZSTD_COMPRESS "Use zstd to compress network messages" ON)
 
-#option(GLEW_USE_STATIC_LIBS "Use GLEW static libs" ON)
-#set(Glew_INCLUDE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/glew/glew-src/include/" CACHE PATH "GLEW include folder")
-
-#set(Curl_INCLUDE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/curl/curl-src/include/" CACHE PATH "cURL include folder")
-
-#set(ImGui_INCLUDE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/ImGui/" CACHE PATH "ImGui include folder")
-
-set(JSON_INCLUDE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/nlohmann/" CACHE PATH "Json include folder")
-
 set(ZSTD_INCLUDE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/zstd-src/lib/" CACHE PATH "zstd include folder")
-
-#set(GAMEPAD_INCLUDE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/gamepad/" CACHE PATH "Gamepad include folder")
 
 set(EOSSDK_INCLUDE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/eos_sdk/" CACHE PATH "Epic Online Service SDK include folder")
 
 set(Protobuf_BUILD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/extra/protobuf/${OUT_DIR}" CACHE PATH "Protobuf build directory")
 set(ZSTD_BUILD_FOLDER     "${CMAKE_CURRENT_SOURCE_DIR}/extra/zstd/${OUT_DIR}"     CACHE PATH "zstd build directory")
 
-set(CMAKE_INCLUDE_PATH "${ZSTD_INCLUDE_FOLDER};${JSON_INCLUDE_FOLDER};${EOSSDK_INCLUDE_FOLDER};${CMAKE_INCLUDE_PATH}" CACHE PATH "Where to find prebuilt includes")
+set(CMAKE_INCLUDE_PATH "${ZSTD_INCLUDE_FOLDER};${EOSSDK_INCLUDE_FOLDER};${CMAKE_INCLUDE_PATH}" CACHE PATH "Where to find prebuilt includes")
 set(CMAKE_PREFIX_PATH "${ZSTD_BUILD_FOLDER};${Protobuf_BUILD_FOLDER};${CMAKE_PREFIX_PATH}" CACHE PATH "Where to find prebuilt dependencies")
 
 include(FindProtobuf)
@@ -155,27 +122,6 @@ find_package(Protobuf REQUIRED)
 if(USE_ZSTD_COMPRESS)
   find_package(ZSTD REQUIRED)
 endif()
-
-#find_package(CURL REQUIRED)
-#
-#if(NOT APPLE)
-#  find_package(GLEW REQUIRED)
-#endif()
-
-#find_path(
-#  ImGui_INCLUDE
-#  imgui.h
-#)
-
-find_path(
-  JSON_INCLUDE
-  json.hpp
-)
-
-#find_path(
-#  GAMEPAD_INCLUDE
-#  gamepad.h
-#)
 
 find_path(
   EOSSDK_INCLUDE
@@ -199,6 +145,7 @@ file(
   GLOB
   emu_sources
   eos_dll/*.cpp
+  managers/*.cpp
 )
 
 if(WIN32)
@@ -208,16 +155,6 @@ if(WIN32)
     extra/detours/*.cpp
   )
 endif()
-
-#if(NOT APPLE)
-#  file(
-#    GLOB
-#    overlay_sources
-#    overlay/*.cpp
-#    extra/ImGui/*.cpp
-#    extra/ImGui/impls/*.cpp
-#  )
-#endif()
 
 file(
   GLOB
@@ -237,12 +174,6 @@ file(
   mini_detour_sources
   extra/mini_detour/*.cpp
 )
-
-#file(
-#  GLOB
-#  gamepad_sources
-#  extra/gamepad/gamepad.cpp
-#)
 
 ########################################
 ## 
@@ -304,17 +235,17 @@ target_link_libraries(
 target_include_directories(
   ${EPIC_API}
   PRIVATE
-  ${JSON_INCLUDE}
   ${EOSSDK_INCLUDE}
-  ${GAMEPAD_INCLUDE}
-  ${GLEW_INCLUDE_DIRS}
-  ${CURL_INCLUDE_DIRS}
-  ${ImGui_INCLUDE}
   ${ZSTD_INCLUDE_DIRS}
   
+  eos_dll/
+  
+  managers/
+  
   extra/
-  extra/utils/include
-  extra/Socket/include
+  extra/nlohmann/
+  extra/utils/include/
+  extra/Socket/include/
 )
 
 target_compile_options(
@@ -336,8 +267,6 @@ target_compile_definitions(
   __EXPORT_SYMBOLS__
   EPIC_SHARED_LIBRARY
   EPIC_EXPORT
-  #GLEW_STATIC
-  #GLEW_NO_GLU
   #CURL_STATICLIB
 
   $<$<BOOL:${USE_ZSTD_COMPRESS}>:NETWORK_COMPRESS>

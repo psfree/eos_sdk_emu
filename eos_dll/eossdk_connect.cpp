@@ -35,7 +35,7 @@ EOSSDK_Connect::EOSSDK_Connect()
     myself.infos.set_userid(Settings::Inst().userid->to_string());
     myself.infos.set_displayname(Settings::Inst().username);
 
-    LOG(Log::LogLevel::DEBUG, "Userid: %s, Productid: %s", Settings::Inst().userid->to_string().c_str(), userProductId->to_string().c_str());
+    APP_LOG(Log::LogLevel::DEBUG, "Userid: %s, Productid: %s", Settings::Inst().userid->to_string().c_str(), userProductId->to_string().c_str());
     GetNetwork().set_default_channel(userProductId->to_string(), 0);
     GetNetwork().advertise_peer_id(userProductId->to_string());
 
@@ -822,7 +822,7 @@ bool EOSSDK_Connect::RunNetwork(Network_Message_pb const& msg)
             {
                 case Connect_Message_pb::MessageCase::kRequest  : return on_connect_infos_request(msg, conn.request());
                 case Connect_Message_pb::MessageCase::kInfos    : return on_connect_infos(msg, conn.infos());
-                default: LOG(Log::LogLevel::WARN, "Unhandled network message %d", conn.message_case());
+                default: APP_LOG(Log::LogLevel::WARN, "Unhandled network message %d", conn.message_case());
             }
         }
         break;

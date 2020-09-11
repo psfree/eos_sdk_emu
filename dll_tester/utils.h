@@ -159,12 +159,12 @@ bool load_json(std::string const& file_path, nlohmann::basic_json<ObjectType, Ar
         }
         catch (std::exception & e)
         {
-            LOG(Log::LogLevel::ERR, "Error while parsing JSON %s: %s", file_path.c_str(), e.what());
+            EPIC_LOG(Log::LogLevel::ERR, "Error while parsing JSON %s: %s", file_path.c_str(), e.what());
         }
     }
     else
     {
-        LOG(Log::LogLevel::WARN, "File not found: %s", file_path.c_str());
+        EPIC_LOG(Log::LogLevel::WARN, "File not found: %s", file_path.c_str());
     }
     return false;
 }
@@ -180,7 +180,7 @@ bool save_json(std::string const& file_path, nlohmann::basic_json<ObjectType, Ar
     std::ofstream file(file_path, std::ios::trunc | std::ios::out);
     if (!file)
     {
-        LOG(Log::LogLevel::ERR, "Failed to save: %s", file_path.c_str());
+        EPIC_LOG(Log::LogLevel::ERR, "Failed to save: %s", file_path.c_str());
         return false;
     }
     file << std::setw(2) << json;

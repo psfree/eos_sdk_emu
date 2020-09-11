@@ -26,7 +26,7 @@ T get_setting(nlohmann::json& settings, std::string const& key, T default_val)
     T val;
     try
     {
-        val = settings[key].get <T>();
+        val = settings[key].get<T>();
     }
     catch (...)
     {
@@ -46,62 +46,54 @@ Settings::~Settings()
 
 }
 
+static bool load_json(std::string const& file_path, nlohmann::json& json)
+{
+    std::ifstream file(file_path);
+    if (file)
+    {
+        file.seekg(0, std::ios::end);
+        size_t size = static_cast<size_t>(file.tellg());
+        file.seekg(0, std::ios::beg);
+
+        std::string buffer(size, '\0');
+
+        file.read(&buffer[0], size);
+        file.close();
+
+        try
+        {
+            json = std::move(nlohmann::json::parse(buffer));
+
+            return true;
+        }
+        catch (std::exception& e)
+        {
+            APP_LOG(Log::LogLevel::ERR, "Error while parsing JSON %s: %s", file_path.c_str(), e.what());
+        }
+    }
+    else
+    {
+        APP_LOG(Log::LogLevel::WARN, "File not found: %s", file_path.c_str());
+    }
+    return false;
+}
+
+static bool save_json(std::string const& file_path, nlohmann::json const& json)
+{
+    std::ofstream file(file_path, std::ios::trunc | std::ios::out);
+    if (!file)
+    {
+        APP_LOG(Log::LogLevel::ERR, "Failed to save: %s", file_path.c_str());
+        return false;
+    }
+    file << std::setw(2) << json;
+    return true;
+}
+
 Settings& Settings::Inst()
 {
     static Settings inst;
     return inst;
-}
-
-void Settings::build_save_path()
-{
-    try
-    {// Emulator Savepath
-        savepath = settings_savepath;
-
-        bool clean_savepath = true;
-        while (clean_savepath)
-        {
-            clean_savepath = false;
-            std::string tmp = trim(savepath);
-            if (tmp != savepath)
-            {
-                clean_savepath = true;
-            }
-            if (!savepath.empty())
-            {
-                while (*savepath.rbegin() == '/' || *savepath.rbegin() == '\\')
-                {
-                    // Remove trailing '/' or '\'
-                    savepath.pop_back();
-                    clean_savepath = true;
-                }
-            }
-        }
-
-        settings_savepath = savepath;
-        if (savepath == "appdata")
-        {
-            savepath = std::move(get_userdata_path());
-        }
-        else
-        {
-            if (savepath.empty())
-                savepath = ".";
-            savepath = std::move(canonical_path(savepath));
-        }
-    }
-    catch (...)
-    {
-        savepath = std::move(get_userdata_path());
-        settings_savepath = "appdata";
-    }
-
-    savepath += PATH_SEPARATOR;
-    savepath += emu_savepath;
-    savepath += PATH_SEPARATOR;
-    savepath += userid->to_string();
-    savepath += PATH_SEPARATOR;
-    savepath += appid;
 }
 
 void Settings::load_settings()
@@ -111,7 +103,7 @@ void Settings::load_settings()
     GLOBAL_LOCK();
 
     nlohmann::json settings;
-    config_path = std::move(get_executable_path() + settings_file_name);
+    config_path = std::move(FileManager::dirname(get_executable_path()) + settings_file_name);
 
     if (!load_json(config_path, settings))
     {
@@ -131,22 +123,22 @@ void Settings::load_settings()
         casestr("OFF")  :
         default         : llvl = Log::LogLevel::OFF;
     }
-    LOG(Log::LogLevel::INFO, "Setting log level to: %s", Log::loglevel_to_str(llvl));
+    APP_LOG(Log::LogLevel::INFO, "Setting log level to: %s", Log::loglevel_to_str(llvl));
     Log::set_loglevel(llvl);
 #endif
 
-    LOG(Log::LogLevel::INFO, "Configuration Path: %s", config_path.c_str());
+    APP_LOG(Log::LogLevel::INFO, "Configuration Path: %s", config_path.c_str());
     if (default_config)
     {
-        LOG(Log::LogLevel::WARN, "Error while loading settings, building a default one");
+        APP_LOG(Log::LogLevel::WARN, "Error while loading settings, building a default one");
     }
 
-    LOG(Log::LogLevel::INFO, "Emulator version %s", _EMU_VERSION_);
+    APP_LOG(Log::LogLevel::INFO, "Emulator version %s", _EMU_VERSION_);
 
     username = get_setting(settings, "username", std::string(u8"DefaultName"));
     if (username.empty() || !utf8::is_valid(username.begin(), username.end()))
     {
-        LOG(Log::LogLevel::WARN, "Invalid username, resetting to default name.");
+        APP_LOG(Log::LogLevel::WARN, "Invalid username, resetting to default name.");
         username = u8"DefaultName";
     }
 
@@ -157,12 +149,12 @@ void Settings::load_settings()
     {
         if (username == "DefaultName")
         {
-            LOG(Log::LogLevel::INFO, "Username == DefaultName, generating random epic id");
+            APP_LOG(Log::LogLevel::INFO, "Username == DefaultName, generating random epic id");
             userid = GetEpicUserId(generate_epic_id_user());
         }
         else
         {
-            LOG(Log::LogLevel::INFO, "Username != DefaultName, generating random epic id based on your username");
+            APP_LOG(Log::LogLevel::INFO, "Username != DefaultName, generating random epic id based on your username");
             userid = GetEpicUserId(generate_epic_id_user_from_name(username));
         }
     }
@@ -173,27 +165,40 @@ void Settings::load_settings()
     unlock_dlcs               = get_setting(settings, "unlock_dlcs", bool(true));
     enable_overlay            = get_setting(settings, "enable_overlay", bool(true));
     disable_online_networking = get_setting(settings, "disable_online_networking", bool(false));
+    savepath                  = get_setting(settings, "savepath", std::string("appdata"));
 
     std::string productuserid = get_setting(settings, "productuserid", generate_account_id_from_name(appid + userid->to_string()));
     this->productuserid = GetProductUserId(productuserid);
 
-    try
+    std::string settings_dir;
+    if (savepath == "appdata")
     {
-        settings_savepath = settings["savepath"].get_ref<std::string&>();
+        settings_dir = get_userdata_path();
     }
-    catch (...)
+    else if (FileManager::is_absolute(savepath))
     {
-        settings_savepath = "appdata";
+        settings_dir = savepath;
     }
+    else
+    {
+        settings_dir = FileManager::join(FileManager::dirname(get_executable_path()), savepath);
+    }
+
+    FileManager::set_root_dir(settings_dir);
+    settings_dir = FileManager::root_dir();
+    settings_dir = FileManager::join(settings_dir, emu_savepath, userid->to_string());
+
+    //load_avatar(settings_dir);
+
+    FileManager::set_root_dir(FileManager::join(settings_dir, appid));
+    
     save_settings();
 }
 
 void Settings::save_settings()
 {
     nlohmann::json settings;
-    LOG(Log::LogLevel::INFO, "Saving emu settings: %s", config_path.c_str());
-
-    build_save_path();
+    APP_LOG(Log::LogLevel::INFO, "Saving emu settings: %s", config_path.c_str());
 
     settings["appid"]                     = appid;
     settings["username"]                  = username;
@@ -207,9 +212,7 @@ void Settings::save_settings()
 #ifndef DISABLE_LOG
     settings["log_level"]                 = Log::loglevel_to_str();
 #endif
-    settings["savepath"]                  = settings_savepath;
-
-    create_folder(savepath);
+    settings["savepath"]                  = savepath;
 
     save_json(config_path, settings);
 }

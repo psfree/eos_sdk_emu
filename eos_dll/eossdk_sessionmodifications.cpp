@@ -198,22 +198,22 @@ EOS_EResult EOSSDK_SessionModification::AddAttribute(const EOS_SessionModificati
     switch (Options->SessionAttribute->ValueType)
     {
         case EOS_ESessionAttributeType::EOS_AT_BOOLEAN: 
-            LOG(Log::LogLevel::DEBUG, "%s = %s", Options->SessionAttribute->Key, (Options->SessionAttribute->Value.AsBool == EOS_TRUE ? "EOS_TRUE" : "EOS_FALSE"));
+            APP_LOG(Log::LogLevel::DEBUG, "%s = %s", Options->SessionAttribute->Key, (Options->SessionAttribute->Value.AsBool == EOS_TRUE ? "EOS_TRUE" : "EOS_FALSE"));
             attribute.mutable_value()->set_b(Options->SessionAttribute->Value.AsBool);
             break;
 
         case EOS_ESessionAttributeType::EOS_AT_DOUBLE :
-            LOG(Log::LogLevel::DEBUG, "%s = %f", Options->SessionAttribute->Key, Options->SessionAttribute->Value.AsDouble);
+            APP_LOG(Log::LogLevel::DEBUG, "%s = %f", Options->SessionAttribute->Key, Options->SessionAttribute->Value.AsDouble);
             attribute.mutable_value()->set_d(Options->SessionAttribute->Value.AsDouble);
             break;
 
         case EOS_ESessionAttributeType::EOS_AT_INT64  :
-            LOG(Log::LogLevel::DEBUG, "%s = %lld", Options->SessionAttribute->Key, Options->SessionAttribute->Value.AsInt64);
+            APP_LOG(Log::LogLevel::DEBUG, "%s = %lld", Options->SessionAttribute->Key, Options->SessionAttribute->Value.AsInt64);
             attribute.mutable_value()->set_i(Options->SessionAttribute->Value.AsInt64);
             break;
 
         case EOS_ESessionAttributeType::EOS_AT_STRING :
-            LOG(Log::LogLevel::DEBUG, "%s = %s", Options->SessionAttribute->Key, Options->SessionAttribute->Value.AsUtf8);
+            APP_LOG(Log::LogLevel::DEBUG, "%s = %s", Options->SessionAttribute->Key, Options->SessionAttribute->Value.AsUtf8);
             attribute.mutable_value()->set_s(Options->SessionAttribute->Value.AsUtf8);
             break;
 
@@ -245,7 +245,7 @@ EOS_EResult EOSSDK_SessionModification::RemoveAttribute(const EOS_SessionModific
     auto it = attributes.find(Options->Key);
     if (it != attributes.end())
     {
-        LOG(Log::LogLevel::DEBUG, "%s", Options->Key);
+        APP_LOG(Log::LogLevel::DEBUG, "%s", Options->Key);
         attributes.erase(it);
     }
 

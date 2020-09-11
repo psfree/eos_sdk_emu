@@ -45,10 +45,9 @@ void EOSSDK_PlayerDataStorageFileTransferRequest::set_read_transfert(const EOS_P
     _progress_callback = ReadOptions->FileTransferProgressCallback;
     _chunk_size = ReadOptions->ReadChunkLengthBytes;
     _file_name = ReadOptions->Filename;
-    _file_path = std::move(GetEOS_PlayerDataStorage().build_path_string(EOSSDK_PlayerDataStorage::remote_folder, _file_name));
 
     _file_buffer.resize(_chunk_size);
-    _input_file.open(_file_path, std::ios::in | std::ios::binary);
+    _input_file = std::move(FileManager::open_read(FileManager::join(EOSSDK_PlayerDataStorage::remote_directory, FileManager::clean_path(ReadOptions->Filename)), std::ios::binary));
 }
 
 void EOSSDK_PlayerDataStorageFileTransferRequest::set_write_transfert(const EOS_PlayerDataStorage_WriteFileOptions* WriteOptions)
@@ -59,7 +58,6 @@ void EOSSDK_PlayerDataStorageFileTransferRequest::set_write_transfert(const EOS_
     _progress_callback = WriteOptions->FileTransferProgressCallback;
     _chunk_size = WriteOptions->ChunkLengthBytes;
     _file_name = WriteOptions->Filename;
-    _file_path = std::move(GetEOS_PlayerDataStorage().build_path_string(EOSSDK_PlayerDataStorage::remote_folder, _file_name));
 }
 
 bool EOSSDK_PlayerDataStorageFileTransferRequest::canceled()
@@ -85,7 +83,7 @@ bool EOSSDK_PlayerDataStorageFileTransferRequest::released()
   */
 EOS_EResult EOSSDK_PlayerDataStorageFileTransferRequest::GetFileRequestState()
 {
-    LOG(Log::LogLevel::TRACE, "");
+    APP_LOG(Log::LogLevel::TRACE, "");
     std::lock_guard<std::mutex> _lk(_local_mutex);
 
     return (_done ? EOS_EResult::EOS_Success : EOS_EResult::EOS_PlayerDataStorage_RequestInProgress);
@@ -103,7 +101,7 @@ EOS_EResult EOSSDK_PlayerDataStorageFileTransferRequest::GetFileRequestState()
  */
 EOS_EResult EOSSDK_PlayerDataStorageFileTransferRequest::GetFilename(uint32_t FilenameStringBufferSizeBytes, char* OutStringBuffer, int32_t* OutStringLength)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    APP_LOG(Log::LogLevel::TRACE, "");
     std::lock_guard<std::mutex> _lk(_local_mutex);
 
     if (OutStringLength == nullptr || OutStringBuffer == nullptr)
@@ -124,7 +122,7 @@ EOS_EResult EOSSDK_PlayerDataStorageFileTransferRequest::GetFilename(uint32_t Fi
  */
 EOS_EResult EOSSDK_PlayerDataStorageFileTransferRequest::CancelRequest()
 {
-    LOG(Log::LogLevel::TRACE, "");
+    APP_LOG(Log::LogLevel::TRACE, "");
     std::lock_guard<std::mutex> _lk(_local_mutex);
 
     if (_done)
@@ -136,7 +134,7 @@ EOS_EResult EOSSDK_PlayerDataStorageFileTransferRequest::CancelRequest()
 
 void EOSSDK_PlayerDataStorageFileTransferRequest::Release()
 {
-    LOG(Log::LogLevel::TRACE, "");
+    APP_LOG(Log::LogLevel::TRACE, "");
     std::lock_guard<std::mutex> _lk(_local_mutex);
     _released = true;
 }

@@ -37,31 +37,13 @@ static const char* ownership_status_to_string(EOS_EOwnershipStatus status)
     }
 }
 
-//constexpr decltype(EOSSDK_Ecom::calatog_db_filename)      EOSSDK_Ecom::calatog_db_filename;
-constexpr decltype(EOSSDK_Ecom::calatog_filename)         EOSSDK_Ecom::calatog_filename;
-//constexpr decltype(EOSSDK_Ecom::entitlements_db_filename) EOSSDK_Ecom::entitlements_db_filename;
-constexpr decltype(EOSSDK_Ecom::entitlements_filename)    EOSSDK_Ecom::entitlements_filename;
+decltype(EOSSDK_Ecom::catalog_filename)         EOSSDK_Ecom::catalog_filename("catalog.json");
+decltype(EOSSDK_Ecom::entitlements_filename)    EOSSDK_Ecom::entitlements_filename("entitlements.json");
 
 EOSSDK_Ecom::EOSSDK_Ecom()
 {
-    //_catalog_db_filepath = Settings::Inst().savepath;
-    //_catalog_db_filepath += PATH_SEPARATOR;
-    //_catalog_db_filepath += catalog_db_filename;
-
-    _catalog_filepath = Settings::Inst().savepath;
-    _catalog_filepath += PATH_SEPARATOR;
-    _catalog_filepath += calatog_filename;
-
-    //_entitlements_db_filepath = Settings::Inst().savepath;
-    //_entitlements_db_filepath += PATH_SEPARATOR;
-    //_entitlements_db_filepath += entitlements_db_filename;
-
-    _entitlements_filepath = Settings::Inst().savepath;
-    _entitlements_filepath += PATH_SEPARATOR;
-    _entitlements_filepath += entitlements_filename;
-
-    load_json(_catalog_filepath, _catalog);
-    load_json(_entitlements_filepath, _entitlements);
+    FileManager::load_json(catalog_filename, _catalog);
+    FileManager::load_json(entitlements_filename, _entitlements);
 
     GetCB_Manager().register_callbacks(this);
 }
@@ -86,7 +68,7 @@ EOS_EResult EOSSDK_Ecom::copy_entitlement(typename decltype(_queried_entitlement
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "%s \"entitlement_name\" field was not found, it will not be owned", entitlement_id->c_str());
+        APP_LOG(Log::LogLevel::ERR, "%s \"entitlement_name\" field was not found, it will not be owned", entitlement_id->c_str());
         error = true;
     }
     try
@@ -95,7 +77,7 @@ EOS_EResult EOSSDK_Ecom::copy_entitlement(typename decltype(_queried_entitlement
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "%s \"catalog_item_id\" field was not found, it will not be owned", entitlement_id->c_str());
+        APP_LOG(Log::LogLevel::ERR, "%s \"catalog_item_id\" field was not found, it will not be owned", entitlement_id->c_str());
         error = true;
     }
     try
@@ -104,7 +86,7 @@ EOS_EResult EOSSDK_Ecom::copy_entitlement(typename decltype(_queried_entitlement
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "%s \"redeemed\" field was not found, it will not be redeemed", entitlement_id->c_str());
+        APP_LOG(Log::LogLevel::ERR, "%s \"redeemed\" field was not found, it will not be redeemed", entitlement_id->c_str());
         redeemed = false;
     }
 
@@ -164,8 +146,8 @@ void EOSSDK_Ecom::QueryOwnership(const EOS_Ecom_QueryOwnershipOptions* Options, 
         case EOS_ECOM_QUERYOWNERSHIP_API_002:
         {
             auto opts = reinterpret_cast<const EOS_Ecom_QueryOwnershipOptions002*>(Options);
-            LOG(Log::LogLevel::INFO, "TODO?: Check the catalog namespace");
-            LOG(Log::LogLevel::DEBUG, "CatalogNamespace: %s", (opts->CatalogNamespace == nullptr ? "" : opts->CatalogNamespace));
+            APP_LOG(Log::LogLevel::INFO, "TODO?: Check the catalog namespace");
+            APP_LOG(Log::LogLevel::DEBUG, "CatalogNamespace: %s", (opts->CatalogNamespace == nullptr ? "" : opts->CatalogNamespace));
         }
         case EOS_ECOM_QUERYOWNERSHIP_API_001:
         {
@@ -173,13 +155,13 @@ void EOSSDK_Ecom::QueryOwnership(const EOS_Ecom_QueryOwnershipOptions* Options, 
             qoci.LocalUserId = opts->LocalUserId;
             
             qoci.ItemOwnershipCount = Options->CatalogItemIdCount;
-            LOG(Log::LogLevel::DEBUG, "CatalogItemIdCount: %u", opts->CatalogItemIdCount);
+            APP_LOG(Log::LogLevel::DEBUG, "CatalogItemIdCount: %u", opts->CatalogItemIdCount);
             if (qoci.ItemOwnershipCount > 0)
             {
                 EOS_Ecom_ItemOwnership* ownerships = new EOS_Ecom_ItemOwnership[qoci.ItemOwnershipCount];
                 for (uint32_t i = 0; i < Options->CatalogItemIdCount; ++i)
                 {
-                    LOG(Log::LogLevel::DEBUG, "CatalogItemIds[%u]: %s", i, (opts->CatalogItemIds[i] == nullptr ? "" : opts->CatalogItemIds[i]));
+                    APP_LOG(Log::LogLevel::DEBUG, "CatalogItemIds[%u]: %s", i, (opts->CatalogItemIds[i] == nullptr ? "" : opts->CatalogItemIds[i]));
 
                     EOS_EOwnershipStatus owned = EOS_EOwnershipStatus::EOS_OS_NotOwned;
                     char* id;
@@ -198,17 +180,17 @@ void EOSSDK_Ecom::QueryOwnership(const EOS_Ecom_QueryOwnershipOptions* Options, 
                                 {
                                     owned = EOS_EOwnershipStatus::EOS_OS_Owned;
                                 }
-                                LOG(Log::LogLevel::INFO, "Catalog Item id %s, %s (from %s)", id, ownership_status_to_string(owned), _catalog_filepath.c_str());
+                                APP_LOG(Log::LogLevel::INFO, "Catalog Item id %s, %s (from %s)", id, ownership_status_to_string(owned), catalog_filename.c_str());
                             }
                             catch(...)
                             {
-                                LOG(Log::LogLevel::ERR, "Catalog Item id %s \"owned\" field was invalid, item not owned", id);
+                                APP_LOG(Log::LogLevel::ERR, "Catalog Item id %s \"owned\" field was invalid, item not owned", id);
                             }
                         }
                         else
                         {
                             owned = (Settings::Inst().unlock_dlcs ? EOS_EOwnershipStatus::EOS_OS_Owned : EOS_EOwnershipStatus::EOS_OS_NotOwned);
-                            LOG(Log::LogLevel::INFO, "Catalog Item id %s, %s (from \"unlock_dlcs\")", id, ownership_status_to_string(owned));
+                            APP_LOG(Log::LogLevel::INFO, "Catalog Item id %s, %s (from \"unlock_dlcs\")", id, ownership_status_to_string(owned));
                         }
                     }
                     else
@@ -216,7 +198,7 @@ void EOSSDK_Ecom::QueryOwnership(const EOS_Ecom_QueryOwnershipOptions* Options, 
                         id = new char[1];
                         *id = 0;
 
-                        LOG(Log::LogLevel::WARN, "Empty Catalog Item id, item not owned");
+                        APP_LOG(Log::LogLevel::WARN, "Empty Catalog Item id, item not owned");
                     }
 
                     ownerships[i].OwnershipStatus = owned;
@@ -257,20 +239,20 @@ void EOSSDK_Ecom::QueryOwnershipToken(const EOS_Ecom_QueryOwnershipTokenOptions*
         case EOS_ECOM_QUERYOWNERSHIPTOKEN_API_002:
         {
             auto opts = reinterpret_cast<const EOS_Ecom_QueryOwnershipTokenOptions002*>(Options);
-            LOG(Log::LogLevel::DEBUG, "CatalogNamespace: %s", (opts->CatalogNamespace == nullptr ? "" : opts->CatalogNamespace));
+            APP_LOG(Log::LogLevel::DEBUG, "CatalogNamespace: %s", (opts->CatalogNamespace == nullptr ? "" : opts->CatalogNamespace));
         }
         case EOS_ECOM_QUERYOWNERSHIPTOKEN_API_001:
         {
             auto opts = reinterpret_cast<const EOS_Ecom_QueryOwnershipTokenOptions001*>(Options);
-            LOG(Log::LogLevel::DEBUG, "CatalogItemIdCount: %u", opts->CatalogItemIdCount);
+            APP_LOG(Log::LogLevel::DEBUG, "CatalogItemIdCount: %u", opts->CatalogItemIdCount);
             for (uint32_t i = 0; i < opts->CatalogItemIdCount; ++i)
             {
-                LOG(Log::LogLevel::DEBUG, "CatalogItemIds[%u]: %s", i, (opts->CatalogItemIds[i] == nullptr ? "" : opts->CatalogItemIds[i]));
+                APP_LOG(Log::LogLevel::DEBUG, "CatalogItemIds[%u]: %s", i, (opts->CatalogItemIds[i] == nullptr ? "" : opts->CatalogItemIds[i]));
             }
         }
     }
 
-    LOG(Log::LogLevel::INFO, "TODO: Dispatch the callback");
+    APP_LOG(Log::LogLevel::INFO, "TODO: Dispatch the callback");
 
     // TODO: See if this works
     //pFrameResult_t res(new FrameResult);
@@ -323,8 +305,8 @@ void EOSSDK_Ecom::QueryEntitlements(const EOS_Ecom_QueryEntitlementsOptions* Opt
             case EOS_ECOM_QUERYENTITLEMENTS_API_002:
             {
                 auto opts = reinterpret_cast<const EOS_Ecom_QueryEntitlementsOptions002*>(Options);
-                LOG(Log::LogLevel::DEBUG, "bIncludeRedeemed: %d", (int)opts->bIncludeRedeemed);
-                LOG(Log::LogLevel::DEBUG, "EntitlementNameCount: %u", opts->EntitlementNameCount);
+                APP_LOG(Log::LogLevel::DEBUG, "bIncludeRedeemed: %d", (int)opts->bIncludeRedeemed);
+                APP_LOG(Log::LogLevel::DEBUG, "EntitlementNameCount: %u", opts->EntitlementNameCount);
                 for (uint32_t i = 0; i < opts->EntitlementNameCount; ++i)
                 {
                     auto it = _entitlements.find(opts->EntitlementNames[i]);
@@ -341,17 +323,17 @@ void EOSSDK_Ecom::QueryEntitlements(const EOS_Ecom_QueryEntitlementsOptions* Opt
                         }
                         if (!redeemed || Options->bIncludeRedeemed == EOS_TRUE)
                         {
-                            LOG(Log::LogLevel::DEBUG, "EntitlementNames[%u]: %s - Found", i, (opts->EntitlementNames[i] == nullptr ? "" : opts->EntitlementNames[i]));
+                            APP_LOG(Log::LogLevel::DEBUG, "EntitlementNames[%u]: %s - Found", i, (opts->EntitlementNames[i] == nullptr ? "" : opts->EntitlementNames[i]));
                             _queried_entitlements[opts->EntitlementNames[i]] = &it.value();
                         }
                         else
                         {
-                            LOG(Log::LogLevel::DEBUG, "EntitlementNames[%u]: %s - Found but was already redeemed and client asked for non-redeemed", i, (opts->EntitlementNames[i] == nullptr ? "" : opts->EntitlementNames[i]));
+                            APP_LOG(Log::LogLevel::DEBUG, "EntitlementNames[%u]: %s - Found but was already redeemed and client asked for non-redeemed", i, (opts->EntitlementNames[i] == nullptr ? "" : opts->EntitlementNames[i]));
                         }
                     }
                     else
                     {
-                        LOG(Log::LogLevel::DEBUG, "EntitlementNames[%u]: %s - Not Found", i, (opts->EntitlementNames[i] == nullptr ? "" : opts->EntitlementNames[i]));
+                        APP_LOG(Log::LogLevel::DEBUG, "EntitlementNames[%u]: %s - Not Found", i, (opts->EntitlementNames[i] == nullptr ? "" : opts->EntitlementNames[i]));
                     }
                 }
             }
@@ -388,7 +370,7 @@ void EOSSDK_Ecom::QueryOffers(const EOS_Ecom_QueryOffersOptions* Options, void* 
         case EOS_ECOM_QUERYOFFERS_API_001:
         {
             auto opts = reinterpret_cast<const EOS_Ecom_QueryOffersOptions001*>(Options);
-            LOG(Log::LogLevel::DEBUG, "OverrideCatalogNamespace: %s", (opts->OverrideCatalogNamespace == nullptr ? "" : opts->OverrideCatalogNamespace));
+            APP_LOG(Log::LogLevel::DEBUG, "OverrideCatalogNamespace: %s", (opts->OverrideCatalogNamespace == nullptr ? "" : opts->OverrideCatalogNamespace));
         }
     }
 }
@@ -418,8 +400,8 @@ void EOSSDK_Ecom::Checkout(const EOS_Ecom_CheckoutOptions* Options, void* Client
         case EOS_ECOM_CHECKOUT_API_001:
         {
             auto opts = reinterpret_cast<const EOS_Ecom_CheckoutOptions001*>(Options);
-            LOG(Log::LogLevel::DEBUG, "EntryCount: %u", opts->EntryCount);
-            LOG(Log::LogLevel::DEBUG, "OverrideCatalogNamespace: %s", (opts->OverrideCatalogNamespace == nullptr ? "" : opts->OverrideCatalogNamespace));
+            APP_LOG(Log::LogLevel::DEBUG, "EntryCount: %u", opts->EntryCount);
+            APP_LOG(Log::LogLevel::DEBUG, "OverrideCatalogNamespace: %s", (opts->OverrideCatalogNamespace == nullptr ? "" : opts->OverrideCatalogNamespace));
             for (uint32_t i = 0; i < opts->EntryCount; ++i)
             {
                 auto pEntry = &opts->Entries[i];
@@ -428,7 +410,7 @@ void EOSSDK_Ecom::Checkout(const EOS_Ecom_CheckoutOptions* Options, void* Client
                     case EOS_ECOM_CHECKOUTENTRY_API_001:
                     {
                         auto entry = reinterpret_cast<const EOS_Ecom_CheckoutEntry001*>(pEntry);
-                        LOG(Log::LogLevel::DEBUG, "Entries[%u].OfferId: %s", i, (entry->OfferId == nullptr ? "" : entry->OfferId));
+                        APP_LOG(Log::LogLevel::DEBUG, "Entries[%u].OfferId: %s", i, (entry->OfferId == nullptr ? "" : entry->OfferId));
                     }
                 }
             }
@@ -448,7 +430,7 @@ void EOSSDK_Ecom::RedeemEntitlements(const EOS_Ecom_RedeemEntitlementsOptions* O
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
-    LOG(Log::LogLevel::INFO, "TODO");
+    APP_LOG(Log::LogLevel::INFO, "TODO");
 
     if (CompletionDelegate == nullptr)
         return;
@@ -458,10 +440,10 @@ void EOSSDK_Ecom::RedeemEntitlements(const EOS_Ecom_RedeemEntitlementsOptions* O
         case EOS_ECOM_REDEEMENTITLEMENTS_API_001:
         {
             auto opts = reinterpret_cast<const EOS_Ecom_RedeemEntitlementsOptions001*>(Options);
-            LOG(Log::LogLevel::DEBUG, "EntitlementIdCount: %u", opts->EntitlementIdCount);
+            APP_LOG(Log::LogLevel::DEBUG, "EntitlementIdCount: %u", opts->EntitlementIdCount);
             for (uint32_t i = 0; i < opts->EntitlementIdCount; ++i)
             {
-                LOG(Log::LogLevel::DEBUG, "EntitlementIds[%u]: %s", i, (opts->EntitlementIds[i] == nullptr ? "" : opts->EntitlementIds[i]));
+                APP_LOG(Log::LogLevel::DEBUG, "EntitlementIds[%u]: %s", i, (opts->EntitlementIds[i] == nullptr ? "" : opts->EntitlementIds[i]));
             }
         }
     }
@@ -501,7 +483,7 @@ uint32_t EOSSDK_Ecom::GetEntitlementsByNameCount(const EOS_Ecom_GetEntitlementsB
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    LOG(Log::LogLevel::INFO, "EntitlementName: %s", Options->EntitlementName == nullptr ? "<No Name>" : Options->EntitlementName);
+    APP_LOG(Log::LogLevel::INFO, "EntitlementName: %s", Options->EntitlementName == nullptr ? "<No Name>" : Options->EntitlementName);
 
     if (Options == nullptr || Options->EntitlementName == nullptr)
         return 0;
@@ -618,7 +600,7 @@ EOS_EResult EOSSDK_Ecom::CopyEntitlementById(const EOS_Ecom_CopyEntitlementByIdO
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    LOG(Log::LogLevel::INFO, "Entitlement id: %s", Options->EntitlementId == nullptr ? "<no id>" : Options->EntitlementId);
+    APP_LOG(Log::LogLevel::INFO, "Entitlement id: %s", Options->EntitlementId == nullptr ? "<no id>" : Options->EntitlementId);
 
     if (Options == nullptr || Options->EntitlementId == nullptr || OutEntitlement == nullptr)
     {
@@ -648,7 +630,7 @@ EOS_EResult EOSSDK_Ecom::CopyEntitlementById(const EOS_Ecom_CopyEntitlementByIdO
 uint32_t EOSSDK_Ecom::GetOfferCount(const EOS_Ecom_GetOfferCountOptions* Options)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
+    APP_LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
     return 0;
@@ -672,7 +654,7 @@ uint32_t EOSSDK_Ecom::GetOfferCount(const EOS_Ecom_GetOfferCountOptions* Options
 EOS_EResult EOSSDK_Ecom::CopyOfferByIndex(const EOS_Ecom_CopyOfferByIndexOptions* Options, EOS_Ecom_CatalogOffer** OutOffer)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
+    APP_LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
     set_nullptr(OutOffer);
@@ -697,7 +679,7 @@ EOS_EResult EOSSDK_Ecom::CopyOfferByIndex(const EOS_Ecom_CopyOfferByIndexOptions
 EOS_EResult EOSSDK_Ecom::CopyOfferById(const EOS_Ecom_CopyOfferByIdOptions* Options, EOS_Ecom_CatalogOffer** OutOffer)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
+    APP_LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
     set_nullptr(OutOffer);
@@ -712,7 +694,7 @@ EOS_EResult EOSSDK_Ecom::CopyOfferById(const EOS_Ecom_CopyOfferByIdOptions* Opti
 uint32_t EOSSDK_Ecom::GetOfferItemCount(const EOS_Ecom_GetOfferItemCountOptions* Options)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
+    APP_LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
     return 0;
@@ -736,7 +718,7 @@ uint32_t EOSSDK_Ecom::GetOfferItemCount(const EOS_Ecom_GetOfferItemCountOptions*
 EOS_EResult EOSSDK_Ecom::CopyOfferItemByIndex(const EOS_Ecom_CopyOfferItemByIndexOptions* Options, EOS_Ecom_CatalogItem** OutItem)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
+    APP_LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
     set_nullptr(OutItem);
@@ -761,7 +743,7 @@ EOS_EResult EOSSDK_Ecom::CopyOfferItemByIndex(const EOS_Ecom_CopyOfferItemByInde
 EOS_EResult EOSSDK_Ecom::CopyItemById(const EOS_Ecom_CopyItemByIdOptions* Options, EOS_Ecom_CatalogItem** OutItem)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
+    APP_LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
     set_nullptr(OutItem);
@@ -776,7 +758,7 @@ EOS_EResult EOSSDK_Ecom::CopyItemById(const EOS_Ecom_CopyItemByIdOptions* Option
 uint32_t EOSSDK_Ecom::GetOfferImageInfoCount(const EOS_Ecom_GetOfferImageInfoCountOptions* Options)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
+    APP_LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
     return 0;
@@ -798,7 +780,7 @@ uint32_t EOSSDK_Ecom::GetOfferImageInfoCount(const EOS_Ecom_GetOfferImageInfoCou
 EOS_EResult EOSSDK_Ecom::CopyOfferImageInfoByIndex(const EOS_Ecom_CopyOfferImageInfoByIndexOptions* Options, EOS_Ecom_KeyImageInfo** OutImageInfo)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
+    APP_LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
     set_nullptr(OutImageInfo);
@@ -813,7 +795,7 @@ EOS_EResult EOSSDK_Ecom::CopyOfferImageInfoByIndex(const EOS_Ecom_CopyOfferImage
 uint32_t EOSSDK_Ecom::GetItemImageInfoCount(const EOS_Ecom_GetItemImageInfoCountOptions* Options)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
+    APP_LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
     return 0;
@@ -835,7 +817,7 @@ uint32_t EOSSDK_Ecom::GetItemImageInfoCount(const EOS_Ecom_GetItemImageInfoCount
 EOS_EResult EOSSDK_Ecom::CopyItemImageInfoByIndex(const EOS_Ecom_CopyItemImageInfoByIndexOptions* Options, EOS_Ecom_KeyImageInfo** OutImageInfo)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
+    APP_LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
     set_nullptr(OutImageInfo);
@@ -850,7 +832,7 @@ EOS_EResult EOSSDK_Ecom::CopyItemImageInfoByIndex(const EOS_Ecom_CopyItemImageIn
 uint32_t EOSSDK_Ecom::GetItemReleaseCount(const EOS_Ecom_GetItemReleaseCountOptions* Options)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
+    APP_LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
     return 0;
@@ -872,7 +854,7 @@ uint32_t EOSSDK_Ecom::GetItemReleaseCount(const EOS_Ecom_GetItemReleaseCountOpti
 EOS_EResult EOSSDK_Ecom::CopyItemReleaseByIndex(const EOS_Ecom_CopyItemReleaseByIndexOptions* Options, EOS_Ecom_CatalogRelease** OutRelease)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
+    APP_LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
     set_nullptr(OutRelease);
@@ -890,7 +872,7 @@ EOS_EResult EOSSDK_Ecom::CopyItemReleaseByIndex(const EOS_Ecom_CopyItemReleaseBy
 uint32_t EOSSDK_Ecom::GetTransactionCount(const EOS_Ecom_GetTransactionCountOptions* Options)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
+    APP_LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
     
     return 0;
@@ -911,7 +893,7 @@ uint32_t EOSSDK_Ecom::GetTransactionCount(const EOS_Ecom_GetTransactionCountOpti
 EOS_EResult EOSSDK_Ecom::CopyTransactionByIndex(const EOS_Ecom_CopyTransactionByIndexOptions* Options, EOS_Ecom_HTransaction* OutTransaction)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
+    APP_LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
     set_nullptr(OutTransaction);
@@ -933,7 +915,7 @@ EOS_EResult EOSSDK_Ecom::CopyTransactionByIndex(const EOS_Ecom_CopyTransactionBy
 EOS_EResult EOSSDK_Ecom::CopyTransactionById(const EOS_Ecom_CopyTransactionByIdOptions* Options, EOS_Ecom_HTransaction* OutTransaction)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
+    APP_LOG(Log::LogLevel::INFO, "TODO");
     GLOBAL_LOCK();
 
     set_nullptr(OutTransaction);

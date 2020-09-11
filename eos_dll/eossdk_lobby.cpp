@@ -76,7 +76,7 @@ bool compare_attribute_values(T&& v1, EOS_EOnlineComparisonOp op, T&& v2, std::s
     catch (...)
     {}
 
-    LOG(Log::LogLevel::DEBUG, "Testing Lobby Attr: %s: (lobby)%s %s (search)%s, result: %s", attr_name.c_str(), std::to_string(v1).c_str(), search_attr_to_string(op), std::to_string(v2).c_str(), res ? "true" : "false");
+    APP_LOG(Log::LogLevel::DEBUG, "Testing Lobby Attr: %s: (lobby)%s %s (search)%s, result: %s", attr_name.c_str(), std::to_string(v1).c_str(), search_attr_to_string(op), std::to_string(v2).c_str(), res ? "true" : "false");
     return res;
 }
 
@@ -93,7 +93,7 @@ std::vector<lobby_state_t*> EOSSDK_Lobby::get_lobbies_from_attributes(google::pr
             {
                 casestr(EOS_LOBBY_SEARCH_MINCURRENTMEMBERS) :
                 {
-                    auto it = param.second.param().find(get_enum_value(EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL));
+                    auto it = param.second.param().find(utils::get_enum_value(EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL));
                     if (it != param.second.param().end())
                     {// Wrong comparison type should never happen, it's already tested in the search.
                         switch(it->second.value_case())
@@ -108,7 +108,7 @@ std::vector<lobby_state_t*> EOSSDK_Lobby::get_lobbies_from_attributes(google::pr
 
                             default:
                             {
-                                LOG(Log::LogLevel::INFO, "Triied " EOS_LOBBY_SEARCH_MINCURRENTMEMBERS " with a comparator different than EOS_CO_GREATERTHANOREQUAL: FIX ME!");
+                                APP_LOG(Log::LogLevel::INFO, "Triied " EOS_LOBBY_SEARCH_MINCURRENTMEMBERS " with a comparator different than EOS_CO_GREATERTHANOREQUAL: FIX ME!");
                                 found = false;
                             }
                         }
@@ -118,7 +118,7 @@ std::vector<lobby_state_t*> EOSSDK_Lobby::get_lobbies_from_attributes(google::pr
 
                 casestr(EOS_LOBBY_SEARCH_MINSLOTSAVAILABLE) :
                 {
-                    auto it = param.second.param().find(get_enum_value(EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL));
+                    auto it = param.second.param().find(utils::get_enum_value(EOS_EOnlineComparisonOp::EOS_CO_GREATERTHANOREQUAL));
                     if (it != param.second.param().end())
                     {// Wrong comparison type should never happen, it's already tested in the search.
                         switch(it->second.value_case())
@@ -133,7 +133,7 @@ std::vector<lobby_state_t*> EOSSDK_Lobby::get_lobbies_from_attributes(google::pr
 
                             default:
                             {
-                                LOG(Log::LogLevel::INFO, "Triied " EOS_LOBBY_SEARCH_MINSLOTSAVAILABLE " with a comparator different than EOS_CO_GREATERTHANOREQUAL: FIX ME!");
+                                APP_LOG(Log::LogLevel::INFO, "Triied " EOS_LOBBY_SEARCH_MINSLOTSAVAILABLE " with a comparator different than EOS_CO_GREATERTHANOREQUAL: FIX ME!");
                                 found = false;
                             }
                         }
@@ -196,7 +196,7 @@ std::vector<lobby_state_t*> EOSSDK_Lobby::get_lobbies_from_attributes(google::pr
             }
             if (found == false)
             {
-                LOG(Log::LogLevel::DEBUG, "This lobby didn't match: %s", lobby.second.infos.lobby_id().c_str());
+                APP_LOG(Log::LogLevel::DEBUG, "This lobby didn't match: %s", lobby.second.infos.lobby_id().c_str());
                 break;
             }
         }
@@ -212,7 +212,7 @@ std::vector<lobby_state_t*> EOSSDK_Lobby::get_lobbies_from_attributes(google::pr
 
 bool EOSSDK_Lobby::add_member_to_lobby(std::string const& member, lobby_state_t* lobby)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    APP_LOG(Log::LogLevel::TRACE, "");
     assert(lobby != nullptr);
 
     auto& members = *lobby->infos.mutable_members();
@@ -228,7 +228,7 @@ bool EOSSDK_Lobby::add_member_to_lobby(std::string const& member, lobby_state_t*
 
 bool EOSSDK_Lobby::remove_member_from_lobby(std::string const& member, lobby_state_t* lobby)
 {
-    LOG(Log::LogLevel::TRACE, "");
+    APP_LOG(Log::LogLevel::TRACE, "");
     assert(lobby != nullptr);
 
     auto& members = *lobby->infos.mutable_members();
@@ -375,7 +375,7 @@ void EOSSDK_Lobby::CreateLobby(const EOS_Lobby_CreateLobbyOptions* Options, void
         infos.infos.set_lobby_id(lobby_id);
         infos.infos.set_owner_id(GetEOS_Connect().get_myself()->first->to_string());
         infos.infos.set_max_lobby_member(Options->MaxLobbyMembers);
-        infos.infos.set_permission_level(get_enum_value(Options->PermissionLevel));
+        infos.infos.set_permission_level(utils::get_enum_value(Options->PermissionLevel));
         (*infos.infos.mutable_members())[GetEOS_Connect().get_myself()->first->to_string()];
         infos.state = lobby_state_t::created;
 
@@ -401,7 +401,7 @@ void EOSSDK_Lobby::CreateLobby(const EOS_Lobby_CreateLobbyOptions* Options, void
 void EOSSDK_Lobby::DestroyLobby(const EOS_Lobby_DestroyLobbyOptions* Options, void* ClientData, const EOS_Lobby_OnDestroyLobbyCallback CompletionDelegate)
 {
     TRACE_FUNC();
-    LOG(Log::LogLevel::INFO, "TODO");
+    APP_LOG(Log::LogLevel::INFO, "TODO");
 
     if (CompletionDelegate == nullptr)
         return;
@@ -1646,7 +1646,7 @@ bool EOSSDK_Lobby::send_lobby_member_leave(Network::peer_t const& member_id, lob
 
     leave->set_lobby_id(lobby->infos.lobby_id());
     leave->set_member_id(member_id);
-    leave->set_reason(get_enum_value(reason));
+    leave->set_reason(utils::get_enum_value(reason));
 
     lobby_pb->set_allocated_member_leave(leave);
     msg.set_allocated_lobby(lobby_pb);
@@ -1700,7 +1700,7 @@ bool EOSSDK_Lobby::on_peer_disconnect(Network_Message_pb const& msg, Network_Pee
 
                 member_leave->set_lobby_id(lobby.second.infos.lobby_id());
                 member_leave->set_member_id(msg.source_id());
-                member_leave->set_reason(get_enum_value(EOS_ELobbyMemberStatus::EOS_LMS_DISCONNECTED));
+                member_leave->set_reason(utils::get_enum_value(EOS_ELobbyMemberStatus::EOS_LMS_DISCONNECTED));
 
                 lobby_pb->set_allocated_member_leave(member_leave);
                 msg_resp.set_allocated_lobby(lobby_pb);
@@ -1811,7 +1811,7 @@ bool EOSSDK_Lobby::on_lobby_join_request(Network_Message_pb const& msg, Lobby_Jo
 
     if (pLobby == nullptr)
     {// Lobby not found
-        resp->set_reason(get_enum_value(EOS_EResult::EOS_NotFound));
+        resp->set_reason(utils::get_enum_value(EOS_EResult::EOS_NotFound));
     }
     else
     {
@@ -1819,7 +1819,7 @@ bool EOSSDK_Lobby::on_lobby_join_request(Network_Message_pb const& msg, Lobby_Jo
         {// I am the owner, I can decide if the client can join
             if (pLobby->infos.max_lobby_member() - pLobby->infos.members_size() > 0)
             {// Can join
-                resp->set_reason(get_enum_value(EOS_EResult::EOS_Success));   
+                resp->set_reason(utils::get_enum_value(EOS_EResult::EOS_Success));
                 *resp->mutable_infos() = pLobby->infos;
 
                 send_lobby_member_join(msg.source_id(), pLobby);
@@ -1831,12 +1831,12 @@ bool EOSSDK_Lobby::on_lobby_join_request(Network_Message_pb const& msg, Lobby_Jo
             }
             else
             {// Lobby full
-                resp->set_reason(get_enum_value(EOS_EResult::EOS_Lobby_TooManyPlayers));
+                resp->set_reason(utils::get_enum_value(EOS_EResult::EOS_Lobby_TooManyPlayers));
             }
         }
         else
         {// I'm not the owner, I don't have permissions to allow a client to join
-            resp->set_reason(get_enum_value(EOS_EResult::EOS_Lobby_NoPermission));
+            resp->set_reason(utils::get_enum_value(EOS_EResult::EOS_Lobby_NoPermission));
         }
     }
 

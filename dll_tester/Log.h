@@ -53,9 +53,12 @@ public:
         }
     }
 
-    using log_func_t = void(*)(Log::LogLevel lv, const char* log_message);
+    using log_func_t = void(*)(void* user_param, Log::LogLevel lv, const char* log_message);
+
+    static void default_log_func(void* user_param, Log::LogLevel lv, const char* log_message);
 
 private:
+    static void*           _log_user_param;
     static Log::LogLevel   _log_level;
     static Log::log_func_t _log_func;
 
@@ -64,6 +67,8 @@ private:
     Log(Log&&)                 = delete;
     Log& operator=(Log const&) = delete;
     Log& operator=(Log&&)      = delete;
+
+    static bool _trace(const char* format, va_list argptr);
 
     LogLevel _lv;
     std::string _func_name;
@@ -75,13 +80,13 @@ public:
         _func_name(func_name)
     {
         auto tid = std::this_thread::get_id();
-        Log::L(_lv, "(%lx)%s - %s ENTRY", *reinterpret_cast<uint32_t*>(&tid), Log::loglevel_to_str(_lv), _func_name.c_str());
+        Log::Format(_lv, "(%lx)%s - %s ENTRY", *reinterpret_cast<uint32_t*>(&tid), Log::loglevel_to_str(_lv), _func_name.c_str());
     }
 
     ~Log()
     {
         auto tid = std::this_thread::get_id();
-        Log::L(_lv, "(%lx)%s - %s EXIT", *reinterpret_cast<uint32_t*>(&tid), Log::loglevel_to_str(_lv), _func_name.c_str());
+        Log::Format(_lv, "(%lx)%s - %s EXIT", *reinterpret_cast<uint32_t*>(&tid), Log::loglevel_to_str(_lv), _func_name.c_str());
     }
 
     static inline Log::LogLevel get_loglevel()
@@ -100,14 +105,15 @@ public:
         return _log_func;
     }
 
-    static inline log_func_t set_log_func(log_func_t log_func)
+    static inline log_func_t set_log_func(log_func_t log_func, void* user_param)
     {
         auto old_func = log_func;
         _log_func = log_func;
+        _log_user_param = user_param;
         return old_func;
     }
 #else
-    Log(LogLevel lv, const char* func_name) {}
+    STEAM_LOG(LogLevel lv, const char* func_name) {}
     ~Log() {}
 
     static void dummy_log_func(Log::LogLevel lv, const char* log_message) { (void)lv; (void)log_message; }
@@ -123,9 +129,9 @@ public:
     }
 
 #ifndef DISABLE_LOG
-    static void L(LogLevel lv, const char* format, ...);
+    static void Format(LogLevel lv, const char* format, ...);
 #else
-    static inline void L(LogLevel lv, const char* format, ...) { }
+    static inline void Format(LogLevel lv, const char* format, ...) { }
 #endif
 };
 
@@ -167,9 +173,9 @@ public:
 
     #endif
 
-    #define LOG(lv, fmt, ...) Log::L(lv, "(%lx)%s - %s: " fmt, std::this_thread::get_id(), Log::loglevel_to_str(lv), __MY_FUNCTION__, ##__VA_ARGS__)
+    #define EPIC_LOG(lv, fmt, ...) Log::Format(lv, "(%lx)%s - %s: " fmt, std::this_thread::get_id(), Log::loglevel_to_str(lv), __MY_FUNCTION__, ##__VA_ARGS__)
     #define TRACE_FUNC() Log __func_trace_log(Log::LogLevel::TRACE, __MY_FUNCTION__)
 #else //!DISABLE_LOG
-    #define LOG(...)
+    #define EPIC_LOG(...)
     #define TRACE_FUNC()
 #endif

@@ -26,7 +26,7 @@ Network::Network():
     _advertise_rate(2000),
     _tcp_port(0)
 {
-    //LOG(Log::LogLevel::DEBUG, "");
+    //APP_LOG(Log::LogLevel::DEBUG, "");
 #if defined(NETWORK_COMPRESS)
     max_message_size = 0;
     max_compressed_message_size = 0;
@@ -40,9 +40,9 @@ Network::Network():
 Network::~Network()
 {
 #if defined(NETWORK_COMPRESS)
-    LOG(Log::LogLevel::DEBUG, "Shutting down Network, biggest message size was %llu, biggest compressed message size was %llu", max_message_size, max_compressed_message_size);
+    APP_LOG(Log::LogLevel::DEBUG, "Shutting down Network, biggest message size was %llu, biggest compressed message size was %llu", max_message_size, max_compressed_message_size);
 #else
-    LOG(Log::LogLevel::DEBUG, "Shutting down Network");
+    APP_LOG(Log::LogLevel::DEBUG, "Shutting down Network");
 #endif
 
     _network_task.stop();
@@ -53,7 +53,7 @@ Network::~Network()
     ZSTD_freeDStream(_zstd_dstream);
 #endif
 
-    //LOG(Log::LogLevel::DEBUG, "Network Thread Joined");
+    //APP_LOG(Log::LogLevel::DEBUG, "Network Thread Joined");
 }
 
 #if defined(NETWORK_COMPRESS)
@@ -89,7 +89,7 @@ std::string Network::decompress(void const* data, size_t len)
             else
             {
                 auto str_error = ZSTD_getErrorName(x);
-                LOG(Log::LogLevel::WARN, "Decompression error: %s", str_error);
+                APP_LOG(Log::LogLevel::WARN, "Decompression error: %s", str_error);
                 return std::string((char*)data, ((char*)data) + len);
             }
         }
@@ -122,12 +122,12 @@ void Network::start_network()
     }
     if (port == max_network_port)
     {
-        //LOG(Log::LogLevel::ERR, "Failed to start udp socket");
+        //APP_LOG(Log::LogLevel::ERR, "Failed to start udp socket");
         _network_task.stop();
     }
     else
     {
-        LOG(Log::LogLevel::INFO, "UDP socket started on port: %hu", port);
+        APP_LOG(Log::LogLevel::INFO, "UDP socket started on port: %hu", port);
         std::uniform_int_distribution<int64_t> dis;
         std::mt19937_64& gen = get_gen();
         int x;
@@ -146,19 +146,19 @@ void Network::start_network()
             }
             catch (...)
             {
-                LOG(Log::LogLevel::WARN, "Failed to start tcp socket on port %hu", x);
+                APP_LOG(Log::LogLevel::WARN, "Failed to start tcp socket on port %hu", x);
             }
         }
         if (x == 100)
         {
-            LOG(Log::LogLevel::ERR, "Failed to start tcp socket");
+            APP_LOG(Log::LogLevel::ERR, "Failed to start tcp socket");
             _udp_socket.close();
             _network_task.stop();
         }
         else
         {
             _tcp_port = port;
-            LOG(Log::LogLevel::INFO, "TCP socket started after %hu tries on port: %hu", x, port);
+            APP_LOG(Log::LogLevel::INFO, "TCP socket started after %hu tries on port: %hu", x, port);
         }
     }
 }
@@ -175,7 +175,7 @@ void Network::stop_network()
 
 inline Network::next_packet_size_t Network::make_next_packet_size(std::string const& buff) const
 {
-    return Socket::net_swap(next_packet_size_t(buff.length() - sizeof(next_packet_size_t)));
+    return utils::Endian::net_swap(next_packet_size_t(buff.length() - sizeof(next_packet_size_t)));
 }
 
 void Network::build_advertise_msg(Network_Message_pb& msg)
@@ -185,10 +185,10 @@ void Network::build_advertise_msg(Network_Message_pb& msg)
     Network_Advertise_pb* advertise = new Network_Advertise_pb;
     Network_Peer_pb* peer_pb = new Network_Peer_pb;
 
-    LOG(Log::LogLevel::DEBUG, "Advertising with peer ids: ");
+    APP_LOG(Log::LogLevel::DEBUG, "Advertising with peer ids: ");
     for (auto& id : _my_peer_ids)
     {
-        LOG(Log::LogLevel::DEBUG, "%s", std::to_string(id).c_str());
+        APP_LOG(Log::LogLevel::DEBUG, "%s", std::to_string(id).c_str());
         peer_pb->add_peer_ids(id);
     }
 
@@ -250,7 +250,7 @@ void Network::do_advertise()
     }
     catch (...)
     {
-        //LOG(Log::LogLevel::DEBUG, "Advertising, failed");
+        //APP_LOG(Log::LogLevel::DEBUG, "Advertising, failed");
     }
 }
 
@@ -282,7 +282,7 @@ void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_
 
     for (auto& peerid : peer_ids)
     {// Map all clients peerids to the socket
-        LOG(Log::LogLevel::DEBUG, "Adding peer id %s to client %s", std::to_string(peerid).c_str(), cli->get_addr().to_string(true).c_str());
+        APP_LOG(Log::LogLevel::DEBUG, "Adding peer id %s to client %s", std::to_string(peerid).c_str(), cli->get_addr().to_string(true).c_str());
         _tcp_peers[peerid] = cli;
 
         msg.set_source_id(peerid);
@@ -298,7 +298,7 @@ void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_
     
     if(advertise_peer)
     {
-        LOG(Log::LogLevel::DEBUG, "New peer: id %s %s", std::to_string(*peer_ids.begin()).c_str(), cli->get_addr().to_string(true).c_str());
+        APP_LOG(Log::LogLevel::DEBUG, "New peer: id %s %s", std::to_string(*peer_ids.begin()).c_str(), cli->get_addr().to_string(true).c_str());
 
         Network_Message_pb msg;
         Network_Advertise_pb* adv = new Network_Advertise_pb;
@@ -330,7 +330,7 @@ void Network::remove_tcp_peer(tcp_buffer_t& tcp_buffer)
 {
     std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
-    LOG(Log::LogLevel::DEBUG, "TCP Client %s gone", tcp_buffer.socket.get_addr().to_string().c_str());
+    APP_LOG(Log::LogLevel::DEBUG, "TCP Client %s gone", tcp_buffer.socket.get_addr().to_string().c_str());
     _poll.remove_socket(tcp_buffer.socket);
     // Remove the peer mappings
 
@@ -372,7 +372,7 @@ void Network::connect_to_peer(ipv4_addr &addr, peer_t const& peer_id)
     {
         if (it == _waiting_connect_tcp_clients.end())
         {
-            LOG(Log::LogLevel::DEBUG, "Connecting to %s : %s", addr.to_string(true).c_str(), std::to_string(peer_id).c_str());
+            APP_LOG(Log::LogLevel::DEBUG, "Connecting to %s : %s", addr.to_string(true).c_str(), std::to_string(peer_id).c_str());
             
             _waiting_connect_tcp_clients.emplace(peer_id, tcp_socket());
             it = _waiting_connect_tcp_clients.find(peer_id);
@@ -392,7 +392,7 @@ void Network::connect_to_peer(ipv4_addr &addr, peer_t const& peer_id)
     catch (std::exception &e)
     {
         _waiting_connect_tcp_clients.erase(it);
-        LOG(Log::LogLevel::WARN, "Failed to TCP connect to %s: %s", addr.to_string().c_str(), e.what());
+        APP_LOG(Log::LogLevel::WARN, "Failed to TCP connect to %s: %s", addr.to_string().c_str(), e.what());
     }
 
     if (connected)
@@ -416,7 +416,7 @@ void Network::connect_to_peer(ipv4_addr &addr, peer_t const& peer_id)
 
         it->second.send(buff.data(), buff.length());
 
-        LOG(Log::LogLevel::DEBUG, "Connected to %s : %s", it->second.get_addr().to_string(true).c_str(), std::to_string(peer_id).c_str());
+        APP_LOG(Log::LogLevel::DEBUG, "Connected to %s : %s", it->second.get_addr().to_string(true).c_str(), std::to_string(peer_id).c_str());
 
         tcp_buffer_t tcp_buffer{};
         tcp_buffer.socket = std::move(it->second);
@@ -442,7 +442,7 @@ void Network::process_waiting_out_clients()
                 if (it->second.next_packet_size == 0 && count > sizeof(next_packet_size_t))
                 {
                     it->second.socket.recv(&it->second.next_packet_size, sizeof(next_packet_size_t));
-                    it->second.next_packet_size = Socket::net_swap(it->second.next_packet_size);
+                    it->second.next_packet_size = utils::Endian::net_swap(it->second.next_packet_size);
                     count -= sizeof(next_packet_size_t);
                 }
                 if (it->second.next_packet_size > 0 && count >= it->second.next_packet_size)
@@ -486,7 +486,7 @@ void Network::process_waiting_out_clients()
         catch (std::exception &e)
         {
             // Error while reading, connection closed ?
-            LOG(Log::LogLevel::WARN, "Failed peer pair: %s", e.what());
+            APP_LOG(Log::LogLevel::WARN, "Failed peer pair: %s", e.what());
             it = _waiting_out_tcp_clients.erase(it);
         }
     }
@@ -506,7 +506,7 @@ void Network::process_waiting_in_client()
                 if (it->next_packet_size == 0 && count > sizeof(next_packet_size_t))
                 {
                     it->socket.recv(&it->next_packet_size, sizeof(next_packet_size_t));
-                    it->next_packet_size = Socket::net_swap(it->next_packet_size);
+                    it->next_packet_size = utils::Endian::net_swap(it->next_packet_size);
                     count -= sizeof(next_packet_size_t);
                 }
                 if (it->next_packet_size > 0 && count >= it->next_packet_size)
@@ -559,7 +559,7 @@ void Network::process_waiting_in_client()
         catch (std::exception &e)
         {
             // Error while reading, connection closed ?
-            LOG(Log::LogLevel::WARN, "Failed peer pair: %s", e.what());
+            APP_LOG(Log::LogLevel::WARN, "Failed peer pair: %s", e.what());
             it = _waiting_in_tcp_clients.erase(it);
         }
     }
@@ -573,7 +573,7 @@ void Network::process_network_message(Network_Message_pb &msg)
     
     //if ((std::chrono::system_clock::now() - msg_time) > std::chrono::milliseconds(1500))
     //{
-    //    LOG(Log::LogLevel::WARN, "Message dropped because it was too old");
+    //    APP_LOG(Log::LogLevel::WARN, "Message dropped because it was too old");
     //    return;
     //}
 
@@ -621,7 +621,7 @@ void Network::process_udp()
                     std::lock_guard<std::recursive_mutex> lk(local_mutex);
                     _udp_addrs[msg.source_id()] = addr;
 
-                    //LOG(Log::LogLevel::TRACE, "Received UDP message from: %s - %s", addr.to_string().c_str(), msg.source_id().c_str());
+                    //APP_LOG(Log::LogLevel::TRACE, "Received UDP message from: %s - %s", addr.to_string().c_str(), msg.source_id().c_str());
                     if (msg.has_network_advertise())
                     {
                         if (_advertise)
@@ -651,24 +651,24 @@ void Network::process_udp()
                     }
                     else
                     {
-                        //LOG(Log::LogLevel::DEBUG, "Received UDP message from %s type %d", addr.to_string(true).c_str(), msg.messages_case());
+                        //APP_LOG(Log::LogLevel::DEBUG, "Received UDP message from %s type %d", addr.to_string(true).c_str(), msg.messages_case());
                         process_network_message(msg);
                     }
                 }
                 else
                 {
-                    LOG(Log::LogLevel::DEBUG, "Dropping UDP data: peer_id is null");
+                    APP_LOG(Log::LogLevel::DEBUG, "Dropping UDP data: peer_id is null");
                 }
             }
             else
             {
-                LOG(Log::LogLevel::DEBUG, "Dropping UDP data: failed to pase protobuf");
+                APP_LOG(Log::LogLevel::DEBUG, "Dropping UDP data: failed to pase protobuf");
             }
         }
     }
     catch (socket_exception & e)
     {
-        //LOG(Log::LogLevel::WARN, "Udp socket exception: %s", e.what());
+        //APP_LOG(Log::LogLevel::WARN, "Udp socket exception: %s", e.what());
     }
 }
 
@@ -683,7 +683,7 @@ void Network::process_tcp_listen()
     }
     catch (socket_exception & e)
     {
-        LOG(Log::LogLevel::WARN, "TCP Listen exception: %s", e.what());
+        APP_LOG(Log::LogLevel::WARN, "TCP Listen exception: %s", e.what());
     }
 }
 
@@ -707,7 +707,7 @@ void Network::process_tcp_data(tcp_buffer_t& tcp_buffer)
             if (tcp_buffer.next_packet_size == 0 && tcp_buffer.buffer.size() >= sizeof(next_packet_size_t))
             {
                 tcp_buffer.next_packet_size = *reinterpret_cast<next_packet_size_t*>(&tcp_buffer.buffer[0]);
-                tcp_buffer.next_packet_size = Socket::net_swap(tcp_buffer.next_packet_size);
+                tcp_buffer.next_packet_size = utils::Endian::net_swap(tcp_buffer.next_packet_size);
                 tcp_buffer.buffer.erase(tcp_buffer.buffer.begin(), tcp_buffer.buffer.begin() + sizeof(tcp_buffer.next_packet_size));
             }
 
@@ -726,7 +726,7 @@ void Network::process_tcp_data(tcp_buffer_t& tcp_buffer)
 
                 if (msg.ParseFromArray(message, message_size))
                 {
-                    //LOG(Log::LogLevel::DEBUG, "Received TCP message from %s type %d", tcp_buffer.socket.get_addr().to_string(true).c_str(), msg.messages_case());
+                    //APP_LOG(Log::LogLevel::DEBUG, "Received TCP message from %s type %d", tcp_buffer.socket.get_addr().to_string(true).c_str(), msg.messages_case());
                     process_network_message(msg);
                 }
                 tcp_buffer.buffer.erase(tcp_buffer.buffer.begin(), tcp_buffer.buffer.begin() + tcp_buffer.next_packet_size);
@@ -949,11 +949,11 @@ bool Network::SendBroadcast(Network_Message_pb& msg)
             try
             {
                 _udp_socket.sendto(brd, buffer.data(), buffer.length());
-                //LOG(Log::LogLevel::TRACE, "Send broadcast");
+                //APP_LOG(Log::LogLevel::TRACE, "Send broadcast");
             }
             catch (socket_exception & e)
             {
-                //LOG(Log::LogLevel::WARN, "Udp socket exception: %s", e.what());
+                //APP_LOG(Log::LogLevel::WARN, "Udp socket exception: %s", e.what());
                 return false;
             }
         }
@@ -992,11 +992,11 @@ std::set<Network::peer_t> Network::UDPSendToAllPeers(Network_Message_pb& msg)
         {
             _udp_socket.sendto(peer_infos.second, buffer.data(), buffer.length());
             peers_sent_to.insert(peer_infos.first);
-            //LOG(Log::LogLevel::TRACE, "Sent message to %s", peer_infos.second.to_string().c_str());
+            //APP_LOG(Log::LogLevel::TRACE, "Sent message to %s", peer_infos.second.to_string().c_str());
         }
         catch (socket_exception & e)
         {
-            //LOG(Log::LogLevel::WARN, "Udp socket exception: %s on %s", e.what(), peer_infos.second.to_string().c_str());
+            //APP_LOG(Log::LogLevel::WARN, "Udp socket exception: %s on %s", e.what(), peer_infos.second.to_string().c_str());
         }
     });
 
@@ -1012,7 +1012,7 @@ bool Network::UDPSendTo(Network_Message_pb& msg)
     auto it = _udp_addrs.find(msg.dest_id());
     if (it == _udp_addrs.end())
     {
-        //LOG(Log::LogLevel::ERR, "No route to %llu", msg.dest_id());
+        //APP_LOG(Log::LogLevel::ERR, "No route to %llu", msg.dest_id());
         return false;
     }
 
@@ -1034,11 +1034,11 @@ bool Network::UDPSendTo(Network_Message_pb& msg)
     try
     {
         _udp_socket.sendto(it->second, buffer.data(), buffer.length());
-        LOG(Log::LogLevel::DEBUG, "Sent message to peer_id: %s, addr: %s", std::to_string(msg.dest_id()).c_str(), it->second.to_string().c_str());
+        APP_LOG(Log::LogLevel::DEBUG, "Sent message to peer_id: %s, addr: %s", std::to_string(msg.dest_id()).c_str(), it->second.to_string().c_str());
     }
     catch (socket_exception & e)
     {
-        //LOG(Log::LogLevel::WARN, "Udp socket exception: %s on %s", e.what(), it->second.to_string().c_str());
+        //APP_LOG(Log::LogLevel::WARN, "Udp socket exception: %s on %s", e.what(), it->second.to_string().c_str());
         return false;
     }
 
@@ -1081,11 +1081,11 @@ std::set<Network::peer_t> Network::TCPSendToAllPeers(Network_Message_pb& msg)
         {
             client.second->send(buffer.data(), buffer.length());
             peers_sent_to.insert(client.first);
-            //LOG(Log::LogLevel::TRACE, "Sent message to %s", peer_infos.second.to_string().c_str());
+            //APP_LOG(Log::LogLevel::TRACE, "Sent message to %s", peer_infos.second.to_string().c_str());
         }
         catch (socket_exception & e)
         {
-            //LOG(Log::LogLevel::WARN, "Tcp socket exception: %s on %s", e.what(), client.second->get_addr().to_string().c_str());
+            //APP_LOG(Log::LogLevel::WARN, "Tcp socket exception: %s on %s", e.what(), client.second->get_addr().to_string().c_str());
         }
     });
 
@@ -1101,7 +1101,7 @@ bool Network::TCPSendTo(Network_Message_pb& msg)
     auto it = _tcp_peers.find(msg.dest_id());
     if (it == _tcp_peers.end())
     {
-        //LOG(Log::LogLevel::ERR, "No route to %llu", msg.dest_id());
+        //APP_LOG(Log::LogLevel::ERR, "No route to %llu", msg.dest_id());
         return false;
     }
 
@@ -1129,11 +1129,11 @@ bool Network::TCPSendTo(Network_Message_pb& msg)
     try
     {
         it->second->send(buffer.data(), buffer.length());
-        //LOG(Log::LogLevel::TRACE, "Sent message to %s", it->second.to_string().c_str());
+        //APP_LOG(Log::LogLevel::TRACE, "Sent message to %s", it->second.to_string().c_str());
     }
     catch (socket_exception & e)
     {
-        //LOG(Log::LogLevel::WARN, "Tcp socket exception: %s on %s", e.what(), it->second->get_addr().to_string().c_str());
+        //APP_LOG(Log::LogLevel::WARN, "Tcp socket exception: %s on %s", e.what(), it->second->get_addr().to_string().c_str());
         return false;
     }
 

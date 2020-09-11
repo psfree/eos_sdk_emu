@@ -33,7 +33,6 @@ namespace sdk
 
         std::mutex _local_mutex;
 
-        std::string _file_path;
         std::string _file_name;
 
         bool _done;
@@ -49,7 +48,7 @@ namespace sdk
         uint32_t _chunk_size;
 
         std::vector<uint8_t> _file_buffer;
-        std::fstream _input_file;
+        std::ifstream _input_file;
 
         void set_read_transfert(const EOS_PlayerDataStorage_ReadFileOptions* ReadOptions);
         void set_write_transfert(const EOS_PlayerDataStorage_WriteFileOptions* WriteOptions);
@@ -77,21 +76,16 @@ namespace sdk
     class EOSSDK_PlayerDataStorage :
         public IRunFrame
     {
-        std::string _game_save_folder;
-
         std::unordered_map<pFrameResult_t, EOSSDK_PlayerDataStorageFileTransferRequest*> _transferts;
         std::unordered_map<std::string, file_metadata_t> _files_cache;
 
         bool get_metadata(std::string const& filename);
 
     public:
-        static constexpr const char remote_folder[] = "remote";
+        static const std::string remote_directory;
 
         EOSSDK_PlayerDataStorage();
         ~EOSSDK_PlayerDataStorage();
-
-        std::string build_path_string(std::string const& base_folder, std::string file);
-        bool file_exists(std::string const& base_folder, std::string const& file);
 
         // RunFrame is always called when running callbacks
         virtual bool CBRunFrame();

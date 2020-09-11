@@ -127,7 +127,7 @@ LOCAL_API std::string generate_epic_id_user_from_name(std::string const& usernam
 
 LOCAL_API void fatal_throw(const char* msg)
 {
-    LOG(Log::LogLevel::FATAL, "%s", msg);
+    APP_LOG(Log::LogLevel::FATAL, "%s", msg);
 
     throw std::exception();
 }

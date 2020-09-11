@@ -24,21 +24,13 @@
 namespace sdk
 {
 
-constexpr decltype(EOSSDK_Achievements::achievements_filename)    EOSSDK_Achievements::achievements_filename;
-constexpr decltype(EOSSDK_Achievements::achievements_db_filename) EOSSDK_Achievements::achievements_db_filename;
+decltype(EOSSDK_Achievements::achievements_filename)    EOSSDK_Achievements::achievements_filename("achievements.json");
+decltype(EOSSDK_Achievements::achievements_db_filename) EOSSDK_Achievements::achievements_db_filename("achievements_db.json");
 
 EOSSDK_Achievements::EOSSDK_Achievements()
 {
-    _achievements_db_filepath = Settings::Inst().savepath;
-    _achievements_db_filepath += PATH_SEPARATOR;
-    _achievements_db_filepath += achievements_db_filename;
-
-    _achievements_filepath = Settings::Inst().savepath;
-    _achievements_filepath += PATH_SEPARATOR;
-    _achievements_filepath += achievements_filename;
-
-    load_json(_achievements_filepath, _achievements);
-    load_json(_achievements_db_filepath, _achievements_db);
+    FileManager::load_json(achievements_filename, _achievements);
+    FileManager::load_json(achievements_db_filename, _achievements_db);
 }
 
 EOSSDK_Achievements::~EOSSDK_Achievements()
@@ -60,7 +52,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition(typename decltype(_achievements
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid achievement_id");
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid achievement_id");
         goto achievement_error;
     }
     try
@@ -69,7 +61,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition(typename decltype(_achievements
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid unlocked_display_name for %s", ach->AchievementId);
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid unlocked_display_name for %s", ach->AchievementId);
         goto achievement_error;
     }
     try
@@ -78,7 +70,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition(typename decltype(_achievements
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid unlocked_description for %s", ach->AchievementId);
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid unlocked_description for %s", ach->AchievementId);
         goto achievement_error;
     }
     try
@@ -87,7 +79,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition(typename decltype(_achievements
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid locked_display_name for %s", ach->AchievementId);
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid locked_display_name for %s", ach->AchievementId);
         goto achievement_error;
     }
     try
@@ -96,7 +88,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition(typename decltype(_achievements
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid locked_description for %s", ach->AchievementId);
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid locked_description for %s", ach->AchievementId);
         goto achievement_error;
     }
     try
@@ -107,13 +99,13 @@ EOS_EResult EOSSDK_Achievements::copy_definition(typename decltype(_achievements
         }
         catch (...)
         {// If the user did not provide a hidden description (old field), use the locked description
-            LOG(Log::LogLevel::INFO, "No \"hidden_description\" in achievements_db, falling back to \"locked_description\"");
+            APP_LOG(Log::LogLevel::INFO, "No \"hidden_description\" in achievements_db, falling back to \"locked_description\"");
             ach->HiddenDescription = it.value()["locked_description"].get_ref<std::string&>().c_str();
         }
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid hidden_description or locked_description for %s", ach->AchievementId);
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid hidden_description or locked_description for %s", ach->AchievementId);
         goto achievement_error;
     }
     try
@@ -124,13 +116,13 @@ EOS_EResult EOSSDK_Achievements::copy_definition(typename decltype(_achievements
         }
         catch (...)
         {// If the user did not provide a completion description (old field), use the flavor text
-            LOG(Log::LogLevel::INFO, "No \"completion_description\" in achievements_db, falling back to \"flavor_text\"");
+            APP_LOG(Log::LogLevel::INFO, "No \"completion_description\" in achievements_db, falling back to \"flavor_text\"");
             ach->CompletionDescription = it.value()["flavor_text"].get_ref<std::string&>().c_str();
         }
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid completion_description for %s", ach->AchievementId);
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid completion_description for %s", ach->AchievementId);
         goto achievement_error;
     }
     try
@@ -139,7 +131,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition(typename decltype(_achievements
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid unlocked_icon_url for %s", ach->AchievementId);
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid unlocked_icon_url for %s", ach->AchievementId);
         goto achievement_error;
     }
     try
@@ -148,7 +140,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition(typename decltype(_achievements
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid locked_icon_url for %s", ach->AchievementId);
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid locked_icon_url for %s", ach->AchievementId);
         goto achievement_error;
     }
     try
@@ -157,7 +149,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition(typename decltype(_achievements
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid is_hidden for %s", ach->AchievementId);
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid is_hidden for %s", ach->AchievementId);
         goto achievement_error;
     }
     try
@@ -176,7 +168,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition(typename decltype(_achievements
             }
             catch (...)
             {
-                LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid stats_thresholds name for %s", ach->AchievementId);
+                APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid stats_thresholds name for %s", ach->AchievementId);
                 goto achievement_error;
             }
             try
@@ -185,7 +177,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition(typename decltype(_achievements
             }
             catch (...)
             {
-                LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid stats_thresholds[\"%s\"][\"threshold\"] for %s", stat_it.key().c_str(), ach->AchievementId);
+                APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid stats_thresholds[\"%s\"][\"threshold\"] for %s", stat_it.key().c_str(), ach->AchievementId);
                 goto achievement_error;
             }
         }
@@ -193,7 +185,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition(typename decltype(_achievements
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid stats_thresholds for %s", ach->AchievementId);
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid stats_thresholds for %s", ach->AchievementId);
         goto achievement_error;
     }
 
@@ -219,7 +211,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition_v2(typename decltype(_achieveme
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid Key");
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid Key");
         goto achievement_error;
     }
     try
@@ -228,7 +220,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition_v2(typename decltype(_achieveme
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid unlocked_display_name for %s", it.key().c_str());
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid unlocked_display_name for %s", it.key().c_str());
         goto achievement_error;
     }
     try
@@ -237,7 +229,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition_v2(typename decltype(_achieveme
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid unlocked_description for %s", it.key().c_str());
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid unlocked_description for %s", it.key().c_str());
         goto achievement_error;
     }
     try
@@ -246,7 +238,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition_v2(typename decltype(_achieveme
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid locked_display_name for %s", it.key().c_str());
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid locked_display_name for %s", it.key().c_str());
         goto achievement_error;
     }
     try
@@ -255,7 +247,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition_v2(typename decltype(_achieveme
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid locked_description for %s", it.key().c_str());
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid locked_description for %s", it.key().c_str());
         goto achievement_error;
     }
     try
@@ -264,7 +256,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition_v2(typename decltype(_achieveme
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid flavor_text for %s", it.key().c_str());
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid flavor_text for %s", it.key().c_str());
         goto achievement_error;
     }
     try
@@ -273,7 +265,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition_v2(typename decltype(_achieveme
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid unlocked_icon_url for %s", it.key().c_str());
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid unlocked_icon_url for %s", it.key().c_str());
         goto achievement_error;
     }
     try
@@ -282,7 +274,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition_v2(typename decltype(_achieveme
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid locked_icon_url for %s", it.key().c_str());
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid locked_icon_url for %s", it.key().c_str());
         goto achievement_error;
     }
     try
@@ -291,7 +283,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition_v2(typename decltype(_achieveme
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid is_hidden for %s", it.key().c_str());
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid is_hidden for %s", it.key().c_str());
         goto achievement_error;
     }
     try
@@ -310,7 +302,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition_v2(typename decltype(_achieveme
             }
             catch (...)
             {
-                LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid stats_thresholds name for %s", it.key().c_str());
+                APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid stats_thresholds name for %s", it.key().c_str());
                 goto achievement_error;
             }
             try
@@ -319,7 +311,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition_v2(typename decltype(_achieveme
             }
             catch (...)
             {
-                LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid stats_thresholds[\"%s\"][\"threshold\"] for %s", stat_it.key().c_str(), it.key().c_str());
+                APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid stats_thresholds[\"%s\"][\"threshold\"] for %s", stat_it.key().c_str(), it.key().c_str());
                 goto achievement_error;
             }
         }
@@ -327,7 +319,7 @@ EOS_EResult EOSSDK_Achievements::copy_definition_v2(typename decltype(_achieveme
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid stats_thresholds for %s", it.key().c_str());
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid stats_thresholds for %s", it.key().c_str());
         goto achievement_error;
     }
 
@@ -352,7 +344,7 @@ EOS_EResult EOSSDK_Achievements::copy_unlocked_achievement(typename decltype(_un
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in unlocked achievement definition: Invalid achievement_id");
+        APP_LOG(Log::LogLevel::ERR, "Error in unlocked achievement definition: Invalid achievement_id");
         goto achievement_error;
     }
     
@@ -362,7 +354,7 @@ EOS_EResult EOSSDK_Achievements::copy_unlocked_achievement(typename decltype(_un
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in unlocked achievement definition: Invalid unlock time");
+        APP_LOG(Log::LogLevel::ERR, "Error in unlocked achievement definition: Invalid unlock time");
         goto achievement_error;
     }
 
@@ -388,7 +380,7 @@ EOS_EResult EOSSDK_Achievements::copy_player_achievement(typename decltype(_achi
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid achievement_id");
+        APP_LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid achievement_id");
         goto achievement_error;
     }
     try
@@ -397,7 +389,7 @@ EOS_EResult EOSSDK_Achievements::copy_player_achievement(typename decltype(_achi
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid display_name for %s", it.key().c_str());
+        APP_LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid display_name for %s", it.key().c_str());
         goto achievement_error;
     }
     try
@@ -406,7 +398,7 @@ EOS_EResult EOSSDK_Achievements::copy_player_achievement(typename decltype(_achi
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid description for %s", it.key().c_str());
+        APP_LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid description for %s", it.key().c_str());
         goto achievement_error;
     }
     try
@@ -415,7 +407,7 @@ EOS_EResult EOSSDK_Achievements::copy_player_achievement(typename decltype(_achi
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid icon_url for %s", it.key().c_str());
+        APP_LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid icon_url for %s", it.key().c_str());
         goto achievement_error;
     }
     try
@@ -424,7 +416,7 @@ EOS_EResult EOSSDK_Achievements::copy_player_achievement(typename decltype(_achi
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid flavor_text for %s", it.key().c_str());
+        APP_LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid flavor_text for %s", it.key().c_str());
         goto achievement_error;
     }
     try
@@ -433,7 +425,7 @@ EOS_EResult EOSSDK_Achievements::copy_player_achievement(typename decltype(_achi
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid progress for %s", it.key().c_str());
+        APP_LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid progress for %s", it.key().c_str());
         goto achievement_error;
     }
     try
@@ -442,7 +434,7 @@ EOS_EResult EOSSDK_Achievements::copy_player_achievement(typename decltype(_achi
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid unlock_time for %s", it.key().c_str());
+        APP_LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid unlock_time for %s", it.key().c_str());
         goto achievement_error;
     }
     try
@@ -461,7 +453,7 @@ EOS_EResult EOSSDK_Achievements::copy_player_achievement(typename decltype(_achi
             }
             catch (...)
             {
-                LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid stat_info name for %s", it.key().c_str());
+                APP_LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid stat_info name for %s", it.key().c_str());
                 goto achievement_error;
             }
             try
@@ -470,7 +462,7 @@ EOS_EResult EOSSDK_Achievements::copy_player_achievement(typename decltype(_achi
             }
             catch (...)
             {
-                LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid stat_info[\"%s\"][\"current_value\"] for %s", stats[i].Name, it.key().c_str());
+                APP_LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid stat_info[\"%s\"][\"current_value\"] for %s", stats[i].Name, it.key().c_str());
                 goto achievement_error;
             }
             try
@@ -479,7 +471,7 @@ EOS_EResult EOSSDK_Achievements::copy_player_achievement(typename decltype(_achi
             }
             catch (...)
             {
-                LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid stat_info[\"%s\"][\"threshold_value\"] for %s", stats[i].Name, it.key().c_str());
+                APP_LOG(Log::LogLevel::ERR, "Error in player achievement: Invalid stat_info[\"%s\"][\"threshold_value\"] for %s", stats[i].Name, it.key().c_str());
                 goto achievement_error;
             }
         }
@@ -487,7 +479,7 @@ EOS_EResult EOSSDK_Achievements::copy_player_achievement(typename decltype(_achi
     }
     catch (...)
     {
-        LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid stats_thresholds for %s", it.key().c_str());
+        APP_LOG(Log::LogLevel::ERR, "Error in achievement definition: Invalid stats_thresholds for %s", it.key().c_str());
         goto achievement_error;
     }
 
@@ -789,7 +781,7 @@ void EOSSDK_Achievements::UnlockAchievements(const EOS_Achievements_UnlockAchiev
             }
         }
 
-        save_json(_achievements_filepath, _achievements);
+        FileManager::save_json(achievements_filename, _achievements);
 
         ouacci.AchievementsCount = Options->AchievementsCount;
         ouacci.ResultCode = EOS_EResult::EOS_Success;
