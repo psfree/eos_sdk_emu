@@ -9,175 +9,98 @@ variables:
   DOCKER_DRIVER: overlay2
   GIT_SUBMODULE_STRATEGY: recursive
 
-protobuf:static:linux:
+static:linux:deps:
   stage: dependencies
-  image: ubuntu:18.04
-
-  before_script:
-    - dpkg --add-architecture i386
+  image: nemirtingas/linux_vcpkg:ubuntu18
 
   script:
-    # don't rebuild every time
-    - build_x86_protobuf=1
-    - build_x64_protobuf=1
-    - build_x86_curl=0
-    - build_x64_curl=0
-    - build_x86_glew=0
-    - build_x64_glew=0
-    - build_x86_zstd=0
-    - build_x64_zstd=1
-    - test -e extra/protobuf/linux32/bin/protoc && test -e extra/protobuf/linux32/lib/libprotobuf.a && build_x86_protobuf=0
-    - test -e extra/protobuf/linux64/bin/protoc && test -e extra/protobuf/linux64/lib/libprotobuf.a && build_x64_protobuf=0
-    - test -e extra/curl/linux32/lib/libcurl.a && build_x86_curl=0
-    - test -e extra/curl/linux64/lib/libcurl.a && build_x64_curl=0
-    - test -e extra/glew/linux32/lib/libGLEW.a && build_x86_glew=0
-    - test -e extra/glew/linux64/lib/libGLEW.a && build_x64_glew=0
-    - test -e extra/zstd/linux32/lib/libzstd.a && build_x86_zstd=0
-    - test -e extra/zstd/linux64/lib/libzstd.a && build_x64_zstd=0
-    - test $build_x86_protobuf -eq 0 && test $build_x64_protobuf -eq 0 && test $build_x86_curl -eq 0 && test $build_x64_curl -eq 0 && test $build_x86_glew -eq 0 && test $build_x64_glew -eq 0 && test $build_x86_zstd -eq 0 && test $build_x64_zstd -eq 0 && exit 0
-    - apt update
-    - apt -y install gcc g++ gcc-multilib g++-multilib build-essential cmake python git wget curl libcurl4-openssl-dev zlib1g zlib1g-dev libssl-dev libssl-dev:i386 libgl1-mesa-dev libgl1-mesa-dev:i386
-    - export JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
-    - test -z "${JOBS}" && JOBS=2
-    - echo "Building protobuf with ${JOBS} jobs"
-    - test $build_x86_protobuf -eq 1 && { ./build_protobuf.sh "Release" "linux32" || exit 1; }
-    - test $build_x64_protobuf -eq 1 && { ./build_protobuf.sh "Release" "linux64" || exit 1; }
-    - test $build_x86_curl     -eq 1 && { ./build_curl.sh     "Release" "linux32" || exit 1; }
-    - test $build_x64_curl     -eq 1 && { ./build_curl.sh     "Release" "linux64" || exit 1; }
-    - test $build_x86_glew     -eq 1 && { ./build_glew.sh     "Release" "linux32" || exit 1; }
-    - test $build_x64_glew     -eq 1 && { ./build_glew.sh     "Release" "linux64" || exit 1; }
-    - test $build_x86_zstd     -eq 1 && { ./build_zstd.sh     "Release" "linux32" || exit 1; }
-    - test $build_x64_zstd     -eq 1 && { ./build_zstd.sh     "Release" "linux64" || exit 1; }
+    - VCPKG_PATH=$(pwd)/vcpkg
+    - TRIPLET=x64-linux-release
+    - vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf:${TRIPLET} || exit 1
+    #- vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf[zlib]:${TRIPLET} || exit 1
+    #- vcpkg "--x-install-root=${VCPKG_PATH}" install curl:${TRIPLET} || exit 1
+    #- vcpkg "--x-install-root=${VCPKG_PATH}" install glew:${TRIPLET} || exit 1
+    - vcpkg "--x-install-root=${VCPKG_PATH}" install zstd:${TRIPLET} || exit 1
     - exit 0
 
   cache:
-    key: protobuf-static-linux-cache
+    key: static-linux-deps-cache
     paths:
-      - extra/protobuf/
-      - extra/curl/
-      - extra/glew/
-      - extra/zstd/
+      - vcpkg
   artifacts:
     paths:
-      - extra/protobuf/
-      - extra/curl/
-      - extra/glew/
-      - extra/zstd/
+      - vcpkg
     expire_in: 1 day
 
-protobuf:static:windows:
+static:windows:deps:
   stage: dependencies
-  image: nemirtingas/windowscross:msvc2019
-
-  before_script:
-    - dpkg --add-architecture i386
+  image: nemirtingas/windowscross_vcpkg:msvc2019
 
   script:
-    # don't rebuild every time
-    - build_x86_protobuf=1
-    - build_x64_protobuf=1
-    - build_x86_curl=0
-    - build_x64_curl=0
-    - build_x86_glew=0
-    - build_x64_glew=0
-    - build_x86_zstd=1
-    - build_x64_zstd=1
-    - test -e extra/protobuf/win32/bin/protoc.exe && test -e extra/protobuf/win32/lib/libprotobuf.lib && build_x86_protobuf=0
-    - test -e extra/protobuf/win64/bin/protoc.exe && test -e extra/protobuf/win64/lib/libprotobuf.lib && build_x64_protobuf=0
-    - test -e extra/curl/win32/lib/libcurl.lib && build_x86_curl=0
-    - test -e extra/curl/win64/lib/libcurl.lib && build_x64_curl=0
-    - test -e extra/glew/win32/lib/glew32.lib && build_x86_glew=0
-    - test -e extra/glew/win64/lib/glew32.lib && build_x64_glew=0
-    - test -e extra/zstd/win32/lib/zstd_static.lib && build_x86_zstd=0
-    - test -e extra/zstd/win64/lib/zstd_static.lib && build_x64_zstd=0
-    - test $build_x86_protobuf -eq 0 && test $build_x64_protobuf -eq 0 && test $build_x86_curl -eq 0 && test $build_x64_curl -eq 0 && test $build_x86_glew -eq 0 && test $build_x64_glew -eq 0 && test $build_x86_zstd -eq 0 && test $build_x64_zstd -eq 0 && exit 0
-    - export JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
-    - test -z "${JOBS}" && JOBS=2
-    - echo "Building protobuf with ${JOBS} jobs"
-    - export HOST_ARCH="x86"
-    - test $build_x86_protobuf -eq 1 && { ./build_protobuf.sh "Release" "win32" || exit 1; }
-    - test $build_x86_curl     -eq 1 && { ./build_curl.sh     "Release" "win32" || exit 1; }
-    - test $build_x86_glew     -eq 1 && { ./build_glew.sh     "Release" "win32" || exit 1; }
-    - test $build_x86_zstd     -eq 1 && { ./build_zstd.sh     "Release" "win32" || exit 1; }
-    - export HOST_ARCH="x64"
-    - test $build_x64_protobuf -eq 1 && { ./build_protobuf.sh "Release" "win64" || exit 1; }
-    - test $build_x64_curl     -eq 1 && { ./build_curl.sh     "Release" "win64" || exit 1; }
-    - test $build_x64_zstd     -eq 1 && { ./build_zstd.sh     "Release" "win64" || exit 1; }
+    - VCPKG_PATH=$(pwd)/vcpkg
+    - TRIPLET=x64-linux
+    - vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf:${TRIPLET} || exit 1
+    - TRIPLET=x86-windows-release
+    - vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf:${TRIPLET} || exit 1
+    #- vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf[zlib]:${TRIPLET} || exit 1
+    #- vcpkg "--x-install-root=${VCPKG_PATH}" install curl:${TRIPLET} || exit 1
+    #- vcpkg "--x-install-root=${VCPKG_PATH}" install glew:${TRIPLET} || exit 1
+    - vcpkg "--x-install-root=${VCPKG_PATH}" install zstd:${TRIPLET} || exit 1
+    - TRIPLET=x64-windows-release
+    - vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf:${TRIPLET} || exit 1
+    #- vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf[zlib]:${TRIPLET} || exit 1
+    #- vcpkg "--x-install-root=${VCPKG_PATH}" install curl:${TRIPLET} || exit 1
+    #- vcpkg "--x-install-root=${VCPKG_PATH}" install glew:${TRIPLET} || exit 1
+    - vcpkg "--x-install-root=${VCPKG_PATH}" install zstd:${TRIPLET} || exit 1
     - exit 0
 
   cache:
-    key: protobuf-static-windows-cache
+    key: static-windows-deps-cache
     paths:
-      - extra/protobuf/
-      - extra/curl/
-      - extra/glew/
-      - extra/zstd/
+      - vcpkg
   artifacts:
     paths:
-      - extra/protobuf/
-      - extra/curl/
-      - extra/glew/
-      - extra/zstd/
+      - vcpkg
     expire_in: 1 day
 
-protobuf:static:macosx:
+static:macosx:deps:
   stage: dependencies
-  image: nemirtingas/osxcross:SDK10.13
+  image: nemirtingas/osxcross_vcpkg:SDK10.13
 
   script:
-    # don't rebuild every time
-    - build_x86_protobuf=0
-    - build_x64_protobuf=1
-    - build_x86_zstd=0
-    - build_x64_zstd=1
-    - test -e extra/protobuf/macosx32/bin/protoc && test -e extra/protobuf/macosx32/lib/libprotobuf.a && build_x86_protobuf=0
-    - test -e extra/protobuf/macosx64/bin/protoc && test -e extra/protobuf/macosx64/lib/libprotobuf.a && build_x64_protobuf=0
-    - test -e extra/zstd/macosx32/lib/libzstd.a && build_x86_zstd=0
-    - test -e extra/zstd/macosx64/lib/libzstd.a && build_x64_zstd=0
-    - test $build_x86_protobuf -eq 0 && test $build_x64_protobuf -eq && test $build_x86_zstd -eq 0 && test $build_x86_zstd -eq 0 && exit 0
-    - export JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
-    - test -z "${JOBS}" && JOBS=2
-    - echo "Building protobuf with ${JOBS} jobs"
-    - export OSXCROSS_HOST="i386-apple-${OSXCROSS_TARGET}"
-    - test $build_x86_protobuf -eq 1 && { ./build_protobuf.sh "Release" "macosx32" || exit 1; }
-    - test $build_x86_zstd -eq 1     && { ./build_zstd.sh     "Release" "macosx32" || exit 1; }
-    - export OSXCROSS_HOST="x86_64-apple-${OSXCROSS_TARGET}"
-    - test $build_x64_protobuf -eq 1 && { ./build_protobuf.sh "Release" "macosx64" || exit 1; }
-    - test $build_x64_zstd -eq 1     && { ./build_zstd.sh     "Release" "macosx64" || exit 1; }
+    - VCPKG_PATH=$(pwd)/vcpkg
+    - TRIPLET=x64-linux
+    - vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf:${TRIPLET} || exit 1
+    - TRIPLET=x64-darwin-release
+    - vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf:${TRIPLET} || exit 1
+    #- vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf[zlib]:${TRIPLET} || exit 1
+    #- vcpkg "--x-install-root=${VCPKG_PATH}" install curl:${TRIPLET} || exit 1
+    - vcpkg "--x-install-root=${VCPKG_PATH}" install zstd:${TRIPLET} || exit 1
     - exit 0
 
   cache:
-    key: protobuf-static-macosx-cache
+    key: static-macosx-deps-cache
     paths:
-      - extra/protobuf/
-      - extra/zstd/
+      - vcpkg/
   artifacts:
     paths:
-      - extra/protobuf/
-      - extra/zstd/
+      - vcpkg/
     expire_in: 1 day
 
 build:linux:
   stage: build
-  image: ubuntu:18.04
+  image: nemirtingas/linux_vcpkg:ubuntu18
   dependencies:
-    - protobuf:static:linux
-
-  before_script:
-    #- dpkg --add-architecture i386
-    - apt update
-    #- apt -y install gcc g++ gcc-multilib g++-multilib build-essential cmake git wget curl libcurl4-openssl-dev libssl-dev libssl-dev:i386 zlib1g zlib1g-dev libudev-dev libudev-dev:i386 libgl1-mesa-dev libgl1-mesa-dev:i386
-    - apt -y install gcc g++ build-essential cmake git wget curl libcurl4-openssl-dev libssl-dev zlib1g zlib1g-dev libudev-dev libgl1-mesa-dev
+    - static:linux:deps
 
   script:
-    - JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
-    - test -z "${JOBS}" && JOBS=2
     - ./ci_versionning.sh
-    - echo "Building epic api with ${JOBS} jobs"
-    #- ./build_epicapi.sh "Release" "linux32" || exit 1
-    #- ./build_epicapi.sh "Debug"   "linux32" || exit 1
-    - ./build_epicapi.sh "Release" "linux64" || exit 1
-    - ./build_epicapi.sh "Debug"   "linux64" || exit 1
+    - VCPKG_PATH=$(pwd)/vcpkg
+    - export TRIPLET=x64-linux-release
+    - OUT=linux64/Release
+    - cmake -G Ninja -Wno-dev "-D_VCPKG_INSTALLED_DIR=${VCPKG_PATH}" -DX64=ON -DCMAKE_BUILD_TYPE=Release -S . -B "${OUT}"
+    - cmake --build "${OUT}"
+    - cmake --install "${OUT}"
     - exit 0
 
   artifacts:
@@ -188,23 +111,23 @@ build:linux:
 
 build:windows:
   stage: build
-  image: nemirtingas/windowscross:msvc2019
+  image: nemirtingas/windowscross_vcpkg:msvc2019
   dependencies:
-# protobuf:static:linux is needed for protoc (linux) protoc for windows is unused or you would need wine.
-    - protobuf:static:linux
-    - protobuf:static:windows
+    - static:windows:deps
 
   script:
-    - JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
-    - test -z "${JOBS}" && JOBS=2
     - ./ci_versionning.sh
-    - echo "Building steamapi with ${JOBS} jobs"
-    - export HOST_ARCH="x86"
-    - ./build_epicapi.sh "Release" "win32" || exit 1
-    - ./build_epicapi.sh "Debug" "win32" || exit 1
-    - export HOST_ARCH="x64"
-    - ./build_epicapi.sh "Release" "win64" || exit 1
-    - ./build_epicapi.sh "Debug" "win64" || exit 1
+    - VCPKG_PATH=$(pwd)/vcpkg
+    - export TRIPLET=x86-windows-release
+    - OUT=win32/Release
+    - cmake -G Ninja -Wno-dev "-D_VCPKG_INSTALLED_DIR=${VCPKG_PATH}" -DX86=ON -DCMAKE_BUILD_TYPE=Release -S . -B "${OUT}"
+    - cmake --build "${OUT}"
+    - cmake --install "${OUT}"
+    - export TRIPLET=x64-windows-release
+    - OUT=win64/Release
+    - cmake -G Ninja -Wno-dev "-D_VCPKG_INSTALLED_DIR=${VCPKG_PATH}" -DX64=ON -DCMAKE_BUILD_TYPE=Release -S . -B "${OUT}"
+    - cmake --build "${OUT}"
+    - cmake --install "${OUT}"
   artifacts:
     paths:
       - release/
@@ -213,27 +136,19 @@ build:windows:
 
 build:macosx:
   stage: build
-  image: nemirtingas/osxcross:SDK10.13
+  image: nemirtingas/osxcross_vcpkg:SDK10.13
   dependencies:
-# protobuf:static:linux is needed for protoc (linux) protoc for macosx is unused
-    - protobuf:static:linux
-    - protobuf:static:macosx
+    - static:macosx:deps
 
   script:
-    - JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
-    - test -z "${JOBS}" && JOBS=2
     - ./ci_versionning.sh
-    - echo "Building steamapi with ${JOBS} jobs"
-    #- export OSXCROSS_HOST="i386-apple-${OSXCROSS_TARGET}"
-    #- ./build_epicapi.sh "Release" "macosx32" || exit 1
-    #- ./build_epicapi.sh "Debug"   "macosx32" || exit 1
-    - export OSXCROSS_HOST="x86_64-apple-${OSXCROSS_TARGET}"
-    - ./build_epicapi.sh "Release" "macosx64" || exit 1
-    - ./build_epicapi.sh "Debug"   "macosx64" || exit 1
+    - VCPKG_PATH=$(pwd)/vcpkg
+    - export TRIPLET=x64-darwin-release
+    - OUT=macosx64/Release
+    - cmake -G Ninja -Wno-dev "-D_VCPKG_INSTALLED_DIR=${VCPKG_PATH}" -DX64=ON -DCMAKE_BUILD_TYPE=Release -S . -B "${OUT}"
+    - cmake --build "${OUT}"
+    - cmake --install "${OUT}"
     - mkdir release/macosx
-    - mkdir debug/macosx
-    - x86_64-apple-${OSXCROSS_TARGET}-lipo -create release/macosx*/libEOSSDK-Mac-Shipping.dylib -output release/macosx/libEOSSDK-Mac-Shipping.dylib
-    - x86_64-apple-${OSXCROSS_TARGET}-lipo -create debug/macosx*/libEOSSDK-Mac-Shipping.dylib -output debug/macosx/libEOSSDK-Mac-Shipping.dylib
 
   artifacts:
     paths:
