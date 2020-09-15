@@ -1130,7 +1130,7 @@ namespace HeaderReader
             _TargetOS = OsId.Unknown;
             _ExecutableType = ExecutableType.Unknown;
 
-            if (filePath == null)
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
                 return;
 
             using (FileStream stream = new FileStream(filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
