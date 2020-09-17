@@ -46,6 +46,7 @@ namespace sdk
         };
         EOS_PlayerDataStorage_OnFileTransferProgressCallback _progress_callback;
         uint32_t _chunk_size;
+        uint32_t _file_size;
 
         std::vector<uint8_t> _file_buffer;
         std::ifstream _input_file;
@@ -66,18 +67,18 @@ namespace sdk
         void Release();
     };
 
-    struct file_metadata_t
-    {
-        std::string file_path;
-        size_t file_size;
-        std::string md5sum;
-    };
-
     class EOSSDK_PlayerDataStorage :
         public IRunFrame
     {
+        struct file_metadata_t
+        {
+            std::string file_path;
+            size_t file_size;
+            std::string md5sum;
+        };
+
         std::unordered_map<pFrameResult_t, EOSSDK_PlayerDataStorageFileTransferRequest*> _transferts;
-        std::unordered_map<std::string, file_metadata_t> _files_cache;
+        nlohmann::fifo_map<std::string, file_metadata_t> _files_cache;
 
         bool get_metadata(std::string const& filename);
 

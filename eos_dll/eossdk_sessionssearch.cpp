@@ -212,11 +212,6 @@ void EOSSDK_SessionSearch::Find(const EOS_SessionSearch_FindOptions* Options, vo
     pFrameResult_t res(new FrameResult);
     EOS_SessionSearch_FindCallbackInfo& fci = res->CreateCallback<EOS_SessionSearch_FindCallbackInfo>((CallbackFunc)CompletionDelegate);
     
-    {
-        char* str = new char[1];
-        *str = '\0';
-        fci.InviteId = str;
-    }
     fci.ClientData = ClientData;
 
     if (_search_cb.get() != nullptr)
@@ -424,17 +419,16 @@ void EOSSDK_SessionSearch::FreeCallback(pFrameResult_t res)
 {
     std::lock_guard<std::mutex> lk(_local_mutex);
 
-    switch (res->ICallback())
+    //switch (res->ICallback())
     {
         /////////////////////////////
         //        Callbacks        //
         /////////////////////////////
-        case EOS_SessionSearch_FindCallbackInfo::k_iCallback:
-        {
-            EOS_SessionSearch_FindCallbackInfo& callback = res->GetCallback<EOS_SessionSearch_FindCallbackInfo>();
-            delete[]callback.InviteId;
-        }
-        break;
+        //case callback_type::k_iCallback:
+        //{
+        //    callback_type& callback = res->GetCallback<callback_type>();
+        //}
+        //break;
         /////////////////////////////
         //      Notifications      //
         /////////////////////////////

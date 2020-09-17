@@ -140,6 +140,7 @@ LOCAL_API std::string get_callback_name(int iCallback)
         // Auth
         I_CALLBACK(EOS_Auth_LoginCallbackInfo);
         I_CALLBACK(EOS_Auth_LogoutCallbackInfo);
+        I_CALLBACK(EOS_Auth_LinkAccountCallbackInfo);
         I_CALLBACK(EOS_Auth_VerifyUserAuthCallbackInfo);
         I_CALLBACK(EOS_Auth_DeletePersistentAuthCallbackInfo);
         I_CALLBACK(EOS_Auth_LoginStatusChangedCallbackInfo);
@@ -150,8 +151,10 @@ LOCAL_API std::string get_callback_name(int iCallback)
         I_CALLBACK(EOS_Connect_LoginCallbackInfo);
         I_CALLBACK(EOS_Connect_CreateUserCallbackInfo);
         I_CALLBACK(EOS_Connect_LinkAccountCallbackInfo);
+        I_CALLBACK(EOS_Connect_UnlinkAccountCallbackInfo);
         I_CALLBACK(EOS_Connect_CreateDeviceIdCallbackInfo);
         I_CALLBACK(EOS_Connect_DeleteDeviceIdCallbackInfo);
+        I_CALLBACK(EOS_Connect_TransferDeviceIdAccountCallbackInfo);
         I_CALLBACK(EOS_Connect_QueryExternalAccountMappingsCallbackInfo);
         I_CALLBACK(EOS_Connect_QueryProductUserIdMappingsCallbackInfo);
         I_CALLBACK(EOS_Connect_AuthExpirationCallbackInfo);
@@ -229,6 +232,8 @@ LOCAL_API std::string get_callback_name(int iCallback)
         // Stats
         I_CALLBACK(EOS_Stats_IngestStatCompleteCallbackInfo);
         I_CALLBACK(EOS_Stats_OnQueryStatsCompleteCallbackInfo);
+        // TitleStorage
+
         // UI
         I_CALLBACK(EOS_UI_ShowFriendsCallbackInfo);
         I_CALLBACK(EOS_UI_HideFriendsCallbackInfo);
@@ -236,6 +241,7 @@ LOCAL_API std::string get_callback_name(int iCallback)
         // UserInfo
         I_CALLBACK(EOS_UserInfo_QueryUserInfoCallbackInfo);
         I_CALLBACK(EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo);
+        I_CALLBACK(EOS_UserInfo_QueryUserInfoByExternalAccountCallbackInfo);
 #undef I_CALLBACK
     }
 

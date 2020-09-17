@@ -28,6 +28,8 @@ decltype(EOSSDK_PlayerDataStorage::remote_directory) EOSSDK_PlayerDataStorage::r
 
 EOSSDK_PlayerDataStorage::EOSSDK_PlayerDataStorage()
 {
+    APP_LOG(Log::LogLevel::INFO, "PlayerDataStorage files will be search in %s", FileManager::canonical_path(remote_directory).c_str());
+
     GetCB_Manager().register_callbacks(this);
     GetCB_Manager().register_frame(this);
 }
@@ -40,8 +42,8 @@ EOSSDK_PlayerDataStorage::~EOSSDK_PlayerDataStorage()
 
 bool EOSSDK_PlayerDataStorage::get_metadata(std::string const& filename)
 {
-    std::string file_path(FileManager::canonical_path(FileManager::join(remote_directory, FileManager::clean_path(filename))));
-    std::ifstream in_file(file_path, std::ios::in | std::ios::binary);
+    std::string file_path(FileManager::join(remote_directory, FileManager::clean_path(filename)));
+    std::ifstream in_file = FileManager::open_read(file_path, std::ios::binary);
     if (in_file)
     {
         auto& metadata = _files_cache[filename];
@@ -160,6 +162,7 @@ void EOSSDK_PlayerDataStorage::QueryFileList(const EOS_PlayerDataStorage_QueryFi
     {
         std::vector<std::string> files(std::move(FileManager::list_files(remote_directory, true)));
 
+        _files_cache.clear();
         for (auto& file_name : files)
         {
             std::replace(file_name.begin(), file_name.end(), '\\', '/');
@@ -242,7 +245,7 @@ EOS_EResult EOSSDK_PlayerDataStorage::GetFileMetadataCount(const EOS_PlayerDataS
     {
         if (OutFileMetadataCount != nullptr)
             *OutFileMetadataCount = 0;
-
+        
         return EOS_EResult::EOS_InvalidParameters;
     }
 
@@ -326,13 +329,13 @@ void EOSSDK_PlayerDataStorage::DuplicateFile(const EOS_PlayerDataStorage_Duplica
     }
     else
     {
-        std::string src_file(std::move(FileManager::canonical_path(FileManager::join(remote_directory, FileManager::clean_path(DuplicateOptions->SourceFilename)))));
+        std::string src_file(FileManager::join(remote_directory, FileManager::clean_path(DuplicateOptions->SourceFilename)));
+        std::ifstream in_file = FileManager::open_read(src_file, std::ios::binary);
 
-        std::ifstream in_file(src_file, std::ios::in | std::ios::binary);
         if (in_file)
         {
-            std::string dst_file(std::move(FileManager::canonical_path(FileManager::join(remote_directory, FileManager::clean_path(DuplicateOptions->DestinationFilename)))));
-            std::ofstream out_file(dst_file, std::ios::out | std::ios::binary | std::ios::trunc);
+            std::string dst_file(FileManager::join(remote_directory, FileManager::clean_path(DuplicateOptions->DestinationFilename)));
+            std::ofstream out_file = FileManager::open_write(dst_file, std::ios::binary | std::ios::trunc);
             if (out_file)
             {
                 char* buff = new char[1024 * 1024];
@@ -427,7 +430,7 @@ void EOSSDK_PlayerDataStorage::DeleteFile(const EOS_PlayerDataStorage_DeleteFile
  */
 EOS_HPlayerDataStorageFileTransferRequest EOSSDK_PlayerDataStorage::ReadFile(const EOS_PlayerDataStorage_ReadFileOptions* ReadOptions, void* ClientData, const EOS_PlayerDataStorage_OnReadFileCompleteCallback CompletionCallback)
 {
-    APP_LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     if (CompletionCallback == nullptr)
@@ -466,8 +469,8 @@ EOS_HPlayerDataStorageFileTransferRequest EOSSDK_PlayerDataStorage::ReadFile(con
         strncpy(str, ReadOptions->Filename, len);
         rfci.Filename = str;
 
-        std::string file_path(FileManager::canonical_path(FileManager::join(remote_directory, FileManager::clean_path(rfci.Filename))));
-        if (FileManager::is_file(FileManager::join(remote_directory, FileManager::clean_path(rfci.Filename))))
+        std::string file_path(FileManager::join(remote_directory, FileManager::clean_path(rfci.Filename)));
+        if (FileManager::is_file(file_path))
         {
             APP_LOG(Log::LogLevel::INFO, "Start Reading file: %s", file_path.c_str());
 
@@ -504,7 +507,7 @@ EOS_HPlayerDataStorageFileTransferRequest EOSSDK_PlayerDataStorage::ReadFile(con
  */
 EOS_HPlayerDataStorageFileTransferRequest EOSSDK_PlayerDataStorage::WriteFile(const EOS_PlayerDataStorage_WriteFileOptions* WriteOptions, void* ClientData, const EOS_PlayerDataStorage_OnWriteFileCompleteCallback CompletionCallback)
 {
-    APP_LOG(Log::LogLevel::TRACE, "");
+    TRACE_FUNC();
     GLOBAL_LOCK();
 
     if (CompletionCallback == nullptr)
@@ -604,7 +607,7 @@ bool EOSSDK_PlayerDataStorage::RunCallbacks(pFrameResult_t res)
                 rfdci.ClientData = callback.ClientData;
                 rfdci.Filename = callback.Filename;
                 rfdci.LocalUserId = callback.LocalUserId;
-                rfdci.TotalFileSizeBytes = _files_cache[transfert._file_name].file_size;
+                rfdci.TotalFileSizeBytes = transfert._file_size;
 
                 transfert._input_file.read((char*)&transfert._file_buffer[0], transfert._chunk_size);
                 size_t read_len = transfert._input_file.gcount();

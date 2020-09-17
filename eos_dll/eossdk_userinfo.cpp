@@ -209,6 +209,41 @@ void EOSSDK_UserInfo::QueryUserInfoByDisplayName(const EOS_UserInfo_QueryUserInf
 }
 
 /**
+ * EOS_UserInfo_QueryUserInfoByExternalAccount is used to start an asynchronous query to retrieve user information by external accounts.
+ * This can be useful for getting the EOS_EpicAccountIds for external accounts.
+ * Once the callback has been fired with a successful ResultCode, it is possible to call CopyUserInfo to receive an EOS_UserInfo containing the available information.
+ *
+ * @param Options structure containing the input parameters
+ * @param ClientData arbitrary data that is passed back to you in the CompletionDelegate
+ * @param CompletionDelegate a callback that is fired when the async operation completes, either successfully or in error
+ *
+ * @see EOS_UserInfo
+ * @see EOS_UserInfo_QueryUserInfoByExternalAccountOptions
+ * @see EOS_UserInfo_OnQueryUserInfoByExternalAccountCallback
+ */
+void EOSSDK_UserInfo::QueryUserInfoByExternalAccount(const EOS_UserInfo_QueryUserInfoByExternalAccountOptions* Options, void* ClientData, const EOS_UserInfo_OnQueryUserInfoByExternalAccountCallback CompletionDelegate)
+{
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+
+    if (CompletionDelegate == nullptr)
+        return;
+
+    pFrameResult_t res(new FrameResult);
+    EOS_UserInfo_QueryUserInfoByExternalAccountCallbackInfo& quibeaci = res->CreateCallback<EOS_UserInfo_QueryUserInfoByExternalAccountCallbackInfo>((CallbackFunc)CompletionDelegate);
+    
+    quibeaci.ClientData = ClientData;
+    quibeaci.AccountType = Options->AccountType;
+    quibeaci.ExternalAccountId = "";
+    quibeaci.LocalUserId = Settings::Inst().userid;
+    quibeaci.TargetUserId = GetInvalidEpicUserId();
+    quibeaci.ResultCode = EOS_EResult::EOS_UnexpectedError;
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
+}
+
+/**
  * EOS_UserInfo_CopyUserInfo is used to immediately retrieve a copy of user information for an account ID, cached by a previous call to EOS_UserInfo_QueryUserInfo.
  * If the call returns an EOS_Success result, the out parameter, OutUserInfo, must be passed to EOS_UserInfo_Release to release the memory associated with it.
  *

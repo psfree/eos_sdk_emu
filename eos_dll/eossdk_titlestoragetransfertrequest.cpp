@@ -17,14 +17,15 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "eossdk_playerdatastorage.h"
+#include "eossdk_titlestorage.h"
 #include "eossdk_platform.h"
+#include "eos_client_api.h"
 #include "settings.h"
 
 namespace sdk
 {
 
-EOSSDK_PlayerDataStorageFileTransferRequest::EOSSDK_PlayerDataStorageFileTransferRequest():
+EOSSDK_TitleStorageFileTransferRequest::EOSSDK_TitleStorageFileTransferRequest():
     _done(false),
     _canceled(false),
     _released(false)
@@ -32,12 +33,12 @@ EOSSDK_PlayerDataStorageFileTransferRequest::EOSSDK_PlayerDataStorageFileTransfe
 
 }
 
-EOSSDK_PlayerDataStorageFileTransferRequest::~EOSSDK_PlayerDataStorageFileTransferRequest()
+EOSSDK_TitleStorageFileTransferRequest::~EOSSDK_TitleStorageFileTransferRequest()
 {
 
 }
 
-void EOSSDK_PlayerDataStorageFileTransferRequest::set_read_transfert(const EOS_PlayerDataStorage_ReadFileOptions* ReadOptions)
+void EOSSDK_TitleStorageFileTransferRequest::set_read_transfert(const EOS_TitleStorage_ReadFileOptions* ReadOptions)
 {
     std::lock_guard<std::mutex> _lk(_local_mutex);
     std::string file_path = FileManager::join(EOSSDK_PlayerDataStorage::remote_directory, FileManager::clean_path(ReadOptions->Filename));
@@ -49,26 +50,16 @@ void EOSSDK_PlayerDataStorageFileTransferRequest::set_read_transfert(const EOS_P
     _file_size = FileManager::file_size(file_path);
 
     _file_buffer.resize(_chunk_size);
-    _input_file = std::move(FileManager::open_read(file_path, std::ios::binary));
+    _input_file = FileManager::open_read(file_path, std::ios::binary);
 }
 
-void EOSSDK_PlayerDataStorageFileTransferRequest::set_write_transfert(const EOS_PlayerDataStorage_WriteFileOptions* WriteOptions)
-{
-    std::lock_guard<std::mutex> _lk(_local_mutex);
-
-    _write_callback = WriteOptions->WriteFileDataCallback;
-    _progress_callback = WriteOptions->FileTransferProgressCallback;
-    _chunk_size = WriteOptions->ChunkLengthBytes;
-    _file_name = WriteOptions->Filename;
-}
-
-bool EOSSDK_PlayerDataStorageFileTransferRequest::canceled()
+bool EOSSDK_TitleStorageFileTransferRequest::canceled()
 {
     std::lock_guard<std::mutex> _lk(_local_mutex);
     return _canceled;
 }
 
-bool EOSSDK_PlayerDataStorageFileTransferRequest::released()
+bool EOSSDK_TitleStorageFileTransferRequest::released()
 {
     std::lock_guard<std::mutex> _lk(_local_mutex);
     return _released;
@@ -81,14 +72,14 @@ bool EOSSDK_PlayerDataStorageFileTransferRequest::released()
  /**
   * Get the current state of a file request.
   *
-  * @return EOS_Success if complete and successful, EOS_EResult::EOS_Pending if the request is still in progress, or another state for failure.
+  * @return EOS_Success if complete and successful, EOS_RequestInProgress if the request is still in progress, or another state for failure.
   */
-EOS_EResult EOSSDK_PlayerDataStorageFileTransferRequest::GetFileRequestState()
+EOS_EResult EOSSDK_TitleStorageFileTransferRequest::GetFileRequestState()
 {
     TRACE_FUNC();
     std::lock_guard<std::mutex> _lk(_local_mutex);
 
-    return (_done ? EOS_EResult::EOS_Success : EOS_EResult::EOS_PlayerDataStorage_RequestInProgress);
+    return (_done ? EOS_EResult::EOS_Success : EOS_EResult::EOS_RequestInProgress);
 }
 
 /**
@@ -99,9 +90,9 @@ EOS_EResult EOSSDK_PlayerDataStorageFileTransferRequest::GetFileRequestState()
  * @param OutStringLength How long the file name is (not including null terminator)
  * @return EOS_Success if the file name was successfully written to OutFilenameBuffer, a failure result otherwise
  *
- * @see EOS_PLAYERDATASTORAGE_FILENAME_MAX_LENGTH
+ * @see EOS_TITLESTORAGE_FILENAME_MAX_LENGTH_BYTES
  */
-EOS_EResult EOSSDK_PlayerDataStorageFileTransferRequest::GetFilename(uint32_t FilenameStringBufferSizeBytes, char* OutStringBuffer, int32_t* OutStringLength)
+EOS_EResult EOSSDK_TitleStorageFileTransferRequest::GetFilename(uint32_t FilenameStringBufferSizeBytes, char* OutStringBuffer, int32_t* OutStringLength)
 {
     TRACE_FUNC();
     std::lock_guard<std::mutex> _lk(_local_mutex);
@@ -120,9 +111,9 @@ EOS_EResult EOSSDK_PlayerDataStorageFileTransferRequest::GetFilename(uint32_t Fi
 /**
  * Attempt to cancel this file request in progress. This is a best-effort command and is not guaranteed to be successful if the request has completed before this function is called.
  *
- * @return EOS_Success if successful, or EOS_NoChange if request is not cancelable or is already canceled
+ * @return EOS_Success if successful or already canceled, or EOS_NoChange if request is not cancelable.
  */
-EOS_EResult EOSSDK_PlayerDataStorageFileTransferRequest::CancelRequest()
+EOS_EResult EOSSDK_TitleStorageFileTransferRequest::CancelRequest()
 {
     TRACE_FUNC();
     std::lock_guard<std::mutex> _lk(_local_mutex);
@@ -134,7 +125,7 @@ EOS_EResult EOSSDK_PlayerDataStorageFileTransferRequest::CancelRequest()
     return EOS_EResult::EOS_Success;
 }
 
-void EOSSDK_PlayerDataStorageFileTransferRequest::Release()
+void EOSSDK_TitleStorageFileTransferRequest::Release()
 {
     TRACE_FUNC();
     std::lock_guard<std::mutex> _lk(_local_mutex);

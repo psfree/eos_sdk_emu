@@ -152,6 +152,49 @@ void EOSSDK_Auth::Logout(const EOS_Auth_LogoutOptions* Options, void* ClientData
 }
 
 /**
+ * Link external account by continuing previous login attempt with a continuance token.
+ *
+ * On Desktop and Mobile platforms, the user will be presented the Epic Account Portal to resolve their identity.
+ *
+ * On Console, the user will login to their Epic Account using an external device, e.g. a mobile device or a desktop PC,
+ * by browsing to the presented authentication URL and entering the device code presented by the game on the console.
+ *
+ * On success, the user will be logged in at the completion of this action.
+ * This will commit this external account to the Epic Account and cannot be undone in the SDK.
+ *
+ * @param Options structure containing the account credentials to use during the link account operation
+ * @param ClientData arbitrary data that is passed back to you in the CompletionDelegate
+ * @param CompletionDelegate a callback that is fired when the link account operation completes, either successfully or in error
+ */
+void EOSSDK_Auth::LinkAccount(const EOS_Auth_LinkAccountOptions* Options, void* ClientData, const EOS_Auth_OnLinkAccountCallback CompletionDelegate)
+{
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+
+    if (CompletionDelegate == nullptr)
+        return;
+
+    pFrameResult_t res(new FrameResult);
+
+    EOS_Auth_LinkAccountCallbackInfo& laci = res->CreateCallback<EOS_Auth_LinkAccountCallbackInfo>((CallbackFunc)CompletionDelegate);
+    laci.ClientData = ClientData;
+    laci.LocalUserId = Settings::Inst().userid;
+    laci.PinGrantInfo = nullptr;
+
+    if (Options == nullptr)
+    {
+        laci.ResultCode = EOS_EResult::EOS_InvalidParameters;
+    }
+    else
+    {
+        laci.ResultCode = EOS_EResult::EOS_UnexpectedError;
+    }
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
+}
+
+/**
  * Deletes a previously received and locally stored persistent auth access token for the currently logged in user of the local device.
  * The access token is deleted in they keychain of the local user and a backend request is also made to revoke the token on the authentication server.
  *
