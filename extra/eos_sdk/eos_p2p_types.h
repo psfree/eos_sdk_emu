@@ -5,7 +5,7 @@
 #include "eos_common.h"
 
 enum { k_iP2PCallbackBase = 8000 };
-// next free callback_id: k_iP2PCallbackBase + 4
+// next free callback_id: k_iP2PCallbackBase + 3
 
 #define EOS_P2P_SocketId                              EOS_P2P_SocketId001
 #define EOS_P2P_SendPacketOptions                     EOS_P2P_SendPacketOptions002
@@ -23,7 +23,7 @@ enum { k_iP2PCallbackBase = 8000 };
 #define EOS_P2P_SetPortRangeOptions                   EOS_P2P_SetPortRangeOptions001
 #define EOS_P2P_GetPortRangeOptions                   EOS_P2P_GetPortRangeOptions001
 
-#include "eos_p2p_types1.7.0.h"
+#include "eos_p2p_types1.8.0.h"
 #include "eos_p2p_types1.5.0.h"
 
 #define EOS_P2P_SOCKETID_API_LATEST                       EOS_P2P_SOCKETID_API_001

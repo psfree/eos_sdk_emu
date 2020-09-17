@@ -131,7 +131,6 @@ namespace sdk
 
     struct lobby_invite_t
     {
-        std::string invite_id;
         EOS_ProductUserId peer_id;
         Lobby_Infos_pb infos;
     };
@@ -147,10 +146,10 @@ namespace sdk
         static int32_t join_id;
         constexpr static auto join_timeout = std::chrono::milliseconds(5000);
 
-        std::unordered_map<std::string, lobby_state_t> _lobbies;
-        std::list<EOSSDK_LobbySearch*>                 _lobbies_searchs;
-        std::list<lobby_invite_t>                      _lobby_invites;
-        std::unordered_map<int32_t, lobby_join_t>      _joins_requests;
+        std::unordered_map<std::string, lobby_state_t>  _lobbies;
+        std::list<EOSSDK_LobbySearch*>                  _lobbies_searchs;
+        nlohmann::fifo_map<std::string, lobby_invite_t> _lobby_invites;
+        std::unordered_map<int32_t, lobby_join_t>       _joins_requests;
 
     public:
         EOSSDK_Lobby();

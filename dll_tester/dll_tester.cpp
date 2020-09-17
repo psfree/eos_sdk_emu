@@ -479,10 +479,10 @@ static void dump_achievements_def()
     {
         EOS_Achievements_QueryDefinitionsOptions Options;
         Options.ApiVersion = EOS_ACHIEVEMENTS_QUERYDEFINITIONS_API_LATEST;
-        Options.UserId = get_product_user_id();
-        Options.EpicUserId = get_epic_account_id();
-        Options.HiddenAchievementIds = nullptr;
-        Options.HiddenAchievementsCount = 0;
+        Options.LocalUserId = get_product_user_id();
+        Options.EpicUserId_DEPRECATED = get_epic_account_id();
+        Options.HiddenAchievementIds_DEPRECATED = nullptr;
+        Options.HiddenAchievementsCount_DEPRECATED = 0;
 
         EOS_Achievements_QueryDefinitions(hAchievements, &Options, nullptr, query_achievements_complete);
     }
@@ -3801,7 +3801,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionV2ByInde
         sstr << "  ApiVersion           : " << (*OutDefinition)->ApiVersion << std::endl;
         switch ((*OutDefinition)->ApiVersion)
         {
-            case EOS_ACHIEVEMENTS_COPYDEFINITIONV2BYINDEX_API_002:
+            case EOS_ACHIEVEMENTS_DEFINITIONV2_API_002:
             {
                 auto* v = reinterpret_cast<EOS_Achievements_DefinitionV2002*>(*OutDefinition);
                 sstr << "  AchievementId        : " << str_or_empty(v->AchievementId      ) << std::endl;
@@ -3899,7 +3899,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionV2ByAchi
         sstr << "  ApiVersion           : " << (*OutDefinition)->ApiVersion << std::endl;
         switch ((*OutDefinition)->ApiVersion)
         {
-            case EOS_ACHIEVEMENTS_COPYDEFINITIONV2BYACHIEVEMENTID_API_002:
+            case EOS_ACHIEVEMENTS_DEFINITIONV2_API_LATEST:
             {
                 auto* v = reinterpret_cast<EOS_Achievements_DefinitionV2002*>(*OutDefinition);
                 sstr << "  AchievementId        : " << str_or_empty(v->AchievementId      ) << std::endl;

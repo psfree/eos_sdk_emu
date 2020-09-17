@@ -5,7 +5,7 @@
 
 #define EOS_InitializeOptions EOS_InitializeOptions003
 
-#include "eos_init1.5.0.h"
+#include "eos_init1.8.0.h"
 #include "eos_init1.2.0.h"
 #include "eos_init1.1.0.h"
 

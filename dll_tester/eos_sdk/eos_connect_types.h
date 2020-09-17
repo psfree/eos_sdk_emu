@@ -4,17 +4,20 @@
 #include "eos_common.h"
 
 enum { k_iConnectCallbackBase = 2000 };
+// next free callback_id: k_iConnectCallbackBase + 11
 
 #define EOS_Connect_Credentials                                        EOS_Connect_Credentials001
 #define EOS_Connect_UserLoginInfo                                      EOS_Connect_UserLoginInfo001
 #define EOS_Connect_LoginOptions                                       EOS_Connect_LoginOptions002
 #define EOS_Connect_CreateUserOptions                                  EOS_Connect_CreateUserOptions001
 #define EOS_Connect_LinkAccountOptions                                 EOS_Connect_LinkAccountOptions001
+#define EOS_Connect_UnlinkAccountOptions                               EOS_Connect_UnlinkAccountOptions001
 #define EOS_Connect_CreateDeviceIdOptions                              EOS_Connect_CreateDeviceIdOptions001
 #define EOS_Connect_DeleteDeviceIdOptions                              EOS_Connect_DeleteDeviceIdOptions001
+#define EOS_Connect_TransferDeviceIdAccountOptions                     EOS_Connect_TransferDeviceIdAccountOptions001
 #define EOS_Connect_QueryExternalAccountMappingsOptions                EOS_Connect_QueryExternalAccountMappingsOptions001
 #define EOS_Connect_GetExternalAccountMappingsOptions                  EOS_Connect_GetExternalAccountMappingsOptions001
-#define EOS_Connect_QueryProductUserIdMappingsOptions                  EOS_Connect_QueryProductUserIdMappingsOptions001
+#define EOS_Connect_QueryProductUserIdMappingsOptions                  EOS_Connect_QueryProductUserIdMappingsOptions002
 #define EOS_Connect_GetProductUserIdMappingOptions                     EOS_Connect_GetProductUserIdMappingOptions001
 #define EOS_Connect_AddNotifyAuthExpirationOptions                     EOS_Connect_AddNotifyAuthExpirationOptions001
 // This hasn't got a ApiVersion member
@@ -27,6 +30,7 @@ enum { k_iConnectCallbackBase = 2000 };
 #define EOS_Connect_CopyProductUserInfoOptions                         EOS_Connect_CopyProductUserInfoOptions001
 #define EOS_Connect_ExternalAccountInfo                                EOS_Connect_ExternalAccountInfo001
 
+#include "eos_connect_types1.8.0.h"
 #include "eos_connect_types1.7.0.h"
 #include "eos_connect_types1.3.1.h"
 
@@ -35,11 +39,13 @@ enum { k_iConnectCallbackBase = 2000 };
 #define EOS_CONNECT_LOGIN_API_LATEST                                       EOS_CONNECT_LOGIN_API_002
 #define EOS_CONNECT_CREATEUSER_API_LATEST                                  EOS_CONNECT_CREATEUSER_API_001
 #define EOS_CONNECT_LINKACCOUNT_API_LATEST                                 EOS_CONNECT_LINKACCOUNT_API_001
+#define EOS_CONNECT_UNLINKACCOUNT_API_LATEST                               EOS_CONNECT_UNLINKACCOUNT_API_001
 #define EOS_CONNECT_CREATEDEVICEID_API_LATEST                              EOS_CONNECT_CREATEDEVICEID_API_001
 #define EOS_CONNECT_DELETEDEVICEID_API_LATEST                              EOS_CONNECT_DELETEDEVICEID_API_001
+#define EOS_CONNECT_TRANSFERDEVICEIDACCOUNT_API_LATEST                     EOS_CONNECT_TRANSFERDEVICEIDACCOUNT_API_001
 #define EOS_CONNECT_QUERYEXTERNALACCOUNTMAPPINGS_API_LATEST                EOS_CONNECT_QUERYEXTERNALACCOUNTMAPPINGS_API_001
-#define EOS_CONNECT_GETEXTERNALACCOUNTMAPPINGS_API_LATEST                  EOS_CONNECT_GETEXTERNALACCOUNTMAPPINGS_API_001
-#define EOS_CONNECT_QUERYPRODUCTUSERIDMAPPINGS_API_LATEST                  EOS_CONNECT_QUERYPRODUCTUSERIDMAPPINGS_API_001
+#define EOS_CONNECT_GETEXTERNALACCOUNTMAPPING_API_LATEST                   EOS_CONNECT_GETEXTERNALACCOUNTMAPPING_API_001
+#define EOS_CONNECT_QUERYPRODUCTUSERIDMAPPINGS_API_LATEST                  EOS_CONNECT_QUERYPRODUCTUSERIDMAPPINGS_API_002
 #define EOS_CONNECT_GETPRODUCTUSERIDMAPPING_API_LATEST                     EOS_CONNECT_GETPRODUCTUSERIDMAPPING_API_001
 #define EOS_CONNECT_ADDNOTIFYAUTHEXPIRATION_API_LATEST                     EOS_CONNECT_ADDNOTIFYAUTHEXPIRATION_API_001
 #define EOS_CONNECT_ONAUTHEXPIRATIONCALLBACK_API_LATEST                    EOS_CONNECT_ONAUTHEXPIRATIONCALLBACK_API_001

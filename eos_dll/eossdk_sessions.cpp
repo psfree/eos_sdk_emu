@@ -300,6 +300,24 @@ EOS_EResult EOSSDK_Sessions::CreateSessionModification(const EOS_Sessions_Create
 
     switch (Options->ApiVersion)
     {
+        case EOS_SESSIONS_CREATESESSIONMODIFICATION_API_003:
+        {
+            const EOS_Sessions_CreateSessionModificationOptions003* opts = reinterpret_cast<const EOS_Sessions_CreateSessionModificationOptions003*>(Options);
+            if (opts->SessionId != nullptr)
+            {
+                APP_LOG(Log::LogLevel::DEBUG, "Overriding session id: %s", modif->_infos.session_id().c_str());
+
+                modif->_infos.set_session_id(opts->SessionId);
+                if (modif->_infos.session_id().length() < EOS_SESSIONMODIFICATION_MIN_SESSIONIDOVERRIDE_LENGTH ||
+                    modif->_infos.session_id().length() > EOS_SESSIONMODIFICATION_MAX_SESSIONIDOVERRIDE_LENGTH)
+                {
+                    delete modif;
+                    set_nullptr(OutSessionModificationHandle);
+                    return EOS_EResult::EOS_InvalidParameters;
+                }
+            }
+        }
+
         case EOS_SESSIONS_CREATESESSIONMODIFICATION_API_002:
         {
             const EOS_Sessions_CreateSessionModificationOptions002* opts = reinterpret_cast<const EOS_Sessions_CreateSessionModificationOptions002*>(Options);
@@ -445,9 +463,13 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
                 else
                 {
                     auto& session = _sessions[modif->_session_name];
+
+                    if (modif->_infos.session_id().empty())
                     {
                         modif->_infos.set_session_id(generate_account_id());
+                    }
 
+                    {
                         std::string const& sess_id = modif->_infos.session_id();
                         char* session_id = new char[sess_id.length() + 1];
                         strncpy(session_id, sess_id.c_str(), sess_id.length() + 1);
@@ -1207,7 +1229,7 @@ EOS_NotificationId EOSSDK_Sessions::AddNotifySessionInviteReceived(const EOS_Ses
 
     sirci.ClientData = ClientData;
     sirci.LocalUserId = GetEOS_Connect().get_myself()->first;
-    sirci.InviteId = new char[max_id_length];
+    sirci.InviteId = new char[max_accountid_length];
 
     return GetCB_Manager().add_notification(this, res);
 }
@@ -1247,7 +1269,7 @@ EOS_NotificationId EOSSDK_Sessions::AddNotifySessionInviteAccepted(const EOS_Ses
 
     siaci.ClientData = ClientData;
     siaci.LocalUserId = GetEOS_Connect().get_myself()->first;
-    siaci.SessionId = new char[max_id_length];
+    siaci.SessionId = new char[max_accountid_length];
 
     return GetCB_Manager().add_notification(this, res);
 }
@@ -1943,7 +1965,7 @@ bool EOSSDK_Sessions::on_session_invite(Network_Message_pb const& msg, Session_I
     for (auto& notif : notifs)
     {
         EOS_Sessions_SessionInviteReceivedCallbackInfo& sirci = notif->GetCallback<EOS_Sessions_SessionInviteReceivedCallbackInfo>();
-        strncpy(const_cast<char*>(sirci.InviteId), invite_id.c_str(), max_id_length);
+        strncpy(const_cast<char*>(sirci.InviteId), invite_id.c_str(), max_accountid_length);
         sirci.TargetUserId = target_id;
 
         notif->GetFunc()(notif->GetFuncParam());
@@ -1963,9 +1985,45 @@ bool EOSSDK_Sessions::on_session_invite_response(Network_Message_pb const& msg, 
         EOS_Sessions_SessionInviteAcceptedCallbackInfo& siacbi = notif->GetCallback<EOS_Sessions_SessionInviteAcceptedCallbackInfo>();
 
         siacbi.TargetUserId = GetProductUserId(msg.source_id());
-        strncpy(const_cast<char*>(siacbi.SessionId), resp.session_id().c_str(), max_id_length);
+        strncpy(const_cast<char*>(siacbi.SessionId), resp.session_id().c_str(), max_accountid_length);
 
         notif->GetFunc()(notif->GetFuncParam());
+    }
+
+    return true;
+}
+
+bool EOSSDK_Sessions::on_session_register(Network_Message_pb const& msg, Session_Register_pb const& register_)
+{
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+
+    session_state_t* pSession = get_session_by_id(register_.session_id());
+
+    if (is_player_registered(msg.source_id(), pSession))
+    {
+        for (auto const& member_id : register_.member_ids())
+        {
+            register_player_to_session(member_id, pSession);
+        }
+    }
+
+    return true;
+}
+
+bool EOSSDK_Sessions::on_session_unregister(Network_Message_pb const& msg, Session_Unregister_pb const& unregister)
+{
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+
+    session_state_t* pSession = get_session_by_id(unregister.session_id());
+
+    if (is_player_registered(msg.source_id(), pSession))
+    {
+        for (auto const& member_id : unregister.member_ids())
+        {
+            unregister_player_from_session(member_id, pSession);
+        }
     }
 
     return true;
@@ -2014,6 +2072,8 @@ bool EOSSDK_Sessions::RunNetwork(Network_Message_pb const& msg)
                 case Session_Message_pb::MessageCase::kSessionJoinResponse  : return on_session_join_response(msg, session.session_join_response());
                 case Session_Message_pb::MessageCase::kSessionInvite        : return on_session_invite(msg, session.session_invite());
                 case Session_Message_pb::MessageCase::kSessionInviteResponse: return on_session_invite_response(msg, session.session_invite_response());
+                case Session_Message_pb::MessageCase::kSessionRegister      : return on_session_register(msg, session.session_register());
+                case Session_Message_pb::MessageCase::kSessionUnregister    : return on_session_unregister(msg, session.session_unregister());
                 default: APP_LOG(Log::LogLevel::WARN, "Unhandled network message %d", session.message_case());
             }
         }

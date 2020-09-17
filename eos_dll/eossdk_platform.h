@@ -38,6 +38,7 @@
 #include "eossdk_playerdatastorage.h"
 #include "eossdk_achievements.h"
 #include "eossdk_stats.h"
+#include "eossdk_titlestorage.h"
 #include "eossdk_leaderboards.h"
 
 namespace sdk
@@ -81,6 +82,7 @@ namespace sdk
         EOSSDK_PlayerDataStorage *_playerdatastorage;
         EOSSDK_Achievements      *_achievements;
         EOSSDK_Stats             *_stats;
+        EOSSDK_TitleStorage      *_titlestorage;
         EOSSDK_Leaderboards      *_leaderboards;
 
         ~EOSSDK_Platform();
@@ -102,6 +104,7 @@ namespace sdk
         EOS_HUserInfo          GetUserInfoInterface();
         EOS_HP2P               GetP2PInterface();
         EOS_HPlayerDataStorage GetPlayerDataStorageInterface();
+        EOS_HTitleStorage      GetTitleStorageInterface();
         EOS_HAchievements      GetAchievementsInterface();
         EOS_HStats             GetStatsInterface();
         EOS_HLeaderboards      GetLeaderboardsInterface();

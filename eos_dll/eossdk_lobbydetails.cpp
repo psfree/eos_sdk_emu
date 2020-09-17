@@ -186,7 +186,7 @@ EOS_EResult EOSSDK_LobbyDetails::CopyAttributeByIndex(const EOS_LobbyDetails_Cop
 
     pAttribute->ApiVersion = EOS_LOBBYDETAILS_COPYINFO_API_LATEST;
     pAttribute->Data = pData;
-    pAttribute->Visbility = (EOS_ELobbyAttributeVisibility)attr_it->second.visibility_type();
+    pAttribute->Visibility = (EOS_ELobbyAttributeVisibility)attr_it->second.visibility_type();
 
     *OutAttribute = pAttribute;
 
@@ -270,7 +270,7 @@ EOS_EResult EOSSDK_LobbyDetails::CopyAttributeByKey(const EOS_LobbyDetails_CopyA
 
     pAttribute->ApiVersion = EOS_LOBBYDETAILS_COPYINFO_API_LATEST;
     pAttribute->Data = pData;
-    pAttribute->Visbility = (EOS_ELobbyAttributeVisibility)attr_it->second.visibility_type();
+    pAttribute->Visibility = (EOS_ELobbyAttributeVisibility)attr_it->second.visibility_type();
 
     *OutAttribute = pAttribute;
 
@@ -421,7 +421,7 @@ EOS_EResult EOSSDK_LobbyDetails::CopyMemberAttributeByIndex(const EOS_LobbyDetai
 
     pAttribute->ApiVersion = EOS_LOBBYDETAILS_COPYINFO_API_LATEST;
     pAttribute->Data = pData;
-    pAttribute->Visbility = (EOS_ELobbyAttributeVisibility)attr_it->second.visibility_type();
+    pAttribute->Visibility = (EOS_ELobbyAttributeVisibility)attr_it->second.visibility_type();
 
     *OutAttribute = pAttribute;
 
@@ -512,7 +512,7 @@ EOS_EResult EOSSDK_LobbyDetails::CopyMemberAttributeByKey(const EOS_LobbyDetails
 
     pAttribute->ApiVersion = EOS_LOBBYDETAILS_COPYINFO_API_LATEST;
     pAttribute->Data = pData;
-    pAttribute->Visbility = (EOS_ELobbyAttributeVisibility)attr_it->second.visibility_type();
+    pAttribute->Visibility = (EOS_ELobbyAttributeVisibility)attr_it->second.visibility_type();
 
     *OutAttribute = pAttribute;
 

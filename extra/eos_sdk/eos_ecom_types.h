@@ -5,7 +5,7 @@
 #include "eos_common.h"
 
 enum { k_iEcomCallbackBase = 3000 };
-// next free callback_id: k_iEcomCallbackBase + 7
+// next free callback_id: k_iEcomCallbackBase + 6
 
 #define EOS_Ecom_Entitlement                               EOS_Ecom_Entitlement002
 #define EOS_Ecom_ItemOwnership                             EOS_Ecom_ItemOwnership001
@@ -43,7 +43,7 @@ enum { k_iEcomCallbackBase = 3000 };
 #define EOS_Ecom_Transaction_GetEntitlementsCountOptions   EOS_Ecom_Transaction_GetEntitlementsCountOptions001
 #define EOS_Ecom_Transaction_CopyEntitlementByIndexOptions EOS_Ecom_Transaction_CopyEntitlementByIndexOptions001
 
-#include "eos_ecom_types1.5.0.h"
+#include "eos_ecom_types1.8.0.h"
 #include "eos_ecom_types1.3.1.h"
 #include "eos_ecom_types1.1.0.h"
 

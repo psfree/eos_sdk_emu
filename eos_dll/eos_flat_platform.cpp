@@ -95,6 +95,7 @@ EOS_DECLARE_FUNC(EOS_HPresence) EOS_Platform_GetPresenceInterface(EOS_HPlatform 
     auto pInst = reinterpret_cast<EOSSDK_Platform*>(Handle);
     return pInst->GetPresenceInterface();
 }
+
 EOS_DECLARE_FUNC(EOS_HSessions) EOS_Platform_GetSessionsInterface(EOS_HPlatform Handle)
 {
     if (Handle == nullptr)
@@ -138,6 +139,15 @@ EOS_DECLARE_FUNC(EOS_HPlayerDataStorage) EOS_Platform_GetPlayerDataStorageInterf
 
     auto pInst = reinterpret_cast<EOSSDK_Platform*>(Handle);
     return pInst->GetPlayerDataStorageInterface();
+}
+
+EOS_DECLARE_FUNC(EOS_HTitleStorage) EOS_Platform_GetTitleStorageInterface(EOS_HPlatform Handle)
+{
+    if (Handle == nullptr)
+        return nullptr;
+
+    auto pInst = reinterpret_cast<EOSSDK_Platform*>(Handle);
+    return pInst->GetTitleStorageInterface();
 }
 
 EOS_DECLARE_FUNC(EOS_HAchievements) EOS_Platform_GetAchievementsInterface(EOS_HPlatform Handle)

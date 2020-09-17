@@ -5,7 +5,7 @@
 #include "eos_common.h"
 
 enum { k_iPlayerDataStorageCallbackBase = 9000 };
-// next free callback_id: k_iPlayerDataStorageCallbackBase + 10
+// next free callback_id: k_iPlayerDataStorageCallbackBase + 9
 
 #define EOS_PlayerDataStorage_FileMetadata                      EOS_PlayerDataStorage_FileMetadata001
 #define EOS_PlayerDataStorage_QueryFileOptions                  EOS_PlayerDataStorage_QueryFileOptions001
@@ -18,7 +18,7 @@ enum { k_iPlayerDataStorageCallbackBase = 9000 };
 #define EOS_PlayerDataStorage_ReadFileOptions                   EOS_PlayerDataStorage_ReadFileOptions001
 #define EOS_PlayerDataStorage_WriteFileOptions                  EOS_PlayerDataStorage_WriteFileOptions001
 
-#include <eos_playerdatastorage_types1.5.0.h>
+#include <eos_playerdatastorage_types1.8.0.h>
 
 #define EOS_PLAYERDATASTORAGE_FILEMETADATA_API_LATEST                      EOS_PLAYERDATASTORAGE_FILEMETADATA_API_001
 #define EOS_PLAYERDATASTORAGE_QUERYFILEOPTIONS_API_LATEST                  EOS_PLAYERDATASTORAGE_QUERYFILEOPTIONS_API_001

@@ -619,6 +619,36 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_ProductUserId_FromString(const char* Acc
 }
 
 /**
+ * Retrieve a null-terminated string-ified continuance token from an EOS_ContinuanceToken.
+ *
+ * To get the required buffer size, call once with OutBuffer set to NULL, InOutBufferLength will contain the buffer size needed.
+ * Call again with valid params to get the string-ified continuance token which will only contain UTF8-encoded printable characters (excluding the null-terminator).
+ *
+ * @param ContinuanceToken The continuance token for which to retrieve the string-ified version.
+ * @param OutBuffer The buffer into which the character data should be written
+ * @param InOutBufferLength The size of the OutBuffer in characters.
+ *                          The input buffer should include enough space to be null-terminated.
+ *                          When the function returns, this parameter will be filled with the length of the string copied into OutBuffer including the null termination character.
+ *
+ * @return An EOS_EResult that indicates whether the Epic Online Services Account ID string was copied into the OutBuffer.
+ *         EOS_Success - The OutBuffer was filled, and InOutBufferLength contains the number of characters copied into OutBuffer including the null terminator.
+ *         EOS_InvalidParameters - Either OutBuffer or InOutBufferLength were passed as NULL parameters.
+ *         EOS_InvalidUser - The AccountId is invalid and cannot be string-ified
+ *         EOS_LimitExceeded - The OutBuffer is not large enough to receive the continuance token string. InOutBufferLength contains the required minimum length to perform the operation successfully.
+ */
+EOS_DECLARE_FUNC(EOS_EResult) EOS_ContinuanceToken_ToString(EOS_ContinuanceToken ContinuanceToken, char* OutBuffer, int32_t* InOutBufferLength)
+{
+    TRACE_FUNC();
+    if (ContinuanceToken == nullptr)
+        return EOS_EResult::EOS_InvalidUser;
+
+    if (OutBuffer == nullptr || InOutBufferLength == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+
+    return EOS_EResult::EOS_InvalidUser;
+}
+
+/**
  * Set the callback function to use for SDK log messages. Any previously set callback will no longer be called.
  *
  * @param Callback the function to call when the SDK logs messages
@@ -664,6 +694,7 @@ EOS_DECLARE_FUNC(const char*) EOS_GetVersion(void)
         { "1.6.2", "1.6.2-13619780" },
         { "1.7.0", "1.7.0-13812567" },
         { "1.7.1", "1.7.1-13992660" },
+        { "1.8.0", "1.8.0-14316386" },
     };
     
     return versions[EOS_VERSION_STRING];

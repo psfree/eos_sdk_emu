@@ -265,7 +265,7 @@ void EOSSDK_Lobby::notify_lobby_update(lobby_state_t* lobby)
     for (auto& notif : notifs)
     {
         EOS_Lobby_LobbyUpdateReceivedCallbackInfo& lurci = notif->GetCallback<EOS_Lobby_LobbyUpdateReceivedCallbackInfo>();
-        strncpy(const_cast<char*>(lurci.LobbyId), lobby->infos.lobby_id().c_str(), max_id_length);
+        strncpy(const_cast<char*>(lurci.LobbyId), lobby->infos.lobby_id().c_str(), max_accountid_length);
 
         notif->GetFunc()(notif->GetFuncParam());
     }
@@ -280,7 +280,7 @@ void EOSSDK_Lobby::notify_lobby_member_status_update(std::string const& member, 
     for (auto& notif : notifs)
     {
         EOS_Lobby_LobbyMemberStatusReceivedCallbackInfo& lmsrci = notif->GetCallback<EOS_Lobby_LobbyMemberStatusReceivedCallbackInfo>();
-        strncpy(const_cast<char*>(lmsrci.LobbyId), lobby->infos.lobby_id().c_str(), max_id_length);
+        strncpy(const_cast<char*>(lmsrci.LobbyId), lobby->infos.lobby_id().c_str(), max_accountid_length);
         lmsrci.TargetUserId = member_id;
         lmsrci.CurrentStatus = new_status;
 
@@ -297,7 +297,7 @@ void EOSSDK_Lobby::notify_lobby_member_update(std::string const& member, lobby_s
     for (auto& notif : notifs)
     {
         EOS_Lobby_LobbyMemberUpdateReceivedCallbackInfo& lmurci = notif->GetCallback<EOS_Lobby_LobbyMemberUpdateReceivedCallbackInfo>();
-        strncpy(const_cast<char*>(lmurci.LobbyId), lobby->infos.lobby_id().c_str(), max_id_length);
+        strncpy(const_cast<char*>(lmurci.LobbyId), lobby->infos.lobby_id().c_str(), max_accountid_length);
         lmurci.TargetUserId = member_id;
         notif->GetFunc()(notif->GetFuncParam());
     }
@@ -309,7 +309,7 @@ void EOSSDK_Lobby::notify_lobby_invite_received(std::string const& invite_id, EO
     for (auto& notif : notifs)
     {
         EOS_Lobby_LobbyInviteReceivedCallbackInfo& lirci = notif->GetCallback<EOS_Lobby_LobbyInviteReceivedCallbackInfo>();
-        strncpy(const_cast<char*>(lirci.InviteId), invite_id.c_str(), max_id_length);
+        strncpy(const_cast<char*>(lirci.InviteId), invite_id.c_str(), max_accountid_length);
         lirci.TargetUserId = from_id;
         notif->GetFunc()(notif->GetFuncParam());
     }
@@ -350,7 +350,7 @@ void EOSSDK_Lobby::CreateLobby(const EOS_Lobby_CreateLobbyOptions* Options, void
     clci.ClientData = ClientData;
     
     {
-        char* str = new char[sdk::max_id_length];
+        char* str = new char[sdk::max_accountid_length];
         *str = '\0';
         clci.LobbyId = str;
     }
@@ -368,7 +368,7 @@ void EOSSDK_Lobby::CreateLobby(const EOS_Lobby_CreateLobbyOptions* Options, void
     {
         std::string lobby_id(std::move(generate_account_id()));
 
-        strncpy(const_cast<char*>(clci.LobbyId), lobby_id.c_str(), max_id_length);
+        strncpy(const_cast<char*>(clci.LobbyId), lobby_id.c_str(), max_accountid_length);
         const_cast<char*>(clci.LobbyId)[64] = 0;
 
         auto& infos = _lobbies[lobby_id];
@@ -871,7 +871,7 @@ EOS_NotificationId EOSSDK_Lobby::AddNotifyLobbyUpdateReceived(const EOS_Lobby_Ad
 
     lurci.ClientData = ClientData;
     {
-        char* str = new char[max_id_length];
+        char* str = new char[max_accountid_length];
         *str = '\0';
         lurci.LobbyId = str;
     }
@@ -913,7 +913,7 @@ EOS_NotificationId EOSSDK_Lobby::AddNotifyLobbyMemberUpdateReceived(const EOS_Lo
 
     lmurci.ClientData = ClientData;
     {
-        char* str = new char[max_id_length];
+        char* str = new char[max_accountid_length];
         *str = '\0';
         lmurci.LobbyId = str;
     }
@@ -956,7 +956,7 @@ EOS_NotificationId EOSSDK_Lobby::AddNotifyLobbyMemberStatusReceived(const EOS_Lo
 
     lmsrci.ClientData = ClientData;
     {
-        char* str = new char[max_id_length];
+        char* str = new char[max_accountid_length];
         *str = '\0';
         lmsrci.LobbyId = str;
     }
@@ -1066,30 +1066,27 @@ void EOSSDK_Lobby::RejectInvite(const EOS_Lobby_RejectInviteOptions* Options, vo
 
     {
         char* str;
-        if (Options->LobbyId == nullptr)
+        if (Options->InviteId == nullptr)
         {
             str = new char[1];
             *str = '\0';
         }
         else
         {
-            size_t len = strlen(Options->LobbyId) + 1;
+            size_t len = strlen(Options->InviteId) + 1;
             str = new char[len];
-            strncpy(str, Options->LobbyId, len);
+            strncpy(str, Options->InviteId, len);
         }
-        rici.LobbyId = str;
+        rici.InviteId = str;
     }
     
-    if (Options == nullptr || Options->LobbyId == nullptr)
+    if (Options == nullptr || Options->InviteId == nullptr)
     {
         rici.ResultCode = EOS_EResult::EOS_InvalidParameters;
     }
     else
     {
-        auto it = std::find_if(_lobby_invites.begin(), _lobby_invites.end(), [Options](lobby_invite_t& invite)
-        {
-            return invite.invite_id == Options->LobbyId;
-        });
+        auto it = _lobby_invites.find(Options->InviteId);
         if (it != _lobby_invites.end())
         {
             _lobby_invites.erase(it);
@@ -1180,12 +1177,12 @@ EOS_EResult EOSSDK_Lobby::GetInviteIdByIndex(const EOS_Lobby_GetInviteIdByIndexO
 
     if (OutBuffer != nullptr)
     {
-        *InOutBufferLength = std::min<int32_t>(*InOutBufferLength, it->invite_id.length() + 1);
-        strncpy(OutBuffer, it->invite_id.c_str(), *InOutBufferLength);
+        *InOutBufferLength = std::min<int32_t>(*InOutBufferLength, it->first.length() + 1);
+        strncpy(OutBuffer, it->first.c_str(), *InOutBufferLength);
     }
     else
     {
-        *InOutBufferLength = it->invite_id.length() + 1;
+        *InOutBufferLength = it->first.length() + 1;
     }
     
     return EOS_EResult::EOS_Success;
@@ -1376,11 +1373,7 @@ EOS_EResult EOSSDK_Lobby::CopyLobbyDetailsHandleByInviteId(const EOS_Lobby_CopyL
         return EOS_EResult::EOS_InvalidParameters;
     }
 
-    auto it = std::find_if(_lobby_invites.begin(), _lobby_invites.end(), [Options]( lobby_invite_t &invite)
-    {
-        return Options->InviteId == invite.invite_id;
-    });
-    
+    auto it = _lobby_invites.find(Options->InviteId);
     if (it == _lobby_invites.end())
     {
         *OutLobbyDetailsHandle = nullptr;
@@ -1388,7 +1381,7 @@ EOS_EResult EOSSDK_Lobby::CopyLobbyDetailsHandleByInviteId(const EOS_Lobby_CopyL
     }
 
     EOSSDK_LobbyDetails* pLobbyDetails = new EOSSDK_LobbyDetails;
-    pLobbyDetails->_infos = it->infos;
+    pLobbyDetails->_infos = it->second.infos;
     *OutLobbyDetailsHandle = reinterpret_cast<EOS_HLobbyDetails>(pLobbyDetails);
 
     return EOS_EResult::EOS_Success;
@@ -1879,13 +1872,12 @@ bool EOSSDK_Lobby::on_lobby_invite(Network_Message_pb const& msg, Lobby_Invite_p
     GLOBAL_LOCK();
 
     lobby_invite_t new_invite;
-    new_invite.invite_id = generate_account_id();
     new_invite.peer_id = GetProductUserId(msg.source_id());
     new_invite.infos = invite.infos();
-    _lobby_invites.emplace_back(std::move(new_invite));
+    _lobby_invites.emplace(generate_account_id(), std::move(new_invite));
 
-    auto& lobby_invite = _lobby_invites.back();
-    notify_lobby_invite_received(lobby_invite.invite_id, lobby_invite.peer_id);
+    auto& lobby_invite = *_lobby_invites.rbegin();
+    notify_lobby_invite_received(lobby_invite.first, lobby_invite.second.peer_id);
 
     return true;
 }
@@ -2120,7 +2112,7 @@ void EOSSDK_Lobby::FreeCallback(pFrameResult_t res)
         {
             EOS_Lobby_RejectInviteCallbackInfo& callback = res->GetCallback<EOS_Lobby_RejectInviteCallbackInfo>();
             // Free resources
-            delete[]callback.LobbyId;
+            delete[]callback.InviteId;
         }
         break;
 

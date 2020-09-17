@@ -178,6 +178,60 @@ void EOSSDK_Connect::LinkAccount(const EOS_Connect_LinkAccountOptions* Options, 
 }
 
 /**
+ * Unlink external auth credentials from the owning keychain of a logged in product user.
+ *
+ * This function allows recovering the user from scenarios where they have accidentally proceeded to creating
+ * a new product user for the local native user account, instead of linking it with an existing keychain that
+ * they have previously created by playing the game (or another game owned by the organization) on another platform.
+ *
+ * In such scenario, after the initial platform login and a new product user creation, the user wishes to re-login
+ * using other set of external auth credentials to connect with their existing game progression data. In order to
+ * allow automatic login also on the current platform, they will need to unlink the accidentally created new keychain
+ * and product user and then use the EOS_Connect_Login and EOS_Connect_LinkAccount APIs to link the local native platform
+ * account with that previously created existing product user and its owning keychain.
+ *
+ * In another secnario, the user may simply want to disassociate the account that they have logged in with from the current
+ * keychain that it is linked with, perhaps to link it against another keychain or to separate the game progressions again.
+ *
+ * In order to protect against account theft, it is only possible to unlink user accounts that have been authenticated
+ * and logged in to the product user in the current session. This prevents a malicious actor from gaining access to one
+ * of the linked accounts and using it to remove all other accounts linked with the keychain. This also prevents a malicious
+ * actor from replacing the unlinked account with their own corresponding account on the same platform, as the unlinking
+ * operation will ensure that any existing authentication session cannot be used to re-link and overwrite the entry without
+ * authenticating with one of the other linked accounts in the keychain. These restrictions limit the potential attack surface
+ * related to account theft scenarios.
+ *
+ * @param Options structure containing operation input parameters
+ * @param ClientData arbitrary data that is passed back to you in the CompletionDelegate
+ * @param CompletionDelegate a callback that is fired when the unlink operation completes, either successfully or in error
+ */
+void EOSSDK_Connect::UnlinkAccount(const EOS_Connect_UnlinkAccountOptions* Options, void* ClientData, const EOS_Connect_OnUnlinkAccountCallback CompletionDelegate)
+{
+    TRACE_FUNC();
+
+    if (CompletionDelegate == nullptr)
+        return;
+
+    pFrameResult_t res(new FrameResult);
+    EOS_Connect_UnlinkAccountCallbackInfo& uaci = res->CreateCallback<EOS_Connect_UnlinkAccountCallbackInfo>((CallbackFunc)CompletionDelegate);
+
+    uaci.ClientData = ClientData;
+    uaci.LocalUserId = GetProductUserId(Settings::Inst().productuserid->to_string());
+
+    if (Options == nullptr)
+    {
+        uaci.ResultCode = EOS_EResult::EOS_InvalidParameters;
+    }
+    else
+    {
+        uaci.ResultCode = EOS_EResult::EOS_Success;
+    }
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
+}
+
+/**
  * Create a new unique pseudo-account that can be used to identify the current user profile on the local device.
  *
  * This function is intended to be used by mobile games and PC games that wish to allow
@@ -260,6 +314,97 @@ void EOSSDK_Connect::DeleteDeviceId(const EOS_Connect_DeleteDeviceIdOptions* Opt
     {
         _device_id.clear();
         ddici.ResultCode = EOS_EResult::EOS_Success;
+    }
+
+    res->done = true;
+    GetCB_Manager().add_callback(this, res);
+}
+
+/**
+ * Transfer a Device ID pseudo-account and the product user associated with it into another
+ * keychain linked with real user accounts (such as Epic Games, Playstation, Xbox, and other).
+ *
+ * This function allows transferring a product user, i.e. the local user's game progression
+ * backend data from a Device ID owned keychain into a keychain with real user accounts
+ * linked to it. The transfer of Device ID owned product user into a keychain of real user
+ * accounts allows persisting the user's game data on the backend in the event that they
+ * would lose access to the local device or otherwise switch to another device or platform.
+ *
+ * This function is only applicable in the situation of where the local user first plays
+ * the game using the anonymous Device ID login, then later logs in using a real user
+ * account that they have also already used to play the same game or another game under the
+ * same organization within Epic Online Services. In such situation, while normally the login
+ * attempt with a real user account would return EOS_InvalidUser and an EOS_ContinuanceToken
+ * and allow calling the EOS_Connect_LinkAccount API to link it with the Device ID's keychain,
+ * instead the login operation succeeds and finds an existing user because the association
+ * already exists. Because the user cannot have two product users simultaneously to play with,
+ * the game should prompt the user to choose which profile to keep and which one to discard
+ * permanently. Based on the user choice, the game may then proceed to transfer the Device ID
+ * login into the keychain that is persistent and backed by real user accounts, and if the user
+ * chooses so, move the product user as well into the destination keychain and overwrite the
+ * existing previous product user with it. To clarify, moving the product user with the Device ID
+ * login in this way into a persisted keychain allows to preserve the so far only locally persisted
+ * game progression and thus protect the user against a case where they lose access to the device.
+ *
+ * On success, the completion callback will return the preserved EOS_ProductUserId that remains
+ * logged in while the discarded EOS_ProductUserId has been invalidated and deleted permanently.
+ * Consecutive logins using the existing Device ID login type or the external account will
+ * connect the user to the same backend data belonging to the preserved EOS_ProductUserId.
+ *
+ * Example walkthrough: Cross-platform mobile game using the anonymous Device ID login.
+ *
+ * For onboarding new users, the game will attempt to always automatically login the local user
+ * by calling EOS_Connect_Login using the EOS_ECT_DEVICEID_ACCESS_TOKEN login type. If the local
+ * Device ID credentials are not found, and the game wants a frictionless entry for the first time
+ * user experience, the game will automatically call EOS_Connect_CreateDeviceId to create new
+ * Device ID pseudo-account and then login the local user into it. Consecutive game starts will
+ * thus automatically login the user to their locally persisted Device ID account.
+ *
+ * The user starts playing anonymously using the Device ID login type and makes significant game progress.
+ * Later, they login using an external account that they have already used previously for the
+ * same game perhaps on another platform, or another game owned by the same organization.
+ * In such case, EOS_Connect_Login will automatically login the user to their existing account
+ * linking keychain and create automatically a new empty product user for this product.
+ *
+ * In order for the user to use their existing previously created keychain and have the locally
+ * created Device ID login reference to that keychain instead, the user's current product user
+ * needs to be moved to be under that keychain so that their existing game progression will be
+ * preserved. To do so, the game can call EOS_Connect_TransferDeviceIdAccount to transfer the
+ * Device ID login and the product user associated with it into the other keychain that has real
+ * external user account(s) linked to it. Note that it is important that the game either automatically
+ * checks that the other product user does not have any meaningful progression data, or otherwise
+ * will prompt the user to make the choice on which game progression to preserve and which can
+ * be discarded permanently. The other product user will be discarded permanently and cannot be
+ * recovered, so it is very important that the user is guided to make the right choice to avoid
+ * accidental loss of all game progression.
+ *
+ * @see EOS_Connect_Login
+ * @see EOS_Connect_CreateDeviceId
+ *
+ * @param Options structure containing the logged in product users and specifying which one will be preserved
+ * @param ClientData arbitrary data that is passed back to you in the CompletionDelegate
+ * @param CompletionDelegate a callback that is fired when the transfer operation completes, either successfully or in error
+ */
+void EOSSDK_Connect::TransferDeviceIdAccount(const EOS_Connect_TransferDeviceIdAccountOptions* Options, void* ClientData, const EOS_Connect_OnTransferDeviceIdAccountCallback CompletionDelegate)
+{
+    TRACE_FUNC();
+
+    if (CompletionDelegate == nullptr)
+        return;
+
+    pFrameResult_t res(new FrameResult);
+    EOS_Connect_TransferDeviceIdAccountCallbackInfo& tdiaci = res->CreateCallback<EOS_Connect_TransferDeviceIdAccountCallbackInfo>((CallbackFunc)CompletionDelegate);
+
+    tdiaci.LocalUserId = GetProductUserId(Settings::Inst().productuserid->to_string());
+    tdiaci.ClientData = ClientData;
+
+    if (Options == nullptr)
+    {
+        tdiaci.ResultCode = EOS_EResult::EOS_InvalidParameters;
+    }
+    else
+    {
+        tdiaci.ResultCode = EOS_EResult::EOS_Success;
     }
 
     res->done = true;

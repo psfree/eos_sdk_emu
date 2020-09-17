@@ -159,6 +159,7 @@ void EOSSDK_Platform::Init(const EOS_Platform_Options* Options)
         _playerdatastorage = new EOSSDK_PlayerDataStorage;
         _achievements      = new EOSSDK_Achievements;
         _stats             = new EOSSDK_Stats;
+        _titlestorage      = new EOSSDK_TitleStorage;
         _leaderboards      = new EOSSDK_Leaderboards;
 
         _presence->setup_myself();
@@ -175,6 +176,7 @@ void EOSSDK_Platform::Release()
     if (_platform_init)
     {
         delete _leaderboards;
+        delete _titlestorage;
         delete _stats;
         delete _achievements;
         delete _playerdatastorage;
@@ -360,6 +362,19 @@ EOS_HPlayerDataStorage EOSSDK_Platform::GetPlayerDataStorageInterface()
 {
     GLOBAL_LOCK();
     return reinterpret_cast<EOS_HPlayerDataStorage>(_playerdatastorage);
+}
+
+/**
+ * Get a handle to the TitleStorage Interface.
+ * @return EOS_HTitleStorage handle
+ *
+ * @see eos_titlestorage.h
+ * @see eos_titlestorage_types.h
+ */
+EOS_HTitleStorage EOSSDK_Platform::GetTitleStorageInterface()
+{
+    GLOBAL_LOCK();
+    return reinterpret_cast<EOS_HTitleStorage>(_titlestorage);
 }
 
 /**

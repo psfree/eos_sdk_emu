@@ -164,7 +164,7 @@ namespace sdk
         EOSSDK_Sessions();
         ~EOSSDK_Sessions();
 
-        std::map<std::string, session_state_t> _sessions;
+        std::unordered_map<std::string, session_state_t> _sessions;
 
         session_state_t* get_session_by_name(std::string const& session_name);
         session_state_t* get_session_by_id(std::string const& session_id);

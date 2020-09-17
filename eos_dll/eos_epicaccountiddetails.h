@@ -25,9 +25,10 @@ class EOSSDK_Client;
 
 namespace sdk
 {
-    static constexpr char NULL_USER_ID[] = "00000000000000000000000000000000";
-    // + 2 because it can start with "0x"
-    static constexpr size_t max_id_length = (sizeof(NULL_USER_ID) / sizeof(*NULL_USER_ID) + (2 * sizeof(*NULL_USER_ID)));
+    static constexpr char NULL_USER_ID[EOS_EPICACCOUNTID_MAX_LENGTH + 1] = "00000000000000000000000000000000";
+    static constexpr size_t max_accountid_length = EOS_EPICACCOUNTID_MAX_LENGTH + 1;
+
+    static constexpr size_t max_productid_length = EOS_PRODUCTUSERID_MAX_LENGTH + 1;
 }
 
 struct EOS_EpicAccountIdDetails
