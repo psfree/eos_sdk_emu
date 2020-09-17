@@ -15,12 +15,12 @@ EXTERN_C typedef uint64_t EOS_UI_EventId;
 #define EOS_UI_SHOWFRIENDS_API_001 1
 
 /**
- * Input parameters for the EOS_UI_ShowFriends Function.
+ * Input parameters for the EOS_UI_ShowFriends function.
  */
 EOS_STRUCT(EOS_UI_ShowFriendsOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_UI_SHOWFRIENDS_API_LATEST. */
 	int32_t ApiVersion;
-	/** Account ID of the user whose friend list is being shown. */
+	/** The Epic Online Services Account ID of the user whose friend list is being shown. */
 	EOS_EpicAccountId LocalUserId;
 ));
 
@@ -28,7 +28,7 @@ EOS_STRUCT(EOS_UI_ShowFriendsOptions001, (
  * Output parameters for the EOS_UI_ShowFriends function.
  */
 EOS_STRUCT(EOS_UI_ShowFriendsCallbackInfo, (
-	enum { k_iCallback = k_iUICallbackBase + 1 };
+	enum { k_iCallback = k_iUICallbackBase + 0 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_UI_ShowFriends */
@@ -47,12 +47,12 @@ EOS_DECLARE_CALLBACK(EOS_UI_OnShowFriendsCallback, const EOS_UI_ShowFriendsCallb
 #define EOS_UI_HIDEFRIENDS_API_001 1
 
 /**
- * Input parameters for the EOS_UI_HideFriends Function.
+ * Input parameters for the EOS_UI_HideFriends function.
  */
 EOS_STRUCT(EOS_UI_HideFriendsOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_UI_HIDEFRIENDS_API_LATEST. */
 	int32_t ApiVersion;
-	/** Account ID of the user whose friend list is being shown. */
+	/** The Epic Online Services Account ID of the user whose friend list is being shown. */
 	EOS_EpicAccountId LocalUserId;
 ));
 
@@ -60,7 +60,7 @@ EOS_STRUCT(EOS_UI_HideFriendsOptions001, (
  * Output parameters for the EOS_UI_HideFriends function.
  */
 EOS_STRUCT(EOS_UI_HideFriendsCallbackInfo, (
-	enum { k_iCallback = k_iUICallbackBase + 2 };
+	enum { k_iCallback = k_iUICallbackBase + 1 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_UI_HideFriends */
@@ -79,12 +79,12 @@ EOS_DECLARE_CALLBACK(EOS_UI_OnHideFriendsCallback, const EOS_UI_HideFriendsCallb
 #define EOS_UI_GETFRIENDSVISIBLE_API_001 1
 
 /**
- * Input parameters for the EOS_UI_GetFriendsVisible Function.
+ * Input parameters for the EOS_UI_GetFriendsVisible function.
  */
 EOS_STRUCT(EOS_UI_GetFriendsVisibleOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_UI_GETFRIENDSVISIBLE_API_LATEST. */
 	int32_t ApiVersion;
-	/** Account ID of the user whose overlay is being updated. */
+	/** The Epic Online Services Account ID of the user whose overlay is being updated. */
 	EOS_EpicAccountId LocalUserId;
 ));
 
@@ -92,15 +92,15 @@ EOS_STRUCT(EOS_UI_GetFriendsVisibleOptions001, (
 #define EOS_UI_ADDNOTIFYDISPLAYSETTINGSUPDATED_API_001 1
 
 /**
- * Input parameters for the EOS_UI_AddNotifyDisplaySettingsUpdated Function.
+ * Input parameters for the EOS_UI_AddNotifyDisplaySettingsUpdated function.
  */
 EOS_STRUCT(EOS_UI_AddNotifyDisplaySettingsUpdatedOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_UI_ADDNOTIFYDISPLAYSETTINGSUPDATED_API_LATEST. */
 	int32_t ApiVersion;
 ));
 
 EOS_STRUCT(EOS_UI_OnDisplaySettingsUpdatedCallbackInfo, (
-	enum { k_iCallback = k_iUICallbackBase + 3 };
+	enum { k_iCallback = k_iUICallbackBase + 2 };
 	/** Context that was passed into EOS_UI_AddNotifyDisplaySettingsUpdated */
 	void* ClientData;
 	/** True when any portion of the overlay is visible. */
@@ -150,10 +150,10 @@ inline constexpr EOS_UI_EKeyCombination& operator^=(EOS_UI_EKeyCombination& Left
 #define EOS_UI_SETTOGGLEFRIENDSKEY_API_001 1
 
 /**
- * Input parameters for the EOS_UI_SetToggleFriendsKey Function.
+ * Input parameters for the EOS_UI_SetToggleFriendsKey function.
  */
 EOS_STRUCT(EOS_UI_SetToggleFriendsKeyOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_UI_SETTOGGLEFRIENDSKEY_API_LATEST. */
 	int32_t ApiVersion;
 	/** 
 	 * The new key combination which will be used to toggle the friends overlay.
@@ -167,10 +167,10 @@ EOS_STRUCT(EOS_UI_SetToggleFriendsKeyOptions001, (
 #define EOS_UI_GETTOGGLEFRIENDSKEY_API_001 1
 
 /**
- * Input parameters for the EOS_UI_GetToggleFriendsKey Function.
+ * Input parameters for the EOS_UI_GetToggleFriendsKey function.
  */
 EOS_STRUCT(EOS_UI_GetToggleFriendsKeyOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_UI_GETTOGGLEFRIENDSKEY_API_LATEST. */
 	int32_t ApiVersion;
 ));
 
@@ -194,29 +194,32 @@ EOS_ENUM(EOS_UI_ENotificationLocation,
  * Input parameters for the EOS_UI_SetDisplayPreference function.
  */
 EOS_STRUCT(EOS_UI_SetDisplayPreferenceOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_UI_SETDISPLAYPREFERENCE_API_LATEST. */
 	int32_t ApiVersion;
 	/** Preference for notification pop-up locations. */
 	EOS_UI_ENotificationLocation NotificationLocation;
 ));
 
+/** The most recent version of the EOS_UI_AcknowledgeEventId API. */
+#define EOS_UI_ACKNOWLEDGEEVENTID_API_001 1
 
-#define EOS_UI_ACKNOWLEDGECORRELATIONID_API_001 1
+/** DEPRECATED! Use EOS_UI_ACKNOWLEDGEEVENTID_API_LATEST instead. */
+#define EOS_UI_ACKNOWLEDGECORRELATIONID_API_LATEST EOS_UI_ACKNOWLEDGEEVENTID_API_001
 
 /**
  * Input parameters for the EOS_UI_AcknowledgeEventId.
  */
 EOS_STRUCT(EOS_UI_AcknowledgeEventIdOptions001, (
-       /** API version of EOS_UI_AcknowledgeEventId. */
-       int32_t ApiVersion;
-       /** The ID being acknowledged. */
-       EOS_UI_EventId UiEventId;
-       /**
-        * The result to use for the acknowledgment.
-        * When acknowledging EOS_Presence_JoinGameAcceptedCallbackInfo this should be the
-        * result code from the JoinSession call.
-        */
-       EOS_EResult Result;
+    /** API Version: Set this to EOS_UI_ACKNOWLEDGEEVENTID_API_LATEST. */
+	int32_t ApiVersion;
+	/** The ID being acknowledged. */
+	EOS_UI_EventId UiEventId;
+	/** 
+	 * The result to use for the acknowledgment. 
+	 * When acknowledging EOS_Presence_JoinGameAcceptedCallbackInfo this should be the 
+	 * result code from the JoinSession call.
+	 */
+	EOS_EResult Result;
 ));
 
 #pragma pack(pop)

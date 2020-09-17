@@ -176,7 +176,7 @@ EOS_STRUCT(EOS_Achievements_AddNotifyAchievementsUnlockedOptions001, (
  * Output parameters for the EOS_Achievements_OnAchievementsUnlockedCallback Function.
  */
 EOS_STRUCT(EOS_Achievements_OnAchievementsUnlockedCallbackInfo, (
-	enum { k_iCallback = k_iAchievementsCallbacks + 4 };
+	enum { k_iCallback = k_iAchievementsCallbacks + 3 };
 	/** Context that was passed into EOS_Achievements_AddNotifyAchievementsUnlocked */
 	void* ClientData;
 	/** Account ID for user that received the unlocked achievements notification */

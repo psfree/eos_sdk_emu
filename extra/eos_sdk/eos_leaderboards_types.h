@@ -5,7 +5,7 @@
 #include "eos_common.h"
 
 enum { k_iLeaderboardsCallbackBase = 5000 };
-// next free callback_id: k_iLeaderboardsCallbackBase + 4
+// next free callback_id: k_iLeaderboardsCallbackBase + 3
 
 #define EOS_Leaderboards_QueryLeaderboardDefinitionsOptions              EOS_Leaderboards_QueryLeaderboardDefinitionsOptions001
 #define EOS_Leaderboards_Definition                                      EOS_Leaderboards_Definition001
@@ -24,7 +24,7 @@ enum { k_iLeaderboardsCallbackBase = 5000 };
 #define EOS_Leaderboards_CopyLeaderboardRecordByIndexOptions             EOS_Leaderboards_CopyLeaderboardRecordByIndexOptions001
 #define EOS_Leaderboards_CopyLeaderboardRecordByUserIdOptions            EOS_Leaderboards_CopyLeaderboardRecordByUserIdOptions001
 
-#include "eos_leaderboards_types1.6.0.h"
+#include "eos_leaderboards_types1.8.0.h"
 #include "eos_leaderboards_types1.5.0.h"
 
 #define EOS_LEADERBOARDS_QUERYLEADERBOARDDEFINITIONS_API_LATEST              EOS_LEADERBOARDS_QUERYLEADERBOARDDEFINITIONS_API_001
