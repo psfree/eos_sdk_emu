@@ -15,16 +15,16 @@ EXTERN_C typedef struct EOS_LeaderboardsHandle* EOS_HLeaderboards;
 #define EOS_LEADERBOARDS_QUERYLEADERBOARDDEFINITIONS_API_001 1
 
 /**
- * Input parameters for the EOS_Leaderboards_QueryLeaderboardDefinitions Function.
+ * Input parameters for the EOS_Leaderboards_QueryLeaderboardDefinitions function.
  * StartTime and EndTime are optional parameters, they can be used to limit the list of definitions
  * to overlap the time window specified.
  */
 EOS_STRUCT(EOS_Leaderboards_QueryLeaderboardDefinitionsOptions001, (
-	/** API Version. */
+	/** API Version: Set this to EOS_LEADERBOARDS_QUERYLEADERBOARDDEFINITIONS_API_LATEST. */
 	int32_t ApiVersion;
-	/** The POSIX timestamp for the start time, or EOS_LEADERBOARDS_TIME_UNDEFINED (Optional). */
+	/** An optional POSIX timestamp for the leaderboard's start time, or EOS_LEADERBOARDS_TIME_UNDEFINED */
 	int64_t StartTime;
-	/** The POSIX timestamp for the end time, or EOS_LEADERBOARDS_TIME_UNDEFINED (Optional). */
+	/** An optional POSIX timestamp for the leaderboard's end time, or EOS_LEADERBOARDS_TIME_UNDEFINED */
 	int64_t EndTime;
 ));
 
@@ -49,7 +49,7 @@ EOS_ENUM(EOS_ELeaderboardAggregation,
  * Contains information about a single leaderboard definition
  */
 EOS_STRUCT(EOS_Leaderboards_Definition001, (
-	/** Version of the API. */
+	/** API Version: Set this to EOS_LEADERBOARDS_DEFINITION_API_LATEST. */
 	int32_t ApiVersion;
 	/** Unique ID to identify leaderboard. */
 	const char* LeaderboardId;
@@ -91,12 +91,12 @@ EOS_STRUCT(EOS_Leaderboards_CopyLeaderboardDefinitionByIndexOptions001, (
 #define EOS_LEADERBOARDS_COPYLEADERBOARDDEFINITIONBYLEADERBOARDID_API_001 1
 
 /**
- * Input parameters for the EOS_Leaderboards_CopyLeaderboardDefinitionByLeaderboardId Function.
+ * Input parameters for the EOS_Leaderboards_CopyLeaderboardDefinitionByLeaderboardId function.
  */
 EOS_STRUCT(EOS_Leaderboards_CopyLeaderboardDefinitionByLeaderboardIdOptions001, (
-	/** API Version of the EOS_Leaderboards_CopyLeaderboardDefinitionByLeaderboardIdOptions function */
+	/** API Version: Set this to EOS_LEADERBOARDS_COPYLEADERBOARDDEFINITIONBYLEADERBOARDID_API_LATEST. */
 	int32_t ApiVersion;
-	/** Leaderboard ID to look for when copying leaderboard definition from the cache */
+	/** The ID of the leaderboard whose definition you want to copy from the cache */
 	const char* LeaderboardId;
 ));
 
@@ -116,7 +116,7 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_Definition_Release(EOS_Leaderboards_Defi
  * Data containing the result information for a query leaderboard definitions request.
  */
 EOS_STRUCT(EOS_Leaderboards_OnQueryLeaderboardDefinitionsCompleteCallbackInfo, (
-	enum { k_iCallback = k_iLeaderboardsCallbackBase + 1 };
+	enum { k_iCallback = k_iLeaderboardsCallbackBase + 0 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Leaderboards_QueryLeaderboardDefinitions. */
@@ -149,22 +149,22 @@ EOS_STRUCT(EOS_Leaderboards_UserScoresQueryStatInfo001, (
 #define EOS_LEADERBOARDS_QUERYLEADERBOARDUSERSCORES_API_001 1
 
 /**
- * Input parameters for the EOS_Leaderboards_QueryLeaderboardUserScores Function.
+ * Input parameters for the EOS_Leaderboards_QueryLeaderboardUserScores function.
  */
 EOS_STRUCT(EOS_Leaderboards_QueryLeaderboardUserScoresOptions001, (
-	/** API Version. */
+	/** API Version: Set this to EOS_LEADERBOARDS_QUERYLEADERBOARDUSERSCORES_API_LATEST. */
 	int32_t ApiVersion;
-	/** An array of account IDs for the users whose scores are to be retrieved. */
+	/** An array of Product User IDs indicating the users whose scores you want to retrieve */
 	const EOS_ProductUserId* UserIds;
-	/** The number of users included in query. */
+	/** The number of users included in query */
 	uint32_t UserIdsCount;
-	/** Array of info about stats to query. */
+	/** The stats to be collected, along with the sorting method to use when determining rank order for each stat */
 	const EOS_Leaderboards_UserScoresQueryStatInfo* StatInfo;
-	/** The number of stats to query. */
+	/** The number of stats to query */
 	uint32_t StatInfoCount;
-	/** The POSIX timestamp for the start time, or EOS_LEADERBOARDS_TIME_UNDEFINED (Optional). */
+	/** An optional POSIX timestamp, or EOS_LEADERBOARDS_TIME_UNDEFINED; results will only include scores made after this time */
 	int64_t StartTime;
-	/** The POSIX timestamp for the end time, or EOS_LEADERBOARDS_TIME_UNDEFINED (Optional). */
+	/** An optional POSIX timestamp, or EOS_LEADERBOARDS_TIME_UNDEFINED; results will only include scores made before this time */
 	int64_t EndTime;
 ));
 
@@ -187,10 +187,10 @@ EOS_STRUCT(EOS_Leaderboards_LeaderboardUserScore001, (
 #define EOS_LEADERBOARDS_GETLEADERBOARDUSERSCORECOUNT_API_001 1
 
 /**
- * Input parameters for the EOS_Leaderboards_GetLeaderboardUserScoreCount Function.
+ * Input parameters for the EOS_Leaderboards_GetLeaderboardUserScoreCount function.
  */
 EOS_STRUCT(EOS_Leaderboards_GetLeaderboardUserScoreCountOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_LEADERBOARDS_GETLEADERBOARDUSERSCORECOUNT_API_LATEST. */
 	int32_t ApiVersion;
 	/** Name of stat used to rank leaderboard. */
 	const char* StatName;
@@ -200,10 +200,10 @@ EOS_STRUCT(EOS_Leaderboards_GetLeaderboardUserScoreCountOptions001, (
 #define EOS_LEADERBOARDS_COPYLEADERBOARDUSERSCOREBYINDEX_API_001 1
 
 /**
- * Input parameters for the EOS_Leaderboards_CopyLeaderboardUserScoreByIndex Function.
+ * Input parameters for the EOS_Leaderboards_CopyLeaderboardUserScoreByIndex function.
  */
 EOS_STRUCT(EOS_Leaderboards_CopyLeaderboardUserScoreByIndexOptions001, (
-	/** API Version of the EOS_Leaderboards_CopyLeaderboardUserScoreByIndexOptions function. */
+	/** API Version: Set this to EOS_LEADERBOARDS_COPYLEADERBOARDUSERSCOREBYINDEX_API_LATEST. */
 	int32_t ApiVersion;
 	/** Index of the sorted leaderboard user score to retrieve from the cache. */
 	uint32_t LeaderboardUserScoreIndex;
@@ -215,14 +215,14 @@ EOS_STRUCT(EOS_Leaderboards_CopyLeaderboardUserScoreByIndexOptions001, (
 #define EOS_LEADERBOARDS_COPYLEADERBOARDUSERSCOREBYUSERID_API_001 1
 
 /**
- * Input parameters for the EOS_Leaderboards_CopyLeaderboardUserScoreByUserId Function.
+ * Input parameters for the EOS_Leaderboards_CopyLeaderboardUserScoreByUserId function.
  */
 EOS_STRUCT(EOS_Leaderboards_CopyLeaderboardUserScoreByUserIdOptions001, (
-	/** API Version of the EOS_Leaderboards_CopyLeaderboardUserScoreByUserIdOptions function. */
+	/** API Version: Set this to EOS_LEADERBOARDS_COPYLEADERBOARDUSERSCOREBYUSERID_API_LATEST. */
 	int32_t ApiVersion;
-	/** User id to look for when copying leaderboard score data from the cache. */
+	/** The Product User ID to look for when copying leaderboard score data from the cache */
 	EOS_ProductUserId UserId;
-	/** Name of stat used to rank leaderboard. */
+	/** The name of the stat that is used to rank this leaderboard */
 	const char* StatName;
 ));
 
@@ -242,7 +242,7 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_LeaderboardUserScore_Release(EOS_Leaderb
  * Data containing the result information for a query leaderboard user scores request.
  */
 EOS_STRUCT(EOS_Leaderboards_OnQueryLeaderboardUserScoresCompleteCallbackInfo, (
-	enum { k_iCallback = k_iLeaderboardsCallbackBase + 2 };
+	enum { k_iCallback = k_iLeaderboardsCallbackBase + 1 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Leaderboards_QueryLeaderboardUserScores. */
@@ -260,14 +260,14 @@ EOS_DECLARE_CALLBACK(EOS_Leaderboards_OnQueryLeaderboardUserScoresCompleteCallba
 #define EOS_LEADERBOARDS_QUERYLEADERBOARDRANKS_API_001 1
 
 /**
- * Input parameters for the EOS_Leaderboards_QueryLeaderboardRanks Function.
+ * Input parameters for the EOS_Leaderboards_QueryLeaderboardRanks function.
  *
  * @see EOS_Leaderboards_Definition
  */
 EOS_STRUCT(EOS_Leaderboards_QueryLeaderboardRanksOptions001, (
-	/** API Version. */
+	/** API Version: Set this to EOS_LEADERBOARDS_QUERYLEADERBOARDRANKS_API_LATEST. */
 	int32_t ApiVersion;
-	/** Unique ID to identify leaderboard. */
+	/** The ID of the leaderboard whose information you want to retrieve. */
 	const char* LeaderboardId;
 ));
 
@@ -278,15 +278,15 @@ EOS_STRUCT(EOS_Leaderboards_QueryLeaderboardRanksOptions001, (
  * Contains information about a single leaderboard record
  */
 EOS_STRUCT(EOS_Leaderboards_LeaderboardRecord002, (
-	/** Version of the API. */
+	/** API Version: Set this to EOS_LEADERBOARDS_LEADERBOARDRECORD_API_LATEST. */
 	int32_t ApiVersion;
-	/** User Id */
+	/** The Product User ID assoicated with this record */
 	EOS_ProductUserId UserId;
 	/** Sorted position on leaderboard */
 	uint32_t Rank;
-	/** Leaderboard score. */
+	/** Leaderboard score */
 	int32_t Score;
-	/* The latest display name seen for the user since they last time logged in. Empty if the user would not have a display name set. */
+	/** The latest display name seen for the user since they last time logged in. This is empty if the user does not have a display name set. */
 	const char* UserDisplayName;
 ));
 
@@ -294,10 +294,10 @@ EOS_STRUCT(EOS_Leaderboards_LeaderboardRecord002, (
 #define EOS_LEADERBOARDS_GETLEADERBOARDRECORDCOUNT_API_001 1
 
 /**
- * Input parameters for the EOS_Leaderboards_GetLeaderboardRecordCount Function.
+ * Input parameters for the EOS_Leaderboards_GetLeaderboardRecordCount function.
  */
 EOS_STRUCT(EOS_Leaderboards_GetLeaderboardRecordCountOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_LEADERBOARDS_GETLEADERBOARDRECORDCOUNT_API_LATEST. */
 	int32_t ApiVersion;
 ));
 
@@ -305,10 +305,10 @@ EOS_STRUCT(EOS_Leaderboards_GetLeaderboardRecordCountOptions001, (
 #define EOS_LEADERBOARDS_COPYLEADERBOARDRECORDBYINDEX_API_002 2
 
 /**
- * Input parameters for the EOS_Leaderboards_CopyLeaderboardRecordByIndex Function.
+ * Input parameters for the EOS_Leaderboards_CopyLeaderboardRecordByIndex function.
  */
 EOS_STRUCT(EOS_Leaderboards_CopyLeaderboardRecordByIndexOptions001, (
-	/** API Version of the EOS_Leaderboards_CopyLeaderboardRecordByIndexOptions function */
+	/** API Version: Set this to EOS_LEADERBOARDS_COPYLEADERBOARDRECORDBYINDEX_API_LATEST. */
 	int32_t ApiVersion;
 	/** Index of the leaderboard record to retrieve from the cache */
 	uint32_t LeaderboardRecordIndex;
@@ -318,12 +318,12 @@ EOS_STRUCT(EOS_Leaderboards_CopyLeaderboardRecordByIndexOptions001, (
 #define EOS_LEADERBOARDS_COPYLEADERBOARDRECORDBYUSERID_API_002 2
 
 /**
- * Input parameters for the EOS_Leaderboards_CopyLeaderboardRecordByUserId Function.
+ * Input parameters for the EOS_Leaderboards_CopyLeaderboardRecordByUserId function.
  */
 EOS_STRUCT(EOS_Leaderboards_CopyLeaderboardRecordByUserIdOptions001, (
-	/** API Version of the EOS_Leaderboards_CopyLeaderboardRecordByUserIdOptions function */
+	/** API Version: Set this to EOS_LEADERBOARDS_COPYLEADERBOARDRECORDBYUSERID_API_LATEST. */
 	int32_t ApiVersion;
-	/** User id to look for when copying leaderboard record data from the cache */
+	/** Leaderboard data will be copied from the cache if it relates to the user matching this Product User ID */
 	EOS_ProductUserId UserId;
 ));
 
@@ -343,7 +343,7 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_LeaderboardRecord_Release(EOS_Leaderboar
  * Data containing the result information for a query leaderboard ranks request.
  */
 EOS_STRUCT(EOS_Leaderboards_OnQueryLeaderboardRanksCompleteCallbackInfo, (
-	enum { k_iCallback = k_iLeaderboardsCallbackBase + 3 };
+	enum { k_iCallback = k_iLeaderboardsCallbackBase + 2 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Leaderboards_QueryLeaderboardRanks. */

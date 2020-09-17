@@ -13,15 +13,16 @@
 EXTERN_C typedef struct EOS_PlayerDataStorageHandle* EOS_HPlayerDataStorage;
 
 #define EOS_PLAYERDATASTORAGE_FILEMETADATA_API_001 1
+
 /**
  * Metadata information for a specific file
  */
 EOS_STRUCT(EOS_PlayerDataStorage_FileMetadata001, (
-	/** API Version for the EOS_PlayerDataStorage_FileMetadata struct */
+	/** API Version: Set this to EOS_PLAYERDATASTORAGE_FILEMETADATA_API_LATEST. */
 	int32_t ApiVersion;
-	/** The total size of the file in bytes */
+	/** The total size of the file in bytes (Includes file header in addition to file contents) */
 	uint32_t FileSizeBytes;
-	/** The MD5 Hash of the entire file, in hex digits */
+	/** The MD5 Hash of the entire file (including additional file header), in hex digits */
 	const char* MD5Hash;
 	/** The file's name */
 	const char* Filename;
@@ -34,15 +35,16 @@ EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_FileMetadata_Release(EOS_PlayerData
 
 
 #define EOS_PLAYERDATASTORAGE_QUERYFILEOPTIONS_API_001 1
+
 /**
  * Input data for the EOS_PlayerDataStorage_QueryFile function
  */
 EOS_STRUCT(EOS_PlayerDataStorage_QueryFileOptions001, (
-	/** API Version for the EOS_PlayerDataStorage_QueryFileOptions struct */
+	/** API Version: Set this to EOS_PLAYERDATASTORAGE_QUERYFILEOPTIONS_API_LATEST. */
 	int32_t ApiVersion;
-	/** The Account ID of the local user requesting file metadata */
+	/** The Product User ID of the local user requesting file metadata */
 	EOS_ProductUserId LocalUserId;
-	/** The requested file's name */
+	/** The name of the file being queried */
 	const char* Filename;
 ));
 
@@ -50,7 +52,7 @@ EOS_STRUCT(EOS_PlayerDataStorage_QueryFileOptions001, (
  * Data containing information about a query file request
  */
 EOS_STRUCT(EOS_PlayerDataStorage_QueryFileCallbackInfo, (
-	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 1 };
+	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 0 };
 	/** Result code for the operation. EOS_Success is returned for a successful request, other codes indicate an error */
 	EOS_EResult ResultCode;
 	/** Client-specified data passed into the file query request */
@@ -65,13 +67,14 @@ EOS_DECLARE_CALLBACK(EOS_PlayerDataStorage_OnQueryFileCompleteCallback, const EO
 
 
 #define EOS_PLAYERDATASTORAGE_QUERYFILELISTOPTIONS_API_001 1
+
 /**
  * Input data for the EOS_PlayerDataStorage_QueryFileList function
  */
 EOS_STRUCT(EOS_PlayerDataStorage_QueryFileListOptions001, (
-	/** API Version for the EOS_PlayerDataStorage_QueryFileListOptions struct */
+	/** API Version: Set this to EOS_PLAYERDATASTORAGE_QUERYFILELISTOPTIONS_API_LATEST. */
 	int32_t ApiVersion;
-	/** The Account ID of the local user who requested file metadata */
+	/** The Product User ID of the local user who requested file metadata */
 	EOS_ProductUserId LocalUserId;
 ));
 
@@ -79,7 +82,7 @@ EOS_STRUCT(EOS_PlayerDataStorage_QueryFileListOptions001, (
  * Data containing information about a query file list request
  */
 EOS_STRUCT(EOS_PlayerDataStorage_QueryFileListCallbackInfo, (
-	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 2 };
+	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 1 };
 	/** Result code for the operation. EOS_Success is returned for a successful request, other codes indicate an error */
 	EOS_EResult ResultCode;
 	/** Client-specified data passed into the file query request */
@@ -96,25 +99,27 @@ EOS_DECLARE_CALLBACK(EOS_PlayerDataStorage_OnQueryFileListCompleteCallback, cons
 
 
 #define EOS_PLAYERDATASTORAGE_GETFILEMETADATACOUNTOPTIONS_API_001 1
+
 /**
  * Input data for the EOS_PlayerDataStorage_GetFileMetadataCount function
  */
 EOS_STRUCT(EOS_PlayerDataStorage_GetFileMetadataCountOptions001, (
-	/** API Version for the EOS_PlayerDataStorage_GetFileMetadataCountOptions struct */
+	/** API Version: Set this to EOS_PLAYERDATASTORAGE_GETFILEMETADATACOUNTOPTIONS_API_LATEST. */
 	int32_t ApiVersion;
-	/** The Account ID of the local user who is requesting file metadata */
+	/** The Product User ID of the local user who is requesting file metadata */
 	EOS_ProductUserId LocalUserId;
 ));
 
 
 #define EOS_PLAYERDATASTORAGE_COPYFILEMETADATAATINDEXOPTIONS_API_001 1
+
 /**
  * Input data for the CopyFileMetadataAtIndex function
  */
 EOS_STRUCT(EOS_PlayerDataStorage_CopyFileMetadataAtIndexOptions001, (
-	/** API Version for the EOS_PlayerDataStorage_CopyFileMetadataAtIndexOptions struct */
+	/** API Version: Set this to EOS_PLAYERDATASTORAGE_COPYFILEMETADATAATINDEXOPTIONS_API_LATEST. */
 	int32_t ApiVersion;
-	/** The Account ID of the local user who is requesting file metadata */
+	/** The Product User ID of the local user who is requesting file metadata */
 	EOS_ProductUserId LocalUserId;
 	/** The index to get data for */
 	uint32_t Index;
@@ -122,13 +127,14 @@ EOS_STRUCT(EOS_PlayerDataStorage_CopyFileMetadataAtIndexOptions001, (
 
 
 #define EOS_PLAYERDATASTORAGE_COPYFILEMETADATABYFILENAMEOPTIONS_API_001 1
+
 /**
  * Input data for the CopyFileMetadataByFilename function
  */
 EOS_STRUCT(EOS_PlayerDataStorage_CopyFileMetadataByFilenameOptions001, (
-	/** API Version for the EOS_PlayerDataStorage_CopyFileMetadataByFilenameOptions struct */
+	/** API Version: Set this to EOS_PLAYERDATASTORAGE_COPYFILEMETADATABYFILENAMEOPTIONS_API_LATEST. */
 	int32_t ApiVersion;
-	/** The Account ID of the local user who is requesting file metadata */
+	/** The Product User ID of the local user who is requesting file metadata */
 	EOS_ProductUserId LocalUserId;
 	/** The file's name to get data for */
 	const char* Filename;
@@ -136,17 +142,18 @@ EOS_STRUCT(EOS_PlayerDataStorage_CopyFileMetadataByFilenameOptions001, (
 
 
 #define EOS_PLAYERDATASTORAGE_DUPLICATEFILEOPTIONS_API_001 1
+
 /**
  * Input data for the EOS_PlayerDataStorage_DuplicateFile function
  */
 EOS_STRUCT(EOS_PlayerDataStorage_DuplicateFileOptions001, (
-	/** API Version for the EOS_PlayerDataStorage_DuplicateFileOptions struct */
+	/** API Version: Set this to EOS_PLAYERDATASTORAGE_DUPLICATEFILEOPTIONS_API_LATEST. */
 	int32_t ApiVersion;
-	/** The Account ID of the local user who is duplicating the requested file */
+	/** The Product User ID of the local user who authorized the duplication of the requested file; must be the original file's owner */
 	EOS_ProductUserId LocalUserId;
-	/** The file name of the file to duplicate from */
+	/** The name of the existing file to duplicate */
 	const char* SourceFilename;
-	/** The file name of the new file */
+	/** The name of the new file */
 	const char* DestinationFilename;
 ));
 
@@ -154,7 +161,7 @@ EOS_STRUCT(EOS_PlayerDataStorage_DuplicateFileOptions001, (
  * Data containing the result information for a duplicate file request
  */
 EOS_STRUCT(EOS_PlayerDataStorage_DuplicateFileCallbackInfo, (
-	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 3 };
+	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 2 };
 	/** Result code for the operation. EOS_Success is returned for a successful request, other codes indicate an error */
 	EOS_EResult ResultCode;
 	/** Client-specified data passed into the file duplicate request */
@@ -170,15 +177,16 @@ EOS_DECLARE_CALLBACK(EOS_PlayerDataStorage_OnDuplicateFileCompleteCallback, cons
 
 
 #define EOS_PLAYERDATASTORAGE_DELETEFILEOPTIONS_API_001 1
+
 /**
  * Input data for the EOS_PlayerDataStorage_DeleteFile function
  */
 EOS_STRUCT(EOS_PlayerDataStorage_DeleteFileOptions001, (
-	/** API Version for the EOS_PlayerDataStorage_DeleteFileOptions struct */
+	/** API Version: Set this to EOS_PLAYERDATASTORAGE_DELETEFILEOPTIONS_API_LATEST. */
 	int32_t ApiVersion;
-	/** The Account ID of the local user who is deleting and owns the requested file */
+	/** The Product User ID of the local user who authorizes deletion of the file; must be the file's owner */
 	EOS_ProductUserId LocalUserId;
-	/** The file name to be deleted */
+	/** The name of the file to delete */
 	const char* Filename;
 ));
 
@@ -186,7 +194,7 @@ EOS_STRUCT(EOS_PlayerDataStorage_DeleteFileOptions001, (
  * Data containing the result information for a delete file request
  */
 EOS_STRUCT(EOS_PlayerDataStorage_DeleteFileCallbackInfo, (
-	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 4 };
+	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 3 };
 	/** Result code for the operation. EOS_Success is returned for a successful request, other codes indicate an error */
 	EOS_EResult ResultCode;
 	/** Client-specified data passed into the file deletion request */
@@ -215,7 +223,7 @@ EOS_DECLARE_FUNC(void) EOS_PlayerDataStorageFileTransferRequest_Release(EOS_HPla
  * Data containing the information about a file transfer in progress (or one that has completed)
  */
 EOS_STRUCT(EOS_PlayerDataStorage_FileTransferProgressCallbackInfo, (
-	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 5 };
+	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 4 };
 	/** Client-specified data passed into the file request */
 	void* ClientData;
 	/** The Account ID of the local user who initiated this request */
@@ -250,7 +258,7 @@ EOS_ENUM(EOS_PlayerDataStorage_EReadResult,
  * Data containing data for a chunk of a file being read
  */
 EOS_STRUCT(EOS_PlayerDataStorage_ReadFileDataCallbackInfo, (
-	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 6 };
+	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 5 };
 	/** Client-specified data passed into the file request */
 	void* ClientData;
 	/** The Account ID of the local user who initiated this request */
@@ -276,21 +284,22 @@ EOS_STRUCT(EOS_PlayerDataStorage_ReadFileDataCallbackInfo, (
 EOS_DECLARE_CALLBACK_RETVALUE(EOS_PlayerDataStorage_EReadResult, EOS_PlayerDataStorage_OnReadFileDataCallback, const EOS_PlayerDataStorage_ReadFileDataCallbackInfo* Data);
 
 #define EOS_PLAYERDATASTORAGE_READFILEOPTIONS_API_001 1
+
 /**
  * Input data for the EOS_PlayerDataStorage_ReadFile function
  */
 EOS_STRUCT(EOS_PlayerDataStorage_ReadFileOptions001, (
-	/** API Version for the EOS_PlayerDataStorage_ReadFileOptions struct */
+	/** API Version: Set this to EOS_PLAYERDATASTORAGE_READFILEOPTIONS_API_LATEST. */
 	int32_t ApiVersion;
-	/** The Account ID of the local user who is reading the requested file */
+	/** The Product User ID of the local user who is reading the requested file */
 	EOS_ProductUserId LocalUserId;
 	/** The file name to read; this file must already exist */
 	const char* Filename;
 	/** The maximum amount of data in bytes should be available to read in a single EOS_PlayerDataStorage_OnReadFileDataCallback call */
 	uint32_t ReadChunkLengthBytes;
-	/** Callback function to handle copying read data */
+	/** Callback function that handles data as it comes in, and can stop the transfer early */
 	EOS_PlayerDataStorage_OnReadFileDataCallback ReadFileDataCallback;
-	/** Optional callback function to be informed of download progress, if the file is not already locally cached. If set, this will be called at least once before completion if the request is successfully started */
+	/** Optional callback function to be informed of download progress, if the file is not already locally cached; if provided, this will be called at least once before completion if the request is successfully started */
 	EOS_PlayerDataStorage_OnFileTransferProgressCallback FileTransferProgressCallback;
 ));
 
@@ -299,7 +308,7 @@ EOS_STRUCT(EOS_PlayerDataStorage_ReadFileOptions001, (
  * Data containing the result of a read file request
  */
 EOS_STRUCT(EOS_PlayerDataStorage_ReadFileCallbackInfo, (
-	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 7 };
+	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 6 };
 	/** Result code for the operation. EOS_Success is returned for a successful request, other codes indicate an error */
 	EOS_EResult ResultCode;
 	/** Client-specified data passed into the file read request */
@@ -334,7 +343,7 @@ EOS_ENUM(EOS_PlayerDataStorage_EWriteResult,
  * Data containing data for a chunk of a file being written
  */
 EOS_STRUCT(EOS_PlayerDataStorage_WriteFileDataCallbackInfo, (
-	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 8 };
+	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 7 };
 	/** Client-specified data passed into the file write request */
 	void* ClientData;
 	/** The Account ID of the local user who initiated this request */
@@ -356,21 +365,22 @@ EOS_STRUCT(EOS_PlayerDataStorage_WriteFileDataCallbackInfo, (
 EOS_DECLARE_CALLBACK_RETVALUE(EOS_PlayerDataStorage_EWriteResult, EOS_PlayerDataStorage_OnWriteFileDataCallback, const EOS_PlayerDataStorage_WriteFileDataCallbackInfo* Data, void* OutDataBuffer, uint32_t* OutDataWritten);
 
 #define EOS_PLAYERDATASTORAGE_WRITEFILEOPTIONS_API_001 1
+
 /**
  * Input data for the EOS_PlayerDataStorage_WriteFile function
  */
 EOS_STRUCT(EOS_PlayerDataStorage_WriteFileOptions001, (
-	/** API Version for the EOS_PlayerDataStorage_WriteFileOptions struct */
+	/** API Version: Set this to EOS_PLAYERDATASTORAGE_WRITEFILEOPTIONS_API_LATEST. */
 	int32_t ApiVersion;
-	/** The Account ID of the local user who is writing the requested file */
+	/** The Product User ID of the local user who is writing the requested file to the cloud */
 	EOS_ProductUserId LocalUserId;
-	/** The file name to written to; if this file already exists, the contents will be replaced if the write request completes successfully */
+	/** The name of the file to write; if this file already exists, the contents will be replaced if the write request completes successfully */
 	const char* Filename;
-	/** Requested maximum amount of data in bytes that can be written to the file per tick */
+	/** Requested maximum amount of data (in bytes) that can be written to the file per tick */
 	uint32_t ChunkLengthBytes;
-	/** Callback function to handle copying data into the DataBuffer to be written into the requested file */
+	/** Callback function that provides chunks of data to be written into the requested file */
 	EOS_PlayerDataStorage_OnWriteFileDataCallback WriteFileDataCallback;
-	/** Optional callback function to be informed of upload progress, if any */
+	/** Optional callback function to inform the application of upload progress; will be called at least once if set */
 	EOS_PlayerDataStorage_OnFileTransferProgressCallback FileTransferProgressCallback;
 ));
 
@@ -378,7 +388,7 @@ EOS_STRUCT(EOS_PlayerDataStorage_WriteFileOptions001, (
  * The result information for a request to write data to a file
  */
 EOS_STRUCT(EOS_PlayerDataStorage_WriteFileCallbackInfo, (
-	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 9 };
+	enum { k_iCallback = k_iPlayerDataStorageCallbackBase + 8 };
 	/** Result code for the operation. EOS_Success is returned for a successful request, other codes indicate an error */
 	EOS_EResult ResultCode;
 	/** Client-specified data passed into the file write request */

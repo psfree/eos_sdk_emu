@@ -104,36 +104,57 @@ EOS_ENUM(EOS_ESessionAttributeAdvertisementType,
 /** Maximum number of attributes allowed on the session */
 #define EOS_SESSIONMODIFICATION_MAX_SESSION_ATTRIBUTES 64
 /** Maximum length of the name of the attribute associated with the session */
-#define EOS_SESSIONMODIFICATION_MAX_SESSION_ATTRIBUTE_LENGTH 32
+#define EOS_SESSIONMODIFICATION_MAX_SESSION_ATTRIBUTE_LENGTH 64
+
+/** Minimum number of characters the session id override */
+#define EOS_SESSIONMODIFICATION_MIN_SESSIONIDOVERRIDE_LENGTH 16
+/** Maximum number of characters a session id override */
+#define EOS_SESSIONMODIFICATION_MAX_SESSIONIDOVERRIDE_LENGTH 64
 
 /** The most recent version of the EOS_Sessions_CreateSessionModification API. */
-#define EOS_SESSIONS_CREATESESSIONMODIFICATION_API_002 2
+#define EOS_SESSIONS_CREATESESSIONMODIFICATION_API_003 3
 
 /**
- * Input parameters for the EOS_Sessions_CreateSessionModification Function.
+ * Input parameters for the EOS_Sessions_CreateSessionModification function.
  */
-EOS_STRUCT(EOS_Sessions_CreateSessionModificationOptions002, (
-	/** Version of the API */
+EOS_STRUCT(EOS_Sessions_CreateSessionModificationOptions003, (
+	/** API Version: Set this to EOS_SESSIONS_CREATESESSIONMODIFICATION_API_LATEST. */
 	int32_t ApiVersion;
 	/** Name of the session to create */
 	const char* SessionName;
-	/** Bucket id associated with the session */
+	/** Bucket ID associated with the session */
 	const char* BucketId;
 	/** Maximum number of players allowed in the session */
 	uint32_t MaxPlayers;
-	/** Local user id associated with the session */
+	/** The Product User ID of the local user associated with the session */
 	EOS_ProductUserId LocalUserId;
 	/** 
-	 * If true than this session will be used as the session associated with presence.
-	 * Only one session at a time can have this flag true.
+	 * If true, this session will be associated with presence. Only one session at a time can have this flag true.
+	 * This affects the ability of the Social Overlay to show game related actions to take in the user's social graph.
+	 * 
+	 * @note The Social Overlay can handle only one of the following three options at a time:
+	 * * using the bPresenceEnabled flags within the Sessions interface
+	 * * using the bPresenceEnabled flags within the Lobby interface
+	 * * using EOS_PresenceModification_SetJoinInfo
+	 *
+	 * @see EOS_PresenceModification_SetJoinInfoOptions
+	 * @see EOS_Lobby_CreateLobbyOptions
+	 * @see EOS_Lobby_JoinLobbyOptions
+	 * @see EOS_Sessions_JoinSessionOptions
 	 */
 	EOS_Bool bPresenceEnabled;
+	/**
+	 * Optional session id - set to a globally unique value to override the backend assignment
+	 * If not specified the backend service will assign one to the session.  Do not mix and match.
+	 * This value can be of size [EOS_SESSIONMODIFICATION_MIN_SESSIONIDOVERRIDE_LENGTH, EOS_SESSIONMODIFICATION_MAX_SESSIONIDOVERRIDE_LENGTH]
+	 */
+	const char* SessionId;
 ));
 
 /** The most recent version of the EOS_Sessions_UpdateSessionModification API. */
 #define EOS_SESSIONS_UPDATESESSIONMODIFICATION_API_001 1
 EOS_STRUCT(EOS_Sessions_UpdateSessionModificationOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_UPDATESESSIONMODIFICATION_API_LATEST. */
 	int32_t ApiVersion;
 	/** Name of the session to update */
 	const char* SessionName;
@@ -146,16 +167,16 @@ EOS_STRUCT(EOS_Sessions_UpdateSessionModificationOptions001, (
 #define EOS_SESSIONS_SENDINVITE_API_001 1
 
 /**
- * Input parameters for the EOS_Sessions_SendInvite Function.
+ * Input parameters for the EOS_Sessions_SendInvite function.
  */
 EOS_STRUCT(EOS_Sessions_SendInviteOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_SENDINVITE_API_LATEST. */
 	int32_t ApiVersion;
 	/** Name of the session associated with the invite */
 	const char* SessionName;
-	/** The local user inviting */
+	/** The Product User ID of the local user sending the invitation */
 	EOS_ProductUserId LocalUserId;
-	/** The remote user being invited */
+	/** The Product User of the remote user receiving the invitation */
 	EOS_ProductUserId TargetUserId;
 ));
 
@@ -163,7 +184,7 @@ EOS_STRUCT(EOS_Sessions_SendInviteOptions001, (
  * Output parameters for the EOS_Sessions_SendInvite function.
  */
 EOS_STRUCT(EOS_Sessions_SendInviteCallbackInfo, (
-	enum { k_iCallback = k_iSessionsCallbackBase + 1};
+	enum { k_iCallback = k_iSessionsCallbackBase + 0 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_SendInvite */
@@ -180,14 +201,14 @@ EOS_DECLARE_CALLBACK(EOS_Sessions_OnSendInviteCallback, const EOS_Sessions_SendI
 #define EOS_SESSIONS_REJECTINVITE_API_001 1
 
 /**
- * Input parameters for the EOS_Sessions_RejectInvite Function.
+ * Input parameters for the EOS_Sessions_RejectInvite function.
  */
 EOS_STRUCT(EOS_Sessions_RejectInviteOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_REJECTINVITE_API_LATEST. */
 	int32_t ApiVersion;
-	/** The local user rejecting the invite */
+	/** The Product User ID of the local user rejecting the invitation */
 	EOS_ProductUserId LocalUserId;
-	/** The invite id to reject */
+	/** The invite ID to reject */
 	const char* InviteId;
 ));
 
@@ -195,7 +216,7 @@ EOS_STRUCT(EOS_Sessions_RejectInviteOptions001, (
  * Output parameters for the EOS_Sessions_RejectInvite function.
  */
 EOS_STRUCT(EOS_Sessions_RejectInviteCallbackInfo, (
-	enum { k_iCallback = k_iSessionsCallbackBase + 2 };
+	enum { k_iCallback = k_iSessionsCallbackBase + 1 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_RejectInvite */
@@ -212,12 +233,12 @@ EOS_DECLARE_CALLBACK(EOS_Sessions_OnRejectInviteCallback, const EOS_Sessions_Rej
 #define EOS_SESSIONS_QUERYINVITES_API_001 1
 
 /**
- * Input parameters for the EOS_Sessions_QueryInvites Function.
+ * Input parameters for the EOS_Sessions_QueryInvites function.
  */
 EOS_STRUCT(EOS_Sessions_QueryInvitesOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_QUERYINVITES_API_LATEST. */
 	int32_t ApiVersion;
-	/** Local User Id to query invites */
+	/** The Product User ID to query for invitations */
 	EOS_ProductUserId LocalUserId;
 ));
 
@@ -225,7 +246,7 @@ EOS_STRUCT(EOS_Sessions_QueryInvitesOptions001, (
  * Output parameters for the EOS_Sessions_QueryInvites function.
  */
 EOS_STRUCT(EOS_Sessions_QueryInvitesCallbackInfo, (
-	enum { k_iCallback = k_iSessionsCallbackBase + 3 };
+	enum { k_iCallback = k_iSessionsCallbackBase + 2 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_QueryInvites */
@@ -244,12 +265,12 @@ EOS_DECLARE_CALLBACK(EOS_Sessions_OnQueryInvitesCallback, const EOS_Sessions_Que
 #define EOS_SESSIONS_GETINVITECOUNT_API_001 1
 
 /**
- * Input parameters for the EOS_Sessions_GetInviteCount Function.
+ * Input parameters for the EOS_Sessions_GetInviteCount function.
  */
 EOS_STRUCT(EOS_Sessions_GetInviteCountOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_GETINVITECOUNT_API_LATEST. */
 	int32_t ApiVersion;
-	/** Local user that has invites */
+	/** The Product User ID of the local user who has one or more invitations in the cache */
 	EOS_ProductUserId LocalUserId;
 ));
 
@@ -257,14 +278,14 @@ EOS_STRUCT(EOS_Sessions_GetInviteCountOptions001, (
 #define EOS_SESSIONS_GETINVITEIDBYINDEX_API_001 1
 
 /**
- * Input parameters for the EOS_Sessions_GetInviteIdByIndex Function.
+ * Input parameters for the EOS_Sessions_GetInviteIdByIndex function.
  */
 EOS_STRUCT(EOS_Sessions_GetInviteIdByIndexOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_GETINVITEIDBYINDEX_API_LATEST. */
 	int32_t ApiVersion;
-	/** Local user that has invites */
+	/** The Product User ID of the local user who has an invitation in the cache */
 	EOS_ProductUserId LocalUserId;
-	/** Index of the invite id to retrieve */
+	/** Index of the invite ID to retrieve */
 	uint32_t Index;
 ));
 
@@ -272,10 +293,10 @@ EOS_STRUCT(EOS_Sessions_GetInviteIdByIndexOptions001, (
 #define EOS_SESSIONS_CREATESESSIONSEARCH_API_001 1
 
 /**
- * Input parameters for the EOS_Sessions_CreateSessionSearch Function.
+ * Input parameters for the EOS_Sessions_CreateSessionSearch function.
  */
 EOS_STRUCT(EOS_Sessions_CreateSessionSearchOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_CREATESESSIONSEARCH_API_LATEST. */
 	int32_t ApiVersion;
 	/** Max number of results to return */
 	uint32_t MaxSearchResults;
@@ -284,7 +305,7 @@ EOS_STRUCT(EOS_Sessions_CreateSessionSearchOptions001, (
 /** The most recent version of the EOS_Sessions_UpdateSession API. */
 #define EOS_SESSIONS_UPDATESESSION_API_001 1
 EOS_STRUCT(EOS_Sessions_UpdateSessionOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_UPDATESESSION_API_LATEST. */
 	int32_t ApiVersion;
 	/** Builder handle */
 	EOS_HSessionModification SessionModificationHandle;
@@ -294,7 +315,7 @@ EOS_STRUCT(EOS_Sessions_UpdateSessionOptions001, (
  * Output parameters for the EOS_Sessions_UpdateSession function.
  */
 EOS_STRUCT(EOS_Sessions_UpdateSessionCallbackInfo, (
-	enum { k_iCallback = k_iSessionsCallbackBase + 4 };
+	enum { k_iCallback = k_iSessionsCallbackBase + 3 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_UpdateSession */
@@ -318,7 +339,7 @@ EOS_DECLARE_CALLBACK(EOS_Sessions_OnUpdateSessionCallback, const EOS_Sessions_Up
  * Input parameters for the EOS_Sessions_DestroySession function.
  */
 EOS_STRUCT(EOS_Sessions_DestroySessionOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_DESTROYSESSION_API_LATEST. */
 	int32_t ApiVersion;
 	/** Name of the session to destroy */
 	const char* SessionName;
@@ -328,7 +349,7 @@ EOS_STRUCT(EOS_Sessions_DestroySessionOptions001, (
  * Output parameters for the EOS_Sessions_DestroySession function.
  */
 EOS_STRUCT(EOS_Sessions_DestroySessionCallbackInfo, (
-	enum { k_iCallback = k_iSessionsCallbackBase + 5 };
+	enum { k_iCallback = k_iSessionsCallbackBase + 4 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_DestroySession */
@@ -348,17 +369,27 @@ EOS_DECLARE_CALLBACK(EOS_Sessions_OnDestroySessionCallback, const EOS_Sessions_D
  * Input parameters for the EOS_Sessions_JoinSession function.
  */
 EOS_STRUCT(EOS_Sessions_JoinSessionOptions002, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_JOINSESSION_API_LATEST. */
 	int32_t ApiVersion;
 	/** Name of the session to create after joining session */
 	const char* SessionName;
 	/** Session handle to join */
 	EOS_HSessionDetails SessionHandle;
-	/** Local user joining the session */
+	/** The Product User ID of the local user who is joining the session */
 	EOS_ProductUserId LocalUserId;
 	/** 
-	 * If true than this session will be used as the session associated with presence.
-	 * Only one session at a time can have this flag true.
+	 * If true, this session will be associated with presence. Only one session at a time can have this flag true.
+	 * This affects the ability of the Social Overlay to show game related actions to take in the user's social graph.
+	 *
+	 * @note The Social Overlay can handle only one of the following three options at a time:
+	 * * using the bPresenceEnabled flags within the Sessions interface
+	 * * using the bPresenceEnabled flags within the Lobby interface
+	 * * using EOS_PresenceModification_SetJoinInfo
+	 *
+	 * @see EOS_PresenceModification_SetJoinInfoOptions
+	 * @see EOS_Lobby_CreateLobbyOptions
+	 * @see EOS_Lobby_JoinLobbyOptions
+	 * @see EOS_Sessions_CreateSessionModificationOptions
 	 */
 	EOS_Bool bPresenceEnabled;
 ));
@@ -367,7 +398,7 @@ EOS_STRUCT(EOS_Sessions_JoinSessionOptions002, (
  * Output parameters for the EOS_Sessions_JoinSession function.
  */
 EOS_STRUCT(EOS_Sessions_JoinSessionCallbackInfo, (
-	enum { k_iCallback = k_iSessionsCallbackBase + 6 };
+	enum { k_iCallback = k_iSessionsCallbackBase + 5 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_JoinSession */
@@ -384,17 +415,17 @@ EOS_DECLARE_CALLBACK(EOS_Sessions_OnJoinSessionCallback, const EOS_Sessions_Join
 #define EOS_SESSIONS_STARTSESSION_API_001 1
 
 /**
- * Input parameters for the EOS_Sessions_StartSessionOptions Function.
+ * Input parameters for the EOS_Sessions_StartSessionOptions function.
  */
 EOS_STRUCT(EOS_Sessions_StartSessionOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_STARTSESSION_API_LATEST. */
 	int32_t ApiVersion;
 	/** Name of the session to set in progress */
 	const char* SessionName;
 ));
 
 EOS_STRUCT(EOS_Sessions_StartSessionCallbackInfo, (
-	enum { k_iCallback = k_iSessionsCallbackBase + 7 };
+	enum { k_iCallback = k_iSessionsCallbackBase + 6 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_StartSession */
@@ -411,17 +442,17 @@ EOS_DECLARE_CALLBACK(EOS_Sessions_OnStartSessionCallback, const EOS_Sessions_Sta
 #define EOS_SESSIONS_ENDSESSION_API_001 1
 
 /**
- * Input parameters for the EOS_Sessions_EndSessionOptions Function.
+ * Input parameters for the EOS_Sessions_EndSessionOptions function.
  */
 EOS_STRUCT(EOS_Sessions_EndSessionOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_ENDSESSION_API_LATEST. */
 	int32_t ApiVersion;
 	/** Name of the session to set as no long in progress */
 	const char* SessionName;
 ));
 
 EOS_STRUCT(EOS_Sessions_EndSessionCallbackInfo, (
-	enum { k_iCallback = k_iSessionsCallbackBase + 8 };
+	enum { k_iCallback = k_iSessionsCallbackBase + 7 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_EndSession */
@@ -438,10 +469,10 @@ EOS_DECLARE_CALLBACK(EOS_Sessions_OnEndSessionCallback, const EOS_Sessions_EndSe
 #define EOS_SESSIONS_REGISTERPLAYERS_API_001 1
 
 /**
- * Input parameters for the EOS_Sessions_RegisterPlayers Function.
+ * Input parameters for the EOS_Sessions_RegisterPlayers function.
  */
 EOS_STRUCT(EOS_Sessions_RegisterPlayersOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_REGISTERPLAYERS_API_LATEST. */
 	int32_t ApiVersion;
 	/** Name of the session for which to register players */
 	const char* SessionName;
@@ -452,7 +483,7 @@ EOS_STRUCT(EOS_Sessions_RegisterPlayersOptions001, (
 ));
 
 EOS_STRUCT(EOS_Sessions_RegisterPlayersCallbackInfo, (
-	enum { k_iCallback = k_iSessionsCallbackBase + 9 };
+	enum { k_iCallback = k_iSessionsCallbackBase + 8 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_RegisterPlayers */
@@ -469,10 +500,10 @@ EOS_DECLARE_CALLBACK(EOS_Sessions_OnRegisterPlayersCallback, const EOS_Sessions_
 #define EOS_SESSIONS_UNREGISTERPLAYERS_API_001 1
 
 /**
- * Input parameters for the EOS_Sessions_UnregisterPlayers Function.
+ * Input parameters for the EOS_Sessions_UnregisterPlayers function.
  */
 EOS_STRUCT(EOS_Sessions_UnregisterPlayersOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_UNREGISTERPLAYERS_API_LATEST. */
 	int32_t ApiVersion;
 	/** Name of the session for which to unregister players */
 	const char* SessionName;
@@ -483,7 +514,7 @@ EOS_STRUCT(EOS_Sessions_UnregisterPlayersOptions001, (
 ));
 
 EOS_STRUCT(EOS_Sessions_UnregisterPlayersCallbackInfo, (
-	enum { k_iCallback = k_iSessionsCallbackBase + 10 };
+	enum { k_iCallback = k_iSessionsCallbackBase + 9 };
 	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Sessions_UnregisterPlayers */
@@ -500,11 +531,12 @@ EOS_DECLARE_CALLBACK(EOS_Sessions_OnUnregisterPlayersCallback, const EOS_Session
 #define EOS_SESSIONMODIFICATION_SETBUCKETID_API_001 1
 
 /**
- * Input parameters for the EOS_SessionModification_SetBucketId Function.
+ * Input parameters for the EOS_SessionModification_SetBucketId function.
  */
 EOS_STRUCT(EOS_SessionModification_SetBucketIdOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONMODIFICATION_SETBUCKETID_API_LATEST. */
 	int32_t ApiVersion;
+	/** The new bucket id associated with the session */
 	const char* BucketId;
 ));
 
@@ -512,11 +544,12 @@ EOS_STRUCT(EOS_SessionModification_SetBucketIdOptions001, (
 #define EOS_SESSIONMODIFICATION_SETHOSTADDRESS_API_001 1
 
 /**
- * Input parameters for the EOS_SessionModification_SetHostAddress Function.
+ * Input parameters for the EOS_SessionModification_SetHostAddress function.
  */
 EOS_STRUCT(EOS_SessionModification_SetHostAddressOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONMODIFICATION_SETHOSTADDRESS_API_LATEST. */
 	int32_t ApiVersion;
+	/** A string representing the host address for the session, its meaning is up to the application */
 	const char* HostAddress;
 ));
 
@@ -534,10 +567,10 @@ EOS_ENUM(EOS_EOnlineSessionPermissionLevel,
 #define EOS_SESSIONMODIFICATION_SETPERMISSIONLEVEL_API_001 1
 
 /**
- * Input parameters for the EOS_SessionModification_SetPermissionLevel Function.
+ * Input parameters for the EOS_SessionModification_SetPermissionLevel function.
  */
 EOS_STRUCT(EOS_SessionModification_SetPermissionLevelOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONMODIFICATION_SETPERMISSIONLEVEL_API_LATEST. */
 	int32_t ApiVersion;
 	/** Permission level to set on the sesion */
 	EOS_EOnlineSessionPermissionLevel PermissionLevel;
@@ -547,10 +580,10 @@ EOS_STRUCT(EOS_SessionModification_SetPermissionLevelOptions001, (
 #define EOS_SESSIONMODIFICATION_SETJOININPROGRESSALLOWED_API_001 1
 
 /**
- * Input parameters for the EOS_SessionModification_SetJoinInProgressAllowed Function.
+ * Input parameters for the EOS_SessionModification_SetJoinInProgressAllowed function.
  */
 EOS_STRUCT(EOS_SessionModification_SetJoinInProgressAllowedOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONMODIFICATION_SETJOININPROGRESSALLOWED_API_LATEST. */
 	int32_t ApiVersion;
 	/** Does the session allow join in progress */
 	EOS_Bool bAllowJoinInProgress;
@@ -563,10 +596,10 @@ EOS_STRUCT(EOS_SessionModification_SetJoinInProgressAllowedOptions001, (
 #define EOS_SESSIONMODIFICATION_SETMAXPLAYERS_API_001 1
 
 /**
- * Input parameters for the EOS_SessionModification_SetMaxPlayers Function.
+ * Input parameters for the EOS_SessionModification_SetMaxPlayers function.
  */
 EOS_STRUCT(EOS_SessionModification_SetMaxPlayersOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONMODIFICATION_SETMAXPLAYERS_API_LATEST. */
 	int32_t ApiVersion;
 	/** Max number of players to allow in the session */
 	uint32_t MaxPlayers;
@@ -576,10 +609,10 @@ EOS_STRUCT(EOS_SessionModification_SetMaxPlayersOptions001, (
 #define EOS_SESSIONMODIFICATION_SETINVITESALLOWED_API_001 1
 
 /**
- * Input parameters for the EOS_SessionModification_SetInvitesAllowed Function.
+ * Input parameters for the EOS_SessionModification_SetInvitesAllowed function.
  */
 EOS_STRUCT(EOS_SessionModification_SetInvitesAllowedOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONMODIFICATION_SETINVITESALLOWED_API_LATEST. */
 	int32_t ApiVersion;
 	/** If true then invites can currently be sent for the associated session */
 	EOS_Bool bInvitesAllowed;
@@ -596,13 +629,16 @@ EOS_STRUCT(EOS_SessionModification_SetInvitesAllowedOptions001, (
 #define EOS_SESSIONS_SEARCH_MINSLOTSAVAILABLE "minslotsavailable"
 
 /** The most recent version of the EOS_Sessions_AttributeData struct. */
-#define EOS_SESSIONS_SESSIONATTRIBUTEDATA_API_001 1
+#define EOS_SESSIONS_ATTRIBUTEDATA_API_001 1
+
+/** DEPRECATED! Use EOS_SESSIONS_ATTRIBUTEDATA_API_LATEST instead. */
+#define EOS_SESSIONS_SESSIONATTRIBUTEDATA_API_LATEST EOS_SESSIONS_ATTRIBUTEDATA_API_001
 
 /**
  * Contains information about both session and search parameter attribution
  */
 EOS_STRUCT(EOS_Sessions_AttributeData001, (
-	/** API Version */
+	/** API Version: Set this to EOS_SESSIONS_ATTRIBUTEDATA_API_LATEST. */
 	int32_t ApiVersion;
 	/** Name of the session attribute */
 	const char* Key;
@@ -626,10 +662,10 @@ EOS_STRUCT(EOS_Sessions_AttributeData001, (
 #define EOS_ACTIVESESSION_COPYINFO_API_001 1
 
 /**
- * Input parameters for the EOS_ActiveSession_CopyInfo Function.
+ * Input parameters for the EOS_ActiveSession_CopyInfo function.
  */
 EOS_STRUCT(EOS_ActiveSession_CopyInfoOptions001, (
-	/** API Version */
+	/** API Version: Set this to EOS_ACTIVESESSION_COPYINFO_API_LATEST. */
 	int32_t ApiVersion;
 ));
 
@@ -637,10 +673,10 @@ EOS_STRUCT(EOS_ActiveSession_CopyInfoOptions001, (
 #define EOS_ACTIVESESSION_GETREGISTEREDPLAYERCOUNT_API_001 1
 
 /**
- * Input parameters for the EOS_ActiveSession_GetRegisteredPlayerCount Function.
+ * Input parameters for the EOS_ActiveSession_GetRegisteredPlayerCount function.
  */
 EOS_STRUCT(EOS_ActiveSession_GetRegisteredPlayerCountOptions001, (
-	/** API Version */
+	/** API Version: Set this to EOS_ACTIVESESSION_GETREGISTEREDPLAYERCOUNT_API_LATEST. */
 	int32_t ApiVersion;
 ));
 
@@ -648,23 +684,26 @@ EOS_STRUCT(EOS_ActiveSession_GetRegisteredPlayerCountOptions001, (
 #define EOS_ACTIVESESSION_GETREGISTEREDPLAYERBYINDEX_API_001 1
 
 /**
- * Input parameters for the EOS_ActiveSession_GetRegisteredPlayerByIndex Function.
+ * Input parameters for the EOS_ActiveSession_GetRegisteredPlayerByIndex function.
  */
 EOS_STRUCT(EOS_ActiveSession_GetRegisteredPlayerByIndexOptions001, (
-	/** API Version */
+	/** API Version: Set this to EOS_ACTIVESESSION_GETREGISTEREDPLAYERBYINDEX_API_LATEST. */
 	int32_t ApiVersion;
 	/** Index of the registered player to retrieve */
 	uint32_t PlayerIndex;
 ));
 
 /** The most recent version of the EOS_SessionDetails_Attribute struct. */
-#define EOS_SESSIONS_SESSIONATTRIBUTE_API_001 1
+#define EOS_SESSIONDETAILS_ATTRIBUTE_API_001 1
+
+/** DEPRECATED! Use EOS_SESSIONDETAILS_ATTRIBUTE_API_LATEST instead. */
+#define EOS_SESSIONS_SESSIONATTRIBUTE_API_LATEST EOS_SESSIONDETAILS_ATTRIBUTE_API_001
 
 /**
  *  An attribution value and its advertisement setting stored with a session.  
  */
 EOS_STRUCT(EOS_SessionDetails_Attribute001, (
-	/** API Version */
+	/** API Version: Set this to EOS_SESSIONDETAILS_ATTRIBUTE_API_LATEST. */
 	int32_t ApiVersion;
 	/** Key/Value pair describing the attribute */
 	EOS_Sessions_AttributeData* Data;
@@ -686,10 +725,10 @@ EOS_DECLARE_FUNC(void) EOS_SessionDetails_Attribute_Release(EOS_SessionDetails_A
 #define EOS_SESSIONMODIFICATION_ADDATTRIBUTE_API_001 1
 
 /**
- * Input parameters for the EOS_SessionModification_AddAttribute Function.
+ * Input parameters for the EOS_SessionModification_AddAttribute function.
  */
 EOS_STRUCT(EOS_SessionModification_AddAttributeOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONMODIFICATION_ADDATTRIBUTE_API_LATEST. */
 	int32_t ApiVersion;
 	/** Key/Value pair describing the attribute to add to the session */
 	const EOS_Sessions_AttributeData* SessionAttribute;
@@ -701,10 +740,10 @@ EOS_STRUCT(EOS_SessionModification_AddAttributeOptions001, (
 #define EOS_SESSIONMODIFICATION_REMOVEATTRIBUTE_API_001 1
 
 /**
- * Input parameters for the EOS_SessionModification_RemoveAttribute Function.
+ * Input parameters for the EOS_SessionModification_RemoveAttribute function.
  */
 EOS_STRUCT(EOS_SessionModification_RemoveAttributeOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONDETAILS_SETTINGS_API_LATEST. */
 	int32_t ApiVersion;
 	/** Session attribute to remove from the session */
 	const char* Key;
@@ -717,10 +756,10 @@ EOS_STRUCT(EOS_SessionModification_RemoveAttributeOptions001, (
 #define EOS_SESSIONSEARCH_SETMAXSEARCHRESULTS_API_001 1
 
 /**
- * Input parameters for the EOS_SessionSearch_SetMaxResults Function.
+ * Input parameters for the EOS_SessionSearch_SetMaxResults function.
  */
 EOS_STRUCT(EOS_SessionSearch_SetMaxResultsOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONSEARCH_SETMAXSEARCHRESULTS_API_LATEST. */
 	int32_t ApiVersion;
 	/** Maximum number of search results returned with this query, may not exceed EOS_SESSIONS_MAX_SEARCH_RESULTS */
 	uint32_t MaxSearchResults;
@@ -730,23 +769,21 @@ EOS_STRUCT(EOS_SessionSearch_SetMaxResultsOptions001, (
 #define EOS_SESSIONSEARCH_FIND_API_002 2
 
 /**
- * Input parameters for the EOS_SessionSearch_Find Function.
+ * Input parameters for the EOS_SessionSearch_Find function.
  */
 EOS_STRUCT(EOS_SessionSearch_FindOptions002, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONDETAILS_SETTINGS_API_LATEST. */
 	int32_t ApiVersion;
-	/** Local user who is searching */
+	/** The Product User ID of the local user who is searching */
 	EOS_ProductUserId LocalUserId;
 ));
 
 EOS_STRUCT(EOS_SessionSearch_FindCallbackInfo, (
-	enum { k_iCallback = k_iSessionsCallbackBase + 11 };
-	/** Result code for the operation. EOS_Success is returned for a successful operation, otherwise one of the error codes is returned. See eos_common.h */
+	enum { k_iCallback = k_iSessionsCallbackBase + 10 };
+	/** The EOS_EResult code for the operation. EOS_Success indicates that the operation succeeded; other codes indicate errors. */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_SessionSearch_Find */
 	void* ClientData;
-	/** Invite id that was accepted */
-	const char* InviteId;
 ));
 
 /**
@@ -759,10 +796,10 @@ EOS_DECLARE_CALLBACK(EOS_SessionSearch_OnFindCallback, const EOS_SessionSearch_F
 #define EOS_SESSIONSEARCH_GETSEARCHRESULTCOUNT_API_001 1
 
 /**
- * Input parameters for the EOS_SessionSearch_GetSearchResultCount Function.
+ * Input parameters for the EOS_SessionSearch_GetSearchResultCount function.
  */
 EOS_STRUCT(EOS_SessionSearch_GetSearchResultCountOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONDETAILS_SETTINGS_API_LATEST. */
 	int32_t ApiVersion;
 ));
 		
@@ -770,10 +807,10 @@ EOS_STRUCT(EOS_SessionSearch_GetSearchResultCountOptions001, (
 #define EOS_SESSIONSEARCH_COPYSEARCHRESULTBYINDEX_API_001 1
 
 /**
- * Input parameters for the EOS_SessionSearch_CopySearchResultByIndex Function.
+ * Input parameters for the EOS_SessionSearch_CopySearchResultByIndex function.
  */
 EOS_STRUCT(EOS_SessionSearch_CopySearchResultByIndexOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONDETAILS_SETTINGS_API_LATEST. */
 	int32_t ApiVersion;
 	/** 
 	 * The index of the session to retrieve within the completed search query
@@ -786,12 +823,12 @@ EOS_STRUCT(EOS_SessionSearch_CopySearchResultByIndexOptions001, (
 #define EOS_SESSIONSEARCH_SETSESSIONID_API_001 1
 
 /**
- * Input parameters for the EOS_SessionSearch_SetSessionId Function.
+ * Input parameters for the EOS_SessionSearch_SetSessionId function.
  */
 EOS_STRUCT(EOS_SessionSearch_SetSessionIdOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONDETAILS_SETTINGS_API_LATEST. */
 	int32_t ApiVersion;
-	/** Search sessions for a specific session id, returning at most one session */
+	/** Search sessions for a specific session ID, returning at most one session */
 	const char* SessionId;
 ));
 
@@ -799,12 +836,12 @@ EOS_STRUCT(EOS_SessionSearch_SetSessionIdOptions001, (
 #define EOS_SESSIONSEARCH_SETTARGETUSERID_API_001 1
 
 /**
- * Input parameters for the EOS_SessionSearch_SetTargetUserId Function.
+ * Input parameters for the EOS_SessionSearch_SetTargetUserId function.
  */
 EOS_STRUCT(EOS_SessionSearch_SetTargetUserIdOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONDETAILS_SETTINGS_API_LATEST. */
 	int32_t ApiVersion;
-	/** Search sessions for given user, returning any sessions where this player is currently registered */
+	/** The Product User ID to find; return any sessions where the user matching this ID is currently registered */
 	EOS_ProductUserId TargetUserId;
 ));
 
@@ -812,14 +849,14 @@ EOS_STRUCT(EOS_SessionSearch_SetTargetUserIdOptions001, (
 #define EOS_SESSIONSEARCH_SETPARAMETER_API_001 1
 
 /**
- * Input parameters for the EOS_SessionSearch_SetParameter Function.
+ * Input parameters for the EOS_SessionSearch_SetParameter function.
  *
  * A search key may be set more than once to make multiple comparisons
  * The two comparisons are AND'd together
  * (ie, Key GREATER_THAN 5, Key NOT_EQUALS 10)
  */
 EOS_STRUCT(EOS_SessionSearch_SetParameterOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONDETAILS_SETTINGS_API_LATEST. */
 	int32_t ApiVersion;
 	/** Search parameter describing a key and a value to compare */
 	const EOS_Sessions_AttributeData* Parameter;
@@ -831,12 +868,12 @@ EOS_STRUCT(EOS_SessionSearch_SetParameterOptions001, (
 #define EOS_SESSIONSEARCH_REMOVEPARAMETER_API_001 1
 
 /**
- * Input parameters for the EOS_SessionSearch_RemoveParameter Function.
+ * Input parameters for the EOS_SessionSearch_RemoveParameter function.
  *
  * Removal requires both the key and its comparator in order to remove as the same key can be used in more than one operation
  */
 EOS_STRUCT(EOS_SessionSearch_RemoveParameterOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONDETAILS_SETTINGS_API_LATEST. */
 	int32_t ApiVersion;
 	/** Search parameter key to remove from the search */
 	const char* Key;
@@ -849,7 +886,7 @@ EOS_STRUCT(EOS_SessionSearch_RemoveParameterOptions001, (
 
 /** Common settings associated with a single session */
 EOS_STRUCT(EOS_SessionDetails_Settings002, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONDETAILS_SETTINGS_API_LATEST. */
 	int32_t ApiVersion;
 	/** The main indexed parameter for this session, can be any string (ie "Region:GameMode") */
 	const char* BucketId;
@@ -868,9 +905,9 @@ EOS_STRUCT(EOS_SessionDetails_Settings002, (
 
 /** Internal details about a session, found on both active sessions and within search results */
 EOS_STRUCT(EOS_SessionDetails_Info001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONDETAILS_INFO_API_LATEST. */
 	int32_t ApiVersion;
-	/** Session id assigned by the backend service */
+	/** Session ID assigned by the backend service */
 	const char* SessionId;
 	/** IP address of this session as visible by the backend service */
 	const char* HostAddress;
@@ -886,10 +923,10 @@ EOS_DECLARE_FUNC(void) EOS_SessionDetails_Info_Release(EOS_SessionDetails_Info* 
 #define EOS_SESSIONDETAILS_COPYINFO_API_001 1
 
 /**
- * Input parameters for the EOS_SessionDetails_CopyInfo Function.
+ * Input parameters for the EOS_SessionDetails_CopyInfo function.
  */
 EOS_STRUCT(EOS_SessionDetails_CopyInfoOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONDETAILS_COPYINFO_API_LATEST. */
 	int32_t ApiVersion;
 ));
 
@@ -897,10 +934,10 @@ EOS_STRUCT(EOS_SessionDetails_CopyInfoOptions001, (
 #define EOS_SESSIONDETAILS_GETSESSIONATTRIBUTECOUNT_API_001 1
 
 /**
- * Input parameters for the EOS_SessionDetails_GetSessionAttributeCount Function.
+ * Input parameters for the EOS_SessionDetails_GetSessionAttributeCount function.
  */
 EOS_STRUCT(EOS_SessionDetails_GetSessionAttributeCountOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONDETAILS_GETSESSIONATTRIBUTECOUNT_API_LATEST. */
 	int32_t ApiVersion;
 ));
 
@@ -908,10 +945,10 @@ EOS_STRUCT(EOS_SessionDetails_GetSessionAttributeCountOptions001, (
 #define EOS_SESSIONDETAILS_COPYSESSIONATTRIBUTEBYINDEX_API_001 1
 
 /**
- * Input parameters for the EOS_SessionDetails_CopySessionAttributeByIndex Function.
+ * Input parameters for the EOS_SessionDetails_CopySessionAttributeByIndex function.
  */
 EOS_STRUCT(EOS_SessionDetails_CopySessionAttributeByIndexOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONDETAILS_COPYSESSIONATTRIBUTEBYINDEX_API_LATEST. */
 	int32_t ApiVersion;
 	/** 
 	 * The index of the attribute to retrieve
@@ -924,10 +961,10 @@ EOS_STRUCT(EOS_SessionDetails_CopySessionAttributeByIndexOptions001, (
 #define EOS_SESSIONDETAILS_COPYSESSIONATTRIBUTEBYKEY_API_001 1
 
 /**
- * Input parameters for the EOS_SessionDetails_CopySessionAttributeByKey Function.
+ * Input parameters for the EOS_SessionDetails_CopySessionAttributeByKey function.
  */
 EOS_STRUCT(EOS_SessionDetails_CopySessionAttributeByKeyOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONDETAILS_COPYSESSIONATTRIBUTEBYKEY_API_LATEST. */
 	int32_t ApiVersion;
 	/** The name of the key to get the session attribution for 
 	 * @see EOS_SessionModification_AddAttribute
@@ -942,11 +979,11 @@ EOS_STRUCT(EOS_SessionDetails_CopySessionAttributeByKeyOptions001, (
  * Top level details about an active session
  */
 EOS_STRUCT(EOS_ActiveSession_Info001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_ACTIVESESSION_INFO_API_LATEST. */
 	int32_t ApiVersion;
 	/** Name of the session */
 	const char* SessionName;
-	/** Local user who created or joined the session */
+	/** The Product User ID of the local user who created or joined the session */
 	EOS_ProductUserId LocalUserId;
 	/** Current state of the session */
 	EOS_EOnlineSessionState State;
@@ -968,10 +1005,10 @@ EOS_DECLARE_FUNC(void) EOS_ActiveSession_Info_Release(EOS_ActiveSession_Info* Ac
 #define EOS_SESSIONS_COPYACTIVESESSIONHANDLE_API_001 1
 
 /**
- * Input parameters for the EOS_Sessions_CopyActiveSessionHandle Function.
+ * Input parameters for the EOS_Sessions_CopyActiveSessionHandle function.
  */
 EOS_STRUCT(EOS_Sessions_CopyActiveSessionHandleOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_COPYACTIVESESSIONHANDLE_API_LATEST. */
 	int32_t ApiVersion;
 	/** Name of the session for which to retrieve a session handle */
 	const char* SessionName;
@@ -979,16 +1016,20 @@ EOS_STRUCT(EOS_Sessions_CopyActiveSessionHandleOptions001, (
 
 /** The most recent version of the EOS_Sessions_AddNotifySessionInviteReceived API. */
 #define EOS_SESSIONS_ADDNOTIFYSESSIONINVITERECEIVED_API_001 1
+
+/**
+ * Input parameters for the EOS_Sessions_AddNotifySessionInviteReceived function.
+ */
 EOS_STRUCT(EOS_Sessions_AddNotifySessionInviteReceivedOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_ADDNOTIFYSESSIONINVITERECEIVED_API_LATEST. */
 	int32_t ApiVersion;
 ));
 
 /**
- * Output parameters for the EOS_Sessions_OnSessionInviteReceivedCallback Function.
+ * Output parameters for the EOS_Sessions_OnSessionInviteReceivedCallback function.
  */
 EOS_STRUCT(EOS_Sessions_SessionInviteReceivedCallbackInfo, (
-	enum { k_iCallback = k_iSessionsCallbackBase + 12 };
+	enum { k_iCallback = k_iSessionsCallbackBase + 11 };
 	/** Context that was passed into EOS_Sessions_AddNotifySessionInviteReceived */
 	void* ClientData;
 	/** User that received the invite */
@@ -1008,16 +1049,20 @@ EOS_DECLARE_CALLBACK(EOS_Sessions_OnSessionInviteReceivedCallback, const EOS_Ses
 
 /** The most recent version of the EOS_Sessions_AddNotifySessionInviteAccepted API. */
 #define EOS_SESSIONS_ADDNOTIFYSESSIONINVITEACCEPTED_API_001 1
+
+/**
+ * Input parameters for the EOS_Sessions_AddNotifySessionInviteAccepted function.
+ */
 EOS_STRUCT(EOS_Sessions_AddNotifySessionInviteAcceptedOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_ADDNOTIFYSESSIONINVITEACCEPTED_API_LATEST. */
 	int32_t ApiVersion;
 ));
 
 /**
- * Output parameters for the EOS_Sessions_OnSessionInviteAcceptedCallback Function.
+ * Output parameters for the EOS_Sessions_OnSessionInviteAcceptedCallback function.
  */
 EOS_STRUCT(EOS_Sessions_SessionInviteAcceptedCallbackInfo, (
-	enum { k_iCallback = k_iSessionsCallbackBase + 13 };
+	enum { k_iCallback = k_iSessionsCallbackBase + 12 };
 	/** Context that was passed into EOS_Sessions_AddNotifySessionInviteAccepted */
 	void* ClientData;
 	/** Session Id that should be used for joining */
@@ -1042,16 +1087,20 @@ EOS_DECLARE_CALLBACK(EOS_Sessions_OnSessionInviteAcceptedCallback, const EOS_Ses
 
 /** The most recent version of the EOS_Sessions_AddNotifyJoinSessionAccepted API. */
 #define EOS_SESSIONS_ADDNOTIFYJOINSESSIONACCEPTED_API_001 1
+
+/**
+ * Input parameters for the EOS_Sessions_AddNotifyJoinSessionAccepted function.
+ */
 EOS_STRUCT(EOS_Sessions_AddNotifyJoinSessionAcceptedOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_ADDNOTIFYJOINSESSIONACCEPTED_API_LATEST. */
 	int32_t ApiVersion;
 ));
 
 /**
- * Output parameters for the EOS_Sessions_OnJoinSessionAcceptedCallback Function.
+ * Output parameters for the EOS_Sessions_OnJoinSessionAcceptedCallback function.
  */
 EOS_STRUCT(EOS_Sessions_JoinSessionAcceptedCallbackInfo, (
-	enum { k_iCallback = k_iSessionsCallbackBase + 14 };
+	enum { k_iCallback = k_iSessionsCallbackBase + 13 };
 	/** Context that was passed into EOS_Sessions_AddNotifyJoinSessionAccepted */
 	void* ClientData;
 	/** User that initialized the join game */
@@ -1080,12 +1129,12 @@ EOS_DECLARE_CALLBACK(EOS_Sessions_OnJoinSessionAcceptedCallback, const EOS_Sessi
 #define EOS_SESSIONS_COPYSESSIONHANDLEBYINVITEID_API_001 1
 
 /**
- * Input parameters for the EOS_Sessions_CopySessionHandleByInviteId Function.
+ * Input parameters for the EOS_Sessions_CopySessionHandleByInviteId function.
  */
 EOS_STRUCT(EOS_Sessions_CopySessionHandleByInviteIdOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_COPYSESSIONHANDLEBYINVITEID_API_LATEST. */
 	int32_t ApiVersion;
-	/** Invite id for which to retrieve a session handle */
+	/** Invite ID for which to retrieve a session handle */
 	const char* InviteId;
 ));
 
@@ -1093,10 +1142,10 @@ EOS_STRUCT(EOS_Sessions_CopySessionHandleByInviteIdOptions001, (
 #define EOS_SESSIONS_COPYSESSIONHANDLEBYUIEVENTID_API_001 1
 
 /**
- * Input parameters for the EOS_Sessions_CopySessionHandleByUiEventId Function.
+ * Input parameters for the EOS_Sessions_CopySessionHandleByUiEventId function.
  */
 EOS_STRUCT(EOS_Sessions_CopySessionHandleByUiEventIdOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_COPYSESSIONHANDLEBYUIEVENTID_API_LATEST. */
 	int32_t ApiVersion;
 	/** UI Event associated with the session */
 	EOS_UI_EventId UiEventId;
@@ -1106,12 +1155,12 @@ EOS_STRUCT(EOS_Sessions_CopySessionHandleByUiEventIdOptions001, (
 #define EOS_SESSIONS_COPYSESSIONHANDLEFORPRESENCE_API_001 1
 
 /**
- * Input parameters for the EOS_Sessions_CopySessionHandleForPresence Function.
+ * Input parameters for the EOS_Sessions_CopySessionHandleForPresence function.
  */
 EOS_STRUCT(EOS_Sessions_CopySessionHandleForPresenceOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_COPYSESSIONHANDLEFORPRESENCE_API_LATEST. */
 	int32_t ApiVersion;
-	/** Local user id associated with the session */
+	/** The Product User ID of the local user associated with the session */
 	EOS_ProductUserId LocalUserId;
 ));
 
@@ -1119,14 +1168,14 @@ EOS_STRUCT(EOS_Sessions_CopySessionHandleForPresenceOptions001, (
 #define EOS_SESSIONS_ISUSERINSESSION_API_001 1
 
 /**
- * Input parameters for the EOS_Sessions_IsUserInSession Function.
+ * Input parameters for the EOS_Sessions_IsUserInSession function.
  */
 EOS_STRUCT(EOS_Sessions_IsUserInSessionOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_ISUSERINSESSION_API_LATEST. */
 	int32_t ApiVersion;
 	/** Active session name to search within */
 	const char* SessionName;
-	/** Product User Id to search for in the session */
+	/** Product User ID to search for in the session */
 	EOS_ProductUserId TargetUserId;
 ));
 
@@ -1134,10 +1183,10 @@ EOS_STRUCT(EOS_Sessions_IsUserInSessionOptions001, (
 #define EOS_SESSIONS_DUMPSESSIONSTATE_API_001 1
 
 /**
- * Input parameters for the EOS_Sessions_DumpSessionState Function.
+ * Input parameters for the EOS_Sessions_DumpSessionState function.
  */
 EOS_STRUCT(EOS_Sessions_DumpSessionStateOptions001, (
-	/** Version of the API */
+	/** API Version: Set this to EOS_SESSIONS_DUMPSESSIONSTATE_API_LATEST. */
 	int32_t ApiVersion;
 	/** Name of the session */
 	const char* SessionName;
