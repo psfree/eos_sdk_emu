@@ -141,7 +141,7 @@ namespace NemirtingasEmuLauncher
                 xmlserializer.Serialize(writer, save);
                 using (FileStream file = File.Open(Path.Combine(LauncherFolder, "NemirtingasEmuLauncher.cfg"), FileMode.Create))
                 {
-                    byte[] datas = new UTF8Encoding(true).GetBytes(stringWriter.ToString());
+                    byte[] datas = new UTF8Encoding(false).GetBytes(stringWriter.ToString());
                     file.Write(datas, 0, datas.Length);
                 }
             }
@@ -427,7 +427,7 @@ namespace NemirtingasEmuLauncher
 
             string json_cfg = Path.Combine(Path.GetDirectoryName(app.FullPath), EmuJsonName);
 
-            using (StreamWriter streamWriter = new StreamWriter(new FileStream(json_cfg, FileMode.Create), Encoding.UTF8))
+            using (StreamWriter streamWriter = new StreamWriter(new FileStream(json_cfg, FileMode.Create), new UTF8Encoding(false)))
             {
                 string buffer = Newtonsoft.Json.JsonConvert.SerializeObject(emu_cfg, Newtonsoft.Json.Formatting.Indented);
                 streamWriter.Write(buffer);
@@ -593,7 +593,7 @@ namespace NemirtingasEmuLauncher
                 json_cache["name"] = (string)json["Name"];
                 json_cache["app_id"] = (string)json["AppId"];
 
-                using (StreamWriter streamWriter = new StreamWriter(new FileStream(app_cache_file, FileMode.Create), Encoding.UTF8))
+                using (StreamWriter streamWriter = new StreamWriter(new FileStream(app_cache_file, FileMode.Create), new UTF8Encoding(false)))
                 {
                     string buffer = Newtonsoft.Json.JsonConvert.SerializeObject(json_cache, Newtonsoft.Json.Formatting.Indented);
                     streamWriter.Write(buffer);

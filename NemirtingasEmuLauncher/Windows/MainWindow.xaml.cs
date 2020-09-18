@@ -94,7 +94,7 @@ namespace NemirtingasEmuLauncher.Windows
                     xmlserializer.Serialize(writer, save);
                     using (FileStream file = File.Open(Path.Combine(EpicEmulator.LauncherFolder, "LauncherWindow.cfg"), FileMode.Create))
                     {
-                        byte[] datas = new UTF8Encoding(true).GetBytes(stringWriter.ToString());
+                        byte[] datas = new UTF8Encoding(false).GetBytes(stringWriter.ToString());
                         file.Write(datas, 0, datas.Length);
                     }
                 }
