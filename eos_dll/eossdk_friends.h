@@ -20,12 +20,14 @@
 #pragma once
 
 #include "common_includes.h"
+#include "callback_manager.h"
 #include "network.h"
 
 namespace sdk
 {
     class EOSSDK_Friends :
-        public IRunFrame
+        public IRunCallback,
+        public IRunNetwork
     {
         nlohmann::fifo_map<EOS_EpicAccountId, Friend_Info_pb> _friends;
 

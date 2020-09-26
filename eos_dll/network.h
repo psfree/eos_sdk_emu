@@ -26,6 +26,13 @@
 #include "common_includes.h"
 #include "task.h"
 
+class IRunNetwork
+{
+public:
+    // RunNetwork is run if you register to a network message and we received that message
+    virtual bool RunNetwork(Network_Message_pb const& msg) = 0;
+};
+
 class LOCAL_API Network
 {
 public:
@@ -75,7 +82,7 @@ private:
     tcp_buffer_t _tcp_self_recv;
     std::map<peer_t, PortableAPI::tcp_socket*> _tcp_peers;
 
-    std::map<Network_Message_pb::MessagesCase, std::map<channel_t, std::vector<IRunFrame*>>> _network_listeners;
+    std::map<Network_Message_pb::MessagesCase, std::map<channel_t, std::vector<IRunNetwork*>>> _network_listeners;
 
     // Lock message_mutex when accessing:
     //  _pending_network_msgs
@@ -132,8 +139,8 @@ public:
 
     void set_default_channel(peer_t peerid, channel_t default_channel);
 
-    void register_listener  (IRunFrame* listener, channel_t channel, Network_Message_pb::MessagesCase type);
-    void unregister_listener(IRunFrame* listener, channel_t channel, Network_Message_pb::MessagesCase type);
+    void register_listener  (IRunNetwork* listener, channel_t channel, Network_Message_pb::MessagesCase type);
+    void unregister_listener(IRunNetwork* listener, channel_t channel, Network_Message_pb::MessagesCase type);
 
     bool CBRunFrame(channel_t channel, Network_Message_pb::MessagesCase MessageFilter = Network_Message_pb::MessagesCase::MESSAGES_NOT_SET);
 

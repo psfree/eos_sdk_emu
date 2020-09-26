@@ -930,11 +930,6 @@ bool EOSSDK_Ecom::CBRunFrame()
     return false;
 }
 
-bool EOSSDK_Ecom::RunNetwork(Network_Message_pb const& msg)
-{
-    return false;
-}
-
 bool EOSSDK_Ecom::RunCallbacks(pFrameResult_t res)
 {
     GLOBAL_LOCK();

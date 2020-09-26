@@ -20,6 +20,7 @@
 #pragma once
 
 #include "common_includes.h"
+#include "callback_manager.h"
 #include "network.h"
 
 namespace sdk
@@ -51,7 +52,8 @@ namespace sdk
     };
 
     class EOSSDK_LobbySearch:
-        public IRunFrame
+        public IRunCallback,
+        public IRunNetwork
     {
         friend class sdk::EOSSDK_Lobby;
 
@@ -141,7 +143,8 @@ namespace sdk
     };
 
     class EOSSDK_Lobby :
-        public IRunFrame
+        public IRunCallback,
+        public IRunNetwork
     {
         static int32_t join_id;
         constexpr static auto join_timeout = std::chrono::milliseconds(5000);

@@ -20,6 +20,7 @@
 #pragma once
 
 #include "common_includes.h"
+#include "callback_manager.h"
 #include "network.h"
 
 namespace sdk
@@ -43,7 +44,8 @@ namespace sdk
     };
 
     class EOSSDK_Presence :
-        public IRunFrame
+        public IRunCallback,
+        public IRunNetwork
     {
         static constexpr auto presence_query_timeout = std::chrono::milliseconds(1000);
 

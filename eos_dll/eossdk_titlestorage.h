@@ -20,6 +20,7 @@
 #pragma once
 
 #include "common_includes.h"
+#include "callback_manager.h"
 
 namespace sdk
 {
@@ -59,7 +60,7 @@ namespace sdk
     };
 
     class EOSSDK_TitleStorage :
-        public IRunFrame
+        public IRunCallback
     {
         struct file_metadata_t
         {
@@ -80,7 +81,6 @@ namespace sdk
         static const std::string title_directory;
 
         virtual bool CBRunFrame();
-        virtual bool RunNetwork(Network_Message_pb const& msg);
         virtual bool RunCallbacks(pFrameResult_t res);
         virtual void FreeCallback(pFrameResult_t res);
 

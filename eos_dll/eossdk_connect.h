@@ -20,6 +20,7 @@
 #pragma once
 
 #include "common_includes.h"
+#include "callback_manager.h"
 #include "network.h"
 
 namespace sdk
@@ -33,7 +34,8 @@ namespace sdk
     };
 
     class EOSSDK_Connect :
-        public IRunFrame
+        public IRunCallback,
+        public IRunNetwork
     {
         static constexpr std::chrono::milliseconds user_infos_rate = std::chrono::milliseconds(3000);
 

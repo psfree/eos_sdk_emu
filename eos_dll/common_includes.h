@@ -127,7 +127,6 @@ using fifo_json = nlohmann::basic_json<my_fifo_map>;
 #include "os_funcs.h"
 #include "Log.h"
 #include "helper_funcs.h"
-#include "frame_result.h"
 
 static constexpr char emu_savepath[] = "NemirtingasEpicEmu";
 

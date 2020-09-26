@@ -78,18 +78,3 @@ public:
 };
 
 using pFrameResult_t = std::shared_ptr<FrameResult>;
-
-class IRunFrame
-{
-public:
-    // RunFrame is always called when running callbacks
-    virtual bool CBRunFrame() = 0;
-    // RunNetwork is run if you register to a network message and we received that message
-    virtual bool RunNetwork(Network_Message_pb const& msg) = 0;
-    // RunCallbacks is run when you sent a callback
-    // True  = FrameResult_t has been filled with a result
-    // False = FrameResult_t is not changed
-    virtual bool RunCallbacks(pFrameResult_t res) = 0;
-    // Free a callback after it has been called
-    virtual void FreeCallback(pFrameResult_t res) = 0;
-};

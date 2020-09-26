@@ -579,11 +579,6 @@ bool EOSSDK_PlayerDataStorage::CBRunFrame()
     return true;
 }
 
-bool EOSSDK_PlayerDataStorage::RunNetwork(Network_Message_pb const& msg)
-{
-    return false;
-}
-
 bool EOSSDK_PlayerDataStorage::RunCallbacks(pFrameResult_t res)
 {
     GLOBAL_LOCK();

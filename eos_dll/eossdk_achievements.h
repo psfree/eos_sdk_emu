@@ -20,11 +20,13 @@
 #pragma once
 
 #include "common_includes.h"
+#include "callback_manager.h"
+#include "network.h"
 
 namespace sdk
 {
     class EOSSDK_Achievements :
-        public IRunFrame
+        public IRunCallback
     {
         static const std::string achievements_filename;
         static const std::string achievements_db_filename;
@@ -42,13 +44,7 @@ namespace sdk
         EOS_EResult copy_unlocked_achievement(typename decltype(_unlocked_achievements)::iterator it, EOS_Achievements_UnlockedAchievement** OutAchievement);
         EOS_EResult copy_player_achievement(typename decltype(_achievements)::iterator it, EOS_Achievements_PlayerAchievement** OutAchievement);
 
-        // RunFrame is always called when running callbacks
         virtual bool CBRunFrame();
-        // RunNetwork is run if you register to a network message and we received that message
-        virtual bool RunNetwork(Network_Message_pb const& msg);
-        // RunCallbacks is run when you sent a callback
-        // True  = FrameResult_t has been filled with a result
-        // False = FrameResult_t is not changed
         virtual bool RunCallbacks(pFrameResult_t res);
         virtual void FreeCallback(pFrameResult_t res);
 

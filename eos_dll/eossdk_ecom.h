@@ -20,6 +20,8 @@
 #pragma once
 
 #include "common_includes.h"
+#include "callback_manager.h"
+#include "network.h"
 
 namespace sdk
 {
@@ -38,7 +40,7 @@ namespace sdk
     };
 
     class EOSSDK_Ecom :
-        public IRunFrame
+        public IRunCallback
     {
         static const std::string catalog_filename;
         static const std::string entitlements_filename;
@@ -57,7 +59,6 @@ namespace sdk
         ~EOSSDK_Ecom();
 
         virtual bool CBRunFrame();
-        virtual bool RunNetwork(Network_Message_pb const& msg);
         virtual bool RunCallbacks(pFrameResult_t res);
         virtual void FreeCallback(pFrameResult_t res);
 

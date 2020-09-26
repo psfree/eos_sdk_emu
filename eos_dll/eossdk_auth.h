@@ -20,6 +20,8 @@
 #pragma once
 
 #include "common_includes.h"
+#include "callback_manager.h"
+#include "network.h"
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthToken();
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthTokenOld(EOS_HAuth Handle, EOS_AccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken);
@@ -31,7 +33,8 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Auth_AddNotifyLoginStatusChangedNew(EOS
 namespace sdk
 {
     class EOSSDK_Auth :
-        public IRunFrame
+        public IRunCallback,
+        public IRunNetwork
     {
         bool _logged_in;
 

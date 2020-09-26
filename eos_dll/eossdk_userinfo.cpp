@@ -436,25 +436,28 @@ bool EOSSDK_UserInfo::on_userinfo(Network_Message_pb const& msg, UserInfo_Info_p
         if (it != _userinfos_queries.end())
         {
             auto result_it = it->second.begin();
-            switch ((*result_it)->ICallback())
+            if (result_it != it->second.end())
             {
-            case EOS_UserInfo_QueryUserInfoCallbackInfo::k_iCallback:
-            {
-                EOS_UserInfo_QueryUserInfoCallbackInfo& quici = (*result_it)->GetCallback<EOS_UserInfo_QueryUserInfoCallbackInfo>();
-                quici.ResultCode = EOS_EResult::EOS_Success;
-            }
-            break;
-            case EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo::k_iCallback:
-            {
-                EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo& quibdnci = (*result_it)->GetCallback<EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo>();
-                quibdnci.ResultCode = EOS_EResult::EOS_Success;
-            }
-            break;
-            }
+                switch ((*result_it)->ICallback())
+                {
+                    case EOS_UserInfo_QueryUserInfoCallbackInfo::k_iCallback:
+                    {
+                        EOS_UserInfo_QueryUserInfoCallbackInfo& quici = (*result_it)->GetCallback<EOS_UserInfo_QueryUserInfoCallbackInfo>();
+                        quici.ResultCode = EOS_EResult::EOS_Success;
+                    }
+                    break;
+                    case EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo::k_iCallback:
+                    {
+                        EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo& quibdnci = (*result_it)->GetCallback<EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo>();
+                        quibdnci.ResultCode = EOS_EResult::EOS_Success;
+                    }
+                    break;
+                }
 
-            (*result_it)->done = true;
+                (*result_it)->done = true;
 
-            it->second.erase(result_it);
+                it->second.erase(result_it);
+            }
         }
     }
 

@@ -30,7 +30,7 @@ Callback_Manager::~Callback_Manager()
 {
 }
 
-void Callback_Manager::register_frame(IRunFrame* obj)
+void Callback_Manager::register_frame(IRunCallback* obj)
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
@@ -38,7 +38,7 @@ void Callback_Manager::register_frame(IRunFrame* obj)
     _frames_to_run.emplace(obj);
 }
 
-void Callback_Manager::unregister_frame(IRunFrame* obj)
+void Callback_Manager::unregister_frame(IRunCallback* obj)
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
@@ -46,7 +46,7 @@ void Callback_Manager::unregister_frame(IRunFrame* obj)
     _frames_to_run.erase(obj);
 }
 
-void Callback_Manager::register_callbacks(IRunFrame* obj)
+void Callback_Manager::register_callbacks(IRunCallback* obj)
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
@@ -54,7 +54,7 @@ void Callback_Manager::register_callbacks(IRunFrame* obj)
     _callbacks_to_run[obj];
 }
 
-void Callback_Manager::unregister_callbacks(IRunFrame* obj)
+void Callback_Manager::unregister_callbacks(IRunCallback* obj)
 {
     TRACE_FUNC();
     GLOBAL_LOCK();
@@ -64,7 +64,7 @@ void Callback_Manager::unregister_callbacks(IRunFrame* obj)
         _callbacks_to_run.erase(it);
 }
 
-bool Callback_Manager::add_callback(IRunFrame* obj, pFrameResult_t res)
+bool Callback_Manager::add_callback(IRunCallback* obj, pFrameResult_t res)
 {
     //TRACE_FUNC();
     GLOBAL_LOCK();
@@ -73,7 +73,7 @@ bool Callback_Manager::add_callback(IRunFrame* obj, pFrameResult_t res)
     return true;
 }
 
-EOS_NotificationId Callback_Manager::add_notification(IRunFrame* obj, pFrameResult_t res)
+EOS_NotificationId Callback_Manager::add_notification(IRunCallback* obj, pFrameResult_t res)
 {
     //TRACE_FUNC();
     GLOBAL_LOCK();
@@ -85,7 +85,7 @@ EOS_NotificationId Callback_Manager::add_notification(IRunFrame* obj, pFrameResu
     return notif_id++;
 }
 
-bool Callback_Manager::remove_notification(IRunFrame* obj, EOS_NotificationId id)
+bool Callback_Manager::remove_notification(IRunCallback* obj, EOS_NotificationId id)
 {
     //TRACE_FUNC();
     GLOBAL_LOCK();
@@ -101,7 +101,7 @@ bool Callback_Manager::remove_notification(IRunFrame* obj, EOS_NotificationId id
     return true;
 }
 
-void Callback_Manager::remove_all_notifications(IRunFrame* obj)
+void Callback_Manager::remove_all_notifications(IRunCallback* obj)
 {
     auto it = _notifications.find(obj);
     if (it != _notifications.end())
@@ -115,7 +115,7 @@ void Callback_Manager::remove_all_notifications(IRunFrame* obj)
     }
 }
 
-pFrameResult_t Callback_Manager::get_notification(IRunFrame* obj, EOS_NotificationId id)
+pFrameResult_t Callback_Manager::get_notification(IRunCallback* obj, EOS_NotificationId id)
 {
     auto& notifs = _notifications[obj];
     auto it = notifs.find(id);
@@ -125,7 +125,7 @@ pFrameResult_t Callback_Manager::get_notification(IRunFrame* obj, EOS_Notificati
     return pFrameResult_t();
 }
 
-std::vector<pFrameResult_t> Callback_Manager::get_notifications(IRunFrame* obj, int callback_id)
+std::vector<pFrameResult_t> Callback_Manager::get_notifications(IRunCallback* obj, int callback_id)
 {
     std::vector<pFrameResult_t> results;
 
@@ -167,7 +167,7 @@ void Callback_Manager::run_callbacks()
     // For each callback registerer object
     for (auto& callback : _callbacks_to_run)
     {
-        IRunFrame* frame = callback.first;
+        IRunCallback* frame = callback.first;
         std::list<pFrameResult_t>& results = callback.second;
         for (auto result_it = results.begin(); result_it != results.end();)
         {
