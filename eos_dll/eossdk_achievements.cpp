@@ -750,8 +750,6 @@ void EOSSDK_Achievements::UnlockAchievements(const EOS_Achievements_UnlockAchiev
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-
-
     if (CompletionDelegate == nullptr)
         return;
 
@@ -1024,11 +1022,6 @@ EOS_EResult EOSSDK_Achievements::CopyAchievementDefinitionByAchievementId(const 
 //                                 IRunFrame                                 //
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Achievements::CBRunFrame()
-{
-    return false;
-}
-
-bool EOSSDK_Achievements::RunNetwork(Network_Message_pb const& msg)
 {
     return false;
 }

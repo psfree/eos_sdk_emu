@@ -421,11 +421,6 @@ bool EOSSDK_TitleStorage::CBRunFrame()
     return true;
 }
 
-bool EOSSDK_TitleStorage::RunNetwork(Network_Message_pb const& msg)
-{
-    return false;
-}
-
 bool EOSSDK_TitleStorage::RunCallbacks(pFrameResult_t res)
 {
     GLOBAL_LOCK();

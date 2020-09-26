@@ -20,12 +20,14 @@
 #pragma once
 
 #include "common_includes.h"
+#include "callback_manager.h"
 #include "network.h"
 
 namespace sdk
 {
     class EOSSDK_UserInfo :
-        public IRunFrame
+        public IRunCallback,
+        public IRunNetwork
     {
         static constexpr auto userinfo_query_timeout = std::chrono::milliseconds(20000);
 

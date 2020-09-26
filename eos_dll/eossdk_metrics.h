@@ -23,8 +23,7 @@
 
 namespace sdk
 {
-    class EOSSDK_Metrics :
-        public IRunFrame
+    class EOSSDK_Metrics
     {
     public:
         EOSSDK_Metrics();
@@ -32,15 +31,5 @@ namespace sdk
 
         EOS_EResult BeginPlayerSession(const EOS_Metrics_BeginPlayerSessionOptions* Options);
         EOS_EResult EndPlayerSession(const EOS_Metrics_EndPlayerSessionOptions* Options);
-
-        // RunFrame is always called when running callbacks
-        virtual bool CBRunFrame();
-        // RunNetwork is run if you register to a network message and we received that message
-        virtual bool RunNetwork(Network_Message_pb const& msg);
-        // RunCallbacks is run when you sent a callback
-        // True  = FrameResult_t has been filled with a result
-        // False = FrameResult_t is not changed
-        virtual bool RunCallbacks(pFrameResult_t res);
-        virtual void FreeCallback(pFrameResult_t res);
     };
 }

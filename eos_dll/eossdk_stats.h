@@ -20,11 +20,12 @@
 #pragma once
 
 #include "common_includes.h"
+#include "callback_manager.h"
 
 namespace sdk
 {
     class EOSSDK_Stats :
-        public IRunFrame
+        public IRunCallback
     {
     public:
         // RunFrame is always called when running callbacks

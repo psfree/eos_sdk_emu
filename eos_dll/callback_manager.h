@@ -20,16 +20,30 @@
 #pragma once
 
 #include "common_includes.h"
+#include "frame_result.h"
+
+class IRunCallback
+{
+public:
+    // RunFrame is always called when the BGetCallback is called
+    virtual bool CBRunFrame() = 0;
+    // RunCallbacks is run when you sent a callback
+    // True  = FrameResult_t has been filled with a result
+    // False = FrameResult_t is not changed
+    virtual bool RunCallbacks(pFrameResult_t res) = 0;
+    // Free a callback after it has been called
+    virtual void FreeCallback(pFrameResult_t res) = 0;
+};
 
 class Callback_Manager
 {
     std::chrono::steady_clock::time_point _frame_start_time;
     std::chrono::milliseconds _max_tick_budget;
 
-    std::set<IRunFrame*> _frames_to_run;
-    std::map<IRunFrame*, std::list<pFrameResult_t>> _callbacks_to_run;
+    std::set<IRunCallback*> _frames_to_run;
+    std::map<IRunCallback*, std::list<pFrameResult_t>> _callbacks_to_run;
     //std::map<IRunFrame*, std::list<pFrameResult_t>> _next_callbacks_to_run;
-    std::map<IRunFrame*, std::map<EOS_NotificationId, pFrameResult_t>> _notifications;
+    std::map<IRunCallback*, std::map<EOS_NotificationId, pFrameResult_t>> _notifications;
 
     std::recursive_mutex local_mutex;
 
@@ -38,19 +52,19 @@ public:
     Callback_Manager();
     ~Callback_Manager();
 
-    void register_frame  (IRunFrame* obj);
-    void unregister_frame(IRunFrame* obj);
+    void register_frame  (IRunCallback* obj);
+    void unregister_frame(IRunCallback* obj);
     
-    void register_callbacks  (IRunFrame* obj);
-    void unregister_callbacks(IRunFrame* obj);
+    void register_callbacks  (IRunCallback* obj);
+    void unregister_callbacks(IRunCallback* obj);
     
-    bool add_callback(IRunFrame* obj, pFrameResult_t res);
+    bool add_callback(IRunCallback* obj, pFrameResult_t res);
 
-    EOS_NotificationId add_notification(IRunFrame* obj, pFrameResult_t res);
-    bool remove_notification(IRunFrame* obj, EOS_NotificationId id);
-    void remove_all_notifications(IRunFrame* obj);
-    pFrameResult_t get_notification(IRunFrame* obj, EOS_NotificationId id);
-    std::vector<pFrameResult_t> get_notifications(IRunFrame* obj, int callback_id);
+    EOS_NotificationId add_notification(IRunCallback* obj, pFrameResult_t res);
+    bool remove_notification(IRunCallback* obj, EOS_NotificationId id);
+    void remove_all_notifications(IRunCallback* obj);
+    pFrameResult_t get_notification(IRunCallback* obj, EOS_NotificationId id);
+    std::vector<pFrameResult_t> get_notifications(IRunCallback* obj, int callback_id);
     
     
     void run_frames();

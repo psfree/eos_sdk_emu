@@ -854,14 +854,14 @@ void Network::set_default_channel(peer_t peerid, channel_t default_channel)
     _default_channels[peerid] = default_channel;
 }
 
-void Network::register_listener(IRunFrame* listener, channel_t channel, Network_Message_pb::MessagesCase type)
+void Network::register_listener(IRunNetwork* listener, channel_t channel, Network_Message_pb::MessagesCase type)
 {
     std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
     _network_listeners[type][channel].push_back(listener);
 }
 
-void Network::unregister_listener(IRunFrame* listener, channel_t channel, Network_Message_pb::MessagesCase type)
+void Network::unregister_listener(IRunNetwork* listener, channel_t channel, Network_Message_pb::MessagesCase type)
 {
     std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
