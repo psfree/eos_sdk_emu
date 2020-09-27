@@ -1579,7 +1579,25 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Presence_GetJoinInfo(EOS_HPresence Handle, con
 {
     EPIC_LOG(Log::LogLevel::TRACE, "");
     ORIGINAL_FUNCTION(EOS_Presence_GetJoinInfo);
-    return _EOS_Presence_GetJoinInfo(Handle, Options, OutBuffer, InOutBufferLength);
+    auto res = _EOS_Presence_GetJoinInfo(Handle, Options, OutBuffer, InOutBufferLength);
+
+    std::stringstream sstr;
+    sstr << std::endl;
+    sstr << "ApiVersion: " << Options->ApiVersion << std::endl;
+    if (res == EOS_EResult::EOS_Success)
+    {
+        if (OutBuffer != nullptr)
+        {
+            sstr << "JoinInfo: " << OutBuffer << std::endl;
+        }
+    }
+    else
+    {
+        sstr << "Failed" << std::endl;
+    }
+    EPIC_LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
+
+    return res;
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetStatus(EOS_HPresenceModification Handle, const EOS_PresenceModification_SetStatusOptions* Options)
