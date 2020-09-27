@@ -99,8 +99,8 @@ void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, 
                     case EOS_AUTH_CREDENTIALS_API_001:
                     {
                         auto* v = reinterpret_cast<const EOS_Auth_Credentials001*>(Options->Credentials);
-                        APP_LOG(Log::LogLevel::DEBUG, "Id                           = %s", v->Id);
-                        APP_LOG(Log::LogLevel::DEBUG, "Token                        = %s", v->Token);
+                        APP_LOG(Log::LogLevel::DEBUG, "Id                           = %s", v->Id == nullptr ? "null" : v->Id);
+                        APP_LOG(Log::LogLevel::DEBUG, "Token                        = %s", v->Token == nullptr ? "null" : v->Token);
                         APP_LOG(Log::LogLevel::DEBUG, "Type                         = %u", v->Type);
                     }
                 }
