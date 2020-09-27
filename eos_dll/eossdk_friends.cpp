@@ -26,14 +26,12 @@ namespace sdk
 {
 EOSSDK_Friends::EOSSDK_Friends()
 {
-    GetNetwork().register_listener(this, 0, Network_Message_pb::MessagesCase::kFriends);
     GetCB_Manager().register_callbacks(this);
 }
 
 EOSSDK_Friends::~EOSSDK_Friends()
 {
     GetCB_Manager().unregister_callbacks(this);
-    GetNetwork().unregister_listener(this, 0, Network_Message_pb::MessagesCase::kFriends);
 
     GetCB_Manager().remove_all_notifications(this);
 }
@@ -76,7 +74,7 @@ void EOSSDK_Friends::QueryFriends(const EOS_Friends_QueryFriendsOptions* Options
     {
         if (user_it->second.authentified)
         {
-            _friends[GetEpicUserId(user_it->second.infos.userid())];
+            _friends.insert(GetEpicUserId(user_it->second.infos.userid()));
         }
     }
 
@@ -228,7 +226,7 @@ EOS_EpicAccountId EOSSDK_Friends::GetFriendAtIndex(const EOS_Friends_GetFriendAt
     auto it = _friends.begin();
     std::advance(it, Options->Index);
 
-    return it->first;
+    return *it;
 }
 
 /**
@@ -300,64 +298,6 @@ void EOSSDK_Friends::RemoveNotifyFriendsUpdate(EOS_NotificationId NotificationId
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//                           Network Send messages                           //
-///////////////////////////////////////////////////////////////////////////////
-bool EOSSDK_Friends::send_friend_info_request(Network::peer_t const& peerid, Friend_Info_Request_pb* req)
-{
-    TRACE_FUNC();
-    std::string const& user_id = Settings::Inst().productuserid->to_string();
-
-    Network_Message_pb msg;
-    Friends_Message_pb* frd = new Friends_Message_pb;
-
-    frd->set_allocated_friend_info_request(req);
-    msg.set_allocated_friends(frd);
-
-    msg.set_source_id(user_id);
-    msg.set_dest_id(peerid);
-    msg.set_game_id(Settings::Inst().appid);
-
-    return GetNetwork().TCPSendTo(msg);
-}
-
-bool EOSSDK_Friends::send_friend_info(Network::peer_t const& peerid, Friend_Info_pb* infos)
-{
-    TRACE_FUNC();
-    std::string const& user_id = Settings::Inst().productuserid->to_string();
-
-    Network_Message_pb msg;
-    Friends_Message_pb* frd = new Friends_Message_pb;
-
-    frd->set_allocated_friend_info(infos);
-    msg.set_allocated_friends(frd);
-
-    msg.set_source_id(user_id);
-    msg.set_dest_id(peerid);
-    msg.set_game_id(Settings::Inst().appid);
-
-    return GetNetwork().TCPSendTo(msg);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//                          Network Receive messages                         //
-///////////////////////////////////////////////////////////////////////////////
-bool EOSSDK_Friends::on_friend_info_request(Network_Message_pb const& msg, Friend_Info_Request_pb const& req)
-{
-    TRACE_FUNC();
-    GLOBAL_LOCK();
-
-    Friend_Info_pb* infos = new Friend_Info_pb;
-    return send_friend_info(msg.source_id(), infos);
-}
-
-bool EOSSDK_Friends::on_friend_info(Network_Message_pb const& msg, Friend_Info_pb const& infos)
-{
-    TRACE_FUNC();
-    GLOBAL_LOCK();
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 //                                 IRunFrame                                 //
 ///////////////////////////////////////////////////////////////////////////////
 bool EOSSDK_Friends::CBRunFrame()
@@ -365,34 +305,13 @@ bool EOSSDK_Friends::CBRunFrame()
     return false;
 }
 
-bool EOSSDK_Friends::RunNetwork(Network_Message_pb const& msg)
-{
-    if (msg.source_id() == Settings::Inst().userid->to_string())
-        return true;
-
-    Friends_Message_pb const& frd = msg.friends();
-
-    switch (frd.message_case())
-    {
-        case Friends_Message_pb::MessageCase::kFriendInfoRequest: return on_friend_info_request(msg, frd.friend_info_request());
-        case Friends_Message_pb::MessageCase::kFriendInfo       : return on_friend_info(msg, frd.friend_info());
-        default: APP_LOG(Log::LogLevel::WARN, "Unhandled network message %d", frd.message_case());
-    }
-
-    return true;
-}
-
 bool EOSSDK_Friends::RunCallbacks(pFrameResult_t res)
 {
-    GLOBAL_LOCK();
-
     return res->done;
 }
 
 void EOSSDK_Friends::FreeCallback(pFrameResult_t res)
 {
-    GLOBAL_LOCK();
-
     //switch (res->res.m_iCallback)
     {
         /////////////////////////////

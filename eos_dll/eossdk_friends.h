@@ -26,29 +26,15 @@
 namespace sdk
 {
     class EOSSDK_Friends :
-        public IRunCallback,
-        public IRunNetwork
+        public IRunCallback
     {
-        nlohmann::fifo_map<EOS_EpicAccountId, Friend_Info_pb> _friends;
+        std::set<EOS_EpicAccountId> _friends;
 
     public:
         EOSSDK_Friends();
         ~EOSSDK_Friends();
 
-        // Send Network messages
-        bool send_friend_info_request(Network::peer_t const& peerid, Friend_Info_Request_pb* req);
-        bool send_friend_info(Network::peer_t const& peerid, Friend_Info_pb* infos);
-        //bool send_friend_invite(Network::peer_t const& peerid, Friend_Invite_pb* invite) const;
-        //bool send_friend_invite_response(Network::peer_t const& peerid, Friend_Invite_Response_pb* resp) const;
-
-        // Receive Network messages
-        bool on_friend_info_request(Network_Message_pb const& msg, Friend_Info_Request_pb const& req);
-        bool on_friend_info(Network_Message_pb const& msg, Friend_Info_pb const& infos);
-        //bool on_friend_invite(Network_Message_pb const& msg, Friend_Invite_pb const& invite);
-        //bool on_friend_invite_response(Network_Message_pb const& msg, Friend_Invite_Response_pb const& resp);
-
         virtual bool CBRunFrame();
-        virtual bool RunNetwork(Network_Message_pb const& msg);
         virtual bool RunCallbacks(pFrameResult_t res);
         virtual void FreeCallback(pFrameResult_t res);
 
