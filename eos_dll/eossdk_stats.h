@@ -27,15 +27,24 @@ namespace sdk
     class EOSSDK_Stats :
         public IRunCallback
     {
+        static const std::string stats_filename;
+
+        nlohmann::json _stats;
+
     public:
-        // RunFrame is always called when running callbacks
+        EOSSDK_Stats();
+        ~EOSSDK_Stats();
+
+        void save_stats();
+
         virtual bool CBRunFrame();
-        // RunNetwork is run if you register to a network message and we received that message
-        virtual bool RunNetwork(Network_Message_pb const& msg);
-        // RunCallbacks is run when you sent a callback
-        // True  = FrameResult_t has been filled with a result
-        // False = FrameResult_t is not changed
         virtual bool RunCallbacks(pFrameResult_t res);
         virtual void FreeCallback(pFrameResult_t res);
+
+        void        IngestStat(const EOS_Stats_IngestStatOptions* Options, void* ClientData, const EOS_Stats_OnIngestStatCompleteCallback CompletionDelegate);
+        void        QueryStats(const EOS_Stats_QueryStatsOptions* Options, void* ClientData, const EOS_Stats_OnQueryStatsCompleteCallback CompletionDelegate);
+        uint32_t    GetStatsCount(const EOS_Stats_GetStatCountOptions* Options);
+        EOS_EResult CopyStatByIndex(const EOS_Stats_CopyStatByIndexOptions* Options, EOS_Stats_Stat** OutStat);
+        EOS_EResult CopyStatByName(const EOS_Stats_CopyStatByNameOptions* Options, EOS_Stats_Stat** OutStat);
     };
 }

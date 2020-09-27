@@ -29,14 +29,24 @@ namespace sdk
         public IRunCallback
     {
     public:
-        // RunFrame is always called when running callbacks
+        EOSSDK_Leaderboards();
+        ~EOSSDK_Leaderboards();
+
         virtual bool CBRunFrame();
-        // RunNetwork is run if you register to a network message and we received that message
-        virtual bool RunNetwork(Network_Message_pb const& msg);
-        // RunCallbacks is run when you sent a callback
-        // True  = FrameResult_t has been filled with a result
-        // False = FrameResult_t is not changed
         virtual bool RunCallbacks(pFrameResult_t res);
         virtual void FreeCallback(pFrameResult_t res);
+
+        void        QueryLeaderboardDefinitions(const EOS_Leaderboards_QueryLeaderboardDefinitionsOptions* Options, void* ClientData, const EOS_Leaderboards_OnQueryLeaderboardDefinitionsCompleteCallback CompletionDelegate);
+        uint32_t    GetLeaderboardDefinitionCount(const EOS_Leaderboards_GetLeaderboardDefinitionCountOptions* Options);
+        EOS_EResult CopyLeaderboardDefinitionByIndex(const EOS_Leaderboards_CopyLeaderboardDefinitionByIndexOptions* Options, EOS_Leaderboards_Definition** OutLeaderboardDefinition);
+        EOS_EResult CopyLeaderboardDefinitionByLeaderboardId(const EOS_Leaderboards_CopyLeaderboardDefinitionByLeaderboardIdOptions* Options, EOS_Leaderboards_Definition** OutLeaderboardDefinition);
+        void        QueryLeaderboardRanks(const EOS_Leaderboards_QueryLeaderboardRanksOptions* Options, void* ClientData, const EOS_Leaderboards_OnQueryLeaderboardRanksCompleteCallback CompletionDelegate);
+        uint32_t    GetLeaderboardRecordCount(const EOS_Leaderboards_GetLeaderboardRecordCountOptions* Options);
+        EOS_EResult CopyLeaderboardRecordByIndex(const EOS_Leaderboards_CopyLeaderboardRecordByIndexOptions* Options, EOS_Leaderboards_LeaderboardRecord** OutLeaderboardRecord);
+        EOS_EResult CopyLeaderboardRecordByUserId(const EOS_Leaderboards_CopyLeaderboardRecordByUserIdOptions* Options, EOS_Leaderboards_LeaderboardRecord** OutLeaderboardRecord);
+        void        QueryLeaderboardUserScores(const EOS_Leaderboards_QueryLeaderboardUserScoresOptions* Options, void* ClientData, const EOS_Leaderboards_OnQueryLeaderboardUserScoresCompleteCallback CompletionDelegate);
+        uint32_t    GetLeaderboardUserScoreCount(const EOS_Leaderboards_GetLeaderboardUserScoreCountOptions* Options);
+        EOS_EResult CopyLeaderboardUserScoreByIndex(const EOS_Leaderboards_CopyLeaderboardUserScoreByIndexOptions* Options, EOS_Leaderboards_LeaderboardUserScore** OutLeaderboardUserScore);
+        EOS_EResult CopyLeaderboardUserScoreByUserId(const EOS_Leaderboards_CopyLeaderboardUserScoreByUserIdOptions* Options, EOS_Leaderboards_LeaderboardUserScore** OutLeaderboardUserScore);
     };
 }
