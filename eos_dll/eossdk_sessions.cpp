@@ -95,96 +95,103 @@ session_state_t* EOSSDK_Sessions::get_session_by_name(std::string const& session
     return &it->second;
 }
 
+bool EOSSDK_Sessions::session_match_from_attributes(session_state_t* session, google::protobuf::Map<std::string, Session_Search_Parameter> const& parameters)
+{
+    for (auto& param : parameters)
+    {
+        // Well known parameters
+        if (param.first == "bucket")
+        {
+            auto& comparison = *param.second.param().begin();
+            EOS_EOnlineComparisonOp comp = static_cast<EOS_EOnlineComparisonOp>(comparison.first);
+
+            switch (comparison.second.value_case())
+            {
+                case Session_Attr_Value::ValueCase::kS:
+                {
+                    std::string const& s_session = session->infos.bucket_id();
+                    std::string const& s_search = comparison.second.s();
+                    if (!compare_attribute_values(s_session, comp, s_search, param.first))
+                        return false;
+                }
+                break;
+                default: return false;
+            }
+        }
+        else// Standard parameters
+        {
+            auto it = session->infos.attributes().find(param.first);
+            if (it == session->infos.attributes().end())
+            {
+                return false;
+            }
+            else
+            {
+                for (auto& comparisons : param.second.param())
+                {
+                    // comparisons.first// Comparison type
+                    if (comparisons.second.value_case() != it->second.value().value_case())
+                    {
+                        return false;
+                    }
+
+                    EOS_EOnlineComparisonOp comp = static_cast<EOS_EOnlineComparisonOp>(comparisons.first);
+
+                    switch (comparisons.second.value_case())
+                    {
+                        case Session_Attr_Value::ValueCase::kB:
+                        {
+                            bool b_session = it->second.value().b();
+                            bool b_search = comparisons.second.b();
+                            if (!compare_attribute_values(b_session, comp, b_search, param.first))
+                                return false;
+                        }
+                        break;
+                        case Session_Attr_Value::ValueCase::kI:
+                        {
+                            int64_t i_session = it->second.value().i();
+                            int64_t i_search = comparisons.second.i();
+                            if (!compare_attribute_values(i_session, comp, i_search, param.first))
+                                return false;
+                        }
+                        break;
+                        case Session_Attr_Value::ValueCase::kD:
+                        {
+                            double d_session = it->second.value().d();
+                            double d_search = comparisons.second.d();
+                            if (!compare_attribute_values(d_session, comp, d_search, param.first))
+                                return false;
+                        }
+                        break;
+                        case Session_Attr_Value::ValueCase::kS:
+                        {
+                            std::string const& s_session = it->second.value().s();
+                            std::string const& s_search = comparisons.second.s();
+                            if (!compare_attribute_values(s_session, comp, s_search, param.first))
+                                return false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
 std::vector<session_state_t*> EOSSDK_Sessions::get_sessions_from_attributes(google::protobuf::Map<std::string, Session_Search_Parameter> const& parameters)
 {
     std::vector<session_state_t*> res;
     for (auto& session : _sessions)
     {
-        bool found = true;
-        for (auto& param : parameters)
-        {
-            // Well known parameters
-            if (param.first == "bucket")
-            {
-                auto& comparison = *param.second.param().begin();
-                EOS_EOnlineComparisonOp comp = static_cast<EOS_EOnlineComparisonOp>(comparison.first);
-
-                switch (comparison.second.value_case())
-                {
-                    case Session_Attr_Value::ValueCase::kS:
-                    {
-                        std::string const& s_session = session.second.infos.bucket_id();
-                        std::string const& s_search  = comparison.second.s();
-                        found = compare_attribute_values(s_session, comp, s_search, param.first);
-                    }
-                    break;
-                    default: found = false;
-                }
-            }
-            else// Standard parameters
-            {
-                auto it = session.second.infos.attributes().find(param.first);
-                if (it == session.second.infos.attributes().end())
-                {
-                    found = false;
-                }
-                else
-                {
-                    for (auto& comparisons : param.second.param())
-                    {
-                        // comparisons.first// Comparison type
-                        if (comparisons.second.value_case() != it->second.value().value_case())
-                        {
-                            found = false;
-                            break;
-                        }
-
-                        EOS_EOnlineComparisonOp comp = static_cast<EOS_EOnlineComparisonOp>(comparisons.first);
-
-                        switch (comparisons.second.value_case())
-                        {
-                            case Session_Attr_Value::ValueCase::kB:
-                            {
-                                bool b_session = it->second.value().b();
-                                bool b_search = comparisons.second.b();
-                                found = compare_attribute_values(b_session, comp, b_search, param.first);
-                            }
-                            break;
-                            case Session_Attr_Value::ValueCase::kI:
-                            {
-                                int64_t i_session = it->second.value().i();
-                                int64_t i_search = comparisons.second.i();
-                                found = compare_attribute_values(i_session, comp, i_search, param.first);
-                            }
-                            break;
-                            case Session_Attr_Value::ValueCase::kD:
-                            {
-                                double d_session = it->second.value().d();
-                                double d_search = comparisons.second.d();
-                                found = compare_attribute_values(d_session, comp, d_search, param.first);
-                            }
-                            break;
-                            case Session_Attr_Value::ValueCase::kS:
-                            {
-                                std::string const& s_session = it->second.value().s();
-                                std::string const& s_search = comparisons.second.s();
-                                found = compare_attribute_values(s_session, comp, s_search, param.first);
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-            if (found == false)
-            {
-                APP_LOG(Log::LogLevel::DEBUG, "This session didn't match: %s(%s)", session.second.infos.session_id().c_str(), session.first.c_str());
-                break;
-            }
-        }
-
+        bool found = session_match_from_attributes(&session.second, parameters);
         if (found)
         {
             res.emplace_back(&session.second);
+        }
+        else
+        {
+            APP_LOG(Log::LogLevel::DEBUG, "This session didn't match: %s(%s)", session.second.infos.session_id().c_str(), session.first.c_str());
         }
     }
 
@@ -1809,21 +1816,22 @@ bool EOSSDK_Sessions::on_sessions_search(Network_Message_pb const& msg, Sessions
 
     if (msg.game_id() == Settings::Inst().appid)
     {
-        if (search.parameters_size() > 0)
+        if (!search.session_id().empty())
+        {
+            session_state_t* pSession = get_session_by_id(search.session_id());
+            if (pSession != nullptr && session_match_from_attributes(pSession, search.parameters()))
+            {
+                APP_LOG(Log::LogLevel::DEBUG, "sessions found");
+                *resp->mutable_sessions()->Add() = pSession->infos;
+            }
+        }
+        else if (search.parameters_size() > 0)
         {
             std::vector<session_state_t*> sessions = std::move(get_sessions_from_attributes(search.parameters()));
             APP_LOG(Log::LogLevel::DEBUG, "sessions found: %d", sessions.size());
             for (auto& session : sessions)
             {
                 *resp->mutable_sessions()->Add() = session->infos;
-            }
-        }
-        else if (!search.session_id().empty())
-        {
-            session_state_t* pSession = get_session_by_id(search.session_id());
-            if (pSession != nullptr)
-            {
-                *resp->mutable_sessions()->Add() = pSession->infos;
             }
         }
         else if (GetProductUserId(search.target_id()) == GetEOS_Connect().get_myself()->first)

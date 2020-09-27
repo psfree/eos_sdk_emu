@@ -171,6 +171,7 @@ namespace sdk
 
         session_state_t* get_session_by_name(std::string const& session_name);
         session_state_t* get_session_by_id(std::string const& session_id);
+        bool session_match_from_attributes(session_state_t* session, google::protobuf::Map<std::string, Session_Search_Parameter> const& parameters);
         std::vector<session_state_t*> get_sessions_from_attributes(google::protobuf::Map<std::string, Session_Search_Parameter> const& parameters);
         void add_player_to_session(std::string const& player, session_state_t* session);
         void remove_player_from_session(std::string const& player, session_state_t* session);

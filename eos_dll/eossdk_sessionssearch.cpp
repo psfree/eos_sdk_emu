@@ -219,13 +219,8 @@ void EOSSDK_SessionSearch::Find(const EOS_SessionSearch_FindOptions* Options, vo
         fci.ResultCode = EOS_EResult::EOS_AlreadyPending;
         res->done = true;
     }
-    // If the user has set parameters and session_id or target userid, it fails
-    // If sessiondid and target userid is set, it fails
-    else if (
-             (_search_infos.parameters_size() != 0 && 
-                 (!_search_infos.target_id().empty() || !_search_infos.session_id().empty())) ||
-             (!_search_infos.target_id().empty() && !_search_infos.session_id().empty())
-            )
+    else if ((_search_infos.target_id().empty() && _search_infos.session_id().empty() && _search_infos.parameters_size() == 0) ||
+             (!_search_infos.target_id().empty() && !_search_infos.session_id().empty()))
     {
         fci.ResultCode = EOS_EResult::EOS_InvalidParameters;
         res->done = true;
