@@ -469,14 +469,20 @@ EOS_EResult EOSSDK_Presence::GetJoinInfo( const EOS_Presence_GetJoinInfoOptions*
     if(presence == nullptr)
         return EOS_EResult::EOS_NotFound;
 
-    size_t len = presence->joininfo().length() + 1;
-    if (*InOutBufferLength < len)
+    auto it = presence->records().find("EOS_JoinInfo");
+    if (it == presence->records().end() || it->second.empty())
     {
-        *InOutBufferLength = static_cast<int32_t>(len);
-        return EOS_EResult::EOS_LimitExceeded;
+        *InOutBufferLength = 1;
+        *OutBuffer = '\0';
     }
+    else
+    {
+        size_t len = it->second.length() + 1;
+        if (*InOutBufferLength < len)
+            return EOS_EResult::EOS_LimitExceeded;
 
-    strncpy(OutBuffer, presence->joininfo().c_str(), len);
+        strncpy(OutBuffer, it->second.c_str(), len);
+    }
 
     return EOS_EResult::EOS_Success;
 }
@@ -564,8 +570,12 @@ bool EOSSDK_Presence::on_peer_connect(Network_Message_pb const& msg, Network_Pee
     if (pUser != GetEOS_Connect().get_end_users() && pUser->second.authentified)
     {
         EOS_EpicAccountId account_id = GetEpicUserId(pUser->second.infos.userid());
-        if(account_id->IsValid())
-            set_user_status(account_id, EOS_Presence_EStatus::EOS_PS_Online);
+        if (account_id->IsValid())
+        {
+            Presence_Info_Request_pb* req = new Presence_Info_Request_pb;
+            send_presence_info_request(pUser->first->to_string(), req);
+            //set_user_status(account_id, EOS_Presence_EStatus::EOS_PS_Online);
+        }
     }
 
     return true;
@@ -618,7 +628,6 @@ bool EOSSDK_Presence::on_presence_infos(Network_Message_pb const& msg, Presence_
            presence_infos.platform()       != infos.platform()       ||
            presence_infos.richtext()       != infos.richtext()       ||
            presence_infos.productname()    != infos.productname()    ||
-           presence_infos.joininfo()       != infos.joininfo()       ||
            presence_infos.records_size()   != infos.records_size())
         {
             presence_changed = true;
