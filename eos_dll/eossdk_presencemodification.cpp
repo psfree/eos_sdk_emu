@@ -157,12 +157,24 @@ EOS_EResult EOSSDK_PresenceModification::SetJoinInfo(const EOS_PresenceModificat
     TRACE_FUNC();
     std::lock_guard<std::mutex> lk(_local_mutex);
 
-    if (Options != nullptr && Options->JoinInfo != nullptr)
+    if (Options != nullptr)
     {
-        if (strlen(Options->JoinInfo) > EOS_PRESENCEMODIFICATION_JOININFO_MAX_LENGTH)
-            return EOS_EResult::EOS_UnexpectedError;
-        
-        infos.set_joininfo(Options->JoinInfo);
+        if (Options->JoinInfo != nullptr && strlen(Options->JoinInfo) != 0)
+        {
+            if (strlen(Options->JoinInfo) > EOS_PRESENCEMODIFICATION_JOININFO_MAX_LENGTH)
+                return EOS_EResult::EOS_UnexpectedError;
+
+            auto& records = *infos.mutable_records();
+            records["EOS_JoinInfo"] = Options->JoinInfo;
+        }
+        else
+        {
+            auto& records = *infos.mutable_records();
+            auto it = records.find("EOS_JoinInfo");
+            if (it != records.end())
+                records.erase(it);
+        }
+        //infos.set_joininfo(Options->JoinInfo);
         return EOS_EResult::EOS_Success;
     }
 

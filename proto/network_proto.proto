@@ -37,7 +37,6 @@ message Presence_Info_pb {
     string richtext = 6;
     map<string, string> records = 7;
     string productname = 8;
-    string joininfo = 9;
 }
 
 // Base Presence related message
@@ -356,20 +355,20 @@ message Lobbies_Search_Message_pb {
 //                          Friends messages                            //
 //////////////////////////////////////////////////////////////////////////
 // Request peer friend infos
-message Friend_Info_Request_pb {
-}
-
+//message Friend_Info_Request_pb {
+//}
+//
 // Response to peer friend infos request
-message Friend_Info_pb {
-}
-
+//message Friend_Info_pb {
+//}
+//
 // Base Friends related message
-message Friends_Message_pb {
-    oneof message {
-        Friend_Info_Request_pb friend_info_request = 1;
-        Friend_Info_pb friend_info = 2;
-	}
-}
+//message Friends_Message_pb {
+//    oneof message {
+//        Friend_Info_Request_pb friend_info_request = 1;
+//        Friend_Info_pb friend_info = 2;
+//	}
+//}
 
 //////////////////////////////////////////////////////////////////////////
 //                          Connect messages                            //
@@ -429,7 +428,7 @@ message Network_Message_pb {
     int64 timestamp = 4;
     oneof messages {
         Network_Advertise_pb network_advertise = 5;
-		Friends_Message_pb friends = 6;
+		//Friends_Message_pb friends = 6;
         Presence_Message_pb presence = 7;
         UserInfo_Message_pb userinfo = 8;
         Session_Message_pb session = 9;
