@@ -17,9 +17,8 @@ static:linux:deps:
     - VCPKG_PATH=$(pwd)/vcpkg
     - TRIPLET=x64-linux-release
     - vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf:${TRIPLET} || exit 1
-    #- vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf[zlib]:${TRIPLET} || exit 1
-    #- vcpkg "--x-install-root=${VCPKG_PATH}" install curl:${TRIPLET} || exit 1
-    #- vcpkg "--x-install-root=${VCPKG_PATH}" install glew:${TRIPLET} || exit 1
+    - vcpkg "--x-install-root=${VCPKG_PATH}" install nlohmann-json:${TRIPLET} || exit 1
+    - vcpkg "--x-install-root=${VCPKG_PATH}" install nlohmann-fifo-map:${TRIPLET} || exit 1
     - vcpkg "--x-install-root=${VCPKG_PATH}" install zstd:${TRIPLET} || exit 1
     - exit 0
 
@@ -42,15 +41,13 @@ static:windows:deps:
     - vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf:${TRIPLET} || exit 1
     - TRIPLET=x86-windows-release
     - vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf:${TRIPLET} || exit 1
-    #- vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf[zlib]:${TRIPLET} || exit 1
-    #- vcpkg "--x-install-root=${VCPKG_PATH}" install curl:${TRIPLET} || exit 1
-    #- vcpkg "--x-install-root=${VCPKG_PATH}" install glew:${TRIPLET} || exit 1
+    - vcpkg "--x-install-root=${VCPKG_PATH}" install nlohmann-json:${TRIPLET} || exit 1
+    - vcpkg "--x-install-root=${VCPKG_PATH}" install nlohmann-fifo-map:${TRIPLET} || exit 1
     - vcpkg "--x-install-root=${VCPKG_PATH}" install zstd:${TRIPLET} || exit 1
     - TRIPLET=x64-windows-release
     - vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf:${TRIPLET} || exit 1
-    #- vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf[zlib]:${TRIPLET} || exit 1
-    #- vcpkg "--x-install-root=${VCPKG_PATH}" install curl:${TRIPLET} || exit 1
-    #- vcpkg "--x-install-root=${VCPKG_PATH}" install glew:${TRIPLET} || exit 1
+    - vcpkg "--x-install-root=${VCPKG_PATH}" install nlohmann-json:${TRIPLET} || exit 1
+    - vcpkg "--x-install-root=${VCPKG_PATH}" install nlohmann-fifo-map:${TRIPLET} || exit 1
     - vcpkg "--x-install-root=${VCPKG_PATH}" install zstd:${TRIPLET} || exit 1
     - exit 0
 
@@ -73,8 +70,8 @@ static:macosx:deps:
     - vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf:${TRIPLET} || exit 1
     - TRIPLET=x64-darwin-release
     - vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf:${TRIPLET} || exit 1
-    #- vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf[zlib]:${TRIPLET} || exit 1
-    #- vcpkg "--x-install-root=${VCPKG_PATH}" install curl:${TRIPLET} || exit 1
+    - vcpkg "--x-install-root=${VCPKG_PATH}" install nlohmann-json:${TRIPLET} || exit 1
+    - vcpkg "--x-install-root=${VCPKG_PATH}" install nlohmann-fifo-map:${TRIPLET} || exit 1
     - vcpkg "--x-install-root=${VCPKG_PATH}" install zstd:${TRIPLET} || exit 1
     - exit 0
 

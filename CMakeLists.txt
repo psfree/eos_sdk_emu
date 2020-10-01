@@ -118,16 +118,7 @@ option(USE_ZSTD_COMPRESS "Use zstd to compress network messages" ON)
 set(Protobuf_USE_STATIC_LIBS ON)
 include(FindProtobuf)
 find_package(Protobuf CONFIG REQUIRED)
-#find_package(CURL CONFIG REQUIRED)
-#find_package(ZLIB REQUIRED)
-
-#if(NOT APPLE)
-#  find_package(GLEW REQUIRED)
-#endif()
-
-#if(UNIX AND NOT APPLE)
-#  find_package(OpenSSL REQUIRED)
-#endif()
+find_package(Threads REQUIRED)
 
 if(USE_ZSTD_COMPRESS)
   find_package(zstd CONFIG REQUIRED)
@@ -193,19 +184,10 @@ endif()
 
 target_link_libraries(
   ${EPIC_API}
-  #$<$<NOT:$<BOOL:${APPLE}>>:GLEW::GLEW>
-  #ZLIB::ZLIB
   protobuf::libprotobuf-lite
-  #CURL::libcurl
+  Threads::Threads
   $<$<BOOL:${USE_ZSTD_COMPRESS}>:libzstd>
 
-  # For gamepad open-source xinput
-  #$<$<BOOL:${WIN32}>:setupapi>
-  # For curl ssl		
-  #$<$<BOOL:${WIN32}>:advapi32>
-  #$<$<BOOL:${WIN32}>:crypt32>
-  # For overlay opengl
-  #$<$<BOOL:${WIN32}>:opengl32>
   # For library network
   $<$<BOOL:${WIN32}>:ws2_32>
   $<$<BOOL:${WIN32}>:iphlpapi>
@@ -214,15 +196,8 @@ target_link_libraries(
   $<$<BOOL:${WIN32}>:shell32>
   $<$<BOOL:${WIN32}>:user32>
 
-  # For library multithread
-  $<$<BOOL:${UNIX}>:pthread>
   # For library .so/.dylib loading
   $<$<BOOL:${UNIX}>:dl>
-  # For overlay opengl
-  #$<$<AND:$<BOOL:${UNIX}>,$<NOT:$<BOOL:${APPLE}>>>:GL>
-  # For curl ssl
-  #$<$<AND:$<BOOL:${UNIX}>,$<NOT:$<BOOL:${APPLE}>>>:crypto>
-  #$<$<AND:$<BOOL:${UNIX}>,$<NOT:$<BOOL:${APPLE}>>>:ssl>
 )
 
 target_include_directories(
@@ -236,16 +211,8 @@ target_include_directories(
   extra/
   extra/eos_sdk/
   extra/mini_detour/
-  #extra/ImGui/
-  #extra/gamepad/
-  extra/nlohmann/
-  #extra/stb/
   extra/utils/include
   extra/Socket/include
-  
-  #resources/
-  
-  #${overlay_includes}
 )
 
 target_compile_options(
@@ -267,9 +234,6 @@ target_compile_definitions(
   __EXPORT_SYMBOLS__
   EPIC_SHARED_LIBRARY
   EPIC_EXPORT
-  #GLEW_STATIC
-  #GLEW_NO_GLU
-  #STBI_NO_SIMD
 
   $<$<BOOL:${USE_ZSTD_COMPRESS}>:NETWORK_COMPRESS>
   
@@ -278,14 +242,6 @@ target_compile_definitions(
   $<$<BOOL:${DISABLE_LOG}>:DISABLE_LOG>
   $<$<STREQUAL:${CMAKE_BUILD_TYPE},Release>:EMU_RELEASE_BUILD NDEBUG>
 )
-
-####################################"
-## Targets link & compiler options
-## For linux based builds, make install rules
-
-#install(FILES Readme_release.txt DESTINATION release/)
-#install(FILES files_example/steam_appid.EDIT_AND_RENAME.txt files_example/steam_interfaces.EXAMPLE.txt DESTINATION release/)
-#install(DIRECTORY files_example/steam_settings.EXAMPLE DESTINATION release/)
 
 ##################
 ## Install rules
