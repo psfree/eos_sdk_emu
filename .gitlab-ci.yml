@@ -122,14 +122,15 @@ build:windows:
     - cp -f vcpkg_tripplets/*.cmake /vcpkg/triplets/
     - VCPKG_PATH=$(pwd)/vcpkg
     - TOOLCHAIN="/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    - CHAINLOAD="/clang_windows_sdk/clang-cl-msvc.cmake"
     - TRIPLET=x86-windows-nemirtingas
     - OUT=win32/Release
-    - cmake -G Ninja -Wno-dev -DX86=ON -DCMAKE_BUILD_TYPE=Release "-DVCPKG_TARGET_TRIPLET=${TRIPLET}" "-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN}" "-D_VCPKG_INSTALLED_DIR=${VCPKG_PATH}" -S . -B "${OUT}"
+    - cmake -G Ninja -Wno-dev -DX86=ON -DCMAKE_BUILD_TYPE=Release "-DVCPKG_TARGET_TRIPLET=${TRIPLET}" "-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN}" "-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${CHAINLOAD}" "-D_VCPKG_INSTALLED_DIR=${VCPKG_PATH}" -S . -B "${OUT}"
     - cmake --build "${OUT}"
     - cmake --install "${OUT}"
     - TRIPLET=x64-windows-nemirtingas
     - OUT=win64/Release
-    - cmake -G Ninja -Wno-dev -DX64=ON -DCMAKE_BUILD_TYPE=Release "-DVCPKG_TARGET_TRIPLET=${TRIPLET}" "-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN}" "-D_VCPKG_INSTALLED_DIR=${VCPKG_PATH}" -S . -B "${OUT}"
+    - cmake -G Ninja -Wno-dev -DX64=ON -DCMAKE_BUILD_TYPE=Release "-DVCPKG_TARGET_TRIPLET=${TRIPLET}" "-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN}" "-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${CHAINLOAD}" "-D_VCPKG_INSTALLED_DIR=${VCPKG_PATH}" -S . -B "${OUT}"
     - cmake --build "${OUT}"
     - cmake --install "${OUT}"
   artifacts:
@@ -149,9 +150,10 @@ build:macosx:
     - cp -f vcpkg_tripplets/*.cmake /vcpkg/triplets/
     - VCPKG_PATH=$(pwd)/vcpkg
     - TOOLCHAIN="/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    - CHAINLOAD="/osxcross/target/toolchain.cmake"
     - TRIPLET=x64-macosx-nemirtingas
     - OUT=macosx64/Release
-    - cmake -G Ninja -Wno-dev -DX64=ON -DCMAKE_BUILD_TYPE=Release "-DVCPKG_TARGET_TRIPLET=${TRIPLET}" "-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN}" "-D_VCPKG_INSTALLED_DIR=${VCPKG_PATH}" -S . -B "${OUT}"
+    - cmake -G Ninja -Wno-dev -DX64=ON -DCMAKE_BUILD_TYPE=Release "-DVCPKG_TARGET_TRIPLET=${TRIPLET}" "-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN}" "-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${CHAINLOAD}" "-D_VCPKG_INSTALLED_DIR=${VCPKG_PATH}" -S . -B "${OUT}"
     - cmake --build "${OUT}"
     - cmake --install "${OUT}"
     - mkdir release/macosx
