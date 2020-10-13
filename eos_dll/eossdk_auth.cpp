@@ -26,8 +26,32 @@ namespace sdk
 {
 
 EOSSDK_Auth::EOSSDK_Auth():
-    _logged_in(false)
+    _logged_in(false),
+    _access_token(1000, '\0'),
+    _access_expires(std::chrono::system_clock::now() + std::chrono::seconds(100000)),
+    _refresh_token(1000, '\0'),
+    _refresh_expires(std::chrono::system_clock::now() + std::chrono::seconds(100000))
 {
+    static std::string token_charset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+    char* str = &_access_token[0];
+    random_string(token_charset, str, 980);
+    str[980] = '-';
+    str[981] = '_';
+    random_string(token_charset, str + 982, 5);
+    str[987] = '_';
+    random_string(token_charset, str + 988, 5);
+    str[992] = '_';
+    random_string(token_charset, str + 993, 7);
+    str[999] = '\0';
+
+    str = &_refresh_token[0];
+    random_string(token_charset, str, 980);
+    str[980] = '-';
+    random_string(token_charset, str + 981, 11);
+    str[992] = '_';
+    random_string(token_charset, str + 993, 7);
+    str[999] = '\0';
+
     GetCB_Manager().register_callbacks(this);
 }
 
@@ -346,6 +370,8 @@ EOS_EResult EOSSDK_Auth::CopyUserAuthToken(const EOS_Auth_CopyUserAuthTokenOptio
 
     if (LocalUserId == Settings::Inst().userid)
     {
+        auto chrono_now = std::chrono::system_clock::now();
+
         EOS_Auth_Token* token = new EOS_Auth_Token;
         time_t now;
         time(&now);
@@ -355,22 +381,34 @@ EOS_EResult EOSSDK_Auth::CopyUserAuthToken(const EOS_Auth_CopyUserAuthTokenOptio
         token->ClientId = GetEOS_Platform()._client_id.c_str();
         token->AccountId = LocalUserId;
         
-        token->AccessToken = "ACCE22105E4";
-        token->ExpiresIn = 99999999;
-        token->ExpiresAt = new char[64];
-        now += 99999999;
-        strftime((char*)token->ExpiresAt, 64, "%FT%TZ", gmtime(&now));
-        now -= 99999999;
-
+        {
+            char* str = new char[_access_token.length() + 1];
+            strncpy(str, _access_token.c_str(), _access_token.length());
+            token->AccessToken = str;
+        }
+        token->ExpiresIn = std::chrono::duration_cast<std::chrono::milliseconds>(_access_expires - chrono_now).count() / 1000.0;
+        {
+            char* str = new char[64];
+            now += token->ExpiresIn;
+            strftime(str, 64, "%FT%T.000Z", gmtime(&now));
+            now -= token->ExpiresIn;
+            token->ExpiresAt = str;
+        }
 
         token->AuthType = EOS_EAuthTokenType::EOS_ATT_User;
 
-        token->RefreshToken = "A3EF3E28105E4";
-        token->RefreshExpiresIn = 999999;
-        token->RefreshExpiresAt = new char[64];
-        now += 999999;
-        strftime((char*)token->RefreshExpiresAt, 64, "%FT%TZ", gmtime(&now));
-        now -= 999999;
+        {
+            char* str = new char[_refresh_token.length() + 1];
+            strncpy(str, _refresh_token.c_str(), _refresh_token.length());
+            token->RefreshToken = str;
+        }
+        token->RefreshExpiresIn = std::chrono::duration_cast<std::chrono::milliseconds>(_refresh_expires - chrono_now).count() / 1000.0;
+        {
+            char* str = new char[64];
+            now += token->RefreshExpiresIn;
+            strftime(str, 64, "%FT%T.000Z", gmtime(&now));
+            token->RefreshExpiresAt = str;
+        }
 
         *OutUserAuthToken = token;
         return EOS_EResult::EOS_Success;

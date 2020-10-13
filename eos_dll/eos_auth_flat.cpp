@@ -188,8 +188,8 @@ EOS_DECLARE_FUNC(void) EOS_Auth_Token_Release(EOS_Auth_Token* AuthToken)
     if (AuthToken == nullptr)
         return;
 
-    //delete[] AuthToken->AccessToken;
-    //delete[] AuthToken->RefreshToken;
+    delete[] AuthToken->AccessToken;
+    delete[] AuthToken->RefreshToken;
 
     delete[] AuthToken->ExpiresAt;
     delete[] AuthToken->RefreshExpiresAt;

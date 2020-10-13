@@ -37,6 +37,10 @@ namespace sdk
         public IRunNetwork
     {
         bool _logged_in;
+        std::string _access_token;
+        std::chrono::system_clock::time_point _access_expires;
+        std::string _refresh_token;
+        std::chrono::system_clock::time_point _refresh_expires;
 
     public:
         EOSSDK_Auth();

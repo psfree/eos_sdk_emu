@@ -56,6 +56,17 @@ LOCAL_API std::recursive_mutex& global_mutex()
     return global_mutex;
 }
 
+LOCAL_API void random_string(std::string const& charset, char* buff, size_t length)
+{
+    std::uniform_int_distribution<int64_t> dis(0, charset.length() - 1);
+    auto& gen = get_gen();
+
+    for (int i = 0; i < length; ++i)
+    {
+        buff[i] = charset[dis(gen)];
+    }
+}
+
 LOCAL_API static void randombytes(uint8_t* buf, size_t len)
 {
     // uniform integer distribution

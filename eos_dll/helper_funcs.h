@@ -34,6 +34,7 @@ LOCAL_API std::recursive_mutex& global_mutex();
 LOCAL_API std::random_device& get_rd();
 LOCAL_API std::mt19937_64& get_gen();
 
+LOCAL_API void random_string(std::string const& charset, char* buff, size_t length);
 LOCAL_API std::string generate_account_id();
 LOCAL_API std::string generate_account_id_from_name(std::string const& username);
 LOCAL_API std::string generate_epic_id_user();
