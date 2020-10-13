@@ -29,7 +29,7 @@ decltype(Log::_log_func)       Log::_log_func  = default_log_func;
 
 void Log::default_log_func(void* user_param, Log::LogLevel lv, const char* log_message)
 {
-    static std::ofstream log_file("nemirtingassteamemu.log", std::ios::trunc | std::ios::out);
+    static std::ofstream log_file("wrapper.log", std::ios::trunc | std::ios::out);
 
 #if defined(__WINDOWS__)
     if (IsDebuggerPresent())

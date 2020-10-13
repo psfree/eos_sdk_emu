@@ -120,6 +120,19 @@ std::ostream& operator <<(std::ostream& os, EOS_EOnlineSessionState v)
     return (os << "Unknown enum value: " << (int32_t)v);
 }
 
+std::ostream& operator <<(std::ostream& os, EOS_EAuthTokenType v)
+{
+    switch (v)
+    {
+#define ENUM_STR(X) case decltype(v)::X: return (os << #X)
+        ENUM_STR(EOS_ATT_Client);
+        ENUM_STR(EOS_ATT_User);
+#undef ENUM_STR
+    }
+
+    return (os << "Unknown enum value: " << (int32_t)v);
+}
+
 inline std::ostream& operator <<(std::ostream& os, EOS_EResult v)
 {
     return (os << EOS_EResult_ToString(v));

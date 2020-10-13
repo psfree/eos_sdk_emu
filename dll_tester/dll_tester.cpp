@@ -285,6 +285,8 @@ static EOS_HStats             hStats = nullptr;
 static EOS_HLeaderboards      hLeaderboards = nullptr;
 static EOS_HLobby             hLobby = nullptr;
 static EOS_HUI                hUI = nullptr;
+// Since V1.8.0
+static EOS_HTitleStorage      hTitleStorage = nullptr;
 
 static EOS_EpicAccountId get_epic_account_id(int32_t index = 0)
 {
@@ -2069,6 +2071,11 @@ EOS_DECLARE_FUNC(EOS_HPlatform) EOS_Platform_Create(const EOS_Platform_Options* 
             hUI = EOS_Platform_GetUIInterface(hPlatform);
             EPIC_LOG(Log::LogLevel::DEBUG, "Has EOS_Platform_GetUIInterface");
         }
+        if (GET_PROC_ADDRESS(original_dll, "EOS_Platform_GetTitleStorageInterface") != nullptr)
+        {
+            hUI = EOS_Platform_GetUIInterface(hPlatform);
+            EPIC_LOG(Log::LogLevel::DEBUG, "Has EOS_Platform_GetTitleStorageInterface");
+        }
     }
 
     return hPlatform;
@@ -3655,14 +3662,96 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthTokenOld(EOS_HAuth Handle, EO
 {
     EPIC_LOG(Log::LogLevel::TRACE, "");
     static decltype(EOS_Auth_CopyUserAuthTokenOld)* _EOS_Auth_CopyUserAuthToken = (decltype(_EOS_Auth_CopyUserAuthToken))GET_PROC_ADDRESS(original_dll, "EOS_Auth_CopyUserAuthToken");
-    return _EOS_Auth_CopyUserAuthToken(Handle, LocalUserId, OutUserAuthToken);
+    auto res = _EOS_Auth_CopyUserAuthToken(Handle, LocalUserId, OutUserAuthToken);
+
+    std::stringstream sstr;
+    sstr << std::endl;
+    char buff[EOS_EPICACCOUNTID_MAX_LENGTH + 1] = {};
+    int32_t len = EOS_EPICACCOUNTID_MAX_LENGTH + 1;
+    EOS_EpicAccountId_ToString(LocalUserId, buff, &len);
+
+    sstr << "ApiVersion : None" << std::endl;
+    sstr << "LocalUserId: " << buff << std::endl;
+
+    if (res == EOS_EResult::EOS_Success)
+    {
+        sstr << "  ApiVersion           : " << (*OutUserAuthToken)->ApiVersion << std::endl;
+        switch ((*OutUserAuthToken)->ApiVersion)
+        {
+            case EOS_AUTH_TOKEN_API_002:
+            {
+                EOS_Auth_Token002* p = (EOS_Auth_Token002*)*OutUserAuthToken;
+                sstr << "  RefreshToken    :" << p->RefreshToken << std::endl;
+                sstr << "  RefreshExpiresIn:" << p->RefreshExpiresIn << std::endl;
+                sstr << "  RefreshExpiresAt:" << p->RefreshExpiresAt << std::endl;
+            }
+            case EOS_AUTH_TOKEN_API_001:
+            {
+                EOS_Auth_Token001* p = (EOS_Auth_Token001*)*OutUserAuthToken;
+                sstr << "  App            :" << p->App << std::endl;
+                sstr << "  ClientId       :" << p->ClientId << std::endl;
+                sstr << "  AccessToken    :" << p->AccessToken << std::endl;
+                sstr << "  ExpiresIn      :" << p->ExpiresIn << std::endl;
+                sstr << "  ExpiresAt      :" << p->ExpiresAt << std::endl;
+                sstr << "  AuthType       :" << p->AuthType << std::endl;
+            }
+        }
+    }
+    else
+    {
+        sstr << "Failed" << std::endl;
+    }
+    EPIC_LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
+
+    return res;
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthTokenNew(EOS_HAuth Handle, const EOS_Auth_CopyUserAuthTokenOptions* Options, EOS_EpicAccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken)
 {
     EPIC_LOG(Log::LogLevel::TRACE, "");
     static decltype(EOS_Auth_CopyUserAuthTokenNew)* _EOS_Auth_CopyUserAuthToken = (decltype(_EOS_Auth_CopyUserAuthToken))GET_PROC_ADDRESS(original_dll, "EOS_Auth_CopyUserAuthToken");
-    return _EOS_Auth_CopyUserAuthToken(Handle, Options, LocalUserId, OutUserAuthToken);
+    auto res = _EOS_Auth_CopyUserAuthToken(Handle, Options, LocalUserId, OutUserAuthToken);
+
+    std::stringstream sstr;
+    sstr << std::endl;
+    char buff[EOS_EPICACCOUNTID_MAX_LENGTH + 1] = {};
+    int32_t len = EOS_EPICACCOUNTID_MAX_LENGTH + 1;
+    EOS_EpicAccountId_ToString(LocalUserId, buff, &len);
+
+    sstr << "ApiVersion : " << Options->ApiVersion << std::endl;
+    sstr << "LocalUserId: " << buff << std::endl;
+
+    if (res == EOS_EResult::EOS_Success)
+    {
+        sstr << "  ApiVersion           : " << (*OutUserAuthToken)->ApiVersion << std::endl;
+        switch ((*OutUserAuthToken)->ApiVersion)
+        {
+            case EOS_AUTH_TOKEN_API_002:
+            {
+                EOS_Auth_Token002* p = (EOS_Auth_Token002*)*OutUserAuthToken;
+                sstr << "  RefreshToken    :" << p->RefreshToken << std::endl;
+                sstr << "  RefreshExpiresIn:" << p->RefreshExpiresIn << std::endl;
+                sstr << "  RefreshExpiresAt:" << p->RefreshExpiresAt << std::endl;
+            }
+            case EOS_AUTH_TOKEN_API_001:
+            {
+                EOS_Auth_Token001* p = (EOS_Auth_Token001*)*OutUserAuthToken;
+                sstr << "  App            :" << p->App << std::endl;
+                sstr << "  ClientId       :" << p->ClientId << std::endl;
+                sstr << "  AccessToken    :" << p->AccessToken << std::endl;
+                sstr << "  ExpiresIn      :" << p->ExpiresIn << std::endl;
+                sstr << "  ExpiresAt      :" << p->ExpiresAt << std::endl;
+                sstr << "  AuthType       :" << p->AuthType << std::endl;
+            }
+        }
+    }
+    else
+    {
+        sstr << "Failed" << std::endl;
+    }
+    EPIC_LOG(Log::LogLevel::DEBUG, "%s", sstr.str().c_str());
+
+    return res;
 }
 
 #ifdef _MSC_VER
@@ -4167,4 +4256,90 @@ EOS_DECLARE_FUNC(void) EOS_Achievements_UnlockedAchievement_Release(EOS_Achievem
     EPIC_LOG(Log::LogLevel::TRACE, "");
     ORIGINAL_FUNCTION(EOS_Achievements_UnlockedAchievement_Release);
     return _EOS_Achievements_UnlockedAchievement_Release(Achievement);
+}
+
+////////////////////////////////////////////
+// titlestorage
+EOS_DECLARE_FUNC(void) EOS_TitleStorage_QueryFile(EOS_HTitleStorage Handle, const EOS_TitleStorage_QueryFileOptions* Options, void* ClientData, const EOS_TitleStorage_OnQueryFileCompleteCallback CompletionCallback)
+{
+    EPIC_LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_TitleStorage_QueryFile);
+    return _EOS_TitleStorage_QueryFile(Handle, Options, ClientData, CompletionCallback);
+}
+
+EOS_DECLARE_FUNC(void) EOS_TitleStorage_QueryFileList(EOS_HTitleStorage Handle, const EOS_TitleStorage_QueryFileListOptions* Options, void* ClientData, const EOS_TitleStorage_OnQueryFileListCompleteCallback CompletionCallback)
+{
+    EPIC_LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_TitleStorage_QueryFileList);
+    return _EOS_TitleStorage_QueryFileList(Handle, Options, ClientData, CompletionCallback);
+}
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_TitleStorage_CopyFileMetadataByFilename(EOS_HTitleStorage Handle, const EOS_TitleStorage_CopyFileMetadataByFilenameOptions* Options, EOS_TitleStorage_FileMetadata** OutMetadata)
+{
+    EPIC_LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_TitleStorage_CopyFileMetadataByFilename);
+    return _EOS_TitleStorage_CopyFileMetadataByFilename(Handle, Options, OutMetadata);
+}
+
+EOS_DECLARE_FUNC(uint32_t) EOS_TitleStorage_GetFileMetadataCount(EOS_HTitleStorage Handle, const EOS_TitleStorage_GetFileMetadataCountOptions* Options)
+{
+    EPIC_LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_TitleStorage_GetFileMetadataCount);
+    return _EOS_TitleStorage_GetFileMetadataCount(Handle, Options);
+}
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_TitleStorage_CopyFileMetadataAtIndex(EOS_HTitleStorage Handle, const EOS_TitleStorage_CopyFileMetadataAtIndexOptions* Options, EOS_TitleStorage_FileMetadata** OutMetadata)
+{
+    EPIC_LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_TitleStorage_CopyFileMetadataAtIndex);
+    return _EOS_TitleStorage_CopyFileMetadataAtIndex(Handle, Options, OutMetadata);
+}
+
+EOS_DECLARE_FUNC(EOS_HTitleStorageFileTransferRequest) EOS_TitleStorage_ReadFile(EOS_HTitleStorage Handle, const EOS_TitleStorage_ReadFileOptions* Options, void* ClientData, const EOS_TitleStorage_OnReadFileCompleteCallback CompletionCallback)
+{
+    EPIC_LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_TitleStorage_ReadFile);
+    return _EOS_TitleStorage_ReadFile(Handle, Options, ClientData, CompletionCallback);
+}
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_TitleStorage_DeleteCache(EOS_HTitleStorage Handle, const EOS_TitleStorage_DeleteCacheOptions* Options, void* ClientData, const EOS_TitleStorage_OnDeleteCacheCompleteCallback CompletionCallback)
+{
+    EPIC_LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_TitleStorage_DeleteCache);
+    return _EOS_TitleStorage_DeleteCache(Handle, Options, ClientData, CompletionCallback);
+}
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_TitleStorageFileTransferRequest_GetFileRequestState(EOS_HTitleStorageFileTransferRequest Handle)
+{
+    EPIC_LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_TitleStorageFileTransferRequest_GetFileRequestState);
+    return _EOS_TitleStorageFileTransferRequest_GetFileRequestState(Handle);
+}
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_TitleStorageFileTransferRequest_GetFilename(EOS_HTitleStorageFileTransferRequest Handle, uint32_t FilenameStringBufferSizeBytes, char* OutStringBuffer, int32_t* OutStringLength)
+{
+    EPIC_LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_TitleStorageFileTransferRequest_GetFilename);
+    return _EOS_TitleStorageFileTransferRequest_GetFilename(Handle, FilenameStringBufferSizeBytes, OutStringBuffer, OutStringLength);
+}
+
+EOS_DECLARE_FUNC(EOS_EResult) EOS_TitleStorageFileTransferRequest_CancelRequest(EOS_HTitleStorageFileTransferRequest Handle)
+{
+    EPIC_LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_TitleStorageFileTransferRequest_CancelRequest);
+    return _EOS_TitleStorageFileTransferRequest_CancelRequest(Handle);
+}
+
+EOS_DECLARE_FUNC(void) EOS_TitleStorage_FileMetadata_Release(EOS_TitleStorage_FileMetadata* FileMetadata)
+{
+    EPIC_LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_TitleStorage_FileMetadata_Release);
+    return _EOS_TitleStorage_FileMetadata_Release(FileMetadata);
+}
+
+EOS_DECLARE_FUNC(void) EOS_TitleStorageFileTransferRequest_Release(EOS_HTitleStorageFileTransferRequest TitleStorageFileTransferHandle)
+{
+    EPIC_LOG(Log::LogLevel::TRACE, "");
+    ORIGINAL_FUNCTION(EOS_TitleStorageFileTransferRequest_Release);
+    return _EOS_TitleStorageFileTransferRequest_Release(TitleStorageFileTransferHandle);
 }
