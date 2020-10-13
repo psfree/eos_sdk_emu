@@ -92,6 +92,8 @@ build:linux:
   image: nemirtingas/linux_vcpkg:ubuntu18
   dependencies:
     - static:linux:deps
+  needs:
+    - static:linux:deps
 
   script:
     - ./ci_versionning.sh
@@ -115,6 +117,8 @@ build:windows:
   stage: build
   image: nemirtingas/windowscross_vcpkg:msvc2019
   dependencies:
+    - static:windows:deps
+  needs:
     - static:windows:deps
 
   script:
@@ -146,6 +150,8 @@ build:macosx:
   image: nemirtingas/osxcross_vcpkg:SDK10.13
   dependencies:
     - static:macosx:deps
+  needs:
+    - static:macosx:deps
 
   script:
     - ./ci_versionning.sh
@@ -170,6 +176,7 @@ build:macosx:
 build:launcher:
   stage: build
   image: mcr.microsoft.com/dotnet/core/sdk
+  needs: []
 
   script:
     - cd NemirtingasEmuLauncher
@@ -195,7 +202,6 @@ sign:
     - build:windows
     - build:linux
     - build:macosx
-    - build:launcher
     
   script:
     - apk update && apk add libcurl curl-dev openssl-dev autoconf build-base automake libtool git openssl
