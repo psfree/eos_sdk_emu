@@ -14,7 +14,7 @@ static:linux:deps:
   image: nemirtingas/linux_vcpkg:ubuntu18
 
   script:
-    - cp -f vcpkg_tripplets/*.cmake /vcpkg/triplets/
+    - cp -f vcpkg_triplets/*.cmake /vcpkg/triplets/
     - VCPKG_PATH=$(pwd)/vcpkg
     - TRIPLET=x64-linux-nemirtingas
     - vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf:${TRIPLET} || exit 1
@@ -37,7 +37,7 @@ static:windows:deps:
   image: nemirtingas/windowscross_vcpkg:msvc2019
 
   script:
-    - cp -f vcpkg_tripplets/*.cmake /vcpkg/triplets/
+    - cp -f vcpkg_triplets/*.cmake /vcpkg/triplets/
     - VCPKG_PATH=$(pwd)/vcpkg
     - TRIPLET=x64-linux
     - vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf:${TRIPLET} || exit 1
@@ -67,7 +67,7 @@ static:macosx:deps:
   image: nemirtingas/osxcross_vcpkg:SDK10.13
 
   script:
-    - cp -f vcpkg_tripplets/*.cmake /vcpkg/triplets/
+    - cp -f vcpkg_triplets/*.cmake /vcpkg/triplets/
     - VCPKG_PATH=$(pwd)/vcpkg
     - TRIPLET=x64-linux
     - vcpkg "--x-install-root=${VCPKG_PATH}" install protobuf:${TRIPLET} || exit 1
@@ -97,7 +97,7 @@ build:linux:
 
   script:
     - ./ci_versionning.sh
-    - cp -f vcpkg_tripplets/*.cmake /vcpkg/triplets/
+    - cp -f vcpkg_triplets/*.cmake /vcpkg/triplets/
     - VCPKG_PATH=$(pwd)/vcpkg
     - TOOLCHAIN="/vcpkg/scripts/buildsystems/vcpkg.cmake"
     - TRIPLET=x64-linux-nemirtingas
@@ -123,7 +123,7 @@ build:windows:
 
   script:
     - ./ci_versionning.sh
-    - cp -f vcpkg_tripplets/*.cmake /vcpkg/triplets/
+    - cp -f vcpkg_triplets/*.cmake /vcpkg/triplets/
     - VCPKG_PATH=$(pwd)/vcpkg
     - TOOLCHAIN="/vcpkg/scripts/buildsystems/vcpkg.cmake"
     - CHAINLOAD="/clang_windows_sdk/clang-cl-msvc.cmake"
@@ -155,7 +155,7 @@ build:macosx:
 
   script:
     - ./ci_versionning.sh
-    - cp -f vcpkg_tripplets/*.cmake /vcpkg/triplets/
+    - cp -f vcpkg_triplets/*.cmake /vcpkg/triplets/
     - VCPKG_PATH=$(pwd)/vcpkg
     - TOOLCHAIN="/vcpkg/scripts/buildsystems/vcpkg.cmake"
     - CHAINLOAD="/osxcross/target/toolchain.cmake"
