@@ -202,6 +202,7 @@ sign:
     - build:windows
     - build:linux
     - build:macosx
+    - build:launcher
     
   script:
     - apk update && apk add libcurl curl-dev openssl-dev autoconf build-base automake libtool git openssl
