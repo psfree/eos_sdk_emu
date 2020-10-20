@@ -49,14 +49,14 @@ FrameResult::~FrameResult()
     delete[] res.func_param;
 }
 
-void* FrameResult::AllocCallback(CallbackFunc func, size_t func_param_size, int i_callback, std::chrono::milliseconds ok_timeout)
+void* FrameResult::AllocCallback(CallbackObj func, size_t func_param_size, int i_callback, std::chrono::milliseconds ok_timeout)
 {
     uint8_t* buff = new uint8_t[func_param_size];
     SetCallback(func, buff, func_param_size, i_callback, ok_timeout);
     return buff;
 }
 
-void FrameResult::SetCallback(CallbackFunc func, uint8_t* func_param, size_t func_param_size, int i_callback, std::chrono::milliseconds ok_timeout)
+void FrameResult::SetCallback(CallbackObj func, uint8_t* func_param, size_t func_param_size, int i_callback, std::chrono::milliseconds ok_timeout)
 {
     this->ok_timeout = ok_timeout;
     delete[]res.func_param;
