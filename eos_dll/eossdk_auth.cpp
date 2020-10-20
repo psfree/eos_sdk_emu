@@ -87,12 +87,12 @@ void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, 
         return;
 
     pFrameResult_t res(new FrameResult);
-    EOS_Auth_LoginCallbackInfo& lci = res->CreateCallback<EOS_Auth_LoginCallbackInfo>((CallbackFunc)CompletionDelegate, std::chrono::milliseconds(1000));
-    lci.ClientData = ClientData;
-    lci.LocalUserId = Settings::Inst().userid;
 
     if (Options == nullptr)
     {
+        EOS_Auth_LoginCallbackInfo& lci = res->CreateCallback<EOS_Auth_LoginCallbackInfo>((CallbackFunc)CompletionDelegate, std::chrono::milliseconds(1000));
+        lci.LocalUserId = Settings::Inst().userid;
+        lci.ClientData = ClientData;
         lci.ResultCode = EOS_EResult::EOS_InvalidParameters;
     }
     else
@@ -131,10 +131,19 @@ void EOSSDK_Auth::Login(const EOS_Auth_LoginOptions* Options, void* ClientData, 
             }
         }
 
+        std::function<void(void*)> intermediate_callback = [this, ClientData, CompletionDelegate](void* param) {
+            _logged_in = true;
+            EOS_Auth_LoginCallbackInfo* cb_info = (EOS_Auth_LoginCallbackInfo*)param;
+            CompletionDelegate(cb_info);
+        };
+        EOS_Auth_LoginCallbackInfo& lci = res->CreateCallback<EOS_Auth_LoginCallbackInfo>(intermediate_callback, std::chrono::milliseconds(1000));
+
         lci.ResultCode = EOS_EResult::EOS_Success;
         lci.PinGrantInfo = nullptr;
-
-        _logged_in = true;
+        lci.ContinuanceToken = nullptr;
+        lci.AccountFeatureRestrictedInfo = nullptr;
+        lci.ClientData = ClientData;
+        lci.LocalUserId = Settings::Inst().userid;
     }
 
     res->done = true;
@@ -376,7 +385,7 @@ EOS_EResult EOSSDK_Auth::CopyUserAuthToken(const EOS_Auth_CopyUserAuthTokenOptio
         time_t now;
         time(&now);
         
-        token->ApiVersion = Options->ApiVersion;
+        token->ApiVersion = EOS_AUTH_TOKEN_API_LATEST;
         token->App = Settings::Inst().gamename.c_str();
         token->ClientId = GetEOS_Platform()._client_id.c_str();
         token->AccountId = LocalUserId;
