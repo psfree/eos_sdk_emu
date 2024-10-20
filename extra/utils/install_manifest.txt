@@ -1,0 +1,10 @@
+C:/Program Files (x86)/utils/include/utils/class_enum.hpp
+C:/Program Files (x86)/utils/include/utils/constexpr_count.hpp
+C:/Program Files (x86)/utils/include/utils/endianness.hpp
+C:/Program Files (x86)/utils/include/utils/istring.hpp
+C:/Program Files (x86)/utils/include/utils/scoped_lock.hpp
+C:/Program Files (x86)/utils/include/utils/strings.hpp
+C:/Program Files (x86)/utils/include/utils/switchstr.hpp
+C:/Program Files (x86)/utils/include/utils/utils_exports.h
+C:/Program Files (x86)/utils/include/utils/utils_osdetector.h
+C:/Program Files (x86)/utils/lib/cmake/Utils/UtilsConfig.cmake
