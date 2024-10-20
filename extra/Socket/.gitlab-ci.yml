@@ -1,0 +1,139 @@
+stages:
+  - build
+  - documentation
+  - deploy
+  - pages
+
+variables:
+  DOCKER_DRIVER: overlay2
+  GIT_SUBMODULE_STRATEGY: recursive
+
+build:linux:
+  stage: build
+  image: ubuntu:18.04
+
+  before_script:
+    - dpkg --add-architecture i386
+    - apt update
+    - apt -y install gcc g++ gcc-multilib g++-multilib build-essential cmake git libdbus-1-dev:i386 libdbus-1-dev
+
+  script:
+    - JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
+    - test -z "${JOBS}" && JOBS=2
+    - echo "Building socket with ${JOBS} jobs"
+    - mkdir linux32 && cd linux32
+    - apt -y install libbluetooth-dev:i386 libbluetooth3:i386
+    - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DX86=ON -DBUILD_TESTS=ON -DBLUETOOTH_SUPPORT=ON ..
+    - make -j${JOBS} && make install && ./ipv4_tests || exit 1
+    - cd ..
+    - sleep 60
+    - mkdir linux64 && cd linux64
+    - apt -y install libbluetooth-dev libbluetooth3
+    - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DX64=ON -DBUILD_TESTS=ON -DBLUETOOTH_SUPPORT=ON ..
+    - make -j${JOBS} && make install && ./ipv4_tests || exit 1
+    - cd ..
+    - exit 0
+
+  artifacts:
+    paths:
+      - release/
+    expire_in: 1 day
+
+build:windows:
+  stage: build
+  image: nemirtingas/windowscross:msvc2019
+
+  script:
+    - JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
+    - test -z "${JOBS}" && JOBS=2
+    - echo "Building socket with ${JOBS} jobs"
+    - export HOST_ARCH="x86"
+    - mkdir win32 && cd win32
+    - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DX86=ON -DBUILD_TESTS=ON -DBLUETOOTH_SUPPORT=ON ..
+    - make -j${JOBS} && make install || exit 1
+    - cd ..
+    - export HOST_ARCH="x64"
+    - mkdir win64 && cd win64
+    - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DX64=ON -DBUILD_TESTS=ON -DBLUETOOTH_SUPPORT=ON ..
+    - make -j${JOBS} && make install || exit 1
+    - cd ..
+    - exit 0
+
+  artifacts:
+    paths:
+      - release/
+    expire_in: 1 day
+
+build:macosx:
+  stage: build
+  image: nemirtingas/osxcross:SDK10.13
+
+  script:
+    - JOBS=$(($(LANG=C lscpu | awk '/^CPU\(s\):/{ print $2 }')*2))
+    - test -z "${JOBS}" && JOBS=2
+    - echo "Building socket with ${JOBS} jobs"
+    - export OSXCROSS_HOST="i386-apple-${OSXCROSS_TARGET}"
+    - mkdir macosx32 && cd macosx32
+    - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DX64=ON -DBUILD_TESTS=ON -DBLUETOOTH_SUPPORT=ON ..
+    - make -j${JOBS} && make install || exit 1
+    - cd ..
+    - export OSXCROSS_HOST="x86_64-apple-${OSXCROSS_TARGET}"
+    - mkdir macosx64 && cd macosx64
+    - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DX64=ON -DBUILD_TESTS=ON -DBLUETOOTH_SUPPORT=ON ..
+    - make -j${JOBS} && make install || exit 1
+    - cd ..
+
+  artifacts:
+    paths:
+      - release/
+    expire_in: 1 day
+
+documentation:
+  image: alpine:3.6
+  stage: documentation
+
+  script:
+    - apk update && apk add doxygen graphviz ttf-ubuntu-font-family
+    - doxygen .doxygen
+    - mv documentation/html public
+    - exit 0
+
+  artifacts:
+    paths:
+      - release/
+      - public/
+    expire_in: 1 day
+
+deploy:
+  image: alpine
+  stage: deploy
+  dependencies:
+    - documentation
+    
+  script:
+    - echo $CI_JOB_ID > job_id
+    
+  artifacts:
+    paths:
+      - release/
+      - public/
+      - job_id
+  only:
+    - master
+
+pages:
+  image: alpine
+  stage: pages
+  dependencies:
+    - deploy
+  script:
+    - DEPLOY_ALL_JOBID=$(cat job_id)
+    - sed -i "s|X_LATEST_BUILD_URL_X|https://gitlab.com/Nemirtingas/Socket/-/jobs/$DEPLOY_ALL_JOBID/artifacts/download|g" public/index.html
+    - sed -i "s|X_LATEST_BUILD_COMMIT_HASH_X|$CI_COMMIT_SHA|g" public/index.html
+
+  artifacts:
+    paths:
+      - public/
+  only:
+    - master
+
