@@ -309,7 +309,6 @@ EOS_DECLARE_FUNC(const char*) EOS_EResult_ToString(EOS_EResult Result)
         CASE_RESULT(EOS_Auth_ExternalAuthIsLastLoginType);
         CASE_RESULT(EOS_Auth_ExchangeCodeNotFound);
         CASE_RESULT(EOS_Auth_OriginatingExchangeCodeSessionExpired);
-        CASE_RESULT(EOS_Auth_PersistentAuth_AccountNotActive);
         CASE_RESULT(EOS_Auth_MFARequired);
         CASE_RESULT(EOS_Auth_ParentalControls);
         CASE_RESULT(EOS_Auth_NoRealId);
@@ -383,7 +382,6 @@ EOS_DECLARE_FUNC(const char*) EOS_EResult_ToString(EOS_EResult Result)
         CASE_RESULT(EOS_Connect_LinkAccountFailed);
         CASE_RESULT(EOS_Connect_ExternalServiceUnavailable);
         CASE_RESULT(EOS_Connect_ExternalServiceConfigurationFailure);
-        CASE_RESULT(EOS_Connect_LinkAccountFailedMissingNintendoIdAccount);
 
         CASE_RESULT(EOS_UI_SocialOverlayLoadError);
 

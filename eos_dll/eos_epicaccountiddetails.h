@@ -20,6 +20,8 @@
 #pragma once
 
 #include "common_includes.h"
+#include <mutex>
+
 
 class EOSSDK_Client;
 

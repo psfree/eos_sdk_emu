@@ -70,7 +70,7 @@ bool compare_attribute_values(T&& v1, EOS_EOnlineComparisonOp op, T&& v2, std::s
     catch (...)
     {}
 
-    APP_LOG(Log::LogLevel::DEBUG, "Testing Lobby Attr: %s: (session)%s %s (search)%s, result: %s", attr_name.c_str(), std::to_string(v1).c_str(), search_attr_to_string(op), std::to_string(v2).c_str(), res ? "true" : "false");
+    //APP_LOG(Log::LogLevel::DEBUG, "Testing Lobby Attr: %s: (session)%s %s (search)%s, result: %s", attr_name.c_str(), std::to_string(v1).c_str(), search_attr_to_string(op), std::to_string(v2).c_str(), res ? "true" : "false");
     return res;
 }
 
@@ -496,7 +496,7 @@ void EOSSDK_Sessions::UpdateSession(const EOS_Sessions_UpdateSessionOptions* Opt
                         modif->_infos.host_address().c_str()
                     );
 
-                    session.infos.set_state(utils::get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Pending));
+                    session.infos.set_state(utils::GetEnumValue(EOS_EOnlineSessionState::EOS_OSS_Pending));
                     *session.infos.add_players() = Settings::Inst().productuserid->to_string();
                     *session.infos.add_registered_players() = Settings::Inst().productuserid->to_string();
                     //GetEOS_Connect().add_session(GetProductUserId(session.infos.session_id()), session.infos.session_name());
@@ -596,7 +596,7 @@ void EOSSDK_Sessions::DestroySession(const EOS_Sessions_DestroySessionOptions* O
                 _sessions_join.erase(join_it);
             }
 
-            it->second.infos.set_state(utils::get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Destroying));
+            it->second.infos.set_state(utils::GetEnumValue(EOS_EOnlineSessionState::EOS_OSS_Destroying));
 
             send_session_destroy(&it->second);
             //GetEOS_Connect().remove_session(GetProductUserId(it->second.infos.session_id()), it->second.infos.session_name());
@@ -745,7 +745,7 @@ void EOSSDK_Sessions::StartSession(const EOS_Sessions_StartSessionOptions* Optio
 
                 case EOS_EOnlineSessionState::EOS_OSS_Ended     :
                 case EOS_EOnlineSessionState::EOS_OSS_Pending   :
-                    session->infos.set_state(utils::get_enum_value(EOS_EOnlineSessionState::EOS_OSS_InProgress));
+                    session->infos.set_state(utils::GetEnumValue(EOS_EOnlineSessionState::EOS_OSS_InProgress));
                     send_session_info(session);
             }
         }
@@ -795,7 +795,7 @@ void EOSSDK_Sessions::EndSession(const EOS_Sessions_EndSessionOptions* Options, 
         if (session != nullptr)
         {
             esci.ResultCode = EOS_EResult::EOS_Success;
-            session->infos.set_state(utils::get_enum_value(EOS_EOnlineSessionState::EOS_OSS_Ended));
+            session->infos.set_state(utils::GetEnumValue(EOS_EOnlineSessionState::EOS_OSS_Ended));
         }
         else
         {
@@ -1868,19 +1868,19 @@ bool EOSSDK_Sessions::on_session_join_request(Network_Message_pb const& msg, Ses
         if (pSession->infos.max_players() - pSession->infos.players_size())
         {
             APP_LOG(Log::LogLevel::DEBUG, "Join request accepted.");
-            resp->set_reason(utils::get_enum_value(EOS_EResult::EOS_Success));
+            resp->set_reason(utils::GetEnumValue(EOS_EResult::EOS_Success));
             add_player_to_session(msg.source_id(), pSession);
         }
         else
         {
             APP_LOG(Log::LogLevel::DEBUG, "Join request rejected: This session is full.");
-            resp->set_reason(utils::get_enum_value(EOS_EResult::EOS_Sessions_TooManyPlayers));
+            resp->set_reason(utils::GetEnumValue(EOS_EResult::EOS_Sessions_TooManyPlayers));
         }
     }
     else
     {
         APP_LOG(Log::LogLevel::DEBUG, "Join request rejected: We don't know (yet?) the user.");
-        resp->set_reason(utils::get_enum_value(EOS_EResult::EOS_Sessions_NotAllowed));
+        resp->set_reason(utils::GetEnumValue(EOS_EResult::EOS_Sessions_NotAllowed));
     }
 
     return send_session_join_response(msg.source_id(), resp);

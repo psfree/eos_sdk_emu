@@ -48,7 +48,7 @@ void EOSSDK_Presence::setup_myself()
 {
     auto& presence = get_myself();
     presence.set_userid(Settings::Inst().userid->to_string());
-    presence.set_status(utils::get_enum_value(EOS_Presence_EStatus::EOS_PS_Online));
+    presence.set_status(utils::GetEnumValue(EOS_Presence_EStatus::EOS_PS_Online));
     presence.set_productid(GetEOS_Platform()._product_id);
     presence.set_productversion(EOSSDK_Client::Inst()._product_version);
     presence.set_productname(EOSSDK_Client::Inst()._product_name);
@@ -89,9 +89,9 @@ void EOSSDK_Presence::trigger_presence_change(EOS_EpicAccountId userid)
 void EOSSDK_Presence::set_user_status(EOS_EpicAccountId userid, EOS_Presence_EStatus status)
 {
     auto& presence = _presences[userid];
-    if (presence.status() != utils::get_enum_value(status))
+    if (presence.status() != utils::GetEnumValue(status))
     {
-        presence.set_status(utils::get_enum_value(status));
+        presence.set_status(utils::GetEnumValue(status));
         trigger_presence_change(userid);
     }
 }

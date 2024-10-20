@@ -106,7 +106,7 @@ void Network::start_network()
 {
     ipv4_addr addr;
     uint16_t port;
-    addr.set_addr(ipv4_addr::any_addr);
+    addr.set_any_addr();
 
     for (port = network_port; port < max_network_port; ++port)
     {
@@ -138,7 +138,7 @@ void Network::start_network()
             {
                 _tcp_socket.bind(addr);
                 _tcp_socket.listen(32);
-                addr.set_addr(ipv4_addr::loopback_addr);
+                addr.set_loopback_addr();
                 _tcp_self_send.connect(addr);
                 _tcp_self_recv.socket = std::move(_tcp_socket.accept());
                 _tcp_self_recv.buffer.reserve(1024 * 10);
@@ -188,7 +188,7 @@ void Network::build_advertise_msg(Network_Message_pb& msg)
     APP_LOG(Log::LogLevel::DEBUG, "Advertising with peer ids: ");
     for (auto& id : _my_peer_ids)
     {
-        APP_LOG(Log::LogLevel::DEBUG, "%s", std::to_string(id).c_str());
+        APP_LOG(Log::LogLevel::DEBUG, "%s", id.c_str());
         peer_pb->add_peer_ids(id);
     }
 
@@ -282,7 +282,7 @@ void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_
 
     for (auto& peerid : peer_ids)
     {// Map all clients peerids to the socket
-        APP_LOG(Log::LogLevel::DEBUG, "Adding peer id %s to client %s", std::to_string(peerid).c_str(), cli->get_addr().to_string(true).c_str());
+        APP_LOG(Log::LogLevel::DEBUG, "Adding peer id %s to client %s", peerid.c_str(), cli->get_addr().to_string(true).c_str());
         _tcp_peers[peerid] = cli;
 
         msg.set_source_id(peerid);
@@ -298,7 +298,7 @@ void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_
     
     if(advertise_peer)
     {
-        APP_LOG(Log::LogLevel::DEBUG, "New peer: id %s %s", std::to_string(*peer_ids.begin()).c_str(), cli->get_addr().to_string(true).c_str());
+        APP_LOG(Log::LogLevel::DEBUG, "New peer: id %s %s", (*peer_ids.begin()).c_str(), cli->get_addr().to_string(true).c_str());
 
         Network_Message_pb msg;
         Network_Advertise_pb* adv = new Network_Advertise_pb;
@@ -372,7 +372,7 @@ void Network::connect_to_peer(ipv4_addr &addr, peer_t const& peer_id)
     {
         if (it == _waiting_connect_tcp_clients.end())
         {
-            APP_LOG(Log::LogLevel::DEBUG, "Connecting to %s : %s", addr.to_string(true).c_str(), std::to_string(peer_id).c_str());
+            APP_LOG(Log::LogLevel::DEBUG, "Connecting to %s : %s", addr.to_string(true).c_str(), peer_id.c_str());
             
             _waiting_connect_tcp_clients.emplace(peer_id, tcp_socket());
             it = _waiting_connect_tcp_clients.find(peer_id);
@@ -416,7 +416,7 @@ void Network::connect_to_peer(ipv4_addr &addr, peer_t const& peer_id)
 
         it->second.send(buff.data(), buff.length());
 
-        APP_LOG(Log::LogLevel::DEBUG, "Connected to %s : %s", it->second.get_addr().to_string(true).c_str(), std::to_string(peer_id).c_str());
+        APP_LOG(Log::LogLevel::DEBUG, "Connected to %s : %s", it->second.get_addr().to_string(true).c_str(), peer_id.c_str());
 
         tcp_buffer_t tcp_buffer{};
         tcp_buffer.socket = std::move(it->second);
@@ -611,7 +611,7 @@ void Network::process_udp()
                 message_size = buff.length();
             #else
                 message = buffer.data();
-                message_size = buffer.length();
+                message_size = buffer.size();
             #endif
 
             if (msg.ParseFromArray(message, message_size))
@@ -721,7 +721,7 @@ void Network::process_tcp_data(tcp_buffer_t& tcp_buffer)
                 message_size = buff.length();
             #else
                 message = tcp_buffer.buffer.data();
-                message_size = tcp_buffer.received_size;
+                message_size = tcp_buffer.buffer.size();
             #endif
 
                 if (msg.ParseFromArray(message, message_size))
@@ -1034,7 +1034,7 @@ bool Network::UDPSendTo(Network_Message_pb& msg)
     try
     {
         _udp_socket.sendto(it->second, buffer.data(), buffer.length());
-        APP_LOG(Log::LogLevel::DEBUG, "Sent message to peer_id: %s, addr: %s", std::to_string(msg.dest_id()).c_str(), it->second.to_string().c_str());
+        APP_LOG(Log::LogLevel::DEBUG, "Sent message to peer_id: %s, addr: %s", msg.dest_id().c_str(), it->second.to_string().c_str());
     }
     catch (socket_exception & e)
     {

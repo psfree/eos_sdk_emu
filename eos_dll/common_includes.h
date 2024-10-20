@@ -19,8 +19,10 @@
 
 #pragma once
 
-#include <utils.h>
+
 #include <network_proto.pb.h>
+
+#define __WINDOWS__ 1
 
 #if defined(__WINDOWS__)
     #define WIN32_LEAN_AND_MEAN
@@ -74,6 +76,8 @@
     #define LOCAL_API
 #endif
 
+#define LOCAL_API
+
 #define EOS_BUILD_DLL 1
 
 // SDK includes
@@ -116,8 +120,21 @@ using fifo_json = nlohmann::basic_json<my_fifo_map>;
 #include <cstdarg>
 #include <cassert>
 
-#include <ipv4/tcp_socket.h>
-#include <ipv4/udp_socket.h>
+#include <socket/ipv4/tcp_socket.h>
+#include <socket/ipv4/udp_socket.h>
+#include <socket/common/basic_socket.h>
+#include <socket/ipv4/ipv4_addr.h>
+#include <socket/common/poll.h>
+#include <utils/utils_exports.h>
+#include <utils/switchstr.hpp>
+#include <utils/class_enum.hpp>
+#include <utils/constexpr_count.hpp>
+#include <utils/istring.hpp>
+#include <utils/scoped_lock.hpp>
+#include <utils/utils_osdetector.h>
+
+
+
 
 #include <mini_detour/mini_detour.h>
 

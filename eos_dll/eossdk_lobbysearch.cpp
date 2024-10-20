@@ -165,7 +165,7 @@ EOS_EResult EOSSDK_LobbySearch::SetParameter(const EOS_LobbySearch_SetParameterO
         casestr(EOS_LOBBY_SEARCH_MINCURRENTMEMBERS):
         casestr(EOS_LOBBY_SEARCH_MINSLOTSAVAILABLE):
         {
-            APP_LOG(Log::LogLevel::INFO, "TODO: Check if the new parameters comparison op is ignored or not: Operator = %u", utils::get_enum_value(Options->ComparisonOp));
+            APP_LOG(Log::LogLevel::INFO, "TODO: Check if the new parameters comparison op is ignored or not: Operator = %u", utils::GetEnumValue(Options->ComparisonOp));
             if (Options->Parameter->ValueType != EOS_ESessionAttributeType::EOS_AT_INT64 ||
                 Options->ComparisonOp != EOS_EComparisonOp::EOS_CO_GREATERTHANOREQUAL)
             {
