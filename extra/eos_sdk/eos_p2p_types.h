@@ -5,7 +5,7 @@
 #include "eos_common.h"
 
 enum { k_iP2PCallbackBase = 8000 };
-// next free callback_id: k_iP2PCallbackBase + 3
+// next free callback_id: k_iP2PCallbackBase + 5
 
 #define EOS_P2P_SocketId                              EOS_P2P_SocketId001
 #define EOS_P2P_SendPacketOptions                     EOS_P2P_SendPacketOptions002
@@ -13,6 +13,8 @@ enum { k_iP2PCallbackBase = 8000 };
 #define EOS_P2P_ReceivePacketOptions                  EOS_P2P_ReceivePacketOptions002
 #define EOS_P2P_AddNotifyPeerConnectionRequestOptions EOS_P2P_AddNotifyPeerConnectionRequestOptions001
 #define EOS_P2P_AddNotifyPeerConnectionClosedOptions  EOS_P2P_AddNotifyPeerConnectionClosedOptions001
+#define EOS_P2P_AddNotifyPeerConnectionEstablishedOptions  EOS_P2P_AddNotifyPeerConnectionEstablishedOptions001
+#define EOS_P2P_AddNotifyPeerConnectionInterruptedOptions  EOS_P2P_AddNotifyPeerConnectionInterruptedOptions001
 #define EOS_P2P_AcceptConnectionOptions               EOS_P2P_AcceptConnectionOptions001
 #define EOS_P2P_CloseConnectionOptions                EOS_P2P_CloseConnectionOptions001
 #define EOS_P2P_CloseConnectionsOptions               EOS_P2P_CloseConnectionsOptions001
@@ -23,6 +25,7 @@ enum { k_iP2PCallbackBase = 8000 };
 #define EOS_P2P_SetPortRangeOptions                   EOS_P2P_SetPortRangeOptions001
 #define EOS_P2P_GetPortRangeOptions                   EOS_P2P_GetPortRangeOptions001
 
+#include "eos_p2p_types1.16.4.h"
 #include "eos_p2p_types1.8.0.h"
 #include "eos_p2p_types1.5.0.h"
 
