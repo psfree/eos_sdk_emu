@@ -40,3 +40,13 @@ OFF  : no logs     , saves cpu usage when running the debug versions
 - { "unlock_dlcs": true|false }: This will try to enable all dlcs/items that the game requests. If the game wants more infos on em it might not work. (Like unlock_all_dlcs on a steam emu, some need you to provide the appid = name).
 - { "log_level": "OFF|FATAL|ERR|WARN|INFO|DEBUG|TRACE" }: Decides how verbose the emulator will be, for debugging purpose. Defaults to OFF
 - { "language": "en" }: Sets the user language. It follows the ISO639 language codes. Search on the web for your language code if needed. Defaults to "en".
+
+# Building with windows for dummies
+- Install Visual Studio 17 2022. You want C/C++ app support.
+- Install pwsh. Open powershell and run: winget install --id Microsoft.PowerShell --source winget
+- Install vcpkg: https://learn.microsoft.com/en-us/vcpkg/get_started/get-started?pivots=shell-powershell . Follow the bootstrap instructions.
+	- Run "vcpkg install protobuf", "vcpkg install nlohmann-json"
+- Install cmake for windows. Open cmake-gui and point it to the source code. Create a separate build folder if you want and point it to that.
+	- Hit configure.  Choose "Specify Toolchain file for cross-compiling". Choose ..\vcpkg\scripts\buildsystems\vcpkg.cmake
+	- Hit "Add Entry" Add "X64" as a string set to "ON".
+	- Hit Configure, then Generate. Then hit Open Project
