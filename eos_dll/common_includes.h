@@ -89,7 +89,7 @@
 #include "eos_epicaccountiddetails.h"
 
 #include <nlohmann/json.hpp>
-#include <nlohmann/fifo_map.hpp>
+#include "fifo_map.hpp"
 
 #include <utfcpp/utf8.h>
 
