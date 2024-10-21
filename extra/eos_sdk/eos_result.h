@@ -59,7 +59,7 @@ EOS_RESULT_VALUE(EOS_MissingParameters_DEPRECATED, 25)
 EOS_RESULT_VALUE(EOS_InvalidSandboxId, 26)
 /** Request timed out */
 EOS_RESULT_VALUE(EOS_TimedOut, 27)
-/** A query returned some but not all of the requested results.  */
+/** A query returned some but not all of the requested results. */
 EOS_RESULT_VALUE(EOS_PartialResult, 28)
 /** Client is missing the whitelisted role */
 EOS_RESULT_VALUE(EOS_Missing_Role, 29)
@@ -83,6 +83,10 @@ EOS_RESULT_VALUE(EOS_CacheDirectoryInvalid, 37)
 EOS_RESULT_VALUE(EOS_InvalidState, 38)
 /** Request is in progress */
 EOS_RESULT_VALUE(EOS_RequestInProgress, 39)
+/** Application is suspended */
+EOS_RESULT_VALUE(EOS_ApplicationSuspended, 40)
+/** Network is disconnected */
+EOS_RESULT_VALUE(EOS_NetworkDisconnected, 41)
 
 /** Account locked due to login failures */
 EOS_RESULT_VALUE(EOS_Auth_AccountLocked, 1001)
@@ -118,6 +122,10 @@ EOS_RESULT_VALUE(EOS_Auth_ApplicationNotFound, 1015)
 EOS_RESULT_VALUE(EOS_Auth_ScopeNotFound, 1016)
 /** This account has been denied access to login */
 EOS_RESULT_VALUE(EOS_Auth_AccountFeatureRestricted, 1017)
+/** The overlay failed to load the Account Portal. This can range from general overlay failure, to overlay failed to connect to the web server, to overlay failed to render the web page. */
+EOS_RESULT_VALUE(EOS_Auth_AccountPortalLoadError, 1018)
+/** An attempted login has failed due to the user needing to take corrective action on their account. */
+EOS_RESULT_VALUE(EOS_Auth_CorrectiveActionRequired, 1019)
 
 /** Pin grant code initiated */
 EOS_RESULT_VALUE(EOS_Auth_PinGrantCode, 1020)
@@ -147,7 +155,7 @@ EOS_RESULT_VALUE(EOS_Auth_ExchangeCodeNotFound, 1040)
 EOS_RESULT_VALUE(EOS_Auth_OriginatingExchangeCodeSessionExpired, 1041)
 
 /** The account has been disabled and cannot be used for authentication */
-EOS_RESULT_VALUE(EOS_Auth_PersistentAuth_AccountNotActive, 1050)
+EOS_RESULT_VALUE(EOS_Auth_AccountNotActive, 1050)
 
 /** MFA challenge required */
 EOS_RESULT_VALUE(EOS_Auth_MFARequired, 1060)
@@ -157,6 +165,9 @@ EOS_RESULT_VALUE(EOS_Auth_ParentalControls, 1070)
 
 /** Korea real ID association required but missing */
 EOS_RESULT_VALUE(EOS_Auth_NoRealId, 1080)
+
+/** Silent login failed when EOS_LF_NO_USER_INTERFACE was specified, and user interaction is needed before the user can be logged in. */
+EOS_RESULT_VALUE(EOS_Auth_UserInterfaceRequired, 1090)
 
 /** An outgoing friend invitation is awaiting acceptance; sending another invite to the same user is erroneous */
 EOS_RESULT_VALUE(EOS_Friends_InviteAwaitingAcceptance, 2000)
@@ -204,6 +215,8 @@ EOS_RESULT_VALUE(EOS_Ecom_CatalogItemStale, 4002)
 EOS_RESULT_VALUE(EOS_Ecom_CatalogOfferPriceInvalid, 4003)
 /** The checkout page failed to load */
 EOS_RESULT_VALUE(EOS_Ecom_CheckoutLoadError, 4004)
+/** The player closed the purchase flow overlay after clicking the purchase button. The purchase may still go through, and the game needs to query unredeemed entitlements for a short time. */
+EOS_RESULT_VALUE(EOS_Ecom_PurchaseProcessing, 4005)
 
 /** Session is already in progress */
 EOS_RESULT_VALUE(EOS_Sessions_SessionInProgress, 5000)
@@ -243,6 +256,8 @@ EOS_RESULT_VALUE(EOS_Sessions_PresenceSessionExists, 5016)
 EOS_RESULT_VALUE(EOS_Sessions_DeploymentAtCapacity, 5017)
 /** Session operation not allowed */
 EOS_RESULT_VALUE(EOS_Sessions_NotAllowed, 5018)
+/** Session operation not allowed */
+EOS_RESULT_VALUE(EOS_Sessions_PlayerSanctioned, 5019)
 
 /** Request filename was invalid */
 EOS_RESULT_VALUE(EOS_PlayerDataStorage_FilenameInvalid, 6000)
@@ -264,9 +279,9 @@ EOS_RESULT_VALUE(EOS_PlayerDataStorage_DataLengthInvalid, 6007)
 EOS_RESULT_VALUE(EOS_PlayerDataStorage_StartIndexInvalid, 6008)
 /** Request is in progress */
 EOS_RESULT_VALUE(EOS_PlayerDataStorage_RequestInProgress, 6009)
-/** User is marked as throttled which means he can't perform some operations because limits are exceeded.  */
+/** User is marked as throttled which means he can't perform some operations because limits are exceeded. */
 EOS_RESULT_VALUE(EOS_PlayerDataStorage_UserThrottled, 6010)
-/** Encryption key is not set during SDK init.  */
+/** Encryption key is not set during SDK init. */
 EOS_RESULT_VALUE(EOS_PlayerDataStorage_EncryptionKeyNotSet, 6011)
 /** User data callback returned error (EOS_PlayerDataStorage_EWriteResult::EOS_WR_FailRequest or EOS_PlayerDataStorage_EReadResult::EOS_RR_FailRequest) */
 EOS_RESULT_VALUE(EOS_PlayerDataStorage_UserErrorFromDataCallback, 6012)
@@ -291,11 +306,13 @@ EOS_RESULT_VALUE(EOS_Connect_LinkAccountFailed, 7005)
 EOS_RESULT_VALUE(EOS_Connect_ExternalServiceUnavailable, 7006)
 /** EOS Auth External Service configuration failure with Dev Portal */
 EOS_RESULT_VALUE(EOS_Connect_ExternalServiceConfigurationFailure, 7007)
-/** EOS Auth Account link failure. Tried to link Nintendo Network Service Account without first linking Nintendo Account */
-EOS_RESULT_VALUE(EOS_Connect_LinkAccountFailedMissingNintendoIdAccount, 7008)
+/** EOS Auth Account link failure. Tried to link Nintendo Network Service Account without first linking Nintendo Account. DEPRECATED: The requirement has been removed and this error is no longer used. */
+EOS_RESULT_VALUE(EOS_Connect_LinkAccountFailedMissingNintendoIdAccount_DEPRECATED, 7008)
 
 /** The social overlay page failed to load */
 EOS_RESULT_VALUE(EOS_UI_SocialOverlayLoadError, 8000)
+/** Virtual Memory Functions are an inconsistent mix of functions and nullptrs */
+EOS_RESULT_VALUE(EOS_UI_InconsistentVirtualMemoryFunctions, 8001)
 
 /** Client has no permissions to modify this lobby */
 EOS_RESULT_VALUE(EOS_Lobby_NotOwner, 9000)
@@ -305,11 +322,11 @@ EOS_RESULT_VALUE(EOS_Lobby_InvalidLock, 9001)
 EOS_RESULT_VALUE(EOS_Lobby_LobbyAlreadyExists, 9002)
 /** Lobby is already in progress */
 EOS_RESULT_VALUE(EOS_Lobby_SessionInProgress, 9003)
-/** Too many players to register with this session */
+/** Too many players to register with this lobby */
 EOS_RESULT_VALUE(EOS_Lobby_TooManyPlayers, 9004)
-/** Client has no permissions to access this session */
+/** Client has no permissions to access this lobby */
 EOS_RESULT_VALUE(EOS_Lobby_NoPermission, 9005)
-/** Invalid session reference */
+/** Invalid lobby session reference */
 EOS_RESULT_VALUE(EOS_Lobby_InvalidSession, 9006)
 /** Sandbox ID associated with auth didn't match */
 EOS_RESULT_VALUE(EOS_Lobby_SandboxNotAllowed, 9007)
@@ -317,7 +334,7 @@ EOS_RESULT_VALUE(EOS_Lobby_SandboxNotAllowed, 9007)
 EOS_RESULT_VALUE(EOS_Lobby_InviteFailed, 9008)
 /** Invite was not found with the service */
 EOS_RESULT_VALUE(EOS_Lobby_InviteNotFound, 9009)
-/** This client may not modify the session */
+/** This client may not modify the lobby */
 EOS_RESULT_VALUE(EOS_Lobby_UpsertNotAllowed, 9010)
 /** Backend nodes unavailable to process request */
 EOS_RESULT_VALUE(EOS_Lobby_AggregationFailed, 9011)
@@ -335,6 +352,10 @@ EOS_RESULT_VALUE(EOS_Lobby_NotAllowed, 9016)
 EOS_RESULT_VALUE(EOS_Lobby_MemberUpdateOnly, 9017)
 /** Presence lobby already exists for the client */
 EOS_RESULT_VALUE(EOS_Lobby_PresenceLobbyExists, 9018)
+/** Operation requires lobby with voice enabled */
+EOS_RESULT_VALUE(EOS_Lobby_VoiceNotEnabled, 9019)
+/** The client platform does not match the allowed platform list for the lobby. */
+EOS_RESULT_VALUE(EOS_Lobby_PlatformNotAllowed, 9020)
 
 /** User callback that receives data from storage returned error. */
 EOS_RESULT_VALUE(EOS_TitleStorage_UserErrorFromDataCallback, 10000)
@@ -344,6 +365,139 @@ EOS_RESULT_VALUE(EOS_TitleStorage_EncryptionKeyNotSet, 10001)
 EOS_RESULT_VALUE(EOS_TitleStorage_FileCorrupted, 10002)
 /** Downloaded file's format is newer than client SDK version. */
 EOS_RESULT_VALUE(EOS_TitleStorage_FileHeaderHasNewerVersion, 10003)
+
+/** ModSdk process is already running. This error comes from the EOSSDK. */
+EOS_RESULT_VALUE(EOS_Mods_ModSdkProcessIsAlreadyRunning, 11000)
+/** ModSdk command is empty. Either the ModSdk configuration file is missing or the manifest location is empty. */
+EOS_RESULT_VALUE(EOS_Mods_ModSdkCommandIsEmpty, 11001)
+/** Creation of the ModSdk process failed. This error comes from the SDK. */
+EOS_RESULT_VALUE(EOS_Mods_ModSdkProcessCreationFailed, 11002)
+/** A critical error occurred in the external ModSdk process that we were unable to resolve. */
+EOS_RESULT_VALUE(EOS_Mods_CriticalError, 11003)
+/** A internal error occurred in the external ModSdk process that we were unable to resolve. */
+EOS_RESULT_VALUE(EOS_Mods_ToolInternalError, 11004)
+/** A IPC failure occurred in the external ModSdk process. */
+EOS_RESULT_VALUE(EOS_Mods_IPCFailure, 11005)
+/** A invalid IPC response received in the external ModSdk process. */
+EOS_RESULT_VALUE(EOS_Mods_InvalidIPCResponse, 11006)
+/** A URI Launch failure occurred in the external ModSdk process. */
+EOS_RESULT_VALUE(EOS_Mods_URILaunchFailure, 11007)
+/** Attempting to perform an action with a mod that is not installed. This error comes from the external ModSdk process. */
+EOS_RESULT_VALUE(EOS_Mods_ModIsNotInstalled, 11008)
+/** Attempting to perform an action on a game that the user doesn't own. This error comes from the external ModSdk process. */
+EOS_RESULT_VALUE(EOS_Mods_UserDoesNotOwnTheGame, 11009)
+/** Invalid result of the request to get the offer for the mod. This error comes from the external ModSdk process. */
+EOS_RESULT_VALUE(EOS_Mods_OfferRequestByIdInvalidResult, 11010)
+/** Could not find the offer for the mod. This error comes from the external ModSdk process. */
+EOS_RESULT_VALUE(EOS_Mods_CouldNotFindOffer, 11011)
+/** Request to get the offer for the mod failed. This error comes from the external ModSdk process. */
+EOS_RESULT_VALUE(EOS_Mods_OfferRequestByIdFailure, 11012)
+/** Request to purchase the mod failed. This error comes from the external ModSdk process. */
+EOS_RESULT_VALUE(EOS_Mods_PurchaseFailure, 11013)
+/** Attempting to perform an action on a game that is not installed or is partially installed. This error comes from the external ModSdk process. */
+EOS_RESULT_VALUE(EOS_Mods_InvalidGameInstallInfo, 11014)
+/** Failed to get manifest location. Either the ModSdk configuration file is missing or the manifest location is empty */
+EOS_RESULT_VALUE(EOS_Mods_CannotGetManifestLocation, 11015)
+/** Attempting to perform an action with a mod that does not support the current operating system. */
+EOS_RESULT_VALUE(EOS_Mods_UnsupportedOS, 11016)
+
+/** The anti-cheat client protection is not available. Check that the game was started using the anti-cheat bootstrapper. */
+EOS_RESULT_VALUE(EOS_AntiCheat_ClientProtectionNotAvailable, 12000)
+/** The current anti-cheat mode is incorrect for using this API */
+EOS_RESULT_VALUE(EOS_AntiCheat_InvalidMode, 12001)
+/** The ProductId provided to the anti-cheat client helper executable does not match what was used to initialize the EOS SDK */
+EOS_RESULT_VALUE(EOS_AntiCheat_ClientProductIdMismatch, 12002)
+/** The SandboxId provided to the anti-cheat client helper executable does not match what was used to initialize the EOS SDK */
+EOS_RESULT_VALUE(EOS_AntiCheat_ClientSandboxIdMismatch, 12003)
+/** (ProtectMessage/UnprotectMessage) No session key is available, but it is required to complete this operation */
+EOS_RESULT_VALUE(EOS_AntiCheat_ProtectMessageSessionKeyRequired, 12004)
+/** (ProtectMessage/UnprotectMessage) Message integrity is invalid */
+EOS_RESULT_VALUE(EOS_AntiCheat_ProtectMessageValidationFailed, 12005)
+/** (ProtectMessage/UnprotectMessage) Initialization failed */
+EOS_RESULT_VALUE(EOS_AntiCheat_ProtectMessageInitializationFailed, 12006)
+/** (RegisterPeer) Peer is already registered */
+EOS_RESULT_VALUE(EOS_AntiCheat_PeerAlreadyRegistered, 12007)
+/** (UnregisterPeer) Peer does not exist */
+EOS_RESULT_VALUE(EOS_AntiCheat_PeerNotFound, 12008)
+/** (ReceiveMessageFromPeer) Invalid call: Peer is not protected */
+EOS_RESULT_VALUE(EOS_AntiCheat_PeerNotProtected, 12009)
+/** The DeploymentId provided to the anti-cheat client helper executable does not match what was used to initialize the EOS SDK */
+EOS_RESULT_VALUE(EOS_AntiCheat_ClientDeploymentIdMismatch, 12010)
+/** EOS Connect DeviceID auth method is not supported for anti-cheat */
+EOS_RESULT_VALUE(EOS_AntiCheat_DeviceIdAuthIsNotSupported, 12011)
+
+/** EOS RTC room cannot accept more participants */
+EOS_RESULT_VALUE(EOS_RTC_TooManyParticipants, 13000)
+/** EOS RTC room already exists*/
+EOS_RESULT_VALUE(EOS_RTC_RoomAlreadyExists, 13001)
+/** The user kicked out from the room */
+EOS_RESULT_VALUE(EOS_RTC_UserKicked, 13002)
+/** The user is banned */
+EOS_RESULT_VALUE(EOS_RTC_UserBanned, 13003)
+/** EOS RTC room was left successfully */
+EOS_RESULT_VALUE(EOS_RTC_RoomWasLeft, 13004)
+/** Connection dropped due to long timeout */
+EOS_RESULT_VALUE(EOS_RTC_ReconnectionTimegateExpired, 13005)
+/** EOS RTC room was left due to platform release */
+EOS_RESULT_VALUE(EOS_RTC_ShutdownInvoked, 13006)
+/** EOS RTC operation failed because the user is in the local user's block list */
+EOS_RESULT_VALUE(EOS_RTC_UserIsInBlocklist, 13007)
+
+/** The number of available Snapshot IDs have all been exhausted. */
+EOS_RESULT_VALUE(EOS_ProgressionSnapshot_SnapshotIdUnavailable, 14000)
+
+/** The KWS user does not have a parental email associated with the account.  The parent account was unlinked or deleted */
+EOS_RESULT_VALUE(EOS_KWS_ParentEmailMissing, 15000)
+/** The KWS user is no longer a minor and trying to update the parent email */
+EOS_RESULT_VALUE(EOS_KWS_UserGraduated, 15001)
+
+/** EOS Android VM not stored */
+EOS_RESULT_VALUE(EOS_Android_JavaVMNotStored, 17000)
+/** EOS Android if Reserved is set it must reference stored VM */
+EOS_RESULT_VALUE(EOS_Android_ReservedMustReferenceLocalVM, 17001)
+/** EOS Android Reserved must not be provided */
+EOS_RESULT_VALUE(EOS_Android_ReservedMustBeNull, 17002)
+
+/** Patch required before the user can use the privilege */
+EOS_RESULT_VALUE(EOS_Permission_RequiredPatchAvailable, 18000)
+/** System update required before the user can use the privilege */
+EOS_RESULT_VALUE(EOS_Permission_RequiredSystemUpdate, 18001)
+/** Parental control failure usually */
+EOS_RESULT_VALUE(EOS_Permission_AgeRestrictionFailure, 18002)
+/** Premium Account Subscription required but not available */
+EOS_RESULT_VALUE(EOS_Permission_AccountTypeFailure, 18003)
+/** User restricted from chat */
+EOS_RESULT_VALUE(EOS_Permission_ChatRestriction, 18004)
+/** User restricted from User Generated Content */
+EOS_RESULT_VALUE(EOS_Permission_UGCRestriction, 18005)
+/** Online play is restricted */
+EOS_RESULT_VALUE(EOS_Permission_OnlinePlayRestricted, 18006)
+
+/** The application was not launched through the Bootstrapper. Desktop crossplay functionality is unavailable. */
+EOS_RESULT_VALUE(EOS_DesktopCrossplay_ApplicationNotBootstrapped, 19000)
+/** The redistributable service is not installed. */
+EOS_RESULT_VALUE(EOS_DesktopCrossplay_ServiceNotInstalled, 19001)
+/** The desktop crossplay service failed to start. */
+EOS_RESULT_VALUE(EOS_DesktopCrossplay_ServiceStartFailed, 19002)
+/** The desktop crossplay service is no longer running for an unknown reason. */
+EOS_RESULT_VALUE(EOS_DesktopCrossplay_ServiceNotRunning, 19003)
+
+/** When sending the custom invite failed. */
+EOS_RESULT_VALUE(EOS_CustomInvites_InviteFailed, 20000)
+
+/** The best display name could not be safely determined. */
+EOS_RESULT_VALUE(EOS_UserInfo_BestDisplayNameIndeterminate, 22000)
+
+/** OnNetworkRequested_DEPRECATED callback not set when initializing platform */
+EOS_RESULT_VALUE(EOS_ConsoleInit_OnNetworkRequestedDeprecatedCallbackNotSet, 23000)
+/** CacheStorageSizeKB must be a multiple of 16 **/
+EOS_RESULT_VALUE(EOS_ConsoleInit_CacheStorage_SizeKBNotMultipleOf16, 23001)
+/** CacheStorageSizeKB is less than the minimum allowed **/
+EOS_RESULT_VALUE(EOS_ConsoleInit_CacheStorage_SizeKBBelowMinimumSize, 23002)
+/** CacheStorageSizeKB is greater than the maximum allowed (4000 MB) **/
+EOS_RESULT_VALUE(EOS_ConsoleInit_CacheStorage_SizeKBExceedsMaximumSize, 23003)
+/** CacheStorageIndex is out of its allowed range **/
+EOS_RESULT_VALUE(EOS_ConsoleInit_CacheStorage_IndexOutOfRangeRange, 23004)
 
 /** An unexpected error that we cannot identify has occurred. */
 EOS_RESULT_VALUE_LAST(EOS_UnexpectedError, 0x7FFFFFFF)

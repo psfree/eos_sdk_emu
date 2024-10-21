@@ -11,10 +11,6 @@
 #define EOS_RESULT_VALUE(Name, Value) Name = Value,
 #define EOS_RESULT_VALUE_LAST(Name, Value) Name = Value
 
-EOS_ENUM_START(EOS_EResult)
-#include "eos_result.h"
-EOS_ENUM_END(EOS_EResult);
-
 #undef EOS_RESULT_VALUE
 #undef EOS_RESULT_VALUE_LAST
 
@@ -136,9 +132,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ProductUserId_ToString(EOS_ProductUserId Accou
  */
 EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_ProductUserId_FromString(const char* AccountIdString);
 
-/** A character buffer of this size is large enough to fit a successful output of EOS_ProductUserId_ToString. This length does not include the null-terminator. */
-#define EOS_PRODUCTUSERID_MAX_LENGTH 128
-
 /** Handle to an existing registered notification (0 is an invalid handle) */
 EXTERN_C typedef uint64_t EOS_NotificationId;
 
@@ -179,119 +172,5 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ContinuanceToken_ToString(EOS_ContinuanceToken
 
 /** The maximum MaxCount used for a EOS_PageQuery. */
 #define EOS_PAGEQUERY_MAXCOUNT_MAXIMUM 100
-
-/**
- * A page query is part of query options. It is used to allow pagination of query results.
- */
-EOS_STRUCT(EOS_PageQuery001, (
-	/** API Version: Set this to EOS_PAGEQUERY_API_LATEST. */
-	int32_t ApiVersion;
-	/** The index into the ordered query results to start the page at. */
-	int32_t StartIndex;
-	/** The maximum number of results to have in the page. */
-	int32_t MaxCount;
-));
-
-/**
- * A page result is part of query callback info. It is used to provide pagination details of query results.
- */
-EOS_STRUCT(EOS_PageResult001, (
-	/** The index into the ordered query results to start the page at. */
-	int32_t StartIndex;
-	/** The number of results in the current page. */
-	int32_t Count;
-	/** The number of results associated with they original query options. */
-	int32_t TotalCount;
-));
-
-/**
- * All possible states of a local user
- *
- * @see EOS_Auth_AddNotifyLoginStatusChanged
- * @see EOS_Auth_GetLoginStatus
- * @see EOS_Auth_Login
- * @see EOS_Connect_AddNotifyLoginStatusChanged
- * @see EOS_Connect_GetLoginStatus
- * @see EOS_Connect_Login
- */
-EOS_ENUM(EOS_ELoginStatus,
-	/** Player has not logged in or chosen a local profile */
-	EOS_LS_NotLoggedIn = 0,
-	/** Player is using a local profile but is not logged in */
-	EOS_LS_UsingLocalProfile = 1,
-	/** Player has been validated by the platform specific authentication service */
-	EOS_LS_LoggedIn = 2
-);
-
-/** Supported types of data that can be stored with inside an attribute (used by sessions/lobbies/etc) */
-EOS_ENUM(EOS_EAttributeType,
-	/** Boolean value (true/false) */
-	EOS_AT_BOOLEAN = 0,
-	/** 64 bit integers */
-	EOS_AT_INT64 = 1,
-	/** Double/floating point precision */
-	EOS_AT_DOUBLE = 2,
-	/** UTF8 Strings */
-	EOS_AT_STRING = 3
-);
-
-typedef EOS_EAttributeType EOS_ESessionAttributeType;
-typedef EOS_EAttributeType EOS_ELobbyAttributeType;
-
-/** All comparison operators associated with parameters in a search query */
-EOS_ENUM(EOS_EComparisonOp,
-	/** Value must equal the one stored on the lobby/session */
-	EOS_CO_EQUAL = 0,
-	/** Value must not equal the one stored on the lobby/session */
-	EOS_CO_NOTEQUAL = 1,
-	/** Value must be strictly greater than the one stored on the lobby/session */
-	EOS_CO_GREATERTHAN = 2,
-	/** Value must be greater than or equal to the one stored on the lobby/session */
-	EOS_CO_GREATERTHANOREQUAL = 3,
-	/** Value must be strictly less than the one stored on the lobby/session */
-	EOS_CO_LESSTHAN = 4,
-	/** Value must be less than or equal to the one stored on the lobby/session */
-	EOS_CO_LESSTHANOREQUAL = 5,
-	/** Prefer values nearest the one specified ie. abs(SearchValue-SessionValue) closest to 0 */
-	EOS_CO_DISTANCE = 6,
-	/** Value stored on the lobby/session may be any from a specified list */
-	EOS_CO_ANYOF = 7,
-	/** Value stored on the lobby/session may NOT be any from a specified list */
-	EOS_CO_NOTANYOF = 8,
-	/** This one value is a part of a collection */
-	EOS_CO_ONEOF = 9,
-	/** This one value is NOT part of a collection */
-	EOS_CO_NOTONEOF = 10
-);
-
-typedef EOS_EComparisonOp EOS_EOnlineComparisonOp;
-
-/**
- * All supported external account providers
- *
- * @see EOS_Connect_QueryExternalAccountMappings
- */
-EOS_ENUM(EOS_EExternalAccountType,
-	/** External account is associated with Epic Games */
-	EOS_EAT_EPIC = 0,
-	/** External account is associated with Steam */
-	EOS_EAT_STEAM = 1,
-	/** External account is associated with Playstation */
-	EOS_EAT_PSN = 2,
-	/** External account is associated with Xbox Live */
-	EOS_EAT_XBL = 3,
-	/** External account is associated with Discord */
-	EOS_EAT_DISCORD = 4,
-	/** External account is associated with GOG */
-	EOS_EAT_GOG = 5,
-	/** External account is associated with Nintendo */
-	EOS_EAT_NINTENDO = 6,
-	/** External account is associated with Uplay */
-	EOS_EAT_UPLAY = 7,
-	/** External account is associated with an OpenID Provider */
-	EOS_EAT_OPENID = 8,
-	/** External account is associated with Apple */
-	EOS_EAT_APPLE = 9
-);
 
 #pragma pack(pop)

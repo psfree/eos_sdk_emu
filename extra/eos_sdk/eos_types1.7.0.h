@@ -5,15 +5,6 @@
 
 EXTERN_C typedef struct EOS_PlatformHandle* EOS_HPlatform;
 
-/** Client credentials. */
-EOS_STRUCT(EOS_Platform_ClientCredentials, (
-	/** Client id of the service permissions entry. Set to NULL if no service permissions are used. */
-	const char* ClientId;
-	/** Client secret for accessing the set of permissions. Set to NULL if no service permissions are used. */
-	const char* ClientSecret;
-));
-
-
 #define EOS_COUNTRYCODE_MAX_LENGTH 4
 #define EOS_COUNTRYCODE_MAX_BUFFER_LEN (EOS_COUNTRYCODE_MAX_LENGTH + 1)
 #define EOS_LOCALECODE_MAX_LENGTH 9
