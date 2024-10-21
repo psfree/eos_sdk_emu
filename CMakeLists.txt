@@ -101,7 +101,7 @@ else()
 
 endif()
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -113,7 +113,7 @@ set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Debug or Release")
 
 option(DISABLE_LOG "Disable all logging. Will reduce emu size and will speed it up (a bit)" OFF)
 
-option(USE_ZSTD_COMPRESS "Use zstd to compress network messages" ON)
+option(USE_ZSTD_COMPRESS "Use zstd to compress network messages" OFF)
 
 set(Protobuf_USE_STATIC_LIBS ON)
 include(FindProtobuf)
