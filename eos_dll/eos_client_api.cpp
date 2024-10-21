@@ -150,6 +150,12 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
 
     switch (Options->ApiVersion)
     {
+        case EOS_INITIALIZE_API_004:
+        {
+            auto p = reinterpret_cast<const EOS_InitializeOptions004*>(Options);
+            APP_LOG(Log::LogLevel::DEBUG, "OverrideThreadAffinity = %p", p->OverrideThreadAffinity);
+        }
+
         case EOS_INITIALIZE_API_003:
         {
             auto p = reinterpret_cast<const EOS_InitializeOptions003*>(Options);
@@ -444,6 +450,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ByteArray_ToString(const uint8_t* ByteArray, c
 {
     TRACE_FUNC();
     APP_LOG(Log::LogLevel::INFO, "TODO");
+
+    memcpy(OutBuffer, ByteArray, Length);
 
     return EOS_EResult::EOS_Success;
 }
