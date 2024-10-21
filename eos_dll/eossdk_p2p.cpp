@@ -289,6 +289,99 @@ void EOSSDK_P2P::RemoveNotifyPeerConnectionRequest(EOS_NotificationId Notificati
 }
 
 /**
+ * Listen for when a connection is established. This is fired when we first connect to a peer, when we reconnect to a peer after a connection interruption,
+ * and when our underlying network connection type changes (for example, from a direct connection to relay, or vice versa). Network Connection Type changes
+ * will always be broadcast with a EOS_CET_Reconnection connection type, even if the connection was not interrupted.
+ *
+ * @param Options Information about who would like notifications about established connections, and for which socket
+ * @param ClientData This value is returned to the caller when ConnectionEstablishedHandler is invoked
+ * @param ConnectionEstablishedHandler The callback to be fired when a connection has been established
+ * @return A valid notification ID if successfully bound, or EOS_INVALID_NOTIFICATIONID otherwise
+ *
+ * @see EOS_P2P_AddNotifyPeerConnectionInterrupted
+ * @see EOS_P2P_AddNotifyPeerConnectionClosed
+ * @see EOS_P2P_RemoveNotifyPeerConnectionEstablished
+ */
+EOS_NotificationId EOSSDK_P2P::AddNotifyPeerConnectionEstablished(const EOS_P2P_AddNotifyPeerConnectionEstablishedOptions* Options, void* ClientData, EOS_P2P_OnPeerConnectionEstablishedCallback ConnectionEstablishedHandler) {
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+
+    if (ConnectionEstablishedHandler == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
+    pFrameResult_t res(new FrameResult);
+
+    EOS_P2P_OnPeerConnectionEstablishedInfo& oicri = res->CreateCallback<EOS_P2P_OnPeerConnectionEstablishedInfo>((CallbackFunc)ConnectionEstablishedHandler);
+    oicri.ClientData = ClientData;
+    oicri.LocalUserId = Settings::Inst().productuserid;
+    oicri.RemoteUserId = GetProductUserId(sdk::NULL_USER_ID);
+    oicri.SocketId = new EOS_P2P_SocketId;
+
+    return GetCB_Manager().add_notification(this, res);
+}
+
+
+/**
+ * Stop notifications for connections being established on a previously bound handler.
+ *
+ * @param NotificationId The previously bound notification ID
+ *
+ * @see EOS_P2P_AddNotifyPeerConnectionEstablished
+ */
+void EOSSDK_P2P::RemoveNotifyPeerConnectionEstablished(EOS_NotificationId NotificationId) {
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+    GetCB_Manager().remove_notification(this, NotificationId);
+}
+
+
+/**
+ * Listen for when a previously opened connection is interrupted. The connection will automatically attempt to reestablish, but it may not be successful.
+ *
+ * If a connection reconnects, it will trigger the P2P PeerConnectionEstablished notification with the EOS_CET_Reconnection connection type.
+ * If a connection fails to reconnect, it will trigger the P2P PeerConnectionClosed notification.
+ *
+ * @param Options Information about who would like notifications about interrupted connections, and for which socket
+ * @param ClientData This value is returned to the caller when ConnectionInterruptedHandler is invoked
+ * @param ConnectionInterruptedHandler The callback to be fired when an open connection has been interrupted
+ * @return A valid notification ID if successfully bound, or EOS_INVALID_NOTIFICATIONID otherwise
+ *
+ * @see EOS_P2P_AddNotifyPeerConnectionEstablished
+ * @see EOS_P2P_AddNotifyPeerConnectionClosed
+ * @see EOS_P2P_RemoveNotifyPeerConnectionInterrupted
+ */
+EOS_NotificationId EOSSDK_P2P::AddNotifyPeerConnectionInterrupted(const EOS_P2P_AddNotifyPeerConnectionInterruptedOptions* Options, void* ClientData, EOS_P2P_OnPeerConnectionInterruptedCallback ConnectionInterruptedHandler){
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+    if (ConnectionInterruptedHandler == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
+    pFrameResult_t res(new FrameResult);
+
+    EOS_P2P_OnPeerConnectionInterruptedInfo& oicri = res->CreateCallback<EOS_P2P_OnPeerConnectionInterruptedInfo>((CallbackFunc)ConnectionInterruptedHandler);
+    oicri.ClientData = ClientData;
+    oicri.LocalUserId = Settings::Inst().productuserid;
+    oicri.RemoteUserId = GetProductUserId(sdk::NULL_USER_ID);
+    oicri.SocketId = new EOS_P2P_SocketId;
+
+    return GetCB_Manager().add_notification(this, res);
+}
+
+/**
+ * Stop notifications for connections being interrupted on a previously bound handler
+ *
+ * @param NotificationId The previously bound notification ID
+ */
+void EOSSDK_P2P::RemoveNotifyPeerConnectionInterrupted(EOS_NotificationId NotificationId)
+{
+    TRACE_FUNC();
+    GLOBAL_LOCK();
+
+    GetCB_Manager().remove_notification(this, NotificationId);
+}
+
+
+/**
  * Listen for when a previously opened connection is closed
  *
  * @param Options Information about who would like notifications about closed connections, and for which socket

@@ -66,6 +66,42 @@ EOS_DECLARE_FUNC(void) EOS_P2P_RemoveNotifyPeerConnectionRequest(EOS_HP2P Handle
     pInst->RemoveNotifyPeerConnectionRequest(NotificationId);
 }
 
+EOS_DECLARE_FUNC(EOS_NotificationId) EOS_P2P_AddNotifyPeerConnectionEstablished(EOS_HP2P Handle, const EOS_P2P_AddNotifyPeerConnectionEstablishedOptions* Options, void* ClientData, EOS_P2P_OnPeerConnectionEstablishedCallback ConnectionEstablishedHandler)
+{
+    if (Handle == nullptr)
+        return EOS_INVALID_NOTIFICATIONID;
+
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
+    return pInst->AddNotifyPeerConnectionEstablished(Options, ClientData, ConnectionEstablishedHandler);
+}
+
+EOS_DECLARE_FUNC(void) EOS_P2P_RemoveNotifyPeerConnectionEstablished(EOS_HP2P Handle, EOS_NotificationId NotificationId)
+{
+    if (Handle == nullptr)
+        return;
+
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
+    pInst->RemoveNotifyPeerConnectionEstablished(NotificationId);
+}
+
+EOS_DECLARE_FUNC(void) EOS_P2P_AddNotifyPeerConnectionInterrupted(EOS_HP2P Handle, const EOS_P2P_AddNotifyPeerConnectionInterruptedOptions* Options, void* ClientData, EOS_P2P_OnPeerConnectionInterruptedCallback ConnectionEstablishedHandler)
+{
+    if (Handle == nullptr)
+        return;
+
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
+    pInst->AddNotifyPeerConnectionInterrupted(Options, ClientData, ConnectionEstablishedHandler);
+}
+
+EOS_DECLARE_FUNC(void) EOS_P2P_RemoveNotifyPeerConnectionInterrupted(EOS_HP2P Handle, EOS_NotificationId NotificationId)
+{
+    if (Handle == nullptr)
+        return;
+
+    auto pInst = reinterpret_cast<EOSSDK_P2P*>(Handle);
+    pInst->RemoveNotifyPeerConnectionInterrupted(NotificationId);
+}
+
 EOS_DECLARE_FUNC(EOS_NotificationId) EOS_P2P_AddNotifyPeerConnectionClosed(EOS_HP2P Handle, const EOS_P2P_AddNotifyPeerConnectionClosedOptions* Options, void* ClientData, EOS_P2P_OnRemoteConnectionClosedCallback ConnectionClosedHandler)
 {
     if (Handle == nullptr)

@@ -95,6 +95,10 @@ namespace sdk
         EOS_EResult        ReceivePacket(const EOS_P2P_ReceivePacketOptions* Options, EOS_ProductUserId* OutPeerId, EOS_P2P_SocketId* OutSocketId, uint8_t* OutChannel, void* OutData, uint32_t* OutBytesWritten);
         EOS_NotificationId AddNotifyPeerConnectionRequest(const EOS_P2P_AddNotifyPeerConnectionRequestOptions* Options, void* ClientData, EOS_P2P_OnIncomingConnectionRequestCallback ConnectionRequestHandler);
         void               RemoveNotifyPeerConnectionRequest(EOS_NotificationId NotificationId);
+        EOS_NotificationId               AddNotifyPeerConnectionEstablished(const EOS_P2P_AddNotifyPeerConnectionEstablishedOptions* Options, void* ClientData, EOS_P2P_OnPeerConnectionEstablishedCallback ConnectionEstablishedHandler);
+        void               RemoveNotifyPeerConnectionEstablished(EOS_NotificationId NotificationId);
+        EOS_NotificationId AddNotifyPeerConnectionInterrupted(const EOS_P2P_AddNotifyPeerConnectionInterruptedOptions* Options, void* ClientData, EOS_P2P_OnPeerConnectionInterruptedCallback ConnectionInterruptedHandler);
+        void               RemoveNotifyPeerConnectionInterrupted(EOS_NotificationId NotificationId);
         EOS_NotificationId AddNotifyPeerConnectionClosed(const EOS_P2P_AddNotifyPeerConnectionClosedOptions* Options, void* ClientData, EOS_P2P_OnRemoteConnectionClosedCallback ConnectionClosedHandler);
         void               RemoveNotifyPeerConnectionClosed(EOS_NotificationId NotificationId);
         EOS_EResult        AcceptConnection(const EOS_P2P_AcceptConnectionOptions* Options);
