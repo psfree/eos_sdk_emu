@@ -42,6 +42,7 @@ namespace sdk
         EOSSDK_LobbyModification();
         ~EOSSDK_LobbyModification();
 
+        EOS_EResult SetBucketId(const EOS_LobbyModification_SetBucketIdOptions* Options);
         EOS_EResult SetPermissionLevel(const EOS_LobbyModification_SetPermissionLevelOptions* Options);
         EOS_EResult SetMaxMembers(const EOS_LobbyModification_SetMaxMembersOptions* Options);
         EOS_EResult AddAttribute(const EOS_LobbyModification_AddAttributeOptions* Options);

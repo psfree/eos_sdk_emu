@@ -37,6 +37,28 @@ EOSSDK_LobbyModification::~EOSSDK_LobbyModification()
  * handle by calling EOS_LobbyModification_Release.
  */
 
+
+ /**
+  * Set the bucket ID associated with this lobby.
+  * Values such as region, game mode, etc can be combined here depending on game need.
+  * Setting this is strongly recommended to improve search performance.
+  *
+  * @param Options Options associated with the bucket ID of the lobby
+  *
+  * @return EOS_Success if setting this parameter was successful
+  *         EOS_InvalidParameters if the bucket ID is invalid or null
+  *         EOS_IncompatibleVersion if the API version passed in is incorrect
+  */
+EOS_EResult EOSSDK_LobbyModification::SetBucketId(const EOS_LobbyModification_SetBucketIdOptions* Options) {
+    TRACE_FUNC();
+    std::lock_guard<std::mutex> lk(_local_mutex);
+    if (Options == nullptr)
+        return EOS_EResult::EOS_InvalidParameters;
+    //_infos.set_bucket_id(utils::GetEnumValue(Options->BucketId))
+    //_lobby_modified = true;
+    return EOS_EResult::EOS_Success;
+}
+
  /**
   * Set the permissions associated with this lobby.
   * The permissions range from "public" to "invite only" and are described by EOS_ELobbyPermissionLevel
