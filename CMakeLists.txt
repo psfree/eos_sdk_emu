@@ -195,6 +195,7 @@ target_link_libraries(
   #$<$<BOOL:${WIN32}>:winmm>
   $<$<BOOL:${WIN32}>:shell32>
   $<$<BOOL:${WIN32}>:user32>
+  $<$<BOOL:${WIN32}>:abseil_dll>
 
   # For library .so/.dylib loading
   $<$<BOOL:${UNIX}>:dl>
