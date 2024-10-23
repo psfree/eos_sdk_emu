@@ -3,38 +3,6 @@
 
 #pragma pack(push, 8)
 
-/** Handle to the lobby interface */
-EXTERN_C typedef struct EOS_LobbyHandle* EOS_HLobby;
-/** Handle to a lobby modification object */
-EXTERN_C typedef struct EOS_LobbyModificationHandle* EOS_HLobbyModification;
-/** Handle to a single lobby */
-EXTERN_C typedef struct EOS_LobbyDetailsHandle* EOS_HLobbyDetails;
-/** Handle to the calls responsible for creating a search object */
-EXTERN_C typedef struct EOS_LobbySearchHandle* EOS_HLobbySearch;
-
-EOS_DECLARE_FUNC(void) EOS_LobbyModification_Release(EOS_HLobbyModification LobbyModificationHandle);
-
-/**
- * Release the memory associated with a single lobby. This must be called on data retrieved from EOS_LobbySearch_CopySearchResultByIndex.
- *
- * @param LobbyHandle - The lobby handle to release
- *
- * @see EOS_LobbySearch_CopySearchResultByIndex
- */
-EOS_DECLARE_FUNC(void) EOS_LobbyDetails_Release(EOS_HLobbyDetails LobbyHandle);
-
-/**
- * Release the memory associated with a lobby search. This must be called on data retrieved from EOS_Lobby_CreateLobbySearch.
- *
- * @param LobbySearchHandle - The lobby search handle to release
- *
- * @see EOS_Lobby_CreateLobbySearch
- */
-EOS_DECLARE_FUNC(void) EOS_LobbySearch_Release(EOS_HLobbySearch LobbySearchHandle);
-
-/** All lobbies are referenced by a unique lobby id */
-EXTERN_C typedef const char* EOS_LobbyId;
-
 #define EOS_LOBBYDETAILS_INFO_API_001 1
 
 EOS_STRUCT(EOS_LobbyDetails_Info001, (
