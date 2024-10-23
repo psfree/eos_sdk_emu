@@ -2,10 +2,9 @@
 #pragma once
 
 #include "eos_common.h"
-#include "eos_connect_types.h"
 
-enum { k_iAuthCallbackBase = 0 };
-// next free callback_id: k_iAuthCallbackBase + 6
+enum { k_iAuthCallbackBase = 1000 };
+// next free callback_id: k_iAuthCallbackBase + 8
 
 #define EOS_Auth_Token                              EOS_Auth_Token002
 #define EOS_Auth_Credentials                        EOS_Auth_Credentials003
@@ -18,10 +17,15 @@ enum { k_iAuthCallbackBase = 0 };
 #define EOS_Auth_CopyUserAuthTokenOptions           EOS_Auth_CopyUserAuthTokenOptions001
 #define EOS_Auth_AddNotifyLoginStatusChangedOptions EOS_Auth_AddNotifyLoginStatusChangedOptions001
 #define EOS_Auth_DeletePersistentAuthOptions        EOS_Auth_DeletePersistentAuthOptions002
+#define EOS_Auth_CopyIdTokenOptions                 EOS_Auth_CopyIdTokenOptions001
+#define EOS_Auth_IdToken                            EOS_Auth_IdToken001
+#define EOS_Auth_QueryIdTokenOptions                EOS_Auth_QueryIdTokenOptions001
+#define EOS_Auth_VerifyIdTokenOptions               EOS_Auth_VerifyIdTokenOptions001
+
 #define EOS_Auth_CreateDeviceAuthOptions            EOS_Auth_CreateDeviceAuthOptions001
 #define EOS_Auth_DeleteDeviceAuthOptions            EOS_Auth_DeleteDeviceAuthOptions001
 
-#include <eos_auth_types1.8.0.h>
+#include <eos_auth_types1.14.2.h>
 #include <eos_auth_types1.6.0.h>
 #include <eos_auth_types1.5.0.h>
 #include <eos_auth_types1.3.1.h>
@@ -37,6 +41,10 @@ enum { k_iAuthCallbackBase = 0 };
 #define EOS_AUTH_COPYUSERAUTHTOKEN_API_LATEST            EOS_AUTH_COPYUSERAUTHTOKEN_API_001
 #define EOS_AUTH_ADDNOTIFYLOGINSTATUSCHANGED_API_LATEST  EOS_AUTH_ADDNOTIFYLOGINSTATUSCHANGED_API_001
 #define EOS_AUTH_DELETEPERSISTENTAUTH_API_LATEST         EOS_AUTH_DELETEPERSISTENTAUTH_API_002
+#define EOS_AUTH_COPYIDTOKEN_API_LATEST                  EOS_AUTH_COPYIDTOKEN_API_001
+#define EOS_AUTH_IDTOKEN_API_LATEST                      EOS_AUTH_IDTOKEN_API_001
+#define EOS_AUTH_QUERYIDTOKEN_API_LATEST                 EOS_AUTH_QUERYIDTOKEN_API_001
+#define EOS_AUTH_VERIFYIDTOKEN_API_LATEST                EOS_AUTH_VERIFYIDTOKEN_API_001
 
 #define EOS_AUTH_CREATEDEVICEAUTH_API_LATEST EOS_AUTH_CREATEDEVICEAUTH_API_001 // Deprecated
 #define EOS_AUTH_DELETEDEVICEAUTH_API_LATEST EOS_AUTH_DELETEDEVICEAUTH_API_001 // Deprecated

@@ -3,8 +3,8 @@
 
 #include "eos_common.h"
 
-enum { k_iConnectCallbackBase = 2000 };
-// next free callback_id: k_iConnectCallbackBase + 11
+enum { k_iConnectCallbackBase = 3000 };
+// next free callback_id: enum { k_iCallback = k_iConnectCallbackBase + 12 };
 
 #define EOS_Connect_Credentials                                        EOS_Connect_Credentials001
 #define EOS_Connect_UserLoginInfo                                      EOS_Connect_UserLoginInfo001
@@ -29,8 +29,11 @@ enum { k_iConnectCallbackBase = 2000 };
 #define EOS_Connect_CopyProductUserExternalAccountByAccountIdOptions   EOS_Connect_CopyProductUserExternalAccountByAccountIdOptions001
 #define EOS_Connect_CopyProductUserInfoOptions                         EOS_Connect_CopyProductUserInfoOptions001
 #define EOS_Connect_ExternalAccountInfo                                EOS_Connect_ExternalAccountInfo001
+#define EOS_Connect_IdToken                                            EOS_Connect_IdToken001
+#define EOS_Connect_CopyIdTokenOptions                                 EOS_Connect_CopyIdTokenOptions001
+#define EOS_Connect_VerifyIdTokenOptions                               EOS_Connect_VerifyIdTokenOptions001
 
-#include "eos_connect_types1.8.0.h"
+#include "eos_connect_types1.14.2.h"
 #include "eos_connect_types1.7.0.h"
 #include "eos_connect_types1.3.1.h"
 
@@ -56,3 +59,6 @@ enum { k_iConnectCallbackBase = 2000 };
 #define EOS_CONNECT_COPYPRODUCTUSEREXTERNALACCOUNTBYACCOUNTID_API_LATEST   EOS_CONNECT_COPYPRODUCTUSEREXTERNALACCOUNTBYACCOUNTID_API_001
 #define EOS_CONNECT_COPYPRODUCTUSERINFO_API_LATEST                         EOS_CONNECT_COPYPRODUCTUSERINFO_API_001
 #define EOS_CONNECT_EXTERNALACCOUNTINFO_API_LATEST                         EOS_CONNECT_EXTERNALACCOUNTINFO_API_001
+#define EOS_CONNECT_IDTOKEN_API_LATEST                                     EOS_CONNECT_IDTOKEN_API_001
+#define EOS_CONNECT_COPYIDTOKEN_API_LATEST                                 EOS_CONNECT_COPYIDTOKEN_API_001
+#define EOS_CONNECT_VERIFYIDTOKEN_API_LATEST                               EOS_CONNECT_VERIFYIDTOKEN_API_001

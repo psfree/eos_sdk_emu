@@ -18,7 +18,7 @@
  * The game client should call this function whenever it joins into a new multiplayer, peer-to-peer or single player game session.
  * Each call to BeginPlayerSession must be matched with a corresponding call to EndPlayerSession.
  *
- * @param Options Structure containing the Epic Online Services Account ID of the player whose session to end.
+ * @param Options Structure containing the account id of the player whose session to end.
  *
  * @return Returns EOS_Success on success, or an error code if the input parameters are invalid or an active session for the player already exists.
  */

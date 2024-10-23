@@ -67,8 +67,22 @@ void EOSSDK_Stats::IngestStat(const EOS_Stats_IngestStatOptions* Options, void* 
     }
     else
     {
-        iscci.TargetUserId = Options->UserId;
-        iscci.UserId = Options->UserId;
+
+        switch (Options->ApiVersion) {
+            case EOS_STATS_INGESTSTAT_API_003:
+            case EOS_STATS_INGESTSTAT_API_002:
+            {
+                iscci.TargetUserId = Options->TargetUserId;
+                iscci.UserId = Options->LocalUserId;
+            }
+            case EOS_STATS_INGESTSTAT_API_001:
+            {
+                const EOS_Stats_IngestStatOptions001* opts = reinterpret_cast<const EOS_Stats_IngestStatOptions001*>(Options);
+                iscci.TargetUserId = opts->UserId;
+                iscci.UserId = opts->UserId;
+            }
+        }
+        
 
         if (Options->StatsCount > EOS_STATS_MAX_INGEST_STATS || Options->Stats == nullptr)
         {

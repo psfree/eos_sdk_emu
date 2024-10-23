@@ -23,6 +23,7 @@
  *
  * @return EOS_Success if the operation completes successfully
  *         EOS_InvalidParameters if any of the options are incorrect
+ *         EOS_InvalidUser if target user ID is missing or incorrect
  */
 EOS_DECLARE_FUNC(void) EOS_Stats_IngestStat(EOS_HStats Handle, const EOS_Stats_IngestStatOptions* Options, void* ClientData, const EOS_Stats_OnIngestStatCompleteCallback CompletionDelegate);
 
@@ -35,6 +36,7 @@ EOS_DECLARE_FUNC(void) EOS_Stats_IngestStat(EOS_HStats Handle, const EOS_Stats_I
  *
  * @return EOS_Success if the operation completes successfully
  *         EOS_InvalidParameters if any of the options are incorrect
+ *         EOS_InvalidUser if target user ID is missing or incorrect
  */
 EOS_DECLARE_FUNC(void) EOS_Stats_QueryStats(EOS_HStats Handle, const EOS_Stats_QueryStatsOptions* Options, void* ClientData, const EOS_Stats_OnQueryStatsCompleteCallback CompletionDelegate);
 
@@ -52,7 +54,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Stats_GetStatsCount(EOS_HStats Handle, const EOS_
 /**
  * Fetches a stat from a given index. Use EOS_Stats_Stat_Release when finished with the data.
  *
- * @param Options Structure containing the Epic Online Services Account ID and index being accessed
+ * @param Options Structure containing the Product User ID and index being accessed
  * @param OutStat The stat data for the given index, if it exists and is valid
  *
  * @see EOS_Stats_Stat_Release
@@ -66,7 +68,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Stats_CopyStatByIndex(EOS_HStats Handle, const
 /**
  * Fetches a stat from cached stats by name. Use EOS_Stats_Stat_Release when finished with the data.
  *
- * @param Options Structure containing the Epic Online Services Account ID and name being accessed
+ * @param Options Structure containing the Product User ID and name being accessed
  * @param OutStat The stat data for the given name, if it exists and is valid
  *
  * @see EOS_Stats_Stat_Release

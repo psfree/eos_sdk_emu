@@ -4,13 +4,13 @@
 
 #include "eos_common.h"
 
-enum { k_iEcomCallbackBase = 3000 };
+enum { k_iEcomCallbackBase = 4000 };
 // next free callback_id: k_iEcomCallbackBase + 6
 
 #define EOS_Ecom_Entitlement                               EOS_Ecom_Entitlement002
 #define EOS_Ecom_ItemOwnership                             EOS_Ecom_ItemOwnership001
 #define EOS_Ecom_CatalogItem                               EOS_Ecom_CatalogItem001
-#define EOS_Ecom_CatalogOffer                              EOS_Ecom_CatalogOffer002
+#define EOS_Ecom_CatalogOffer                              EOS_Ecom_CatalogOffer004
 #define EOS_Ecom_KeyImageInfo                              EOS_Ecom_KeyImageInfo001
 #define EOS_Ecom_CatalogRelease                            EOS_Ecom_CatalogRelease001
 #define EOS_Ecom_CheckoutEntry                             EOS_Ecom_CheckoutEntry001
@@ -43,14 +43,16 @@ enum { k_iEcomCallbackBase = 3000 };
 #define EOS_Ecom_Transaction_GetEntitlementsCountOptions   EOS_Ecom_Transaction_GetEntitlementsCountOptions001
 #define EOS_Ecom_Transaction_CopyEntitlementByIndexOptions EOS_Ecom_Transaction_CopyEntitlementByIndexOptions001
 
-#include "eos_ecom_types1.8.0.h"
+#include "eos_ecom_types1.14.0.h"
+#include "eos_ecom_types1.12.0.h"
+#include "eos_ecom_types1.10.0.h"
 #include "eos_ecom_types1.3.1.h"
 #include "eos_ecom_types1.1.0.h"
 
 #define EOS_ECOM_ENTITLEMENT_API_LATEST                        EOS_ECOM_ENTITLEMENT_API_002
 #define EOS_ECOM_ITEMOWNERSHIP_API_LATEST                      EOS_ECOM_ITEMOWNERSHIP_API_001
 #define EOS_ECOM_CATALOGITEM_API_LATEST                        EOS_ECOM_CATALOGITEM_API_001
-#define EOS_ECOM_CATALOGOFFER_API_LATEST                       EOS_ECOM_CATALOGOFFER_API_002
+#define EOS_ECOM_CATALOGOFFER_API_LATEST                       EOS_ECOM_CATALOGOFFER_API_004
 #define EOS_ECOM_KEYIMAGEINFO_API_LATEST                       EOS_ECOM_KEYIMAGEINFO_API_001
 #define EOS_ECOM_CATALOGRELEASE_API_LATEST                     EOS_ECOM_CATALOGRELEASE_API_001
 #define EOS_ECOM_CHECKOUTENTRY_API_LATEST                      EOS_ECOM_CHECKOUTENTRY_API_001
@@ -66,8 +68,8 @@ enum { k_iEcomCallbackBase = 3000 };
 #define EOS_ECOM_COPYENTITLEMENTBYNAMEANDINDEX_API_LATEST      EOS_ECOM_COPYENTITLEMENTBYNAMEANDINDEX_API_001
 #define EOS_ECOM_COPYENTITLEMENTBYID_API_LATEST                EOS_ECOM_COPYENTITLEMENTBYID_API_002
 #define EOS_ECOM_GETOFFERCOUNT_API_LATEST                      EOS_ECOM_GETOFFERCOUNT_API_001
-#define EOS_ECOM_COPYOFFERBYINDEX_API_LATEST                   EOS_ECOM_COPYOFFERBYINDEX_API_001
-#define EOS_ECOM_COPYOFFERBYID_API_LATEST                      EOS_ECOM_COPYOFFERBYID_API_001
+#define EOS_ECOM_COPYOFFERBYINDEX_API_LATEST                   EOS_ECOM_COPYOFFERBYINDEX_API_002
+#define EOS_ECOM_COPYOFFERBYID_API_LATEST                      EOS_ECOM_COPYOFFERBYID_API_002
 #define EOS_ECOM_GETOFFERITEMCOUNT_API_LATEST                  EOS_ECOM_GETOFFERITEMCOUNT_API_001
 #define EOS_ECOM_COPYOFFERITEMBYINDEX_API_LATEST               EOS_ECOM_COPYOFFERITEMBYINDEX_API_001
 #define EOS_ECOM_COPYITEMBYID_API_LATEST                       EOS_ECOM_COPYITEMBYID_API_001

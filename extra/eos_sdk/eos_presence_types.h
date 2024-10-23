@@ -5,7 +5,7 @@
 #include "eos_common.h"
 #include "eos_ui_types.h"
 
-enum { k_iPresenceCallbackBase = 10000 };
+enum { k_iPresenceCallbackBase = 11000 };
 // next free callback_id: k_iPresenceCallbackBase + 4
 
 #define EOS_Presence_DataRecord                        EOS_Presence_DataRecord001
@@ -25,7 +25,7 @@ enum { k_iPresenceCallbackBase = 10000 };
 #define EOS_PresenceModification_DataRecordId          EOS_PresenceModification_DataRecordId001
 #define EOS_PresenceModification_DeleteDataOptions     EOS_PresenceModification_DeleteDataOptions001
 
-#include <eos_presence_types1.8.0.h>
+#include <eos_presence_types1.14.0.h>
 #include <eos_presence_types1.5.0.h>
 #include <eos_presence_types1.3.1.h>
 

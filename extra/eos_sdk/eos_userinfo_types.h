@@ -3,7 +3,7 @@
 
 #include "eos_common.h"
 
-enum { k_iUserInfoCallbackBase = 15000 };
+enum { k_iUserInfoCallbackBase = 16000 };
 // next free callback_id: k_iUserInfoCallbackBase + 4
 
 #define EOS_UserInfo_QueryUserInfoOptions                     EOS_UserInfo_QueryUserInfoOptions001
@@ -17,7 +17,7 @@ enum { k_iUserInfoCallbackBase = 15000 };
 #define EOS_UserInfo_CopyExternalUserInfoByAccountTypeOptions EOS_UserInfo_CopyExternalUserInfoByAccountTypeOptions001
 #define EOS_UserInfo_CopyExternalUserInfoByAccountIdOptions   EOS_UserInfo_CopyExternalUserInfoByAccountIdOptions001
 
-#include <eos_userinfo_types1.8.0.h>
+#include <eos_userinfo_types1.14.0.h>
 #include <eos_userinfo_types1.3.1.h>
 
 #define EOS_USERINFO_QUERYUSERINFO_API_LATEST                     EOS_USERINFO_QUERYUSERINFO_API_001

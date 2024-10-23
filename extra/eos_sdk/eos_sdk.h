@@ -18,6 +18,16 @@
 #include "eos_achievements_types.h"
 #include "eos_stats_types.h"
 #include "eos_leaderboards_types.h"
+#include "eos_mods_types.h"
+#include "eos_anticheatclient_types.h"
+#include "eos_anticheatserver_types.h"
+#include "eos_reports_types.h"
+#include "eos_sanctions_types.h"
+#include "eos_kws_types.h"
+#include "eos_rtc_types.h"
+#include "eos_rtc_admin_types.h"
+#include "eos_progressionsnapshot_types.h"
+#include "eos_custominvites_types.h"
 
 /**
  * The Platform Instance is used to gain access to all other Epic Online Service interfaces and to drive internal operations through the Tick.
@@ -137,6 +147,26 @@ EOS_DECLARE_FUNC(EOS_HUserInfo) EOS_Platform_GetUserInfoInterface(EOS_HPlatform 
 EOS_DECLARE_FUNC(EOS_HP2P) EOS_Platform_GetP2PInterface(EOS_HPlatform Handle);
 
 /**
+ * Get a handle to the Real Time Communications Interface (RTC).
+ * From the RTC interface you can retrieve the handle to the audio interface (RTCAudio), which is a component of RTC.
+ * @return EOS_HRTC handle
+ *
+ * @see EOS_RTC_GetAudioInterface
+ * @see eos_rtc.h
+ * @see eos_rtc_types.h
+ */
+EOS_DECLARE_FUNC(EOS_HRTC) EOS_Platform_GetRTCInterface(EOS_HPlatform Handle);
+
+/**
+ * Get a handle to the RTC Admin interface
+ * @return EOS_HRTCAdmin handle
+ *
+ * @see eos_rtc_admin.h
+ * @see eos_admin_types.h
+ */
+EOS_DECLARE_FUNC(EOS_HRTCAdmin) EOS_Platform_GetRTCAdminInterface(EOS_HPlatform Handle);
+
+/**
  * Get a handle to the PlayerDataStorage Interface.
  * @return EOS_HPlayerDataStorage handle
  *
@@ -180,6 +210,81 @@ EOS_DECLARE_FUNC(EOS_HStats) EOS_Platform_GetStatsInterface(EOS_HPlatform Handle
  * @see eos_leaderboards_types.h
  */
 EOS_DECLARE_FUNC(EOS_HLeaderboards) EOS_Platform_GetLeaderboardsInterface(EOS_HPlatform Handle);
+
+/**
+ * Get a handle to the Mods Interface.
+ * @return EOS_HMods handle
+ *
+ * @see eos_mods.h
+ * @see eos_mods_types.h
+ */
+EOS_DECLARE_FUNC(EOS_HMods) EOS_Platform_GetModsInterface(EOS_HPlatform Handle);
+
+/**
+ * Get a handle to the Anti-Cheat Client Interface.
+ * @return EOS_HAntiCheatClient handle
+ *
+ * @see eos_anticheatclient.h
+ * @see eos_anticheatclient_types.h
+ */
+EOS_DECLARE_FUNC(EOS_HAntiCheatClient) EOS_Platform_GetAntiCheatClientInterface(EOS_HPlatform Handle);
+
+/**
+ * Get a handle to the Anti-Cheat Server Interface.
+ * @return EOS_HAntiCheatServer handle
+ *
+ * @see eos_anticheatserver.h
+ * @see eos_anticheatserver_types.h
+ */
+EOS_DECLARE_FUNC(EOS_HAntiCheatServer) EOS_Platform_GetAntiCheatServerInterface(EOS_HPlatform Handle);
+
+/**
+ * Get the active country code that the SDK will send to services which require it.
+ * This returns the override value otherwise it will use the country code of the given user.
+ * This is currently used for determining pricing.
+ * Get a handle to the ProgressionSnapshot Interface.
+ * @return EOS_HProgressionSnapshot handle
+ *
+ * @see eos_progressionsnapshot.h
+ * @see eos_progressionsnapshot_types.h
+ */
+EOS_DECLARE_FUNC(EOS_HProgressionSnapshot) EOS_Platform_GetProgressionSnapshotInterface(EOS_HPlatform Handle);
+
+/**
+ * Get a handle to the Reports Interface.
+ * @return EOS_HReports handle
+ *
+ * @see eos_reports.h
+ * @see eos_reports_types.h
+ */
+EOS_DECLARE_FUNC(EOS_HReports) EOS_Platform_GetReportsInterface(EOS_HPlatform Handle);
+
+/**
+ * Get a handle to the Sanctions Interface.
+ * @return EOS_HSanctions handle
+ *
+ * @see eos_sanctions.h
+ * @see eos_sanctions_types.h
+ */
+EOS_DECLARE_FUNC(EOS_HSanctions) EOS_Platform_GetSanctionsInterface(EOS_HPlatform Handle);
+
+/**
+ * Get a handle to the Kids Web Service Interface.
+ * @return EOS_HKWS handle
+ *
+ * @see eos_kws.h
+ * @see eos_kws_types.h
+ */
+EOS_DECLARE_FUNC(EOS_HKWS) EOS_Platform_GetKWSInterface(EOS_HPlatform Handle);
+
+/**
+ * Get a handle to the Custom Invites Interface.
+ * @return EOS_HCustomInvites handle
+ *
+ * @see eos_custominvites.h
+ * @see eos_custominvites_types.h
+ */
+EOS_DECLARE_FUNC(EOS_HCustomInvites) EOS_Platform_GetCustomInvitesInterface(EOS_HPlatform Handle);
 
 /**
  * Get the active country code that the SDK will send to services which require it.

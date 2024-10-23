@@ -633,20 +633,43 @@ void EOSSDK_Achievements::QueryPlayerAchievements(const EOS_Achievements_QueryPl
     pFrameResult_t res(new FrameResult);
     EOS_Achievements_OnQueryPlayerAchievementsCompleteCallbackInfo& oqpacci = res->CreateCallback<EOS_Achievements_OnQueryPlayerAchievementsCompleteCallbackInfo>((CallbackFunc)CompletionDelegate);
 
-    oqpacci.ClientData = ClientData;
-    oqpacci.UserId = Options->UserId;
-
-    if (Options == nullptr || Options->UserId == nullptr)
-    {
-        oqpacci.ResultCode = EOS_EResult::EOS_InvalidParameters;
-    }
-    else if(Options->UserId != GetEOS_Connect().get_myself()->first)
-    {
-        oqpacci.ResultCode = EOS_EResult::EOS_UnexpectedError;
-    }
-    else
-    {
-        oqpacci.ResultCode = EOS_EResult::EOS_Success;
+    switch (Options->ApiVersion) {
+        case EOS_ACHIEVEMENTS_QUERYPLAYERACHIEVEMENTS_API_002:
+        {
+            if (Options == nullptr || Options->TargetUserId == nullptr)
+            {
+                oqpacci.ResultCode = EOS_EResult::EOS_InvalidParameters;
+            }
+            else if (Options->TargetUserId != GetEOS_Connect().get_myself()->first)
+            {
+                oqpacci.ResultCode = EOS_EResult::EOS_UnexpectedError;
+            }
+            else
+            {
+                oqpacci.ClientData = ClientData;
+                oqpacci.UserId = Options->TargetUserId;
+                oqpacci.ResultCode = EOS_EResult::EOS_Success;
+            }
+        }
+        break;
+        case EOS_ACHIEVEMENTS_QUERYPLAYERACHIEVEMENTS_API_001:
+        {
+            const EOS_Achievements_QueryPlayerAchievementsOptions001* opts = reinterpret_cast<const EOS_Achievements_QueryPlayerAchievementsOptions001*>(Options);
+            if (opts == nullptr || opts->UserId == nullptr)
+            {
+                oqpacci.ResultCode = EOS_EResult::EOS_InvalidParameters;
+            }
+            else if (opts->UserId != GetEOS_Connect().get_myself()->first)
+            {
+                oqpacci.ResultCode = EOS_EResult::EOS_UnexpectedError;
+            }
+            else
+            {
+                oqpacci.ClientData = ClientData;
+                oqpacci.UserId = opts->UserId;
+                oqpacci.ResultCode = EOS_EResult::EOS_Success;
+            }
+        }
     }
 
     res->done = true;
@@ -690,16 +713,35 @@ EOS_EResult EOSSDK_Achievements::CopyPlayerAchievementByIndex(const EOS_Achievem
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    if (Options == nullptr || Options->UserId == nullptr || Options->AchievementIndex >= _achievements.size() || Options->UserId != GetEOS_Connect().get_myself()->first)
-    {
-        *OutAchievement = nullptr;
-        return EOS_EResult::EOS_InvalidParameters;
+    switch (Options->ApiVersion) {
+        case EOS_ACHIEVEMENTS_COPYPLAYERACHIEVEMENTBYINDEX_API_002:
+        {
+            if (Options == nullptr || Options->TargetUserId == nullptr || Options->AchievementIndex >= _achievements.size() || Options->TargetUserId != GetEOS_Connect().get_myself()->first)
+            {
+                *OutAchievement = nullptr;
+                return EOS_EResult::EOS_InvalidParameters;
+            }
+            auto it = _achievements.begin();
+            std::advance(it, Options->AchievementIndex);
+
+            return copy_player_achievement(it, OutAchievement);
+        }
+        break;
+        case EOS_ACHIEVEMENTS_COPYPLAYERACHIEVEMENTBYINDEX_API_001:
+        default:
+        {
+            const EOS_Achievements_CopyPlayerAchievementByIndexOptions001* opts = reinterpret_cast<const EOS_Achievements_CopyPlayerAchievementByIndexOptions001*>(Options);
+            if (opts == nullptr || opts->UserId == nullptr || opts->AchievementIndex >= _achievements.size() || opts->UserId != GetEOS_Connect().get_myself()->first)
+            {
+                *OutAchievement = nullptr;
+                return EOS_EResult::EOS_InvalidParameters;
+            }
+            auto it = _achievements.begin();
+            std::advance(it, opts->AchievementIndex);
+
+            return copy_player_achievement(it, OutAchievement);
+        }
     }
-
-    auto it = _achievements.begin();
-    std::advance(it, Options->AchievementIndex);
-
-    return copy_player_achievement(it, OutAchievement);
 }
 
 /**
@@ -719,20 +761,45 @@ EOS_EResult EOSSDK_Achievements::CopyPlayerAchievementByAchievementId(const EOS_
     TRACE_FUNC();
     GLOBAL_LOCK();
 
-    if (Options == nullptr || Options->UserId == nullptr || Options->UserId != GetEOS_Connect().get_myself()->first)
-    {
-        *OutAchievement = nullptr;
-        return EOS_EResult::EOS_InvalidParameters;
-    }
+    switch (Options->ApiVersion) {
+        case EOS_ACHIEVEMENTS_COPYPLAYERACHIEVEMENTBYACHIEVEMENTID_API_002:
+        {
+            if (Options == nullptr || Options->TargetUserId == nullptr || Options->TargetUserId != GetEOS_Connect().get_myself()->first)
+            {
+                *OutAchievement = nullptr;
+                return EOS_EResult::EOS_InvalidParameters;
+            }
 
-    auto it = _achievements.find(Options->AchievementId);
-    if (it == _achievements.end())
-    {
-        *OutAchievement = nullptr;
-        return EOS_EResult::EOS_NotFound;
-    }
+            auto it = _achievements.find(Options->AchievementId);
+            if (it == _achievements.end())
+            {
+                *OutAchievement = nullptr;
+                return EOS_EResult::EOS_NotFound;
+            }
 
-    return copy_player_achievement(it, OutAchievement);
+            return copy_player_achievement(it, OutAchievement);
+        }
+        break;
+        case EOS_ACHIEVEMENTS_COPYPLAYERACHIEVEMENTBYACHIEVEMENTID_API_001:
+        default:
+        {
+            const EOS_Achievements_CopyPlayerAchievementByAchievementIdOptions001* opts = reinterpret_cast<const EOS_Achievements_CopyPlayerAchievementByAchievementIdOptions001*>(Options);
+            if (opts == nullptr || opts->UserId == nullptr || opts->UserId != GetEOS_Connect().get_myself()->first)
+            {
+                *OutAchievement = nullptr;
+                return EOS_EResult::EOS_InvalidParameters;
+            }
+
+            auto it = _achievements.find(opts->AchievementId);
+            if (it == _achievements.end())
+            {
+                *OutAchievement = nullptr;
+                return EOS_EResult::EOS_NotFound;
+            }
+
+            return copy_player_achievement(it, OutAchievement);
+        }
+    } 
 }
 
 /**
