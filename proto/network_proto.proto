@@ -260,6 +260,7 @@ message Lobby_Infos_pb {
     map<string, Lobby_Attribute> attributes = 4;
     string owner_id = 5;
     map<string, Lobby_Member_Infos_pb> members = 6;
+    string bucket_id = 7;
 }
 
 message Lobby_Update_pb {

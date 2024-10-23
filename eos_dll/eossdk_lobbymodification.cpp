@@ -54,8 +54,8 @@ EOS_EResult EOSSDK_LobbyModification::SetBucketId(const EOS_LobbyModification_Se
     std::lock_guard<std::mutex> lk(_local_mutex);
     if (Options == nullptr)
         return EOS_EResult::EOS_InvalidParameters;
-    //_infos.set_bucket_id(utils::GetEnumValue(Options->BucketId))
-    //_lobby_modified = true;
+    _infos.set_bucket_id((Options->BucketId));
+    _lobby_modified = true;
     return EOS_EResult::EOS_Success;
 }
 
