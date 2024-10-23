@@ -368,18 +368,52 @@ void EOSSDK_Lobby::CreateLobby(const EOS_Lobby_CreateLobbyOptions* Options, void
     {
         std::string lobby_id(std::move(generate_account_id()));
 
-        strncpy(const_cast<char*>(clci.LobbyId), lobby_id.c_str(), max_accountid_length);
-        const_cast<char*>(clci.LobbyId)[64] = 0;
+       
 
-        auto& infos = _lobbies[lobby_id];
-        infos.infos.set_lobby_id(lobby_id);
-        infos.infos.set_owner_id(GetEOS_Connect().get_myself()->first->to_string());
-        infos.infos.set_max_lobby_member(Options->MaxLobbyMembers);
-        infos.infos.set_permission_level(utils::GetEnumValue(Options->PermissionLevel));
-        (*infos.infos.mutable_members())[GetEOS_Connect().get_myself()->first->to_string()];
-        infos.state = lobby_state_t::created;
+        switch (Options->ApiVersion)
+        {
+        case EOS_LOBBY_CREATELOBBY_API_009:
+        {
+            const EOS_Lobby_CreateLobbyOptions009* opts = reinterpret_cast<const EOS_Lobby_CreateLobbyOptions009*>(Options);
+        }
+        case EOS_LOBBY_CREATELOBBY_API_008:
+        case EOS_LOBBY_CREATELOBBY_API_007:
+        {
+            const EOS_Lobby_CreateLobbyOptions007* opts = reinterpret_cast<const EOS_Lobby_CreateLobbyOptions007*>(Options);
+            if (opts->LobbyId != NULL) {
+                lobby_id = std::string(opts->LobbyId);
+            }
 
-        clci.ResultCode = EOS_EResult::EOS_Success;
+        }
+        //case EOS_LOBBY_CREATELOBBY_API_006:
+        case EOS_LOBBY_CREATELOBBY_API_005:
+        case EOS_LOBBY_CREATELOBBY_API_004:
+        //case EOS_LOBBY_CREATELOBBY_API_003:
+        case EOS_LOBBY_CREATELOBBY_API_002:
+        {
+            const EOS_Lobby_CreateLobbyOptions002* opts = reinterpret_cast<const EOS_Lobby_CreateLobbyOptions002*>(Options);
+            // Can't set a MaxLobbyMembers to less than the current member count
+            strncpy(const_cast<char*>(clci.LobbyId), lobby_id.c_str(), max_accountid_length);
+            const_cast<char*>(clci.LobbyId)[64] = 0;
+
+            auto& infos = _lobbies[lobby_id];
+            {
+                infos.infos.set_lobby_id(lobby_id);
+                infos.infos.set_owner_id(GetEOS_Connect().get_myself()->first->to_string());
+                infos.infos.set_max_lobby_member(opts->MaxLobbyMembers);
+                infos.infos.set_permission_level(utils::GetEnumValue(opts->PermissionLevel));
+                (*infos.infos.mutable_members())[GetEOS_Connect().get_myself()->first->to_string()];
+                infos.state = lobby_state_t::created;
+
+                clci.ResultCode = EOS_EResult::EOS_Success;
+            }
+        }
+        break;
+        default:
+            APP_LOG(Log::LogLevel::FATAL, "Unmanaged API version %d", Options->ApiVersion);
+            abort();
+        }
+
     }
 
     res->done = true;
