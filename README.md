@@ -50,3 +50,13 @@ OFF  : no logs     , saves cpu usage when running the debug versions
 	- Hit configure.  Choose "Specify Toolchain file for cross-compiling". Choose ..\vcpkg\scripts\buildsystems\vcpkg.cmake
 	- Hit "Add Entry" Add "X64" as a string set to "ON".
 	- Hit Configure, then Generate. Then hit Open Project
+
+ ## 32bit
+-Same initial steps
+- Run "vcpkg install protobuf:x86-windows", "vcpkg install nlohmann-json:x86-windows"
+- Open cmake-gui
+	- Hit configure.  Choose "Specify Toolchain file for cross-compiling". Choose ..\vcpkg\scripts\buildsystems\vcpkg.cmake
+	- Hit "Add Entry" Add "X86" as a string set to "ON".
+	- Hit Configure, then Generate. Then hit Open Project
+   	- If it throws an error change VCPKG-TARGET-TRIPLET from x64-windows to x86-windows . After that, try the above step again to generate.
+ 
