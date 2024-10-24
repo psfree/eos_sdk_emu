@@ -251,7 +251,7 @@ EOS_STRUCT(EOS_Lobby_CreateLobbyOptions009, (
  * Output parameters for the EOS_Lobby_CreateLobby function.
  */
 EOS_STRUCT(EOS_Lobby_CreateLobbyCallbackInfo, (
-	enum { k_iCallback = k_iLobbyCallbackBase + 23 };
+	enum { k_iCallback = k_iLobbyCallbackBase + 0 };
 	/** The EOS_EResult code for the operation. EOS_Success indicates that the operation succeeded; other codes indicate errors. */
 	EOS_EResult ResultCode;
 	/** Context that was passed into EOS_Lobby_CreateLobby */

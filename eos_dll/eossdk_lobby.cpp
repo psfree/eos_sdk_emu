@@ -397,16 +397,14 @@ void EOSSDK_Lobby::CreateLobby(const EOS_Lobby_CreateLobbyOptions* Options, void
             const_cast<char*>(clci.LobbyId)[64] = 0;
 
             auto& infos = _lobbies[lobby_id];
-            {
-                infos.infos.set_lobby_id(lobby_id);
-                infos.infos.set_owner_id(GetEOS_Connect().get_myself()->first->to_string());
-                infos.infos.set_max_lobby_member(opts->MaxLobbyMembers);
-                infos.infos.set_permission_level(utils::GetEnumValue(opts->PermissionLevel));
-                (*infos.infos.mutable_members())[GetEOS_Connect().get_myself()->first->to_string()];
-                infos.state = lobby_state_t::created;
+            infos.infos.set_lobby_id(lobby_id);
+            infos.infos.set_owner_id(GetEOS_Connect().get_myself()->first->to_string());
+            infos.infos.set_max_lobby_member(opts->MaxLobbyMembers);
+            infos.infos.set_permission_level(utils::GetEnumValue(opts->PermissionLevel));
+            (*infos.infos.mutable_members())[GetEOS_Connect().get_myself()->first->to_string()];
+            infos.state = lobby_state_t::created;
 
-                clci.ResultCode = EOS_EResult::EOS_Success;
-            }
+            clci.ResultCode = EOS_EResult::EOS_Success;
         }
         break;
         default:
