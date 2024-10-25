@@ -270,8 +270,9 @@ void Network::add_new_tcp_client(PortableAPI::tcp_socket* cli, std::vector<peer_
 {
     std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
-    _poll.add_socket(*cli); // Add the client to the poll
-    _poll.set_events(*cli, Socket::poll_flags::in);
+    FD_SET(cli->get_native_socket(), &readfds);
+
+    FD_SET(cli->get_native_socket(), &exceptfds);
 
     Network_Message_pb msg;
     Network_Advertise_pb adv;
@@ -331,7 +332,9 @@ void Network::remove_tcp_peer(tcp_buffer_t& tcp_buffer)
     std::lock_guard<std::recursive_mutex> lk(local_mutex);
 
     APP_LOG(Log::LogLevel::DEBUG, "TCP Client %s gone", tcp_buffer.socket.get_addr().to_string().c_str());
-    _poll.remove_socket(tcp_buffer.socket);
+
+    FD_CLR(tcp_buffer.socket.get_native_socket(), &exceptfds);
+
     // Remove the peer mappings
 
     Network_Message_pb msg;
@@ -621,7 +624,7 @@ void Network::process_udp()
                     std::lock_guard<std::recursive_mutex> lk(local_mutex);
                     _udp_addrs[msg.source_id()] = addr;
 
-                    //APP_LOG(Log::LogLevel::TRACE, "Received UDP message from: %s - %s", addr.to_string().c_str(), msg.source_id().c_str());
+                    APP_LOG(Log::LogLevel::TRACE, "Received UDP message from: %s - %s", addr.to_string().c_str(), msg.source_id().c_str());
                     if (msg.has_network_advertise())
                     {
                         if (_advertise)
@@ -651,7 +654,7 @@ void Network::process_udp()
                     }
                     else
                     {
-                        //APP_LOG(Log::LogLevel::DEBUG, "Received UDP message from %s type %d", addr.to_string(true).c_str(), msg.messages_case());
+                        APP_LOG(Log::LogLevel::DEBUG, "Received UDP message from %s type %d", addr.to_string(true).c_str(), msg.messages_case());
                         process_network_message(msg);
                     }
                 }
@@ -749,30 +752,53 @@ void Network::network_thread()
     _udp_socket.setsockopt(Socket::level::sol_socket, Socket::option_name::so_broadcast, &broadcast, sizeof(broadcast));
     //_udp_socket.set_nonblocking();
 
+    FD_ZERO(&readfds);
+    FD_ZERO(&writefds);
+    FD_ZERO(&exceptfds);
+
     if (!_network_task.want_stop())
     {
-        _poll.add_socket(_udp_socket);
-        _poll.add_socket(_tcp_socket);
-        _poll.add_socket(_tcp_self_recv.socket);
-        for(auto i = 0; i < _poll.get_num_polls(); ++i)
-            _poll.set_events(i, Socket::poll_flags::in);
+        FD_SET(_udp_socket.get_native_socket(), &readfds);
+        FD_SET(_tcp_socket.get_native_socket(), &readfds);
+        FD_SET(_tcp_self_recv.socket.get_native_socket(), &readfds);
+
+        FD_SET(_udp_socket.get_native_socket(), &exceptfds);
+        FD_SET(_tcp_socket.get_native_socket(), &exceptfds);
+        FD_SET(_tcp_self_recv.socket.get_native_socket(), &exceptfds);
+
     }
+
+
 
     while (!_network_task.want_stop())
     {
         do_advertise();
 
-        auto res = _poll.poll(500);
-        if (res == 0)
-            continue;
+        timeval timeout;
+        timeout.tv_sec = 0;
+        timeout.tv_usec = 500000;  // 500 ms timeout
 
-        if ((_poll.get_revents(_udp_socket) & Socket::poll_flags::in_hup) != Socket::poll_flags::none)
-            process_udp(); // Process udp datas & advertising
+        fd_set readfds_copy = readfds;
+        fd_set writefds_copy = writefds;
+        fd_set exceptfds_copy = exceptfds;
 
-        if ((_poll.get_revents(_tcp_socket) & Socket::poll_flags::in_hup) != Socket::poll_flags::none)
-            process_tcp_listen(); // Process the waiting incoming peers
+        int res = select(0, &readfds_copy, &writefds_copy, &exceptfds_copy, &timeout);
+        if (res == SOCKET_ERROR) {
+            break;
+        }
+        else if (res == 0) {
+            continue;  // No events, continue the loop
+        }
+
+        if (FD_ISSET(_udp_socket.get_native_socket(), &readfds_copy)) {
+            process_udp();
+        }
+
+        if (FD_ISSET(_tcp_socket.get_native_socket(), &readfds_copy)) {
+            process_tcp_listen();
+        }
         
-        if ((_poll.get_revents(_tcp_self_recv.socket) & Socket::poll_flags::in_hup) != Socket::poll_flags::none)
+        if (FD_ISSET(_tcp_self_recv.socket.get_native_socket(), &readfds_copy))
         {
             try
             {
@@ -788,24 +814,13 @@ void Network::network_thread()
             std::lock_guard<std::recursive_mutex> lk(local_mutex);
             for (auto it = _tcp_clients.begin(); it != _tcp_clients.end();)
             {// Process the multiple tcp clients we have
-                auto reevents = _poll.get_revents(it->socket);
-                if ((reevents & Socket::poll_flags::hup) != Socket::poll_flags::none)
-                {
+                if (FD_ISSET(it->socket.get_native_socket(), &readfds_copy)) {
+                    process_tcp_data(*it);
+                    ++it;
+                }
+                else if (FD_ISSET(it->socket.get_native_socket(), &exceptfds_copy)) {
                     remove_tcp_peer(*it);
                     it = _tcp_clients.erase(it);
-                }
-                else if ((reevents & Socket::poll_flags::in_hup) != Socket::poll_flags::none)
-                {
-                    try
-                    {
-                        process_tcp_data(*it);
-                        ++it;
-                    }
-                    catch (std::exception & e)
-                    {
-                        remove_tcp_peer(*it);
-                        it = _tcp_clients.erase(it);
-                    }
                 }
                 else
                     ++it;

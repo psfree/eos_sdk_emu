@@ -69,7 +69,7 @@ private:
     std::set<peer_t> _my_peer_ids;
     uint16_t _tcp_port;
 
-    PortableAPI::Poll _poll;
+    fd_set readfds, writefds, exceptfds;
     PortableAPI::udp_socket _udp_socket;
     std::map<peer_t, PortableAPI::ipv4_addr> _udp_addrs;
 
