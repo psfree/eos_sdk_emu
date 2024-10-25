@@ -614,7 +614,7 @@ void Network::process_udp()
                 message_size = buff.length();
             #else
                 message = buffer.data();
-                message_size = buffer.size();
+                message_size = len;
             #endif
 
             if (msg.ParseFromArray(message, message_size))
@@ -624,7 +624,7 @@ void Network::process_udp()
                     std::lock_guard<std::recursive_mutex> lk(local_mutex);
                     _udp_addrs[msg.source_id()] = addr;
 
-                    APP_LOG(Log::LogLevel::TRACE, "Received UDP message from: %s - %s", addr.to_string().c_str(), msg.source_id().c_str());
+                    //APP_LOG(Log::LogLevel::TRACE, "Received UDP message from: %s - %s", addr.to_string().c_str(), msg.source_id().c_str());
                     if (msg.has_network_advertise())
                     {
                         if (_advertise)
